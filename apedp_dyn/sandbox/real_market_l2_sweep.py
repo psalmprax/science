@@ -33,10 +33,8 @@ import numpy as np
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
-from apedp_dyn.epistemic.adjudicate import (
-    DataOrigin,
-)
 from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
+from apedp_dyn.market.assets import asset_data_origin
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
@@ -117,8 +115,12 @@ class WindowDiscoveryRecord:
 
 def load_series_with_dates(asset: Literal["sp500", "nasdaq100"]) -> tuple[list[str], np.ndarray]:
     """Load historical dates and close prices."""
-    fname = "sp500.csv" if asset == "sp500" else "nasdaq100.csv"
-    col = "SP500" if asset == "sp500" else "NASDAQ100"
+    if asset == "sp500":
+        fname, col = "sp500.csv", "SP500"
+    elif asset == "nasdaq100":
+        fname, col = "nasdaq100.csv", "NASDAQ100"
+    else:
+        raise ValueError(f"Unsupported real-market asset {asset!r}; expected 'sp500' or 'nasdaq100'")
     fpath = DATA_DIR / fname
 
     dates, prices = [], []
@@ -239,7 +241,7 @@ def execute_window_discovery(
             dimensions=dim_map,
             target_dimension=Dimension(),
             train_ratio=train_ratio,
-            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            data_origin=asset_data_origin(asset),
             bootstrap=bootstrap,
             seed=seed,
         )
@@ -264,7 +266,7 @@ def execute_window_discovery(
             dimensions=dim_map,
             target_dimension=Dimension(),
             train_ratio=train_ratio,
-            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            data_origin=asset_data_origin(asset),
             bootstrap=bootstrap,
             seed=seed,
         )

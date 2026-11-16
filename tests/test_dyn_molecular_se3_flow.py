@@ -150,3 +150,15 @@ def test_signed_volume_gradient_is_the_cross_product_set():
                 - signed_volume(coords - offset, 0, 1, 2, 3)
             ) / (2.0 * step)
     assert float(np.max(np.abs(numeric - analytic))) < 1e-6
+
+
+def test_relax_stiff_step_safeguards_energy_monotonicity():
+    stiff = MolecularForceField(
+        bonds=((0, 1), (0, 2), (0, 3)),
+        spring_constant=18.0,
+        target_length=1.0,
+    )
+    res = relax(_INITIAL_COORDS, stiff, step_size=0.35, n_steps=40)
+    assert np.all(np.isfinite(res.coordinates))
+    assert np.all(np.diff(res.energies) <= 1e-12)
+    assert res.energies[-1] < res.energies[0]

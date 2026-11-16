@@ -56,9 +56,7 @@ import math
 import multiprocessing as mp
 import os
 import sys
-from collections.abc import Callable
 from fractions import Fraction
-from typing import Any
 
 import numpy as np
 
@@ -162,18 +160,16 @@ def _initial_seed(circuit_hash: str, salt: str) -> int:
     """Computes the initial RNG seed from `circuit_hash` and optional `salt`."""
     if not salt:
         return int(circuit_hash, 16)
-    return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode()).hexdigest(), 16)
+    return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode('utf-8')).hexdigest(), 16)
 
 
 
 def to_bits(values: np.ndarray, width: int) -> np.ndarray:
-    _out: np.ndarray = (values[None, :] >> np.arange(width, dtype=np.uint64)[:, None]) & 1 == 1
-    return _out
+    return (values[None, :] >> np.arange(width, dtype=np.uint64)[:, None]) & 1 == 1
 
 
 def from_bits(bits: np.ndarray) -> np.ndarray:
-    _out: np.ndarray = (bits.astype(np.uint64) << np.arange(len(bits), dtype=np.uint64)[:, None]).sum(axis=0)
-    return _out
+    return (bits.astype(np.uint64) << np.arange(len(bits), dtype=np.uint64)[:, None]).sum(axis=0)
 
 
 # Register validation.
@@ -203,24 +199,20 @@ def validate_registers(circuit: km.Circuit, spec: ProblemSpecInvSqrt
 
 def sample_shots(spec: ProblemSpecInvSqrt, start: int, stop: int) -> np.ndarray:
     """The inputs `x` of shots `start..stop-1`: shot `i` is `x = i mod max_x + 1`."""
-    _out: np.ndarray = (np.arange(start, stop, dtype=np.uint64) % np.uint64(spec.max_x)) + np.uint64(1)
-    return _out
+    return (np.arange(start, stop, dtype=np.uint64) % np.uint64(spec.max_x)) + np.uint64(1)
 
 
 # Simulation and verification.
 
 
-_WORKER_FN: Callable[[Any], Any] | None = None
+_WORKER_FN = None
 
 
-def _call_worker(task: Any) -> Any:
-    if _WORKER_FN is None:
-        raise RuntimeError('worker function not initialised')
+def _call_worker(task):
     return _WORKER_FN(task)
 
 
-def _run_parallel(fn: Callable[[Any], Any], tasks: list[Any],
-                  max_workers: int | None) -> list[Any]:
+def _run_parallel(fn, tasks: list, max_workers: int | None) -> list:
     global _WORKER_FN
     if max_workers is not None and max_workers <= 0:
         raise ValueError(f'max_workers must be positive, got {max_workers}.')
@@ -242,7 +234,7 @@ def _run_parallel(fn: Callable[[Any], Any], tasks: list[Any],
 
 def verify(circuit: km.Circuit, spec: ProblemSpecInvSqrt, *, seed: int | None = None,
            salt: str = '', batch_size: int = DEFAULT_BATCH_SIZE,
-           max_workers: int | None = None) -> dict[str, Any]:
+           max_workers: int | None = None) -> dict:
     """Verifies `circuit` on `spec.shots_per_x` shots of every `x`; raises on failure.
 
     `batch_size` shots are simulated together; it doesn't affect which shots are run.
@@ -325,12 +317,10 @@ def verify(circuit: km.Circuit, spec: ProblemSpecInvSqrt, *, seed: int | None = 
     toffoli_count = sum(r[2] for r in results) / num_shots
     t_base = sum(r[3] for r in results) / num_shots
     n_rot = sum(r[4] for r in results) / num_shots
-    t_count = t_base
-    if n_rot:
-        eps: float = math.pi * min_margin / 2**64 / n_rot
-        if not eps > 0:
-            raise AssertionError('No tolerance left for rotation synthesis error.')
-        t_count = t_base + n_rot * rotation_t_count(eps)
+    eps = math.pi * min_margin / 2**64 / n_rot if n_rot else None
+    if n_rot and not eps > 0:
+        raise AssertionError('No tolerance left for rotation synthesis error.')
+    t_count = t_base + (n_rot * rotation_t_count(eps) if n_rot else 0)
     toffolis = toffoli_count + t_count / T_PER_TOFFOLI
     return {
         'status': 'PASS',

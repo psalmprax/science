@@ -38,21 +38,20 @@ are rejected; passing does not establish correctness on unsampled branches.
 
 from __future__ import annotations
 
-import hashlib
-import io
-import re
-import zipfile
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+import hashlib
+import io
 from math import ceil
 from operator import index
 from pathlib import Path
+import re
 from typing import Any
-
-import numpy as np
-import numpy.typing as npt
+import zipfile
 
 import kickmix as km
+import numpy as np
+import numpy.typing as npt
 
 FORMATS = ("auto", "kmb", "kmx")
 SELECTION_REGISTER = "selection"
@@ -116,7 +115,7 @@ def _scan_angle_files(directory: str | Path) -> dict[str, set[str]]:
 def read_kmx_family(directory: str | Path) -> tuple[km.Circuit, ...]:
     """Read ``angle_k_0.kmx``, ``angle_k_1.kmx``, ... from ``directory``."""
     found = _scan_angle_files(directory)["kmx"]
-    circuits: list[km.Circuit] = []
+    circuits = []
     while kmx_path(directory, len(circuits)).is_file():
         circuits.append(read_kmx(kmx_path(directory, len(circuits))))
     if not circuits:
@@ -152,7 +151,7 @@ def read_circuit_family(directory: str | Path, format: str = "auto") -> tuple[km
             )
         format = "kmb" if has_kmb else "kmx"
     path = kmb_path if format == "kmb" else kmx_path
-    circuits: list[km.Circuit] = []
+    circuits = []
     while path(directory, len(circuits)).is_file():
         circuits.append(read_circuit(path(directory, len(circuits)), format=format))
     if not circuits:
@@ -274,7 +273,7 @@ def initial_seed(digest_hex: str, salt: str = "") -> int:
     """The simulator seed for a SHA-256 hex digest, mixed with an optional ``salt``."""
     if not salt:
         return int(digest_hex, 16)
-    return int(hashlib.sha256(f"{digest_hex}{salt}".encode()).hexdigest(), 16)
+    return int(hashlib.sha256(f"{digest_hex}{salt}".encode("utf-8")).hexdigest(), 16)
 
 
 # ---------------------------------------------------------------------------
@@ -561,11 +560,11 @@ def recover_words_from_circuits(
 __all__ = [
     "FORMATS",
     "HASHED_NPZ_KEYS",
+    "InvalidCircuits",
+    "RegisterLayout",
     "SELECTION_REGISTER",
     "SHOTS_PER_ADDRESS",
     "WORD_REGISTER_PREFIX",
-    "InvalidCircuits",
-    "RegisterLayout",
     "circuit_costs",
     "initial_seed",
     "kmb_path",

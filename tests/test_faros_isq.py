@@ -56,6 +56,7 @@ from apedp_dyn.quantum_compilation.faros_isq import (
     run_faros_isq_search,
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
+from tests.kickmix_availability import require_shipped_extension
 
 
 def test_sable_90_profiler_and_official_cost():
@@ -241,6 +242,7 @@ def test_multi_fidelity_pareto_tournament_execution():
 
 def test_faros_isq_proposer_and_experiment_runner(tmp_path):
     """Verify FarosIsqProposer integration with ExperimentRunner and ledger."""
+    require_shipped_extension()  # the contract locks against the extension's bytes
     contract = load_contract("invsqrt")
     QuantumCandidateLedger(tmp_path / "faros_test_ledger.jsonl")  # constructed for its file
 
@@ -261,6 +263,7 @@ def test_faros_isq_proposer_and_experiment_runner(tmp_path):
 
 def test_run_faros_isq_search_end_to_end(tmp_path):
     """Verify end-to-end FAROS search orchestrator and output report."""
+    require_shipped_extension()  # the search locks its contract against the extension
     report = run_faros_isq_search(
         output_dir=tmp_path / "faros_run",
         budget=5,
@@ -373,6 +376,7 @@ def test_exhaustive_integer_certificate_execution(tmp_path):
 
 def test_materialize_faros_circuit_execution(tmp_path):
     """Verify materialization produces circuit artifact, SHA-256, and metadata."""
+    require_shipped_extension()  # materialisation runs the kickmix circuit builder
     out_kmb = tmp_path / "invsqrt_faros_test_86q.kmb"
     meta = materialize_faros_circuit(
         output_path=out_kmb,
@@ -393,6 +397,7 @@ def test_materialize_faros_circuit_execution(tmp_path):
 
 def test_calibrate_faros_circuit_execution(tmp_path):
     """Verify cutting-plane calibration report and rotation angle optimization."""
+    require_shipped_extension()  # calibration starts from a materialised circuit
     out_kmb = tmp_path / "invsqrt_faros_test_cal.kmb"
     materialize_faros_circuit(output_path=out_kmb)
 
@@ -406,7 +411,11 @@ def test_calibrate_faros_circuit_execution(tmp_path):
 def test_verify_faros_candidate_receipt_structure(tmp_path):
     """Verify receipt structure and contract verification for FAROS candidate."""
     receipt_file = Path("artifacts/quantum_compilation/invsqrt/receipt_faros_r2_86q.json")
-    assert receipt_file.exists()
+    if not receipt_file.exists():
+        # The receipt records a 200-million-shot verifier run. `artifacts/` is
+        # git-ignored apart from a few tracked DQI files, so it exists only on
+        # the machine that ran the verifier; nothing here can regenerate it.
+        pytest.skip(f"{receipt_file} is not in this checkout (git-ignored verifier output)")
     data = json.loads(receipt_file.read_text(encoding="utf-8"))
 
     assert data["status"] == "PASS"

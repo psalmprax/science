@@ -21,6 +21,12 @@ import numpy as np
 import pytest
 
 torch = pytest.importorskip("torch")
+# The export path needs the whole `onnx` extra of packages/jetflow-video
+# (onnx, onnxruntime, onnxscript). Guarding on onnxruntime alone let these
+# tests run, and fail inside torch.onnx, wherever something else had pulled
+# in onnxruntime without the other two.
+pytest.importorskip("onnx")
+pytest.importorskip("onnxscript")
 ort = pytest.importorskip("onnxruntime")
 
 _REPO = Path(__file__).resolve().parents[1]

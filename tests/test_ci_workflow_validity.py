@@ -21,6 +21,7 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -169,3 +170,41 @@ def test_actionlint_accepts_every_workflow() -> None:
         cwd=ROOT,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+# --- The one deselected test ------------------------------------------------
+
+GOVERNANCE_TEST = "tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid"
+
+
+def _deselected_tests() -> list[str]:
+    """Every test id handed to ``--deselect`` on a command line, comments excluded."""
+    lines = (ROOT / ".github" / "workflows" / "test.yml").read_text(encoding="utf-8").splitlines()
+    commands = "\n".join(line for line in lines if not line.lstrip().startswith("#"))
+    return re.findall(r"--deselect[ =](\S+)", commands)
+
+
+def test_ci_deselects_the_governance_test_and_nothing_else():
+    """A deselect list is where failing tests go to be forgotten; this one holds one."""
+    assert _deselected_tests() == [GOVERNANCE_TEST]
+
+
+def test_the_deselected_test_is_still_reported_by_its_own_job():
+    """The verdict is moved, not removed: the dedicated job runs the check and gates the build."""
+    text = (ROOT / ".github" / "workflows" / "test.yml").read_text(encoding="utf-8")
+    assert "python scripts/check_governance_manifest_drift.py --check" in text
+    needs = re.search(r"^  build:\n(?:.*\n)*?    needs: \[([^\]]*)\]", text, flags=re.MULTILINE)
+    assert needs is not None and "governance-manifest" in needs.group(1)
+
+
+def test_the_deselect_expires_when_the_manifest_is_signed_again():
+    """Once the trustees re-sign, the drift check passes and this fails: remove the --deselect."""
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_governance_manifest_drift.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT, check=False,
+    )
+    assert result.returncode != 0, (
+        "the governance manifest seals the current spec again; delete the --deselect of "
+        f"{GOVERNANCE_TEST} from .github/workflows/test.yml and this test with it"
+    )
+    assert "GOVERNANCE DRIFT" in result.stdout + result.stderr

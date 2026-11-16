@@ -33,6 +33,7 @@ from apedp_dyn.epistemic.claim_ladder import (
 from apedp_dyn.epistemic.lean_universal_bridge import (
     LeanUniversalBridge,
 )
+from tests.toolchain_availability import require_lean
 
 
 @pytest.fixture
@@ -42,29 +43,64 @@ def bridge(tmp_path):
 
 def test_mathlib_candidate_uncompiled_reports_p1_candidate(bridge):
     """Case 1: Mathlib-targeted module in standalone invocation reports P1_CANDIDATE (never overclaims to P2)."""
-    inv_energy = DeclaredInvariant(
-        name="hamiltonian_energy_conservation",
-        kind=InvariantKind.CONSERVATION_LAW,
-        description="Preservation of mechanical energy H = 0.5*(v^2 + x^2)",
-        required_for_tier=ClaimLevel.C6_FORMALLY_VERIFIED,
-    )
-
+    require_lean()  # asserts the compiler's exit code
+    # A candidate whose invariant the bridge can prove from the expression
+    # itself. Until commit 101b9c3 (2026-11-16) this test used x(t) = sin(t)
+    # with an energy-conservation invariant and got P1 from a canned
+    # Pythagorean theorem attached to any conservation claim. That commit
+    # removed the canned theorem (tests/test_lean_universal_bridge_soundness.py
+    # forbids it), so the oscillator is now refused outright; see the test
+    # below. What this test is about, a synthesized Mathlib proof that has not
+    # been through the kernel, needs a proof the bridge really synthesizes.
     spec = AgnosticCandidateSpecification(
         candidate_id="PHYS-OSCILLATOR-MATHLIB",
         proposed_claim=ClaimLevel.C6_FORMALLY_VERIFIED,
-        formula_repr="x(t) = sin(t)",
-        declared_invariants=[inv_energy],
+        formula_repr="y = x^2 + 3 * z^2 + 1",
+        declared_invariants=[
+            DeclaredInvariant(
+                name="energy_positivity",
+                kind=InvariantKind.BOUND_POSITIVITY,
+                description="Non-negativity of a sum of squares",
+                required_for_tier=ClaimLevel.C6_FORMALLY_VERIFIED,
+            )
+        ],
     )
 
     res = bridge.verify_candidate_formally(spec)
 
     assert res.candidate_id == "PHYS-OSCILLATOR-MATHLIB"
+    assert res.theorems[0].is_formally_proven is True, "the P1 path needs a synthesized proof"
     # When Lean runs on a file importing Mathlib without lake mathlib build, compiler exits with code 1:
     assert res.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
     assert res.all_theorems_proven is False
     assert res.kernel_exit_code == 1
     assert "Mathlib library environment required" in res.notes
     assert "import Mathlib.Data.Real.Basic" in res.lean_source_code
+
+
+def test_a_conservation_claim_the_expression_does_not_establish_is_refused(bridge):
+    """The case the test above used to rely on: no canned theorem, so no candidate proof."""
+    spec = AgnosticCandidateSpecification(
+        candidate_id="PHYS-OSCILLATOR-UNESTABLISHED",
+        proposed_claim=ClaimLevel.C6_FORMALLY_VERIFIED,
+        formula_repr="x(t) = sin(t)",
+        declared_invariants=[
+            DeclaredInvariant(
+                name="hamiltonian_energy_conservation",
+                kind=InvariantKind.CONSERVATION_LAW,
+                description="Preservation of mechanical energy H = 0.5*(v^2 + x^2)",
+                required_for_tier=ClaimLevel.C6_FORMALLY_VERIFIED,
+            )
+        ],
+    )
+
+    res = bridge.verify_candidate_formally(spec)
+
+    assert res.proof_claim_status == ProofClaimStatus.P0_NO_PROOF
+    assert res.all_theorems_proven is False
+    assert res.theorems[0].is_formally_proven is False
+    assert "fail-closed" in res.theorems[0].diagnostic_message.lower()
+    assert "sin_sq_add_cos_sq" not in res.lean_source_code
 
 
 def test_core_lean4_kernel_execution_is_capped_at_p1(bridge):
@@ -130,7 +166,12 @@ def test_physics_energy_leak_trap_refuted(bridge):
     assert res.all_theorems_proven is False
     assert res.proof_claim_status == ProofClaimStatus.P0_NO_PROOF
     assert res.theorems[0].is_formally_proven is False
-    assert "dissipation" in res.theorems[0].diagnostic_message.lower()
+    # Wording follows commit 101b9c3, which derives the refutation from the
+    # expression's AST: "Conservation refutation: AST-derived damping factor
+    # 0.02*t". The assertion used to look for the word "dissipation".
+    diagnostic = res.theorems[0].diagnostic_message.lower()
+    assert "conservation refutation" in diagnostic
+    assert "damping" in diagnostic and "0.02" in diagnostic
 
 
 def test_finance_cubic_runaway_refuted(bridge):
@@ -156,16 +197,20 @@ def test_finance_cubic_runaway_refuted(bridge):
 
 def test_joint_epistemic_adjudication_never_certifies_axiom_injected_core(bridge):
     """Case 5: neither an uncompiled module nor a compiled self-axiomatised one certifies."""
+    # A candidate with a proof the bridge synthesizes, for the reason given in
+    # test_mathlib_candidate_uncompiled_reports_p1_candidate: since commit
+    # 101b9c3 the earlier sin(t) conservation spec has no candidate proof at
+    # all, and a case with no proof cannot show that a proof is not certified.
     inv_cons = DeclaredInvariant(
-        name="conservation",
-        kind=InvariantKind.CONSERVATION_LAW,
+        name="energy_positivity",
+        kind=InvariantKind.BOUND_POSITIVITY,
         required_for_tier=ClaimLevel.C3_STRUCTURAL,
     )
 
     spec = AgnosticCandidateSpecification(
         candidate_id="MODEL-EPI-TEST",
         proposed_claim=ClaimLevel.C3_STRUCTURAL,
-        formula_repr="x(t) = sin(t)",
+        formula_repr="y = x^2 + 3 * z^2 + 1",
         declared_invariants=[inv_cons],
     )
 
@@ -335,6 +380,8 @@ def test_in_memory_equation_verification_zero_disk_files():
     """Verify arbitrary equations directly in memory without writing any files to disk."""
     from apedp_dyn.epistemic.lean_universal_bridge import verify_equation_in_memory
 
+    require_lean()  # asserts kernel_exit_code == 0
+
     # Test 1: Saturated market impact equation. The module compiles, but it
     # declares the saturation axioms it proves against, so the status is P1.
     res_tanh = verify_equation_in_memory("y = c * tanh(velocity)", candidate_id="SATURATED_FLOW")
@@ -387,6 +434,8 @@ def test_in_memory_equation_trap_refuted():
 def test_in_memory_raw_lean_code_verification():
     """Verify raw Lean 4 code strings directly via stdin without touching disk."""
     from apedp_dyn.epistemic.lean_universal_bridge import verify_raw_lean_code_in_memory
+
+    require_lean()  # asserts P2, which only a kernel run can give
 
     # Valid proof term
     valid_code = "theorem tautology (p : Prop) (h : p) : p := h\n"

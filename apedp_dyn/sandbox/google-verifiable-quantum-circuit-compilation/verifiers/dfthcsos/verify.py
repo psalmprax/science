@@ -78,11 +78,11 @@ command line prints ``{"status": "FAIL", "error": ...}`` and exits 1) if
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+import json
 from pathlib import Path
+import sys
 from typing import Any
 
 import numpy as np
@@ -95,7 +95,7 @@ if _REPOSITORY_ROOT not in sys.path:
 
 # The verifier is self-contained: it imports nothing from dfthc and needs only
 # numpy, scipy and kickmix.
-from dfthcsos.scoreinfra.circuits import (
+from dfthcsos.scoreinfra.circuits import (  # noqa: E402
     FORMATS,
     SHOTS_PER_ADDRESS,
     InvalidCircuits,
@@ -105,12 +105,9 @@ from dfthcsos.scoreinfra.circuits import (
     register_layout,
     submission_sha256,
 )
-from dfthcsos.scoreinfra.costs_prepare import SpinFreeData_V1
-from dfthcsos.scoreinfra.dfthc_math import (
-    evaluate_dfthc_angle_words,
-    symmetric_from_lower,
-)
-from dfthcsos.scoreinfra.reference import (
+from dfthcsos.scoreinfra.costs_prepare import SpinFreeData_V1  # noqa: E402
+from dfthcsos.scoreinfra.dfthc_math import evaluate_dfthc_angle_words, symmetric_from_lower  # noqa: E402
+from dfthcsos.scoreinfra.reference import (  # noqa: E402
     ORBITALS,
     SYSTEM,
     UPPER_ENERGY,
@@ -197,8 +194,7 @@ class SubmissionInputs:
     def num_vectors(self) -> int:
         """``N + R*B``: the one-body rows followed by the two-body rows."""
         rank_r, bases_b, _ = self.w.shape
-        _out: int = self.num_orbitals + rank_r * bases_b
-        return _out
+        return self.num_orbitals + rank_r * bases_b
 
 
 def load_inputs(
@@ -722,11 +718,11 @@ __all__ = [
     "ERROR_1_THRESHOLD",
     "ERROR_2_THRESHOLD",
     "E_GAP_FLOOR",
+    "InvalidCircuits",
     "KEEP_BITS",
     "LAMBDA_FLOOR",
     "QUBIT_CAP",
     "SUBMISSION_FILE",
-    "InvalidCircuits",
     "SubmissionInputs",
     "angles_costs",
     "evaluate_circuits",

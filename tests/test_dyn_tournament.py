@@ -4,19 +4,33 @@ Additive only: this file plus apedp_dyn/dyn_tournament.py. adjudicate.py,
 stage_c, Adjudication semantics, and the informative-abstention pointer are
 untouched (see test_rmse_rel_is_audit_only).
 
-Pins OBSERVED live-trace behavior, not wished behavior. Deviations from the
-naive expectation table are recorded here as findings:
-  D1. C1 (ground truth) is NOT promoted at 3% on any rep: gate 4 rejects the
-      fitted truth on reps 0-1 (rmse_rel 0.24/0.13 vs auto tolerance), and on
-      rep 2 the over-parameterized C4 wins holdout outright (0.0416 < 0.0831)
-      with the trio inside tau -> MULTI_HYPOTHESIS. The firewall refuses to
-      promote; that refusal is the pinned behavior.
-  D2. C4/C8 reach adjudication only on rep 2; on reps 0-1 they die at gate 4.
-      Attribution is rep-dependent by design (noise-dependent layers), while
-      C5->gate1 and C6->gate3 are structural and rep-invariant.
-  D3. reps 0-1 end NO_VALID_CANDIDATE (zero gate-4 survivors).
+Pins what the trace has in every environment measured, and says what it does
+not. Until 2026-11-16 this file pinned the whole trace of one machine: C1, C4
+and C8 at gate 4 on reps 0-1 and at adjudication on rep 2. Those three sit
+near the gate-4 tolerance, where the layer a candidate ends at follows the
+optimizer's path through an unconverged fit, and the path follows the library
+build. Same code, same seeds, C1/C4/C8 only (g = gate 4, a = adjudication):
 
-A change in layer attribution fails even when the final status is unchanged.
+    recorded pin              rep0 g g g   rep1 g g g   rep2 a a a
+    numpy 2.1.3 scipy 1.14.1  rep0 g g g   rep1 g g g   rep2 g a g
+    numpy 2.2.6 scipy 1.15.3  rep0 g g g   rep1 g g g   rep2 g a g
+    numpy 2.4.6 scipy 1.17.1  rep0 g g g   rep1 g g g   rep2 g g a
+    numpy 2.5.x scipy 1.18.1  rep0 a a a   rep1 g g g   rep2 a a a
+
+The recorded pin reproduces under none of the four, so the two tests that
+carried it failed on every interpreter. The fitted truth's holdout error on
+rep 0 ranges from 0.085 to 0.344 of the observed RMS across them: finding D1
+of the earlier docstring, that gate 4 rejects the fitted truth at 3 % noise,
+is a statement about where one optimizer stopped.
+
+What all five agree on, and what is pinned here:
+  S1. C5 dies at gate 1 and C6 at gate 3 (structural), and C2, C3 and C7 miss
+      the gate-4 tolerance (by 6x, 6x and 1.27x) on every rep.
+  S2. No adversary is promoted on any rep. Every environment above promoted
+      nothing at all; the truth being promoted would not be a regression.
+  S3. The status is the one the survivor count implies.
+
+A change in S1 fails even when the final status is unchanged.
 """
 from __future__ import annotations
 
@@ -31,18 +45,13 @@ FROZEN_SLATE_HASH = "98ac77e181afc6cc06df382459abd6bcf9068735da67db8e39da1b42510
 
 pytestmark = pytest.mark.slow  # 8-candidate slate fits; ~85s
 
-EXPECTED_ATTRIBUTION = {
-    0: {"C1": "gate4", "C2": "gate4", "C3": "gate4", "C4": "gate4",
-        "C5": "gate1", "C6": "gate3", "C7": "gate4", "C8": "gate4"},
-    1: {"C1": "gate4", "C2": "gate4", "C3": "gate4", "C4": "gate4",
-        "C5": "gate1", "C6": "gate3", "C7": "gate4", "C8": "gate4"},
-    2: {"C1": "adjudication", "C2": "gate4", "C3": "gate4",
-        "C4": "adjudication", "C5": "gate1", "C6": "gate3",
-        "C7": "gate4", "C8": "adjudication"},
-}
-EXPECTED_STATUS = {0: "no_valid_candidate", 1: "no_valid_candidate",
-                   2: "multi_hypothesis"}
-EXPECTED_PROMOTED = {0: None, 1: None, 2: None}
+#: S1. Attribution that does not depend on which optimum a fit stopped at.
+STRUCTURAL_ATTRIBUTION = {"C2": "gate4", "C3": "gate4", "C5": "gate1", "C6": "gate3", "C7": "gate4"}
+#: The truth (C1) and the two adversaries close enough to it to share the
+#: gate-4 boundary. Where each ends is environment-dependent; see the module
+#: docstring for the five traces.
+BOUNDARY_CANDIDATES = ("C1", "C4", "C8")
+TRUTH = "C1"
 
 
 @pytest.fixture(scope="module")
@@ -63,11 +72,19 @@ class TestSlateImmutability:
 
 
 class TestLayerAttribution:
-    def test_attribution_map(self, traces):
-        for rep, expected in EXPECTED_ATTRIBUTION.items():
+    def test_structural_attribution_map(self, traces):
+        for rep in (0, 1, 2):
             rows = _by_rep(traces, rep)["rows"]
-            observed = {cid: r["eliminated_at"] for cid, r in rows.items()}
-            assert observed == expected, f"rep {rep}: {observed}"
+            assert set(rows) == set(STRUCTURAL_ATTRIBUTION) | set(BOUNDARY_CANDIDATES)
+            observed = {cid: rows[cid]["eliminated_at"] for cid in STRUCTURAL_ATTRIBUTION}
+            assert observed == STRUCTURAL_ATTRIBUTION, f"rep {rep}: {observed}"
+
+    def test_boundary_candidates_reach_the_holdout_and_no_adversary_passes_it(self, traces):
+        for rep in (0, 1, 2):
+            rows = _by_rep(traces, rep)["rows"]
+            for cid in BOUNDARY_CANDIDATES:
+                allowed = {"gate4", "adjudication"} | ({"promotion"} if cid == TRUTH else set())
+                assert rows[cid]["eliminated_at"] in allowed, (rep, cid, rows[cid])
 
     def test_structural_kills_rep_invariant(self, traces):
         for rep in (0, 1, 2):
@@ -79,11 +96,21 @@ class TestLayerAttribution:
 
 
 class TestPromotionSet:
-    def test_status_and_promotion(self, traces):
+    def test_no_adversary_is_promoted(self, traces):
         for rep in (0, 1, 2):
             tr = _by_rep(traces, rep)
-            assert tr["adjudication"] == EXPECTED_STATUS[rep], (rep, tr)
-            assert tr["promoted"] == EXPECTED_PROMOTED[rep], (rep, tr)
+            assert tr["promoted"] in (None, TRUTH), (rep, tr["promoted"])
+
+    def test_the_status_is_the_one_the_survivor_count_implies(self, traces):
+        for rep in (0, 1, 2):
+            tr = _by_rep(traces, rep)
+            reached = [c for c, r in tr["rows"].items()
+                       if r["eliminated_at"] in ("adjudication", "promotion")]
+            assert tr["n_survivors"] == len(reached), (rep, reached)
+            assert (tr["adjudication"] == "no_valid_candidate") is (not reached), (rep, tr["adjudication"])
+            assert (tr["adjudication"] == "unique_support") is (tr["promoted"] is not None)
+            if tr["promoted"] is not None:
+                assert tr["rows"][tr["promoted"]]["eliminated_at"] == "promotion"
 
 
 class TestRmseRel:

@@ -1808,17 +1808,29 @@ required). Status: §85 DONE — gate frozen, boundary cases labelled.
 
 ## 76. H-A/E5 coupling: persistence absorbs the rotation (case study, BTC)
 
+> **Correction (FLAW-A01, 2026-10-21; applied to this section 2026-11-16).**
+> The sequence first recorded here, H-RV,H-RV,H-A,H-P×8 with H-A rank-1 once,
+> was produced by train blocks that read forward through the five-day shift
+> in `_d5`. With the leak removed the sequence is H-RV,H-RV,H-A,H-A,H-A,H-RV×6:
+> H-A is rank-1 at 3 of 11 origins, and the plurality is H-RV, not H-P — H-P
+> is never rank-1. The re-derivation table in §77's correction block already
+> carries the post-fix counts (H-A# 3/3/5 for BTC/ETH/SOL), and
+> `tests/test_dyn_ha_coupling.py` pins both. The class, the sub-floor margins
+> and the absence of any promotion are unchanged; answers (1) and (3) below
+> are restated. The section title and its "persistence absorbs the rotation"
+> reading described the leaked sequence and are withdrawn: with the leak
+> removed, persistence is never rank-1 on BTC, so what the quad shows is a
+> sub-floor rotation between the two volume descriptions.
+
 Frozen quad (H-A composite, rankV, logV, persistence-only) on d5 blocks,
-11 origins: rank H-RV,H-RV,H-A,H-P×8 — H-A rank-1 once (Oct-22);
-H-P modal rank-1 from Nov-22 without a single promotion; class
+11 origins: rank H-RV,H-RV,H-A,H-A,H-A,H-RV×6 — H-A rank-1 three times
+(Oct-22 to Dec-22); H-RV modal rank-1 without a single promotion; class
 stable-ambiguous (rotations sub-floor); cumulative margins ≤0.0006.
-Four answers: (1) H-A rank-1 persistence 1/11; (2) all margins
-sub-floor; (3) early rotation settles into H-P plurality, not gated
+Four answers: (1) H-A rank-1 persistence 3/11; (2) all margins
+sub-floor; (3) the early rotation returns to an H-RV plurality, not gated
 drift; (4) zero consolidation. Interpretation (three-claim split):
 predictive association — some support; unique structural mechanism —
-not established; stable cross-time mechanism — challenged. Notable:
-trio-drifting vs quad-stable — adding persistence absorbs the apparent
-volume-model rotation into stable persistence-plurality. H-A reads as
+not established; stable cross-time mechanism — challenged. H-A reads as
 one observationally-similar description among several, not a
 consolidating law. Suite 4/4, ruff clean, no performance claims.
 Status: H-A COUPLING DONE.

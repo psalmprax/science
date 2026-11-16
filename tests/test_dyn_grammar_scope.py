@@ -83,7 +83,15 @@ class TestEnumerationScaling:
         allc = enumerate_coupled(required=("u",), optional=("x", "v", "xr", "dxr"),
                                  max_terms=4)
         assert len(allc) == 225
-        assert len(prune_admissible(prob, allc)) == 64
+        # Gate 1 removes nothing on this slate. The 64 pinned here until
+        # 2026-11-16 was a formatting defect, not dimensional filtering: the
+        # coefficient of `dxr` (XR - X) was applied to its first addend only,
+        # so every candidate carrying the coupling term was rejected as a
+        # length added to an acceleration, and the 64 "survivors" were exactly
+        # the slates without it. Commit 99f15f2 (2026-11-06) parenthesised the
+        # operand and docs/SCAFFOLD_INVENTORY.md records 225 of 225; this
+        # assertion was not updated with it.
+        assert len(prune_admissible(prob, allc)) == 225
 
 
 class TestLibraryProposer:

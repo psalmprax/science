@@ -59,6 +59,8 @@ from apedp.model_synthesis_helpers import (  # noqa: F401 - re-exported, not use
     _W_PERIODS_HI,
     _W_PERIODS_LO,
     _XSCALE_ROLES,
+    _Y_NORMALIZATION_ABOVE,
+    _Y_NORMALIZATION_BELOW,
     MIN_RESOLVABLE_REGIME_SAMPLES,
     SynthesisDiagnostics,
     SynthesizedModel,
@@ -67,8 +69,10 @@ from apedp.model_synthesis_helpers import (  # noqa: F401 - re-exported, not use
     _bic_rerank,
     _classify_adversarial,
     _input_normalization_scale,
+    _parsimony_tiebreak,
     _regime_identifiability,
     _robust_noise_floor,
+    _stage_d_x_scales,
     detect_regimes,
     exp_templates,
     s2_templates,
@@ -289,12 +293,18 @@ class AutonomousModelSynthesizer:
         return None
 
     def refine_stage_d(
-        self,
-        model: SynthesizedModel,
-        x_train: np.ndarray,
-        y_train: np.ndarray,
-        x_val: np.ndarray,
-        y_val: np.ndarray,
+        self, model: SynthesizedModel, x_train: np.ndarray, y_train: np.ndarray,
+        x_val: np.ndarray, y_val: np.ndarray,
+    ) -> SynthesizedModel | None:
+        """Stage D in each unit-free x scale; the best accepted refinement is kept."""
+        found = [self._refine_stage_d_at(model, x_train, y_train, x_val, y_val, scale)
+                 for scale in _stage_d_x_scales(x_train)]
+        accepted = [m for m in found if m is not None]
+        return min(accepted, key=lambda m: m.val_mse) if accepted else None
+
+    def _refine_stage_d_at(
+        self, model: SynthesizedModel, x_train: np.ndarray, y_train: np.ndarray,
+        x_val: np.ndarray, y_val: np.ndarray, x_scale_all: float,
     ) -> SynthesizedModel | None:
         """Stage D: continuous refinement of structural exponents/frequency.
 
@@ -320,19 +330,10 @@ class AutonomousModelSynthesizer:
         a_min = min(1e-4, 0.01 * y_max) if y_max > 0 else 1e-6
 
         forms: list[tuple[str, tuple[str, ...], dict[str, tuple[float, float]], Any, list[float]]]
-        # Global input normalization: optimize on x_tilde = x / x_scale so
-        # amplitudes AND rates live where the y-scale bounds are meaningful
-        # (e.g. A=1e5 or B=1e7 at x~1e-4 would otherwise sit 1000x outside
-        # their bounds and rail). Stored values map back per-parameter as
-        # P = P_tilde / x_scale**e (see _XSCALE_ROLES). x_scale == 1.0 is an
-        # exact no-op; y values are never rescaled so all MSEs stay comparable.
-        x_scale_all = 1.0
-        _xam = float(np.max(np.abs(x_train))) if len(x_train) > 0 else 1.0
-        # Normalize by the observed input span so a change of x units leaves
-        # the optimizer's domain unchanged. The form-specific map-back below
-        # restores parameters to the caller's units.
-        if np.isfinite(_xam) and _xam > 0.0:
-            x_scale_all = _xam
+        # Optimize on x_tilde = x / x_scale_all (see `_stage_d_x_scales`). Stored
+        # values map back per-parameter as P = P_tilde / x_scale**e (see
+        # _XSCALE_ROLES); x_scale == 1.0 is an exact no-op, and y is never
+        # rescaled here, so all MSEs stay comparable.
         x_train_n = x_train if x_scale_all == 1.0 else x_train / x_scale_all
         x_val_n = x_val if x_scale_all == 1.0 else x_val / x_scale_all
         with np.errstate(all="ignore"):
@@ -706,15 +707,32 @@ class AutonomousModelSynthesizer:
         x_tr = x_train if x_scale == 1.0 else x_train / x_scale
         x_va = x_val if x_scale == 1.0 else x_val / x_scale
 
-        # y-scale normalization (sub-unity-y regime only): L-BFGS-B's absolute
-        # tolerances misbehave when objectives live at ~1e-12 scales (observed:
-        # ABNORMAL line-search stop 150x above the noise floor at y~1e-6, while
-        # the y-normalized problem converges to true parameters). y_scale == 1.0
-        # is an exact no-op. Stored amplitudes map back per y-linearity role;
-        # reported MSEs are recomputed on raw data and consistency-verified.
+        # y-scale normalization, outside the band where the raw problem is
+        # measured to be sound. y_scale == 1.0 is an exact no-op. Stored
+        # amplitudes map back per y-linearity role; reported MSEs are
+        # recomputed on raw data and consistency-verified.
+        #
+        # Below the band: L-BFGS-B's absolute tolerances misbehave when
+        # objectives live at ~1e-12 scales (observed: ABNORMAL line-search stop
+        # 150x above the noise floor at y~1e-6, while the y-normalized problem
+        # converges to true parameters).
+        #
+        # Above the band: an amplitude that starts at median(|y|) shares a
+        # parameter vector with rates of order 1, so the objective's gradient
+        # in the amplitude is smaller than its gradient in the rates by the
+        # factor y itself. The optimizer then moves the rates only, the
+        # amplitude stays at its start value, and the rate runs to its lower
+        # bound to compensate. Measured on 2.5*x**1.5/(1 + 0.8*x**1.5) with the
+        # 24 rational_transition templates: identical to unit scale through
+        # y_max = 2.8e4, 4 of 24 degraded at 2.8e5, all 24 failed at 2.8e6 and
+        # above (best validation error 0.58 of the variance against 1.6e-5),
+        # so the family vanished from the ranking and
+        # tests/test_scale_invariance.py failed at 1e9.
         y_scale_n = 1.0
         _ysm = float(np.max(np.abs(y_train))) if len(y_train) > 0 else 1.0
-        if np.isfinite(_ysm) and 0.0 < _ysm < 1e-2:
+        if np.isfinite(_ysm) and (
+            0.0 < _ysm < _Y_NORMALIZATION_BELOW or _ysm > _Y_NORMALIZATION_ABOVE
+        ):
             y_scale_n = _ysm
         y_tr = y_train if y_scale_n == 1.0 else y_train / y_scale_n
         y_va = y_val if y_scale_n == 1.0 else y_val / y_scale_n
@@ -1179,48 +1197,19 @@ class AutonomousModelSynthesizer:
         # 1c. Parsimony tiebreak (Occam) with noise-calibrated margin: among
         # validation-tied candidates prefer strictly fewer parameters, provided
         # near-OOD (when available) is not degraded >1.5x *beyond what the noise
-        # floor can resolve*. Both the margin and the veto are calibrated to the
-        # measured train noise floor (best_train_mse/n_val): differences below
-        # it are not evidence. The margin falls back to a 15% relative value when
-        # the noise estimate is degenerate (near-perfect train fit). The veto
-        # floor is _NEAR_OOD_VETO_FLOOR; 0.0 is the bare ratio this replaces.
-        # Deterministic: val-ordered scan, first qualifier wins.
+        # floor can resolve*. The rule and its calibration are
+        # `_parsimony_tiebreak`; the veto floor is _NEAR_OOD_VETO_FLOOR, read
+        # here at call time so that 0.0 still restores the bare ratio.
         if fitted_models:
-            best = fitted_models[0]
-            noise_floor = best.train_mse / max(len(y_val), 1)
-            tie_margin = max(0.15 * best.val_mse, noise_floor)
-            near_ood_floor = (
-                float(_NEAR_OOD_VETO_FLOOR)
-                if isinstance(_NEAR_OOD_VETO_FLOOR, (int, float))
-                else noise_floor
+            best_idx = _parsimony_tiebreak(
+                fitted_models,
+                n_val=len(y_val),
+                promote_allowed=promote_allowed,
+                near_ood_veto_floor=_NEAR_OOD_VETO_FLOOR,
+                complexity=self._model_complexity,
             )
-            best_idx = 0
-            best_comp = self._model_complexity(best)
-            for i in range(1, len(fitted_models)):
-                m = fitted_models[i]
-                if m.val_mse - best.val_mse > tie_margin:
-                    break
-                m_comp = self._model_complexity(m)
-
-                ood_superior = (
-                    promote_allowed
-                    and best.near_ood_mse is not None and m.near_ood_mse is not None
-                    and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
-                    and m.near_ood_mse < best.near_ood_mse * 0.5
-                )
-
-                if not ood_superior and m_comp >= best_comp:
-                    continue
-                if (best.near_ood_mse is not None and m.near_ood_mse is not None
-                        and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
-                        and m.near_ood_mse > best.near_ood_mse * 1.5 + near_ood_floor):
-                    continue
-                best_idx = i
-                best = m
-                best_comp = m_comp
             if best_idx != 0:
-                fitted_models.pop(best_idx)
-                fitted_models.insert(0, best)
+                fitted_models.insert(0, fitted_models.pop(best_idx))
 
         # 1d. BIC re-rank over the top-K (opt-in; off by default).
         #

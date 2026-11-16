@@ -63,8 +63,23 @@ def _ols_rmse(col, y):
 
 def test_D_collinear_pair_tied():
     y = X**2 + E
-    cls = near_tie_class([_ols_rmse(X**2, y), _ols_rmse((2 * X) ** 2, y)], tol=1e-9)
-    assert cls == [[0, 1]]
+    rmses = [_ols_rmse(X**2, y), _ols_rmse((2 * X) ** 2, y)]
+    cls = near_tie_class(rmses, tol=1e-9)
+    # One class holding both columns is the contract. The order inside it is
+    # not: the two fits agree to one unit in the last place (measured
+    # 1.4e-17 apart on numpy 2.5 / Python 3.13) and which of them is smaller
+    # belongs to the LAPACK build, so `[[0, 1]]` passed on one machine and
+    # `[[1, 0]]` came back on another.
+    assert [sorted(members) for members in cls] == [[0, 1]]
+    assert abs(rmses[0] - rmses[1]) < 1e-12, "the pair is tied by construction"
+
+
+def test_D_tie_class_keeps_a_distinct_rival_out():
+    """Order-insensitivity above must not hide a class that is too wide."""
+    y = X**2 + E
+    rmses = [_ols_rmse(X**2, y), _ols_rmse((2 * X) ** 2, y), _ols_rmse(X**3, y)]
+    cls = near_tie_class(rmses, tol=1e-9)
+    assert [sorted(members) for members in cls] == [[0, 1], [2]]
 
 
 def _ols_fn(cols):

@@ -197,7 +197,12 @@ def test_stage_five_refuses_a_universe_chosen_with_hindsight(
     rng = np.random.default_rng(1)
     panel = pd.DataFrame({"observation_date": pd.date_range("2024-01-02", periods=60, freq="B")})
     for asset in ("AAA", "BBB"):
-        panel[f"{asset}_CLOSE"] = rng.lognormal(size=60)
+        # A price path, not independent draws: commit 101b9c3 made the audit
+        # flag single-bar moves of 4x as likely unadjusted splits, and
+        # independent lognormal levels move that much every few bars. The
+        # hindsight check is what this test is about, so the prices should give
+        # the audit nothing else to object to.
+        panel[f"{asset}_CLOSE"] = 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, size=60)))
         panel[f"{asset}_VOL"] = rng.lognormal(size=60)
 
     in_advance = audit_universe(panel, selected_as_of="2023-12-29")

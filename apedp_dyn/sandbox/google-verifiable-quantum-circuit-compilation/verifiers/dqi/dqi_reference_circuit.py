@@ -25,9 +25,7 @@ Usage (writes a Benchmark II submission for `verify_submission_dqi.py`):
 from __future__ import annotations
 
 import argparse
-import functools
-from collections.abc import Sequence
-from typing import Any
+from typing import Sequence
 
 import kickmix as km
 
@@ -35,7 +33,7 @@ import kickmix as km
 _UNREACHABLE = 1 << 63
 
 
-def _active(cursor: km.UnaryIterationCursor, address_value: int, limit: int) -> Any:
+def _active(cursor: km.UnaryIterationCursor, address_value: int, limit: int):
     """Moves `cursor` to `address_value` and returns `control and (x == address_value)`.
 
     When `address_value > limit` (outside the caller's upper bound `x <= limit`),
@@ -50,7 +48,7 @@ def _active(cursor: km.UnaryIterationCursor, address_value: int, limit: int) -> 
 
 
 def _xor_threshold(builder: km.CircuitBuilder, cursor: km.UnaryIterationCursor,
-                   limit: int, target: km.array, control: km.array, value: int, *,
+                   limit: int, target, control, value: int, *,
                    at_least: bool, lowest: int = 0) -> None:
     """Initializes or clears `target ^= control and (x >= value)` (or `x < value`)."""
     if value > limit:
@@ -66,13 +64,13 @@ def _xor_threshold(builder: km.CircuitBuilder, cursor: km.UnaryIterationCursor,
 class ProosAndZalkaDecoder:
     """Builds the reversible Reed-Solomon MBUC decoder circuit (arXiv:2510.10967)."""
 
-    def __init__(self: Any, n_syndromes: int, field: km.GF2Field) -> None:
+    def __init__(self, n_syndromes: int, field: km.GF2Field):
         if n_syndromes < 2:
             raise ValueError(f'n_syndromes must be at least 2, got {n_syndromes}.')
         self.n_syndromes = n_syndromes
         self.field = field
 
-    def build_syndrome_decoding_mbuc(self: Any, builder: km.CircuitBuilder, *,
+    def build_syndrome_decoding_mbuc(self, builder: km.CircuitBuilder, *,
                                      syndromes: Sequence[km.array],
                                      error_mbuc: Sequence[km.array],
                                      n_iters: int) -> None:
@@ -139,7 +137,7 @@ class ProosAndZalkaDecoder:
         for reg in (halting_counter, counter, flag, n_q, n_b, n_a, n_B, n_A, *reg_a[:3], *reg_b):
             builder.free(reg)
 
-    def _initial_shift_loop(self: Any, builder: km.CircuitBuilder,
+    def _initial_shift_loop(self, builder: km.CircuitBuilder,
                             reg_a: Sequence[km.array], n_A: km.array, *,
                             is_adjoint: bool) -> None:
         """Left-aligns the syndrome polynomial in `reg_a` and updates `n_A`."""
@@ -165,10 +163,10 @@ class ProosAndZalkaDecoder:
                     builder.flip_if_less_than(n_A, n - step, target=ctrl)
                 builder.free(ctrl)
 
-    def _synchronized_eea(self: Any, builder: km.CircuitBuilder,
+    def _synchronized_eea(self, builder: km.CircuitBuilder,
                           reg_a: Sequence[km.array], reg_b: Sequence[km.array],
                           n_A: km.array, n_B: km.array, n_a: km.array,
-                          n_b: km.array, n_q: km.array, flag: km.array,
+                          n_b: km.array, n_q: km.array, flag,
                           counter: km.array, halting_counter: km.array, *,
                           n_iters: int, is_adjoint: bool) -> None:
         """Runs `n_iters` steps of the reversible synchronized EEA."""
@@ -188,20 +186,18 @@ class ProosAndZalkaDecoder:
                 builder.flip_if_equal(halting_counter, 0, target=is_hc_zero)
                 ctrl = self._counter_controls(builder, counter, is_c3, is_hc_zero)
 
-                # functools.partial, not a lambda: each step must bind THIS
-                # iteration's ctrl/it, and a lambda with default arguments
-                # hides the binding from the type checker.
                 steps = [
-                    functools.partial(self._update_flag, builder, reg_b, n_A, n_B, n_a, n_b,
-                                      n_q, flag, ctrl),
-                    functools.partial(self._multiply_and_add_or_sub, builder, reg_a, reg_b,
-                                      n_A, n_a, n_q, ctrl, it, is_adjoint=is_adjoint),
-                    functools.partial(self._shift_b_array_right, builder, reg_b, n_B, n_b, flag,
-                                      ctrl, it, is_adjoint=is_adjoint),
-                    functools.partial(self._update_metadata, builder, n_B, n_b, n_q, flag, ctrl,
-                                      is_adjoint=is_adjoint),
-                    functools.partial(self._swap_a_and_b, builder, reg_a, reg_b, n_A, n_B,
-                                      n_a, n_b, flag, ctrl),
+                    lambda: self._update_flag(builder, reg_b, n_A, n_B, n_a, n_b, n_q,
+                                              flag, ctrl),
+                    lambda: self._multiply_and_add_or_sub(builder, reg_a, reg_b, n_A, n_a,
+                                                          n_q, ctrl, it,
+                                                          is_adjoint=is_adjoint),
+                    lambda: self._shift_b_array_right(builder, reg_b, n_B, n_b, flag, ctrl,
+                                                      it, is_adjoint=is_adjoint),
+                    lambda: self._update_metadata(builder, n_B, n_b, n_q, flag, ctrl,
+                                                  is_adjoint=is_adjoint),
+                    lambda: self._swap_a_and_b(builder, reg_a, reg_b, n_A, n_B, n_a, n_b,
+                                               flag, ctrl),
                 ]
                 for step in (reversed(steps) if is_adjoint else steps):
                     step()
@@ -219,8 +215,8 @@ class ProosAndZalkaDecoder:
                     self._update_counter(builder, counter, flag, is_adjoint=False)
 
     @staticmethod
-    def _counter_controls(builder: km.CircuitBuilder, counter: km.array, is_c3: km.array,
-                          is_hc_zero: km.array) -> km.array:
+    def _counter_controls(builder: km.CircuitBuilder, counter: km.array, is_c3,
+                          is_hc_zero) -> km.array:
         """One-hot decodes `counter == 0..3` gated by `is_hc_zero` using 3 Toffolis."""
         ctrl = builder.alloc_qubits(4)
         c0, c1, c2, c3 = ctrl
@@ -231,8 +227,8 @@ class ProosAndZalkaDecoder:
         return ctrl
 
     @staticmethod
-    def _del_counter_controls(builder: km.CircuitBuilder, counter: km.array, is_c3: km.array,
-                              is_hc_zero: km.array, ctrl: km.array) -> None:
+    def _del_counter_controls(builder: km.CircuitBuilder, counter: km.array, is_c3,
+                              is_hc_zero, ctrl: km.array) -> None:
         c0, c1, c2, c3 = ctrl
         builder.cx(km.array([c2, c3]), km.array([c0, c1]))
         builder.del_and(c0, counter[1], c2)
@@ -241,7 +237,7 @@ class ProosAndZalkaDecoder:
         builder.free(ctrl)
 
     @staticmethod
-    def _update_counter(builder: km.CircuitBuilder, counter: km.array, flag: km.array, *,
+    def _update_counter(builder: km.CircuitBuilder, counter: km.array, flag, *,
                         is_adjoint: bool) -> None:
         """Increments the 2-bit `counter` mod 4 when `flag` is set."""
         if is_adjoint:
@@ -251,9 +247,9 @@ class ProosAndZalkaDecoder:
             builder.ccx(flag, counter[0], counter[1])
             builder.cx(flag, counter[0])
 
-    def _update_flag(self: Any, builder: km.CircuitBuilder, reg_b: Sequence[km.array],
+    def _update_flag(self, builder: km.CircuitBuilder, reg_b: Sequence[km.array],
                      n_A: km.array, n_B: km.array, n_a: km.array, n_b: km.array,
-                     n_q: km.array, flag: km.array, ctrl: tuple[km.array, km.array, km.array, km.array]) -> None:
+                     n_q: km.array, flag, ctrl) -> None:
         """Toggles `flag` when the active EEA sub-step reaches its termination condition."""
         with builder.mark('update_flag'):
             c0, c1, c2, c3 = ctrl
@@ -292,16 +288,16 @@ class ProosAndZalkaDecoder:
 
             builder.free(aux)
 
-    def _multiply_and_add_or_sub(self: Any, builder: km.CircuitBuilder,
+    def _multiply_and_add_or_sub(self, builder: km.CircuitBuilder,
                                  reg_a: Sequence[km.array], reg_b: Sequence[km.array],
                                  n_A: km.array, n_a: km.array, n_q: km.array,
-                                 ctrl: tuple[km.array, km.array, km.array, km.array], it: int, *, is_adjoint: bool) -> None:
+                                 ctrl, it: int, *, is_adjoint: bool) -> None:
         """Computes the leading-coefficient ratio `q_i` and updates `reg_b ^= q_i * reg_a`."""
         c0_hc, _, _, c3_hc = ctrl
         gf = self.field
         m = len(reg_b)
 
-        def accumulate_quotient(index: int, control: km.array) -> None:
+        def accumulate_quotient(index: int, control) -> None:
             with builder.mark('quotient_div'):
                 ratio, scaffold = builder.init_gf2_div_with_scaffold(
                     reg_b[index], reg_a[index], field=gf)
@@ -366,8 +362,6 @@ class ProosAndZalkaDecoder:
                             builder.ixor_gf2_mul(q_i, reg_a[i], target=reg_b[i], field=gf,
                                                  control=mul)
 
-                    assert prev is not None
-
                     endpoint(prev)
                     builder.free(mul)
 
@@ -381,10 +375,9 @@ class ProosAndZalkaDecoder:
             accumulate_quotient(trailing, c0_hc if is_adjoint else c3_hc)
             builder.free(q_i)
 
-    def _shift_b_array_right(self: Any, builder: km.CircuitBuilder,
+    def _shift_b_array_right(self, builder: km.CircuitBuilder,
                              reg_b: Sequence[km.array], n_B: km.array, n_b: km.array,
-                             flag: km.array, ctrl: tuple[km.array, km.array, km.array, km.array], it: int, *,
-                             is_adjoint: bool) -> None:
+                             flag, ctrl, it: int, *, is_adjoint: bool) -> None:
         """Shifts the active slice of `reg_b` by one slot."""
         with builder.mark('shift_b_array_right'):
             c0_hc, c1_hc, c2_hc, c3_hc = ctrl
@@ -433,8 +426,6 @@ class ProosAndZalkaDecoder:
                     prev = i
                     builder.cswap(do_shift, reg_b[i - 1], reg_b[i])
 
-                assert prev is not None
-
                 endpoint(prev)
                 builder.free(do_shift)
 
@@ -447,8 +438,7 @@ class ProosAndZalkaDecoder:
 
     @staticmethod
     def _update_metadata(builder: km.CircuitBuilder, n_B: km.array, n_b: km.array,
-                         n_q: km.array, flag: km.array, ctrl: tuple[km.array, km.array, km.array, km.array], *,
-                         is_adjoint: bool) -> None:
+                         n_q: km.array, flag, ctrl, *, is_adjoint: bool) -> None:
         """Updates the polynomial degree registers `(n_B, n_b, n_q)`."""
         with builder.mark('update_metadata'):
             c0_hc, c1_hc, c2_hc, c3_hc = ctrl
@@ -477,8 +467,7 @@ class ProosAndZalkaDecoder:
     @staticmethod
     def _swap_a_and_b(builder: km.CircuitBuilder, reg_a: Sequence[km.array],
                       reg_b: Sequence[km.array], n_A: km.array, n_B: km.array,
-                      n_a: km.array, n_b: km.array, flag: km.array,
-                      ctrl: tuple[km.array, km.array, km.array, km.array]) -> None:
+                      n_a: km.array, n_b: km.array, flag, ctrl) -> None:
         """Swaps `(reg_a, n_A, n_a)` and `(reg_b, n_B, n_b)` at the end of a division round."""
         with builder.mark('swap_a_and_b'):
             c3_hc = ctrl[3]
@@ -493,7 +482,7 @@ class ProosAndZalkaDecoder:
     @staticmethod
     def _update_halting_counter(builder: km.CircuitBuilder, n_A: km.array,
                                 n_B: km.array, n_b: km.array,
-                                halting_counter: km.array, flag: km.array, is_c3: km.array, *,
+                                halting_counter: km.array, flag, is_c3, *,
                                 is_adjoint: bool) -> None:
         """Increments `halting_counter` once the EEA stopping criterion holds."""
         with builder.mark('update_halting_counter'):
@@ -517,7 +506,7 @@ class ProosAndZalkaDecoder:
             builder.del_and(is_c3, flag, ctrl)
             builder.free(work)
 
-    def _pre_align_reg_b(self: Any, builder: km.CircuitBuilder, reg_b: Sequence[km.array],
+    def _pre_align_reg_b(self, builder: km.CircuitBuilder, reg_b: Sequence[km.array],
                          n_b: km.array, n_B: km.array, *, is_adjoint: bool) -> None:
         """Rotates the evaluator slice of `reg_b` by `n_B - n_b` into fixed indices."""
         omega = reg_b[len(reg_b) // 2 + 1:]
@@ -530,7 +519,7 @@ class ProosAndZalkaDecoder:
                 builder.right_rotate(lane, n_b)
                 builder.left_rotate(lane, n_B)
 
-    def _chien_search_and_forney_mbuc(self: Any, builder: km.CircuitBuilder,
+    def _chien_search_and_forney_mbuc(self, builder: km.CircuitBuilder,
                                       reg_b: Sequence[km.array],
                                       error_mbuc: Sequence[km.array],
                                       n_b: km.array, n_B: km.array) -> None:

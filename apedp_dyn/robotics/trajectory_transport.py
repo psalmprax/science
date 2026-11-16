@@ -47,21 +47,25 @@ class NavigationResult:
 
 
 def exact_unicycle_step(pose: np.ndarray, linear_velocity: float, angular_velocity: float, dt: float) -> np.ndarray:
-    """Exact integration of constant ``(v, omega)`` over ``dt`` (arc or straight)."""
+    """Exact integration of constant ``(v, omega)`` over ``dt`` without small-omega cancellation."""
     x, y, theta = pose
-    if abs(angular_velocity) < 1e-12:
-        _out: np.ndarray = np.array([x + dt * linear_velocity * np.cos(theta), y + dt * linear_velocity * np.sin(theta), theta])
-        return _out
-    theta_next = theta + angular_velocity * dt
-    radius = linear_velocity / angular_velocity
-    _out_57: np.ndarray = np.array(
+    dtheta = float(angular_velocity) * float(dt)
+    half_dtheta = 0.5 * dtheta
+    if abs(half_dtheta) < 1e-4:
+        h2 = half_dtheta * half_dtheta
+        sinc_half = 1.0 - h2 / 6.0 + (h2 * h2) / 120.0
+    else:
+        sinc_half = float(np.sin(half_dtheta) / half_dtheta)
+    theta_mid = float(theta) + half_dtheta
+    arc_chord = float(linear_velocity) * float(dt) * sinc_half
+    _out: np.ndarray = np.array(
         [
-            x + radius * (np.sin(theta_next) - np.sin(theta)),
-            y - radius * (np.cos(theta_next) - np.cos(theta)),
-            theta_next,
+            float(x) + arc_chord * np.cos(theta_mid),
+            float(y) + arc_chord * np.sin(theta_mid),
+            float(theta) + dtheta,
         ]
     )
-    return _out_57
+    return _out
 
 
 def simulate_unicycle_exact(
