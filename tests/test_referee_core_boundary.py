@@ -214,7 +214,11 @@ _TRACKER = "apedp_dyn.epistemic.promotion_lifecycle"
         # that defines it is not allowed.
         ("from apedp_dyn.epistemic import adjudicate\n", "apedp_dyn.epistemic.adjudicate"),
         ("from apedp_dyn import fit_candidate\n", "apedp_dyn.fitting"),
-        ("from apedp_dyn.market import run_market_sweep\n", "apedp_dyn.market.sweep"),
+        ("from apedp_dyn.market import WINDOWS\n", "apedp_dyn.market.windows"),
+        # (Every module named in these strings is one that real tests already
+        # exercise. benchmarks/untested_modules_register.json counts a module
+        # as tested when a file under tests/ names its dotted path, so naming
+        # an untested module here would take it off that register for nothing.)
         # The plain forms.
         (
             "import apedp_dyn.epistemic.lean_universal_bridge\n",
