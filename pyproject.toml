@@ -127,7 +127,18 @@ line-length = 100
 # vendors Qualtran under this directory. Linting it would report thousands of
 # findings whose fix belongs upstream, and editing it would invalidate the
 # pinned .so build.
-extend-exclude = ["apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src"]
+extend-exclude = [
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src",
+    # The competition's official verifiers. Six records under
+    # benchmarks/quantum_compilation/ pin the bytes of
+    # verifiers/dqi/verify_submission_dqi.py, and
+    # docs/DQI_OFFICIAL_COMPATIBILITY.md rests on "every scoring line
+    # unmodified". The 2026-11-08 lint and type burn-down reformatted and
+    # annotated these files, which broke those pins while leaving the gates
+    # green. They are restored to the measured bytes and are not ours to
+    # restyle: a finding here is fixed upstream or not at all.
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers",
+]
 
 [tool.ruff.lint]
 # `# noqa: BLE001 - <reason>` is read by two tools. Ruff reads it as a
@@ -239,6 +250,9 @@ follow_imports = "skip"
 exclude = [
     "neural_discovery/",
     "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/",
+    # The competition's official verifiers: pinned byte-for-byte by benchmark
+    # records, so annotating them is not an option (see [tool.ruff] above).
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/",
 ]
 
 # The web stack ships py.typed; follow it so FastAPI decorators and

@@ -30,24 +30,23 @@ kit's apart from their comment lines.
 
 from __future__ import annotations
 
-import sys
 from collections.abc import Sequence
 from math import ceil
 from operator import index
 from pathlib import Path
+import sys
 from typing import Any
 
+import kickmix as km
 import numpy as np
 import numpy.typing as npt
-
-import kickmix as km
 
 # Development shim: allow `python dfthcsos/example_submission/angle_k_reference_circuit.py` without installing.
 _REPOSITORY_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPOSITORY_ROOT not in sys.path:
     sys.path.insert(0, _REPOSITORY_ROOT)
 
-from dfthcsos.scoreinfra.circuits import (
+from dfthcsos.scoreinfra.circuits import (  # noqa: E402
     SELECTION_REGISTER,
     circuit_costs,
     kmb_path,
@@ -167,7 +166,7 @@ def write_kmx_family(
     family_path = kmb_path if format == "kmb" else kmx_path
     directory = Path(directory)
     paths = [family_path(directory, k) for k in range(len(circuits))]
-    stale: list[Path] = []
+    stale = []
     while family_path(directory, len(paths) + len(stale)).is_file():
         stale.append(family_path(directory, len(paths) + len(stale)))
     existing = [path for path in paths + stale if path.exists()]
@@ -176,7 +175,7 @@ def write_kmx_family(
     directory.mkdir(parents=True, exist_ok=True)
     for path in stale:
         path.unlink()
-    for k, (path, circuit) in enumerate(zip(paths, circuits, strict=False)):
+    for k, (path, circuit) in enumerate(zip(paths, circuits)):
         if format == "kmb":
             circuit.to_file(path, format="kmb")
         else:
@@ -223,7 +222,7 @@ def main() -> None:
     args = parser.parse_args()
     circuits = build_angle_k_family(load_angle_words(args.angle_words), args.brot, args.batch_size)
     paths = write_kmx_family(circuits, args.output_directory, format=args.format, overwrite=args.overwrite)
-    for path, costs in zip(paths, circuit_costs(circuits), strict=False):
+    for path, costs in zip(paths, circuit_costs(circuits)):
         print(f"{path}: {costs['num_qubits']} qubits, max_magic {costs['max_magic']}")
 
 

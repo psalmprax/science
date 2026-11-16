@@ -30,9 +30,8 @@ import dataclasses
 import math
 from fractions import Fraction
 
-import numpy as np
-
 import kickmix as km
+import numpy as np
 
 # Cubic coefficients of the paper for 1/sqrt(x) on [1, 1.5] (`A`, around 1) and
 # [1.5, 2] (`B`, around 1.5), with alternating signs supplied by the circuit.
@@ -84,8 +83,7 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
         raise ValueError('x must lie in [1, 2^(width - 1)).')
 
     def bit(v: np.ndarray, i: int) -> np.ndarray:
-        _out: np.ndarray = (v >> i) & 1
-        return _out
+        return (v >> i) & 1
 
     def product(rows: list[tuple[np.ndarray, int]], operand: np.ndarray, out_bits: int,
                 operand_bits: int, limit: int) -> np.ndarray:
@@ -96,8 +94,7 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
             acc += ctl * (operand << e if e >= 0 else operand >> -e)
         if (acc >= 2**limit).any():
             raise OverflowError('Intermediate register overflow.')
-        _out: np.ndarray = acc
-        return _out
+        return acc
 
     # 1. Normalize: s leading zero pairs, M = x_norm / 2^(width - 2) in [1, 4).
     s = (width - (np.floor(np.log2(xs)).astype(np.int64) + 1)) // 2
@@ -120,23 +117,21 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
     for k in range(1, wc + 1):
         if 2 * k <= wsq:
             square += y[k] << (wsq - 2 * k)
-        for m in range(k + 1, wc + 1):
-            if k + m - 1 <= wsq:
-                square += (y[k] & y[m]) << (wsq - (k + m - 1))
+        for l in range(k + 1, wc + 1):
+            if k + l - 1 <= wsq:
+                square += (y[k] & y[l]) << (wsq - (k + l - 1))
     m_rows = [(bit(x_norm, i), i - width + 2) for i in range(width)]
     z = product(m_rows, square, wz, wsq, wz + 2)
     correction = (3 << wz) - z
     p = product([(y[k], -k) for k in range(1, wc + 1)], correction, wp, wz, wp + 1)
-    _out: np.ndarray = p << s
-    return _out
+    return p << s
 
 
 def relative_error(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
     """`|y1 / 2^F - 1 / sqrt(x)| sqrt(x)` of the model for each `x` in `xs`."""
     exact = 1 / np.sqrt(np.asarray(xs, dtype=np.float64))
     approx = fixed_point_model(n_p, prec, xs) / 2.0**prec.output_bits(n_p)
-    _out: np.ndarray = np.abs(approx - exact) / exact
-    return _out
+    return np.abs(approx - exact) / exact
 
 
 # Circuit construction. Each stage takes `inverse` and emits its own uncomputation:
@@ -252,7 +247,7 @@ def _square(builder: km.CircuitBuilder, inverse: bool, y0: km.array, square: km.
     if not inverse:
         builder.cx(controls, targets)
     for k in range(1, wc + 1):
-        terms = [(y[m], wsq - (k + m - 1)) for m in range(k + 1, wc + 1) if k + m - 1 <= wsq]
+        terms = [(y[l], wsq - (k + l - 1)) for l in range(k + 1, wc + 1) if k + l - 1 <= wsq]
         if terms:
             _add_row(builder, inverse, y[k], terms, square, scratch)
     if inverse:
@@ -353,10 +348,7 @@ def _phase_by_bits(builder: km.CircuitBuilder, y: km.array) -> None:
             builder.z_pow(y[j], Fraction(2) ** (j - f + 1))  # 2^(j - f) turns.
 
 
-_DEFAULT_PRECISION = Precision()
-
-
-def build_nr_circuit(n_p: int, *, prec: Precision = _DEFAULT_PRECISION,
+def build_nr_circuit(n_p: int, *, prec: Precision = Precision(),
                      compute_only: bool = False) -> km.Circuit:
     """The reference circuit; `compute_only` stops after step 3 with `y1` named (for tests)."""
     if n_p < 1:

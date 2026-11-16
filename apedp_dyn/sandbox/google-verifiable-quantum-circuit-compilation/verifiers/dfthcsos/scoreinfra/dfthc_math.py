@@ -40,17 +40,17 @@ but ``lambda_eff`` is NaN.
 
 from __future__ import annotations
 
-import math
 from collections.abc import Mapping
 from decimal import Decimal, localcontext
+import math
 from operator import index
-from typing import Any, TypeAlias
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 from scipy.optimize import linear_sum_assignment
 
-FloatArray: TypeAlias = npt.NDArray[np.float64]
+FloatArray = npt.NDArray[np.float64]
 
 
 # ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ def symmetric_from_lower(lower: npt.ArrayLike, num_orbitals: int) -> npt.NDArray
     lower = np.asarray(lower)
     if lower.shape != (n * (n + 1) // 2,):
         raise ValueError(f"packed lower triangle must have shape ({n * (n + 1) // 2},)")
-    matrix: np.ndarray = np.zeros((n, n), dtype=np.float32)
+    matrix = np.zeros((n, n), dtype=np.float32)
     rows, cols = np.tril_indices(n)
     matrix[rows, cols] = lower.astype(np.float32)
     return matrix + matrix.T - np.diag(np.diag(matrix))
