@@ -33,6 +33,13 @@ from apedp_dyn.epistemic.frozen_spec import format_frozen_spec_banner
 from apedp_dyn.sandbox.causal_discovery_sandbox import run_causal_adjudication
 from apedp_dyn.sandbox.eseds_dynamical import run_eseds_scenario, wilson_score_interval
 from apedp_dyn.sandbox.pde_verification_sandbox import run_pde_adjudication
+from apedp_dyn.sandbox.sphere_packing_sandbox import (
+    THEORETICAL_MAX_DENSITY,
+    audit_feasibility,
+    generate_bcc_3d,
+    generate_fcc_3d,
+    generate_hcp_3d,
+)
 
 
 def parse_claim_prefix(label: str) -> ClaimLevel:
@@ -144,6 +151,53 @@ def evaluate_domain_b_causal() -> list[ProposalEvaluation]:
     return evals
 
 
+#: Density of the face-centred cubic packing, pi / sqrt(18): the three-dimensional
+#: optimum (Kepler conjecture; Hales 2005, formally verified 2017). Read from
+#: the packing sandbox's table of exact ceilings, not restated here.
+KEPLER_DENSITY = float(THEORETICAL_MAX_DENSITY[3])
+_DENSITY_TOLERANCE = 1e-9
+
+
+def measure_kepler_claim_support() -> dict[str, Any]:
+    """Measure what the apex tier asks of the clean packing case beyond its bound.
+
+    The claim is about the density, not about which arrangement attains it.
+    FLAW-07 made C6 require that rivals be rejected and that the result be
+    invariant under intervention; this case used to be handed its evidence by
+    case number and was never handed those two.
+
+    ``invariant``: the FCC packing stays feasible and keeps the Kepler density
+    when its size and its sphere radius are changed. ``rivals_rejected``: no
+    feasible rival lattice built here exceeds that density. HCP attains it
+    exactly, which agrees with the density claim and is why the structural
+    claim (which arrangement) stays unresolved in the polytype case.
+    """
+    interventions = []
+    for n_cells in (2, 3, 4):
+        for radius in (0.25, 0.5, 1.0):
+            packing = generate_fcc_3d(n_cells=n_cells, radius=radius)
+            interventions.append({
+                "n_cells": n_cells, "radius": radius, "density": float(packing.density),
+                "feasible": bool(audit_feasibility(packing)[0]),
+            })
+    rivals = []
+    for name, generate in (("hcp", generate_hcp_3d), ("bcc", generate_bcc_3d)):
+        packing = generate(n_cells=3)
+        rivals.append({"lattice": name, "density": float(packing.density),
+                       "feasible": bool(audit_feasibility(packing)[0])})
+    return {
+        "invariant": all(
+            r["feasible"] and abs(r["density"] - KEPLER_DENSITY) <= _DENSITY_TOLERANCE
+            for r in interventions
+        ),
+        "rivals_rejected": not any(
+            r["feasible"] and r["density"] > KEPLER_DENSITY + _DENSITY_TOLERANCE for r in rivals
+        ),
+        "interventions": interventions,
+        "rivals": rivals,
+    }
+
+
 def evaluate_domain_c_optimality() -> list[ProposalEvaluation]:
     """Evaluate Domain C: Sphere Packing & Computational Optimality."""
     evals = []
@@ -184,6 +238,11 @@ def evaluate_domain_c_optimality() -> list[ProposalEvaluation]:
             bundle.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
             bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
             bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+            support = measure_kepler_claim_support()
+            if support["rivals_rejected"]:
+                bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+            if support["invariant"]:
+                bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
 
         adj = adjudicate_scientific_claim(
             candidate_id=f"OPT_{case_id}",
