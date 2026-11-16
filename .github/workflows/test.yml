@@ -183,6 +183,23 @@ jobs:
           python -m pip install -e packages/jetflow-video
           python -m pytest --version
 
+      # Three tests in tests/test_dyn_lean_universal_bridge.py compile a proof
+      # with `lean`. This job sets APEDP_REQUIRE_NATIVE, under which a missing
+      # toolchain is a failure and not a skip, so the toolchain is installed
+      # here: the same pinned, checksum-verified release the lean-checked job
+      # uses, for the same reason.
+      - name: Install Lean 4.24.0
+        run: |
+          mkdir -p "${{ runner.temp }}/lean-toolchain"
+          curl -fsSL -o "${{ runner.temp }}/lean.tar.zst" \
+            https://github.com/leanprover/lean4/releases/download/v4.24.0/lean-4.24.0-linux.tar.zst
+          echo "b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec  ${{ runner.temp }}/lean.tar.zst" \
+            | sha256sum --check --strict
+          tar --zstd -xf "${{ runner.temp }}/lean.tar.zst" \
+            -C "${{ runner.temp }}/lean-toolchain" --strip-components=1
+      - name: Put lean and lake on PATH
+        run: echo "${{ runner.temp }}/lean-toolchain/bin" >> "$GITHUB_PATH"
+
       # The native kernel behind `apedp/rust_bridge.py` lives in
       # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
       # and the sixteen differential tests in
@@ -250,11 +267,19 @@ jobs:
           source .venv/bin/activate
           python -m pytest tests/ --collect-only -q
 
+      # One test is deselected, and it is not hidden: the signed governance
+      # manifest seals an earlier revision of the canonical spec, only the
+      # registered trustees can re-sign it (FLAW-01), and the
+      # governance-manifest job above reports exactly that and blocks `build`.
+      # Left in this command it fails on every run, and with -x it stops the
+      # matrix there, so no leg ever reports on the tests that come after it.
+      # Remove the --deselect when the manifest is re-signed.
       - name: Run regression tests
         id: regression_tests
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"
+          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression" \
+            --deselect tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid
 
       - name: Run live integration tests
         id: integration_tests
