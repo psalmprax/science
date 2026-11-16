@@ -36,7 +36,9 @@ jobs:
       - name: Strict core type check
         run: make typecheck
       - name: CI configuration regression checks
-        run: python -m pytest tests/test_ci_quality_contract.py -q
+        run: >-
+          python -m pytest tests/test_ci_quality_contract.py
+          tests/test_ci_rust_toolchain.py tests/test_ci_workflow_validity.py -q
 
   rust-quality:
     name: Rust quality
@@ -147,9 +149,6 @@ jobs:
       # find them is a failure here. Without this, tests/conftest.py reports
       # such a test as skipped, which is right on a bare clone and wrong in CI.
       APEDP_REQUIRE_NATIVE: "1"
-      # Avoid component conflicts in the hosted runner's preinstalled toolchains.
-      # All Rust steps share this job-local home, including the default toolchain.
-      RUSTUP_HOME: ${{ runner.temp }}/rustup
     strategy:
       fail-fast: true
       matrix:
@@ -157,6 +156,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+
+      # Avoid component conflicts in the hosted runner's preinstalled toolchains:
+      # every later Rust step in this job shares this job-local home, including
+      # the default toolchain. It is set in a step, through $GITHUB_ENV, because
+      # the `runner` context does not exist in job-level `env`. Writing
+      # `RUSTUP_HOME: ${{ runner.temp }}/rustup` there made the whole workflow
+      # file invalid, so no job in it ran on this branch from 2026-10-20 until
+      # this was moved (docs/SYSTEM_FLAWS_AUDIT.md, E-07).
+      - name: Isolate Rust toolchain home
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7

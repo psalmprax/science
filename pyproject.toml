@@ -153,6 +153,15 @@ ignore = [
     "RUF001", "RUF002", "RUF003",
 ]
 
+[tool.ruff.lint.isort]
+# `apedp_kernel` is this repository's own Rust kernel (rust/apedp-kernel, built
+# with maturin), so it sorts with the first-party imports. Declared rather than
+# detected: ruff infers "first-party" from a directory of that name in the
+# source root, which used to be a tracked symlink into one developer's .venv.
+# Where the link resolved, `import apedp_kernel` sorted as first-party; on a
+# clean checkout (CI) it dangled and the same 21 files were I001 findings.
+known-first-party = ["apedp_kernel"]
+
 [tool.ruff.lint.per-file-ignores]
 # Pure re-export surface: the unused imports ARE the public API.
 "apedp/__init__.py" = ["F401"]

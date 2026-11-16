@@ -15,6 +15,24 @@ inferred releases.
 
 ### Changed
 
+- **The test workflow is a valid workflow file again; it had run no job on
+  `stage` or `master` (2026-11-15).** `.github/workflows/test.yml` set
+  `RUSTUP_HOME: ${{ runner.temp }}/rustup` in a job-level `env:` block, where
+  the `runner` context does not exist, so GitHub rejected the file: 268 of its
+  304 recorded runs failed in 0 seconds ("workflow file issue"), including all
+  102 on `stage`. The variable is now exported from a step
+  (`Isolate Rust toolchain home`). `tests/test_ci_rust_toolchain.py` asserted
+  the invalid line and now asserts the valid one. New
+  `.github/workflows/workflow-lint.yml` runs a checksum-pinned actionlint over
+  every workflow from a separate file, so a rejected `test.yml` is reported by
+  something that still starts; `tests/test_ci_workflow_validity.py` checks the
+  same error class in pure Python. `make lint` is clean under the pinned
+  `ruff==0.17.3` on a clean checkout: `apedp_kernel` is declared first-party
+  (`[tool.ruff.lint.isort]`) instead of being inferred from a symlink, and 22
+  suppressions the pinned linter no longer needs were removed, reasons kept as
+  comments. Every "CI-gated" statement below this entry was written while the
+  workflow could not run; see `docs/SYSTEM_FLAWS_AUDIT.md` E-07.
+
 - **A machine-checked Lean core now exists and is CI-gated (2026-11-15).**
   `lean_checked/` is a Lake project (pinned Lean 4.24.0) whose 39 theorems are
   elaborated by the Lean kernel: dimensional-algebra group laws plus

@@ -124,6 +124,42 @@ Basis: `stage` at `beff10d`. Pins: `tests/test_engineering_hardening_2026_11_15.
   identity, persistence and concurrency, nothing is claimed.
   `Dimensions.lean` has no counterpart test.
 
+- **E-07 the test workflow had never run a job on `stage` — FIXED, and CI's
+  first real verdict is still to come.** GitHub's own record, read through the
+  API on 2026-11-15: of the 304 runs of `.github/workflows/test.yml` since
+  2026-10-17, 268 failed in 0 seconds with "workflow file issue" — 102 of them
+  on `stage`, 82 on `master` — and no run on either branch ever started a job.
+  The 36 runs that did execute were on two CI-repair branches, and none
+  finished green. Two successive causes, both a context used where GitHub does
+  not provide it: `secrets` in a job-level `if:` (already present on
+  2026-10-17, since removed), then `RUSTUP_HOME: ${{ runner.temp }}/rustup` in
+  the `test` job's `env:` (commit `1bf397b`, 2026-10-20). The `runner` context
+  exists only inside steps, so the file was rejected whole. Consequences:
+  every sentence in this repository of the form "CI enforces X" described an
+  intention for those four weeks — the governance-manifest job, the
+  audit-artifact drift job, the mutation battery ("CI-gated, 5/5 killed") and
+  the kernel-backed test matrix did not run here — and
+  `tests/test_ci_rust_toolchain.py` *required* the invalid line, so the one
+  test about it pinned the defect in place. The three commits of 2026-11-12
+  to 2026-11-15 in this audit were pushed into the same silence; their
+  "CI must confirm" notes were confirmable by nobody.
+  Fix: the variable is set in a step through `$GITHUB_ENV`; the test now pins
+  that form. Because a workflow file cannot report its own invalidity, the
+  check lives in a second file, `.github/workflows/workflow-lint.yml`, which
+  runs a checksum-pinned actionlint over every workflow on every push, and
+  `tests/test_ci_workflow_validity.py` checks context availability and
+  dangling `needs` in pure Python (including a replay of the exact line).
+  Found alongside, with the pinned `ruff==0.17.3` that CI installs: `make lint`
+  reported 43 findings on a clean checkout where `docs/QUALITY_BASELINE.md`
+  pins 0 — 21 import-order findings that depended on a symlink into one
+  developer's `.venv` (`apedp_kernel` is now declared first-party in
+  `pyproject.toml`), and 22 suppressions the pinned linter no longer needs
+  (removed; their written reasons are kept as comments).
+  What this does **not** establish: that the workflow is green. It will now
+  run for the first time. The governance-manifest job is expected to fail
+  until the trustees re-sign (FLAW-01) — that is the gate working — and the
+  kernel-backed suites have never been observed on this tree by this audit.
+
 Still not done, and why: the repository split (it moves most files and could
 not be verified here without the kernel); elaboration of the `formal/`
 transcription tree itself (E-06 adds a checked core beside it, it does not

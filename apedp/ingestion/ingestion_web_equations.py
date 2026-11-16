@@ -64,12 +64,12 @@ def _fetch_page_html(page_title: str) -> str:
         url = f"https://en.wikipedia.org/w/api.php?action=parse&page={encoded_title}&prop=text&format=json"
         ctx = ssl.create_default_context()
         # URL scheme/host are hardcoded constants (https://en.wikipedia.org);
-        # only the page title (URL-quoted above) varies. Ruff reports S310 once
-        # for `Request` and once for `urlopen`, while bandit reports B310 on
-        # `urlopen` alone, so both call sites carry a noqa and the urlopen line
-        # also carries the nosec reason. Suppressing only one left the other
-        # finding permanently red.
-        req = urllib.request.Request(  # noqa: S310
+        # only the page title (URL-quoted above) varies. The pinned ruff
+        # (0.17.x) reports S310 on `urlopen` only -- it can see that the
+        # `Request` URL starts with a literal https:// -- and bandit reports
+        # B310 on `urlopen`, so that one line carries both suppressions.
+        # Suppressing `Request` as well is itself a RUF100 finding under the pin.
+        req = urllib.request.Request(
             url, headers={'User-Agent': USER_AGENT}
         )
         with urllib.request.urlopen(req, context=ctx, timeout=10) as response:  # noqa: S310  # nosec B310

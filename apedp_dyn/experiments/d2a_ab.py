@@ -23,7 +23,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from apedp_dyn import (  # noqa: E402, I001 - sys.path bootstrap precedes imports; block intentionally spans the bootstrap marker
+from apedp_dyn import (  # noqa: E402 - sys.path bootstrap precedes imports; block intentionally spans the bootstrap marker
     CandidateDynamics,
     Term,
     enumerate_candidates,

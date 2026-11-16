@@ -1532,7 +1532,7 @@ ruff check --fix apedp/ tests/
 
 ### CI/CD Pipeline
 
-GitHub Actions workflow (`.github/workflows/test.yml`) runs on every push:
+GitHub Actions workflow (`.github/workflows/test.yml`) is configured to run on every push:
 
 1. **Test** — pytest on Python 3.10, 3.11, 3.12
 2. **Lint** — ruff code style check
@@ -1540,6 +1540,17 @@ GitHub Actions workflow (`.github/workflows/test.yml`) runs on every push:
 4. **Security** — bandit vulnerability scan
 5. **Build** — Docker image build (main branch only)
 6. **Deploy** — Automated deployment (main branch only)
+
+**Status, measured 2026-11-15.** Between 2026-10-17 and 2026-11-15 this
+workflow started no job on `stage` or `master`: GitHub rejected the file (a
+context used where it is not available), and 268 of its 304 recorded runs
+failed in 0 seconds. The file is valid again
+([`docs/SYSTEM_FLAWS_AUDIT.md`](SYSTEM_FLAWS_AUDIT.md), E-07). A second
+workflow, `.github/workflows/workflow-lint.yml`, now runs actionlint over every
+workflow file from a separate file, because a rejected workflow cannot report
+its own rejection; `tests/test_ci_workflow_validity.py` checks the same error
+class locally. Read "CI enforces X" elsewhere in this document as "configured
+to", and check the Actions tab for whether it currently does.
 
 ---
 
