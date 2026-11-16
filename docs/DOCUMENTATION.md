@@ -1554,6 +1554,39 @@ to", and check the Actions tab for whether it currently does.
 
 ---
 
+### The referee core and its import boundary
+
+The part of the repository that decides whether a claim may be promoted — the
+preregistered thresholds (`conf/canonical_spec.py`), the six-stage state
+machine (`epistemic/promotion_lifecycle.py`), the holdout and trial ledgers
+(`experiment_ledger.py`, `trial_ledger.py`), stage 3's forecast comparison
+(`novelty_adjudication.py`), the universe audit (`market/universe.py`) and the
+evidence types they consume (`proof_claim.py`, `proof_evidence.py`) — is
+declared in [`tests/referee_core_manifest.py`](../tests/referee_core_manifest.py)
+together with what it may depend on: numpy, scipy, pandas, and three named
+optional paths (default ledger location, remote storage).
+
+Repository modules executed by a fresh interpreter, measured on `stage` at
+`cc50e3b` and on this change:
+
+| Import | Before (eager package `__init__`s) | After |
+|---|---|---|
+| `promotion_lifecycle` alone | 74, with the native kernel, SymPy, pint, pandas, scipy | 6, with numpy |
+| the whole declared core | 96, same third-party set | 13 (8 core modules, 4 parent packages, `_lazy.py`), with numpy, scipy, pandas |
+
+[`tests/test_referee_core_boundary.py`](../tests/test_referee_core_boundary.py)
+enforces the declaration statically (every import statement in a core module),
+at import (a fresh interpreter loads exactly the declared modules) and under
+test (a fresh pytest running the core's tests loads nothing else). CI's
+`referee-core` job runs `make test-referee-core` in an environment with numpy,
+scipy, pandas and pytest and nothing else — no torch, no SymPy, no kernel, the
+repository not installed.
+
+This is a dependency boundary inside one repository and one distribution. No
+file moved, there is no separate `apedp-referee` package, and the boundary
+says nothing about whether the referee's *logic* is right; the integrity
+suites and the Lean conformance tests are what speak to that.
+
 ## 13. Small Physics LLM
 
 ### Overview
@@ -1810,6 +1843,8 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`apedp_dyn/epistemic/scope_refusal_mv_v2.py`](../apedp_dyn/epistemic/scope_refusal_mv_v2.py) | Multivariate rival-probe construction, v2 remediation for spec §16e (PREREG-RIME-SCOPE-MV-v2-2026-10-17): standardizes interaction coordinates and bounds phase search away from zero (c ≥ 1.0 for periodic-quadratic, c ≥ 1.35 for amplitude modulation) to prevent in-grammar monomial linearization, and replaces the absolute variance guard with a scale-relative check that builds probes on micro-scale axes. Reuses the frozen §16d adjudication contracts unchanged; registered v2 tests promote the in-family control across seeds 700–702 and decline W1/W2/W3. | `experimental` |
 | [`apedp_dyn/epistemic/claim_ladder.py`](../apedp_dyn/epistemic/claim_ladder.py) | Epistemic claim ladder calibrating warrant strength from speculative to admitted. | `production` |
 | [`apedp_dyn/epistemic/proof_claim.py`](../apedp_dyn/epistemic/proof_claim.py) | `ProofClaimStatus` (P0 no proof / P1 candidate / P2 verified): the proof-claim tier, independent of empirical confidence. Defined here so the Lean bridge does not import the legacy root; re-exported by `apedp/mathematical/mathematical_layer.py`. | `production` |
+| [`apedp_dyn/epistemic/proof_evidence.py`](../apedp_dyn/epistemic/proof_evidence.py) | What a formal-verification run reports, as plain data with the standard library as its only dependency: `InvariantKind`, `LeanTheoremVerification`, `LeanVerificationResult`. Moved here from `agnostic_adapter.py` and `lean_universal_bridge.py`, which re-export them unchanged (same class objects), so stage 1 of the promotion lifecycle can judge a result without importing the bridge that produces it. Part of the referee core (`tests/referee_core_manifest.py`). |
+| [`apedp_dyn/_lazy.py`](../apedp_dyn/_lazy.py) | `lazy_exports`: PEP 562 deferred re-exports for package `__init__` modules. `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market` keep their public names and `__all__` but import each name on first access, so importing a submodule no longer executes the whole tree. Handles an export that shares its name with a submodule (`apedp_dyn.epistemic.adjudicate`) so the package attribute is the function, as it was with eager imports. Standard library only. Pinned by `tests/test_lazy_package_exports.py`. |
 | [`apedp_dyn/rust_bridge.py`](../apedp_dyn/rust_bridge.py) | Rust numerical kernel bridge: one interface over `apedp_kernel` with the Python reference engine as fallback, compile caches, kernel-path tallies and native-search enforcement. Moved here so `apedp_dyn` does not import the legacy root; `apedp/rust_bridge.py` forwards to it. | `production` |
 | [`apedp_dyn/native_search.py`](../apedp_dyn/native_search.py) | The Python-search fallback contract: `NativeSearchUnavailableError` plus a provider registry the legacy tree fills in, so the bridge can offer the fallback without importing `apedp.evolutionary_search`. | `production` |
 | [`apedp_dyn/safety.py`](../apedp_dyn/safety.py) | Hardened string-in formula parsing (`safe_parse_expr`, `safe_parse_pde`) and wall-clock-bounded symbolic limits; stdlib plus sympy only, with `apedp/safety.py` as its compatibility façade. | `production` |

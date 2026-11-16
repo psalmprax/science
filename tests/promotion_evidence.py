@@ -15,14 +15,18 @@ from typing import Any
 
 import numpy as np
 
-from apedp_dyn.epistemic.agnostic_adapter import InvariantKind
 from apedp_dyn.epistemic.experiment_ledger import FullLineageExperimentLedger
-from apedp_dyn.epistemic.lean_universal_bridge import (
+from apedp_dyn.epistemic.promotion_lifecycle import PromotionTracker
+from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
+
+# The evidence types come from their dependency-free home, not from the bridge
+# and adapter that re-export them: this helper has to stay importable where
+# only the referee core is installed (tests/test_referee_core_standalone.py).
+from apedp_dyn.epistemic.proof_evidence import (
+    InvariantKind,
     LeanTheoremVerification,
     LeanVerificationResult,
 )
-from apedp_dyn.epistemic.promotion_lifecycle import PromotionTracker
-from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
 from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
 from apedp_dyn.market.universe import UniverseAudit
 

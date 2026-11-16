@@ -15,6 +15,27 @@ inferred releases.
 
 ### Changed
 
+- **The referee core loads, and is tested, without the rest of the tree
+  (2026-11-16).** `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market`
+  re-export their public names lazily (`apedp_dyn/_lazy.py`); the names and
+  `__all__` are unchanged. `InvariantKind`, `LeanTheoremVerification` and
+  `LeanVerificationResult` are defined in the new, dependency-free
+  `apedp_dyn/epistemic/proof_evidence.py` and re-exported from
+  `agnostic_adapter` and `lean_universal_bridge` as the same objects.
+  Importing `promotion_lifecycle` went from 74 repository modules (with the
+  kernel, SymPy and pint) to 6 (with numpy); the whole core from 96 to 13.
+  `tests/referee_core_manifest.py` declares the core and its allowed
+  dependencies; `tests/test_referee_core_boundary.py` enforces them;
+  `tests/test_referee_core_standalone.py` walks the referee's main paths with
+  core-only imports; `tests/test_lazy_package_exports.py` pins that every
+  export is still the object its module defines; `tools/coverage_audit.py`
+  recognises the lazy shape as a re-export façade so
+  `tests/test_facade_contracts.py` keeps checking these packages' exports.
+  New `make test-referee-core`
+  and CI job `referee-core`, which installs numpy, scipy, pandas and pytest
+  and nothing else. No file moved and no package was split out; see
+  `docs/SYSTEM_FLAWS_AUDIT.md`, G-01.
+
 - **Six kickmix tests no longer mistake an empty directory for the extension
   (2026-11-16).** They skipped unless `import kickmix` succeeded; with the
   extension's parent directory on `sys.path` that import returns an empty

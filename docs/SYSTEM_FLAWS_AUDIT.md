@@ -180,6 +180,59 @@ be observed here without the kernel" is superseded by F-05.
   provisioned in CI is the owner's decision. With `-x`, the matrix will stop
   at whichever of the F-05 failures comes next.
 
+- **G-01 the referee could not be loaded without what it referees — FIXED as
+  a dependency boundary; the files have not moved.** This is the first step of
+  the "repository split" earlier rounds listed as not done, and it is the part
+  that changes behaviour. Measured on `stage` in a fresh interpreter:
+  `import apedp_dyn.epistemic.promotion_lifecycle` executed 74 repository
+  modules (96 for the whole core), among them the native kernel, SymPy, pint
+  and the discovery engines, because importing a submodule runs its parent
+  packages and `apedp_dyn/__init__.py` imported everything. The module's own
+  dependencies are numpy and scipy.
+  Three changes: (a) `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market`
+  re-export lazily (`apedp_dyn/_lazy.py`, PEP 562): same names, same
+  `__all__`, each resolved on first access. (b) The evidence types stage 1
+  judges (`InvariantKind`, `LeanTheoremVerification`,
+  `LeanVerificationResult`) move to `epistemic/proof_evidence.py`, standard
+  library only, and are re-exported from their old modules as the same class
+  objects. (c) `tests/referee_core_manifest.py` declares the eight core
+  modules and what they may depend on — numpy, scipy, pandas and three named
+  optional paths — and `tests/test_referee_core_boundary.py` enforces it
+  statically, at import and under test, with a planted-leak check.
+  After: the same import executes 6 repository modules and loads numpy; the
+  whole core is 13 (8 core modules, their 4 parent packages and `_lazy.py`)
+  with numpy, scipy and pandas. In an environment with
+  only those and pytest — no torch, no SymPy, no kernel, the repository not
+  installed — the core's tests and the boundary tests pass (36 passed, 1
+  skipped: the planted leak cannot even be imported there). CI's
+  `referee-core` job repeats that on every push.
+  Two things the equivalence test (`tests/test_lazy_package_exports.py`)
+  caught while this was being written, both of which would have shipped
+  otherwise: `apedp_dyn.epistemic.adjudicate` is both an exported function
+  and a submodule, and a naive lazy package hands back the *module* once
+  anything imports the submodule (handled; pinned from four different first
+  touches); and `from apedp_dyn import ode, pde` exports subpackages, which a
+  name-to-module table sends into infinite recursion (handled).
+  A third was caught by the full suite, not by the new tests: the coverage
+  audit classifies pure re-export modules as façades
+  (`tools/coverage_audit.py`) and `tests/test_facade_contracts.py` pins
+  `apedp_dyn` among them; a lazy `__init__` is not "imports plus `__all__`",
+  so the package silently left the set whose exports that test checks. The
+  classifier now recognises the lazy shape, and only that shape — a
+  `TYPE_CHECKING` block of imports, string-literal tables, and the one
+  `lazy_exports(...)` call — with ten near-miss variants pinned as *not* a
+  façade (`tests/test_coverage_audit.py`).
+  One behaviour is not reproduced, and is stated in that test: a submodule of
+  a package that is not lazy is an attribute only once imported, as in any
+  Python package. Eager imports used to make every such chain work by
+  accident. No use of one was found in the repository.
+  What this is not: a second distribution. There is no `apedp-referee`
+  package and no file changed path, because paths are load-bearing here —
+  AGENTS.md names `apedp_dyn.conf.canonical_spec`, the governance drift script
+  loads it by file path, and fifteen files are hash-pinned by the freeze
+  records. Extracting a package is now a mechanical move behind an enforced
+  boundary, and a decision for whoever owns those pins.
+
 Limits of this round: the local kernel is built with Rust 1.97.0, not the
 pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy
 or numerics; and a full local run is one machine, once.

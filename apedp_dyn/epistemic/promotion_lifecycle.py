@@ -41,7 +41,7 @@ from apedp_dyn.conf.canonical_spec import (
 
 if TYPE_CHECKING:
     from apedp_dyn.epistemic.experiment_ledger import FullLineageExperimentLedger
-    from apedp_dyn.epistemic.lean_universal_bridge import LeanVerificationResult
+    from apedp_dyn.epistemic.proof_evidence import LeanVerificationResult
     from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
     from apedp_dyn.market.universe import UniverseAudit
 

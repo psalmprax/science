@@ -57,6 +57,40 @@ jobs:
       - name: Rust kernel unit tests
         run: cargo test --workspace --locked
 
+  # The referee by itself. Everything this job installs is on the next ten
+  # lines: numpy, scipy, pandas, pytest. No torch, no SymPy, no native kernel,
+  # and the repository is not pip-installed. If the thresholds, the promotion
+  # state machine, the ledgers or the universe audit ever need anything else,
+  # this job fails at import. tests/referee_core_manifest.py declares the
+  # boundary; tests/test_referee_core_boundary.py checks it statically, at
+  # import and under test.
+  referee-core:
+    name: Referee core in isolation (numpy, scipy, pandas only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the core's requirements and nothing else
+        run: |
+          python -m venv "$RUNNER_TEMP/core"
+          "$RUNNER_TEMP/core/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/core/bin/python" -m pip install numpy scipy pandas pytest
+          "$RUNNER_TEMP/core/bin/python" -m pip list
+      # -I: isolated mode, so the checkout in the working directory does not
+      # count as "installed" and only the environment itself is inspected.
+      - name: The environment really is that small
+        run: |
+          "$RUNNER_TEMP/core/bin/python" -I - <<'PY'
+          import importlib.util
+          present = [name for name in ("torch", "sympy", "jax", "apedp_kernel", "apedp") if importlib.util.find_spec(name)]
+          assert not present, f"this job must not have {present} installed"
+          PY
+      - name: Run the referee's tests and its import boundary
+        run: make test-referee-core PYTHON="$RUNNER_TEMP/core/bin/python"
+
   governance-manifest:
     name: Governance manifest covers the spec pin
     runs-on: ubuntu-latest
@@ -286,7 +320,7 @@ jobs:
     # green, not just the test matrix. `needs: test` alone let a release ship
     # while the governance manifest, the generated audit artefacts, or the
     # mutation battery were red.
-    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked]
+    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked, referee-core]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:

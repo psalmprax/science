@@ -115,6 +115,66 @@ def is_test_file(rel_path: str) -> bool:
 #: name in ``__all__`` must resolve against the target package -- which is
 #: tests/test_facade_contracts.py. That test can actually fail; a coverage
 #: percentage on a shim cannot.
+#: Names a lazy façade may assign besides ``__all__``, and the helper it calls.
+#: See ``apedp_dyn/_lazy.py``.
+_LAZY_TABLES = frozenset({"_EXPORTS", "_SUBMODULES"})
+_LAZY_HOOKS = ("__getattr__", "__dir__")
+_LAZY_HELPER = "lazy_exports"
+
+
+def _is_string_literal_table(node: ast.expr) -> bool:
+    """A dict, tuple or list written out as string constants, and nothing computed."""
+    if isinstance(node, ast.Dict):
+        parts: list[ast.expr | None] = [*node.keys, *node.values]
+    elif isinstance(node, (ast.Tuple, ast.List)):
+        parts = list(node.elts)
+    else:
+        return False
+    return all(isinstance(p, ast.Constant) and isinstance(p.value, str) for p in parts)
+
+
+def _is_lazy_facade_statement(node: ast.stmt) -> bool:
+    """One of the three extra statement shapes a *lazy* re-export façade has.
+
+    A lazy façade (PEP 562) re-exports the same names as an eager one but
+    resolves each on first access, so its body cannot be imports alone:
+
+    * ``if TYPE_CHECKING:`` holding only imports and no ``else`` -- the names,
+      for type checkers;
+    * ``_EXPORTS = {...}`` / ``_SUBMODULES = (...)`` written as string
+      literals -- the name-to-module table;
+    * ``__getattr__, __dir__ = lazy_exports(__name__, _EXPORTS[, _SUBMODULES])``.
+
+    Each is matched exactly. A table built by a call or a comprehension, a
+    ``TYPE_CHECKING`` block with an assignment in it, or the hooks defined any
+    other way is logic, and the module stops being a façade -- the same rule
+    as for the eager kind, and for the same reason.
+    """
+    if isinstance(node, ast.If):
+        test = node.test
+        named = (isinstance(test, ast.Name) and test.id == "TYPE_CHECKING") or (
+            isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING")
+        return bool(named and not node.orelse and node.body and all(
+            isinstance(child, (ast.Import, ast.ImportFrom)) for child in node.body))
+    if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+        return False
+    target = node.targets[0]
+    if isinstance(target, ast.Name) and target.id in _LAZY_TABLES:
+        return _is_string_literal_table(node.value)
+    if isinstance(target, ast.Tuple) and tuple(
+            getattr(element, "id", None) for element in target.elts) == _LAZY_HOOKS:
+        call = node.value
+        return bool(
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name) and call.func.id == _LAZY_HELPER
+            and not call.keywords
+            and 2 <= len(call.args) <= 3
+            and all(isinstance(arg, ast.Name) for arg in call.args)
+            and getattr(call.args[0], "id", None) == "__name__"
+            and {getattr(arg, "id", None) for arg in call.args[1:]} <= _LAZY_TABLES)
+    return False
+
+
 def is_reexport_facade(rel_path: str, root: str | Path = ".") -> bool:
     """True when a module's whole body is imports plus an ``__all__`` assignment.
 
@@ -123,6 +183,11 @@ def is_reexport_facade(rel_path: str, root: str | Path = ".") -> bool:
     one class, one ``if`` and the module stops being a façade -- because the
     risk here is classifying real logic out of the audit, and a shim pattern
     that is merely *mostly* a shim still has statements worth executing.
+
+    The one extension is the lazy façade (:func:`_is_lazy_facade_statement`):
+    three fixed statement shapes that defer the same re-exports to first
+    access. A lazy façade must call the helper, so a module that merely
+    declares a table is not one.
     """
     path = Path(root) / rel_path
     try:
@@ -130,6 +195,8 @@ def is_reexport_facade(rel_path: str, root: str | Path = ".") -> bool:
     except (OSError, SyntaxError, ValueError):
         return False
     exports = False
+    lazy_statements = 0
+    lazy_hooked = False
     for node in tree.body:
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) \
                 and isinstance(node.value.value, str):
@@ -141,11 +208,17 @@ def is_reexport_facade(rel_path: str, root: str | Path = ".") -> bool:
             if all(isinstance(t, ast.Name) and t.id == "__all__" for t in targets):
                 exports = True
                 continue
+        if _is_lazy_facade_statement(node):
+            lazy_statements += 1
+            lazy_hooked = lazy_hooked or (
+                isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Tuple))
+            continue
         return False
     # Requires an explicit __all__: a module of bare imports with no declared
     # export list is ambiguous enough that treating it as inert would hide a
-    # module that does real setup at import time.
-    return exports
+    # module that does real setup at import time. A module that uses any of the
+    # lazy shapes must also install the hooks, or its table re-exports nothing.
+    return exports and (lazy_statements == 0 or lazy_hooked)
 
 
 @dataclass(frozen=True)
