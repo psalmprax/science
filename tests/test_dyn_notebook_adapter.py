@@ -78,6 +78,39 @@ def _platform_filesystem_is_a_temporary_directory(tmp_path, monkeypatch):
     }.items():
         monkeypatch.setattr(notebook_adapter, name, tmp_path / "platform_fs" / where)
     monkeypatch.setattr(tempfile, "tempdir", tempfile.tempdir)
+    # The environment is part of the platform too. On a GitHub runner
+    # GITHUB_ACTIONS=true is set, detect_platform() checks CI before a cluster,
+    # and the Slurm test, which cleared CI but not GITHUB_ACTIONS, failed there
+    # on 2026-11-16 (test (3.10), after 2,155 passes) while passing everywhere
+    # else. Every variable the adapter reads starts unset; a test sets the ones
+    # it simulates.
+    for variable in PLATFORM_VARIABLES:
+        monkeypatch.delenv(variable, raising=False)
+
+
+#: Every environment variable apedp_dyn/notebook_adapter.py reads.
+PLATFORM_VARIABLES = (
+    "APEDP_LEDGER_PATH", "APEDP_STORAGE_DIR", "APEDP_TEMP_STORAGE", "CI", "COLAB_GPU",
+    "DATABRICKS_CLUSTER_ID", "DATABRICKS_RUNTIME_VERSION", "GCS_READ_CACHE", "GITHUB_ACTIONS",
+    "KAGGLE_KERNEL_RUN_TYPE", "PBS_JOBID", "SLURM_JOB_ID",
+)
+
+
+def test_the_isolation_list_names_every_variable_the_adapter_reads():
+    """A variable added to the adapter and not here would leak the host back in."""
+    import re
+
+    source = Path(notebook_adapter.__file__).read_text(encoding="utf-8")
+    read = set(re.findall(r"""(?:environ\.get|getenv)\(\s*["']([A-Z_][A-Z0-9_]*)["']""", source))
+    read |= set(re.findall(r"""environ\[\s*["']([A-Z_][A-Z0-9_]*)["']\s*\]""", source))
+    assert read <= set(PLATFORM_VARIABLES), sorted(read - set(PLATFORM_VARIABLES))
+
+
+def test_a_ci_runner_is_not_mistaken_for_a_cluster(monkeypatch):
+    """The CI run's own environment, reproduced: GITHUB_ACTIONS wins over Slurm."""
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("SLURM_JOB_ID", "123456")
+    assert detect_platform() == PlatformType.CI
 
 
 def test_detect_platform_colab_sys_module():

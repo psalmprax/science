@@ -240,6 +240,31 @@ Each entry: cause, what changed, the pin for it.
   fit-time integrator tolerance (`simulate` defaults to `rtol=1e-3`, chosen
   "for fitter throughput") changes every recorded fit and is the owner's
   decision.
+- **J-17 four more, from the hosted runner and a full run under its
+  libraries — FIXED.** With J-16 pushed, CI's 3.10 leg ran 2,155 tests and
+  stopped at `test_dyn_notebook_adapter.py::test_detect_platform_cluster`: a
+  GitHub runner sets `GITHUB_ACTIONS=true`, `detect_platform()` checks CI
+  before Slurm, and the test blanked `CI` but not `GITHUB_ACTIONS`. The
+  adapter tests now start with every variable the adapter reads unset (a test
+  enforces that the list covers the source), and reproduce the runner's
+  environment explicitly. A full local run under numpy 2.4.6 and scipy 1.17.1,
+  CI's 3.11/3.12 libraries, then gave 5,843 passed and 2 failed. (a)
+  `test_kernel_rational_search_memory` (J-09) read `ru_maxrss` in a child
+  process; on Linux that survives fork and exec, so the child of a 3.2 GB
+  pytest worker reported 3.2 GB for a search that peaks at 376 MB. It reads
+  the child's `VmHWM`. (b)
+  `test_vqc_stabilizer::test_an_exact_distribution_is_refused_past_the_enumerated_width`
+  asserted the Rust tier's refusal message unconditionally; the CI test job
+  does not build `apedp_vqc`, so there is no Rust tier there to refuse. That
+  half is now conditional on the extension, as
+  `tests/test_vqc_native_parity.py` already is, and the other branch checks
+  the call was answered by Python. (c) The rustup step failed twice on
+  2026-11-16 (`detected conflict: 'bin/cargo-clippy'`) after finding a
+  half-installed 1.99.0, with `rust-docs` among its components, in a home that
+  had been isolated a minute earlier and that the minimal profile never fills
+  that way. What wrote it is not established from the logs. The toolchain is
+  now installed in the step right after the isolation, into a home that is
+  emptied first; if it is ever found non-empty, a warning lists what was there.
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on
 this machine and has no verdict; the committed mutation report, still the
