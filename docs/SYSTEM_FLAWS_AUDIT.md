@@ -222,6 +222,14 @@ be observed here without the kernel" is superseded by F-05.
   `TYPE_CHECKING` block of imports, string-literal tables, and the one
   `lazy_exports(...)` call — with ten near-miss variants pinned as *not* a
   façade (`tests/test_coverage_audit.py`).
+  And one in the boundary check itself, raised in review of the pull
+  request: the static rule recorded only the package a `from` import names,
+  so `from apedp_dyn.epistemic import agnostic_adapter` passed as an import
+  of the allowed parent, and inside a function no test calls neither
+  runtime check would have seen it. It now resolves each imported name to
+  the submodule or lazy re-export it loads; ten ways of writing an
+  undeclared import are pinned as detected, the first three of which the
+  earlier version let through.
   One behaviour is not reproduced, and is stated in that test: a submodule of
   a package that is not lazy is an attribute only once imported, as in any
   Python package. Eager imports used to make every such chain work by

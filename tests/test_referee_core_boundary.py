@@ -53,9 +53,42 @@ def _path(module: str) -> Path:
     return ROOT / (module.replace(".", "/") + ".py")
 
 
-def _imports(module: str) -> list[tuple[str, bool, bool, int]]:
-    """``(imported module, at module level, type-checking only, line)`` for every import."""
-    tree = ast.parse(_path(module).read_text(encoding="utf-8"))
+def _is_repository_module(name: str) -> bool:
+    relative = ROOT / name.replace(".", "/")
+    return relative.with_suffix(".py").is_file() or relative.is_dir()
+
+
+def _lazy_export_targets(package: str) -> dict[str, str]:
+    """``name -> defining module`` from a lazy package's ``_EXPORTS`` table, read
+    from its source so that looking does not import anything."""
+    init = ROOT / package.replace(".", "/") / "__init__.py"
+    if not init.is_file():
+        return {}
+    for node in ast.parse(init.read_text(encoding="utf-8")).body:
+        if (
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == "_EXPORTS"
+        ):
+            table = ast.literal_eval(node.value)
+            return {name: target.partition(":")[0] for name, target in table.items()}
+    return {}
+
+
+def _imports(module: str, source: str | None = None) -> list[tuple[str, bool, bool, int]]:
+    """``(imported module, at module level, type-checking only, line)`` for every import.
+
+    ``from package import name`` is resolved to what it actually loads: the
+    submodule ``package.name`` when there is one, or the module a lazy package
+    re-exports ``name`` from. Recording only ``package`` would let
+    ``from apedp_dyn.epistemic import agnostic_adapter`` through on the strength
+    of ``apedp_dyn.epistemic`` being an allowed parent, and inside a function
+    no test happens to call, neither runtime check would see it either.
+    """
+    if source is None:
+        source = _path(module).read_text(encoding="utf-8")
+    tree = ast.parse(source)
     type_only: set[int] = set()
     nested: set[int] = set()
     for node in ast.walk(tree):
@@ -73,12 +106,43 @@ def _imports(module: str) -> list[tuple[str, bool, bool, int]]:
                 package = module.split(".")[:-1]
                 package = package[: len(package) - (node.level - 1)]
                 base = ".".join(package + ([node.module] if node.module else []))
-            names = [base]
+            exports = _lazy_export_targets(base)
+            names = []
+            for alias in node.names:
+                child = f"{base}.{alias.name}"
+                if alias.name in exports:
+                    names.append(exports[alias.name])  # a lazy re-export: its defining module
+                elif _is_repository_module(child):
+                    names.append(child)  # a submodule imported as a name
+                else:
+                    names.append(base)  # an ordinary name defined in `base`
         else:
             continue
-        for name in names:
+        for name in dict.fromkeys(names):
             found.append((name, id(node) not in nested, id(node) in type_only, node.lineno))
     return found
+
+
+def undeclared_imports(module: str, source: str | None = None) -> list[str]:
+    """Every import in ``module`` (or in ``source``, judged as if it were that
+    module) that the manifest does not allow."""
+    allowed_repo = {*CORE_MODULES, *SUPPORT_MODULES}
+    problems = []
+    for name, at_module_level, type_only, line in _imports(module, source):
+        top = name.split(".")[0]
+        if top in STDLIB or top == "__future__" or top in CORE_REQUIREMENTS:
+            continue
+        if name in allowed_repo:
+            continue
+        if (module, name) in OPTIONAL_EDGES:
+            if at_module_level and not type_only:
+                problems.append(
+                    f"line {line}: optional edge to {name} is imported at module level; "
+                    "it must stay inside the function that needs it"
+                )
+            continue
+        problems.append(f"line {line}: imports {name}, which the manifest does not allow")
+    return problems
 
 
 def _run(code: str, *, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -124,23 +188,75 @@ def test_the_manifest_names_real_modules_and_real_tests() -> None:
 
 @pytest.mark.parametrize("module", [*CORE_MODULES, "apedp_dyn._lazy"])
 def test_every_import_in_a_core_module_is_declared(module: str) -> None:
-    allowed_repo = {*CORE_MODULES, *SUPPORT_MODULES}
-    problems = []
-    for name, at_module_level, type_only, line in _imports(module):
-        top = name.split(".")[0]
-        if top in STDLIB or top == "__future__" or top in CORE_REQUIREMENTS:
-            continue
-        if name in allowed_repo:
-            continue
-        if (module, name) in OPTIONAL_EDGES:
-            if at_module_level and not type_only:
-                problems.append(
-                    f"line {line}: optional edge to {name} is imported at module level; "
-                    "it must stay inside the function that needs it"
-                )
-            continue
-        problems.append(f"line {line}: imports {name}, which the manifest does not allow")
+    problems = undeclared_imports(module)
     assert not problems, f"{module}:\n  " + "\n  ".join(problems)
+
+
+_TRACKER = "apedp_dyn.epistemic.promotion_lifecycle"
+
+
+@pytest.mark.parametrize(
+    ("source", "leaked"),
+    [
+        # A submodule imported as a name from an allowed parent package.
+        (
+            "from apedp_dyn.epistemic import agnostic_adapter\n",
+            "apedp_dyn.epistemic.agnostic_adapter",
+        ),
+        # The same, hidden in a function no test may ever call: only the
+        # static check can see this one.
+        (
+            "def rarely_called():\n    from apedp_dyn.epistemic import agnostic_adapter\n",
+            "apedp_dyn.epistemic.agnostic_adapter",
+        ),
+        ("from . import agnostic_adapter\n", "apedp_dyn.epistemic.agnostic_adapter"),
+        # A lazy re-export: the name comes from an allowed package, the module
+        # that defines it is not allowed.
+        ("from apedp_dyn.epistemic import adjudicate\n", "apedp_dyn.epistemic.adjudicate"),
+        ("from apedp_dyn import fit_candidate\n", "apedp_dyn.fitting"),
+        ("from apedp_dyn.market import run_market_sweep\n", "apedp_dyn.market.sweep"),
+        # The plain forms.
+        (
+            "import apedp_dyn.epistemic.lean_universal_bridge\n",
+            "apedp_dyn.epistemic.lean_universal_bridge",
+        ),
+        ("from apedp_dyn.gates.dimensional import check\n", "apedp_dyn.gates.dimensional"),
+        ("import sympy\n", "sympy"),
+        ("def f():\n    import torch\n", "torch"),
+    ],
+)
+def test_the_static_check_sees_an_undeclared_import_however_it_is_written(
+    source: str, leaked: str
+) -> None:
+    """A check that cannot fail is not a check. The first three forms got
+    through an earlier version of this file, which recorded only the package a
+    ``from`` import names and not what it loads."""
+    problems = undeclared_imports(_TRACKER, source)
+    assert len(problems) == 1 and leaked in problems[0], problems
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from apedp_dyn.conf import canonical_spec\n",
+        "from apedp_dyn.epistemic import proof_claim, proof_evidence\n",
+        "from apedp_dyn.epistemic.experiment_ledger import DatasetRole\n",
+        "from . import trial_ledger\n",
+        "import numpy as np\nfrom scipy import stats\nimport pandas\nimport json\n",
+    ],
+)
+def test_the_static_check_accepts_declared_imports(source: str) -> None:
+    assert undeclared_imports(_TRACKER, source) == []
+
+
+def test_an_optional_edge_at_module_level_is_refused() -> None:
+    ledger = "apedp_dyn.epistemic.experiment_ledger"
+    inside = "def default_path():\n    from apedp_dyn.env import get_ledger_path\n"
+    assert undeclared_imports(ledger, inside) == []
+    problems = undeclared_imports(ledger, "from apedp_dyn.env import get_ledger_path\n")
+    assert len(problems) == 1 and "module level" in problems[0]
+    # The edge belongs to the module it was declared for, not to the core at large.
+    assert undeclared_imports(_TRACKER, inside)
 
 
 def test_every_declared_optional_edge_still_exists() -> None:
