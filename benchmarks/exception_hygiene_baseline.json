@@ -8,12 +8,12 @@
   "modules": {},
   "size_budget": {
     "apedp/discovery/_core.py": 2417,
+    "apedp_dyn/epistemic/lean_universal_bridge.py": 1970,
     "apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py": 1892,
     "apedp_dyn/quantum_compilation/faros_isq.py": 1783,
     "apedp_dyn/vqc/synthesis.py": 1684,
     "apedp_dyn/quantum_compilation/gf2mul_llm_adjustable.py": 1638,
     "apedp_dyn/quantum_compilation/invsqrt_signed_digit.py": 1584,
-    "apedp_dyn/epistemic/lean_universal_bridge.py": 1498,
     "apedp/epistemic.py": 1484,
     "apedp/model_synthesis.py": 1482,
     "apedp/pipeline.py": 1423,

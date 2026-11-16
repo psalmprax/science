@@ -187,7 +187,27 @@ Each entry: cause, what changed, the pin for it.
   skipped. Today's fixed tests also pass under the two library sets the CI
   matrix installs (numpy 2.2.6 with scipy 1.15.3, numpy 2.4.6 with scipy
   1.17.1), checked for nine test files. The hosted runner's verdict is in
-  J-14.
+  J-15.
+- **J-14 the owner's commit of the same morning, merged — three stale tests
+  and the size budget again.** `101b9c3` ("Harden Rust referee bindings,
+  numerical solvers, Lean bridge, …") reached `stage` while this round was in
+  progress. It merges cleanly. Two things in it fail where a Lean toolchain is
+  present, which the CI test job now has. (a) It rewrote
+  `epistemic/lean_universal_bridge.py` so that a conservation claim is proved
+  from the candidate's own expression or refused, and removed the canned
+  Pythagorean theorem that used to be attached to any such claim; its new
+  `tests/test_lean_universal_bridge_soundness.py` pins that. Three older tests
+  in `tests/test_dyn_lean_universal_bridge.py` still relied on the canned
+  theorem and failed on that commit alone. They now use a candidate the bridge
+  really proves (a sum of squares) for the "synthesized but not kernel-checked
+  is P1" contract, a new test pins the refusal of the old oscillator case, and
+  one message assertion follows the new wording. No bridge code was changed.
+  (b) The same rewrite grew the module from 1,498 to 1,970 lines, past the
+  size budget re-recorded in J-10 an hour earlier. It is re-recorded again.
+  That is the second owner commit in six days to outgrow this budget
+  (`adjudicate.py` +101, this +472). A ceiling that is raised each time it is
+  reached constrains nothing: either these modules are split or the size
+  budget should be dropped. That is the owner's decision.
 
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on

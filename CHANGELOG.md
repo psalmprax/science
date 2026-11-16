@@ -17,7 +17,7 @@ inferred releases.
 
 - **Every failure of the first full test run is traced to a cause; 43 of 44
   are resolved (2026-11-16).** Detail and evidence in
-  `docs/SYSTEM_FLAWS_AUDIT.md`, entries J-01 to J-13. Changes to behaviour:
+  `docs/SYSTEM_FLAWS_AUDIT.md`, entries J-01 to J-15. Changes to behaviour:
   - `apedp_dyn/grammar/proposer.py` gains `drop_collinear_columns` and
     `COLLINEARITY_LIMIT = 0.999`, which this file described on 2026-11-03 and
     the repository did not contain. Duffing recovery is `{u, x, x3, v}` again.

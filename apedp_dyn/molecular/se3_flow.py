@@ -216,7 +216,7 @@ def relax(
     n_steps: int = 400,
     order: int = 1,
 ) -> RelaxationResult:
-    """Relax a configuration by integrating ``dx/dt = -grad E`` with JetFlowStepper."""
+    """Relax a configuration by integrating ``dx/dt = -grad E`` with backtracking safeguard."""
     from apedp_dyn.video.jet_flow_stepper import JetFlowConfig, JetFlowStepper
 
     stepper = JetFlowStepper(JetFlowConfig(num_steps=1, order=order))
@@ -224,11 +224,28 @@ def relax(
     trajectory = [current.copy()]
     energies = [energy(current, force_field)]
     for _ in range(n_steps):
-        current, _, _ = stepper.step(
+        current_e = energies[-1]
+        trial, _, _ = stepper.step(
             lambda z, _t: velocity_field(z, force_field), current, 0.0, step_size
         )
+        trial_e = energy(trial, force_field)
+        if not math.isfinite(trial_e) or trial_e > current_e:
+            grad = energy_gradient(current, force_field)
+            alpha = 0.5 * step_size
+            accepted = current
+            accepted_e = current_e
+            for _ in range(12):
+                cand = current - alpha * grad
+                cand_e = energy(cand, force_field)
+                if math.isfinite(cand_e) and cand_e < current_e:
+                    accepted = cand
+                    accepted_e = cand_e
+                    break
+                alpha *= 0.5
+            trial, trial_e = accepted, accepted_e
+        current = trial
         trajectory.append(current.copy())
-        energies.append(energy(current, force_field))
+        energies.append(trial_e)
     return RelaxationResult(coordinates=current, trajectory=trajectory, energies=energies)
 
 

@@ -33,10 +33,28 @@ import pandas as pd
 #: A live, liquid instrument does not print the identical close *and* the
 #: identical volume on consecutive bars. Five in a row is a fill, not a market.
 STALE_RUN_MIN_BARS = 5
+UNADJUSTED_SPLIT_RATIO = 4.0
 
 DEFAULT_DATE_COLUMN = "observation_date"
 DEFAULT_CLOSE_SUFFIX = "_CLOSE"
 DEFAULT_VOLUME_SUFFIX = "_VOL"
+
+
+def _is_after_timestamp(selected_as_of: str, data_start: str) -> bool:
+    """Compare selected_as_of against data_start using full ISO timestamps when parseable."""
+    if not data_start:
+        return str(selected_as_of)[:10] > ""
+    try:
+        ts_sel = pd.Timestamp(selected_as_of)
+        ts_start = pd.Timestamp(data_start)
+        if pd.notna(ts_sel) and pd.notna(ts_start):
+            if (ts_sel.tzinfo is None) != (ts_start.tzinfo is None):
+                ts_sel = ts_sel.tz_localize("UTC") if ts_sel.tzinfo is None else ts_sel.tz_convert("UTC")
+                ts_start = ts_start.tz_localize("UTC") if ts_start.tzinfo is None else ts_start.tz_convert("UTC")
+            return bool(ts_sel > ts_start)
+    except (ValueError, TypeError):
+        pass
+    return str(selected_as_of)[:10] > str(data_start)[:10]
 
 
 @dataclass(frozen=True)
@@ -78,6 +96,8 @@ class UniverseAudit:
     hindsight_selected: bool | None
     stale_runs: tuple[StaleRun, ...] = ()
     assets_that_stop_trading: tuple[str, ...] = ()
+    non_positive_price_assets: tuple[str, ...] = ()
+    unadjusted_split_assets: tuple[str, ...] = ()
     applicable: bool = True
     notes: tuple[str, ...] = field(default_factory=tuple)
 
@@ -99,6 +119,16 @@ class UniverseAudit:
             found.append(
                 f"{len(assets)} asset(s) carry forward-filled bars that never traded "
                 f"({', '.join(assets)})"
+            )
+        if self.non_positive_price_assets:
+            found.append(
+                f"{len(self.non_positive_price_assets)} asset(s) contain non-positive close prices "
+                f"({', '.join(self.non_positive_price_assets)})"
+            )
+        if self.unadjusted_split_assets:
+            found.append(
+                f"{len(self.unadjusted_split_assets)} asset(s) show extreme single-bar jumps "
+                f"(>=4x or <=0.25x, likely unadjusted splits: {', '.join(self.unadjusted_split_assets)})"
             )
         return found
 
@@ -130,6 +160,8 @@ class UniverseAudit:
             "hindsight_selected": self.hindsight_selected,
             "stale_runs": [run.to_dict() for run in self.stale_runs],
             "assets_that_stop_trading": list(self.assets_that_stop_trading),
+            "non_positive_price_assets": list(self.non_positive_price_assets),
+            "unadjusted_split_assets": list(self.unadjusted_split_assets),
             "applicable": self.applicable,
             "fit_for_economic_claims": self.fit_for_economic_claims,
             "reasons": self.reasons,
@@ -155,24 +187,34 @@ def find_stale_runs(
     close_suffix: str = DEFAULT_CLOSE_SUFFIX,
     volume_suffix: str = DEFAULT_VOLUME_SUFFIX,
     min_bars: int = STALE_RUN_MIN_BARS,
+    rel_tol: float = 1e-12,
 ) -> list[StaleRun]:
-    """Runs of at least ``min_bars`` bars that repeat the previous bar exactly.
+    """Runs of at least ``min_bars`` bars that repeat the previous bar.
 
-    A bar is stale when its close equals the previous close and, if the panel
-    has a volume column for the asset, its volume equals the previous volume
-    too. Requiring both keeps a pegged or thinly quoted instrument, whose price
+    A bar is stale when its close equals (within ``rel_tol``) the previous finite close
+    and, if the panel has a volume column for the asset, its volume equals the previous
+    finite volume too. Requiring both keeps a pegged or thinly quoted instrument, whose price
     can legitimately repeat, from being mistaken for a filled gap.
     """
+    if min_bars < 1:
+        raise ValueError("min_bars must be at least 1")
     labels = _bar_labels(panel, date_column)
     runs: list[StaleRun] = []
     for asset in panel_assets(panel, close_suffix):
         close = panel[f"{asset}{close_suffix}"].to_numpy(dtype=float)
         repeats: np.ndarray = np.zeros(len(close), dtype=bool)
-        repeats[1:] = close[1:] == close[:-1]
-        volume_column = f"{asset}{volume_suffix}"
-        if volume_column in panel.columns:
-            volume = panel[volume_column].to_numpy(dtype=float)
-            repeats[1:] &= volume[1:] == volume[:-1]
+        if len(close) > 1:
+            finite_close = np.isfinite(close[1:]) & np.isfinite(close[:-1])
+            repeats[1:] = finite_close & np.isclose(
+                close[1:], close[:-1], rtol=rel_tol, atol=0.0, equal_nan=False
+            )
+            volume_column = f"{asset}{volume_suffix}"
+            if volume_column in panel.columns:
+                volume = panel[volume_column].to_numpy(dtype=float)
+                finite_vol = np.isfinite(volume[1:]) & np.isfinite(volume[:-1])
+                repeats[1:] &= finite_vol & np.isclose(
+                    volume[1:], volume[:-1], rtol=rel_tol, atol=0.0, equal_nan=False
+                )
         start: int | None = None
         for i in range(len(close) + 1):
             is_stale = i < len(close) and bool(repeats[i])
@@ -201,6 +243,7 @@ def mask_stale_bars(
     close_suffix: str = DEFAULT_CLOSE_SUFFIX,
     volume_suffix: str = DEFAULT_VOLUME_SUFFIX,
     min_bars: int = STALE_RUN_MIN_BARS,
+    rel_tol: float = 1e-12,
 ) -> pd.DataFrame:
     """A copy of ``panel`` with every stale bar set to NaN in all of the asset's columns.
 
@@ -213,7 +256,7 @@ def mask_stale_bars(
     masked = panel.copy()
     for run in find_stale_runs(
         panel, date_column=date_column, close_suffix=close_suffix,
-        volume_suffix=volume_suffix, min_bars=min_bars,
+        volume_suffix=volume_suffix, min_bars=min_bars, rel_tol=rel_tol,
     ):
         rows = slice(position[run.first_stale_bar], position[run.last_stale_bar] + 1)
         columns = [col for col in panel.columns if str(col).startswith(f"{run.asset}_")]
@@ -248,12 +291,23 @@ def audit_universe(
     if selected_as_of is None:
         hindsight = None
     else:
-        hindsight = str(selected_as_of)[:10] > str(data_start)[:10]
+        hindsight = _is_after_timestamp(str(selected_as_of), str(data_start))
     stops: list[str] = []
+    non_pos: list[str] = []
+    split_jumps: list[str] = []
     for asset in assets:
         close = panel[f"{asset}{close_suffix}"].to_numpy(dtype=float)
         if len(close) and np.isnan(close[-1]) and np.isfinite(close).any():
             stops.append(asset)
+        finite = np.isfinite(close)
+        if np.any(finite & (close <= 0.0)):
+            non_pos.append(asset)
+        if len(close) > 1:
+            both_pos = finite[:-1] & finite[1:] & (close[:-1] > 0.0) & (close[1:] > 0.0)
+            if np.any(both_pos):
+                ratios = close[1:][both_pos] / close[:-1][both_pos]
+                if np.any((ratios >= UNADJUSTED_SPLIT_RATIO) | (ratios <= 1.0 / UNADJUSTED_SPLIT_RATIO)):
+                    split_jumps.append(asset)
     stale = find_stale_runs(
         panel, date_column=date_column, close_suffix=close_suffix, volume_suffix=volume_suffix
     )
@@ -272,6 +326,8 @@ def audit_universe(
         hindsight_selected=hindsight,
         stale_runs=tuple(stale),
         assets_that_stop_trading=tuple(stops),
+        non_positive_price_assets=tuple(non_pos),
+        unadjusted_split_assets=tuple(split_jumps),
         notes=tuple(notes),
     )
 

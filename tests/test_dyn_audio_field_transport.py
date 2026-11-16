@@ -137,3 +137,19 @@ def test_accelerated_ridge_transport_order2_error():
         assert prediction_r_squared(prediction, exact) > 0.9999
     assert errors[2] < 5e-4, errors
     assert errors[2] < errors[1] / 3.0, errors
+
+
+def test_ridge_handles_silent_frames_and_flat_peaks():
+    freqs = np.linspace(0.0, 1000.0, 65)
+    mag = np.zeros((65, 3), dtype=np.float64)
+    mag[20, 1] = 1.0
+    mag[19, 1] = 0.25
+    mag[21, 1] = 0.25
+    # Convex shoulder neighbor should not extrapolate wildly
+    mag[20, 2] = 1.0
+    mag[19, 2] = 0.0
+    mag[21, 2] = 0.0
+    ridge = ridge_instantaneous_frequency(mag, freqs)
+    assert np.isnan(ridge[0])
+    assert abs(ridge[1] - freqs[20]) < 1e-12
+    assert abs(ridge[2] - freqs[20]) < 1e-12
