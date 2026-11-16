@@ -15,6 +15,57 @@ inferred releases.
 
 ### Changed
 
+- **Every failure of the first full test run is traced to a cause; 43 of 44
+  are resolved (2026-11-16).** Detail and evidence in
+  `docs/SYSTEM_FLAWS_AUDIT.md`, entries J-01 to J-13. Changes to behaviour:
+  - `apedp_dyn/grammar/proposer.py` gains `drop_collinear_columns` and
+    `COLLINEARITY_LIMIT = 0.999`, which this file described on 2026-11-03 and
+    the repository did not contain. Duffing recovery is `{u, x, x3, v}` again.
+  - `apedp/model_synthesis.py` fits on `y / max|y|` when `max|y|` is above 1e4
+    (it already did below 1e-2): above about 3e5 the optimizer moved rates and
+    left amplitudes at their start values, and a `rational_transition` law at
+    scale 1e9 was classified `exponential_envelope`.
+  - Stage D refines in two unit-free x scales, `max|x|` and the geometric mean
+    of `|x|`, and keeps the better accepted result (`_stage_d_x_scales`).
+    `TIER_B_01` (Planck) returns R² 0.9991 where the synthesizer had abstained
+    at 0.940. No validation R² fell on the 64 corpus problems; three selections
+    changed.
+  - The parsimony tiebreak is `_parsimony_tiebreak` in
+    `apedp/model_synthesis_helpers.py`, moved unchanged so the near-OOD veto
+    can be tested on stated candidates.
+  - `apedp_dyn/sandbox/pde_verification_sandbox.py`: the time step respects
+    advection and diffusion together. The "verified" scheme had been stable
+    only at its default settings. `audit_interventional_invariance` measures
+    the evidence FLAW-07 made the apex tier require.
+  - `apedp_dyn/sandbox/apedp_x_meta_sandbox.py`: the clean Kepler case earns
+    rival rejection and interventional invariance by measurement
+    (`measure_kepler_claim_support`).
+  Changes to tests and records only:
+  - `tests/test_dyn_ha_coupling.py` and §76 of
+    `docs/TRADING_EQUATION_FORENSICS.md` carry the post-FLAW-A01 sequence, as
+    the 2026-11-02 entry below says they already did.
+  - `tests/test_dyn_tournament.py` pins what the trace has under four scipy
+    releases instead of one machine's whole trace, which none of them
+    reproduces. `tests/test_dyn_pointer.py` writes the artefact it reads.
+  - `tests/test_dyn_grammar_scope.py` (225 of 225, per the scaffold inventory)
+    and `tests/test_dyn_term_necessity.py` (a tie's order is not a contract).
+  - Ten vendored verifier files are restored to the bytes their records pin
+    and excluded from ruff and mypy.
+  - `benchmarks/exception_hygiene_baseline.json` is re-recorded:
+    `epistemic/adjudicate.py` 1,026 → 1,127 (the null-model guard of
+    `531f8e5`), three ceilings tightened.
+  - CI: the test job installs the pinned Lean release and deselects the
+    governance test, which the governance-manifest job reports and enforces.
+  - `rust/apedp-kernel`: the rational pair search evicts each quotient once
+    scored. One call on a 200-row problem peaked at 2,992 MB and now peaks at
+    377 MB; results are unchanged.
+  - `APEDPX_FROZEN_v1_18.json` is re-minted for the two sandbox files above.
+    **This re-mint changes B_internal outcomes** (two downgraded valid cases
+    are promoted); its `remint_log` entries say so.
+  **Caution about this file:** commit `a32bfa5` added 1,870 lines here and
+  changed nothing else. Three fixes it describes were not in the tree until
+  today. The rest of those lines have not been checked against the code.
+
 - **Six kickmix tests no longer mistake an empty directory for the extension
   (2026-11-16).** They skipped unless `import kickmix` succeeded; with the
   extension's parent directory on `sys.path` that import returns an empty
