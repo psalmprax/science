@@ -132,7 +132,12 @@ jobs:
   test:
     needs: [python-quality, rust-quality]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The suite had never run to completion here. Measured on 2026-11-16: the
+    # 3.11 leg ran 4,769 tests in 25 minutes and the 3.10 leg 3,270 in 21,
+    # so a full run takes about 32; the fitter now integrates at FIT_RTOL
+    # (apedp_dyn/fitting/parameter_fit.py), which made the full local run 38 %
+    # slower. 45 minutes would end the job before the suite does.
+    timeout-minutes: 75
     services:
       redis:
         image: redis:7-alpine

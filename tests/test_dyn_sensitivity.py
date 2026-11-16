@@ -85,9 +85,17 @@ class TestSoleGammaFlagSurface:
             assert adj.status is EpistemicStatus.UNIQUE_SUPPORT, (gamma, adj)
 
     def test_flag_sweep_structured_case(self):
-        """rho1=0.594 series: flags 0.4/0.5 abstain, 0.6 promotes. The live
-        rep2 value sits near the flag — pinned as a known sensitive edge,
-        not smoothed over."""
+        """rho1=0.593 series: flags 0.4/0.5 abstain, 0.6 promotes. The live
+        rep2 value sits near the flag -- pinned as a known sensitive edge,
+        not smoothed over.
+
+        Adjudicated on the rival alone. Until 2026-11-16 the truth was also
+        passed, and the sweep relied on its fit collapsing on holdout so that
+        the rival was the sole survivor; since the fitter converges the truth
+        passes gate 4 and wins the pair outright (test_dyn_epistemic_bootstrap,
+        TestFrozenFlaggedCell). The surface being measured is the guard's on
+        this residual series, so the series' own candidate is the one judged.
+        """
         import apedp_dyn
         from apedp_dyn import dyn_sweep as ds
         from apedp_dyn.epistemic.bootstrap import holdout_se_series
@@ -97,11 +105,10 @@ class TestSoleGammaFlagSurface:
                               seed=ds.cell_seed("STAB", 2, 10))
         rr = apedp_dyn.fit_candidate(prob, slate["STAB"]["rival"])
         se = holdout_se_series(prob, rr.candidate, rr.fit.param_values)
-        rt = apedp_dyn.fit_candidate(prob, slate["STAB"]["truth"])
         for flag, expected in ((0.4, "insufficient_evidence"),
                                (0.5, "insufficient_evidence"),
                                (0.6, "unique_support")):
-            adj = adjudicate([rt, rr], resid_sole=se, sole_rho_flag=flag)
+            adj = adjudicate([rr], resid_sole=se, sole_rho_flag=flag)
             assert adj.status.value == expected, (flag, adj)
 
     @staticmethod

@@ -232,7 +232,7 @@ Each entry: cause, what changed, the pin for it.
   test compared the fallback with an explicit `holdout_sq_error` series, the
   squared-error series `_residual_series` stopped using; it compares signed
   residuals at three flags.
-  *What stays open:* the default-start fit, which production uses, stops 30 %
+  *Resolved by J-18:* the default-start fit, which production uses, stopped 30 %
   off on a well-posed problem, and the referee's verdict on the true model at
   5 % noise is decided by that stopping point. It is the same mechanism as
   J-08's tournament boundary. `fit_candidate_multistart` exists and is not
@@ -272,6 +272,50 @@ Each entry: cause, what changed, the pin for it.
   already records that case as `None`; the test assumed it could not happen. It
   now requires such a row to stop at gate 4 and say why. Same cause as J-16, a
   third library- and interpreter-dependent stopping point.
+- **J-18 the fitter converges — FIXED, and a recorded referee failure was the
+  fitter's.** J-16's open half. The fit simulated at `simulate()`'s default
+  `rtol=1e-3` and differentiated with `least_squares`' default step (~1.5e-8
+  relative), so its Jacobian was the integrator's step selection, not the
+  model: on the true Duffing model at 5 % noise it stopped with status 3 and
+  first-order optimality up to 1e10, at a cubic coefficient of −2.60 (scipy
+  1.18.1) or −2.73 (1.17.1), short of the minimum at −1.63. It now integrates
+  at `FIT_RTOL = 1e-7`, `FIT_ATOL = 1e-9` and differentiates with
+  `FIT_DIFF_STEP = 1e-5` and `x_scale="jac"`
+  (`apedp_dyn/fitting/parameter_fit.py`). Measured on four noise seeds under
+  scipy 1.15.3, 1.17.1 and 1.18.1: training losses agree to seven figures, the
+  lowest-loss structure is the truth in all twelve fits (the old fitter chose
+  the linear rival on seed 22 under one release), and the gate-4 verdict
+  agrees across releases on every seed. A fit costs about twice as long; the
+  full local suite went from 23 to 32 minutes, and the CI test job's limit is
+  75 minutes, with the measurement in the workflow.
+  What it moved. A full run gave 7 failures; each is explained and none is
+  re-pinned to a new snapshot.
+  (a) *STAB/10/rep2, the "frozen failure" in
+  `outputs/dyn_epistemic_freeze.json`:* the cubic truth "blew up on holdout"
+  and the linear rival was promoted unopposed. The blow-up was the fitter's
+  stopping point. Converged, the truth passes gate 4 (0.0416 against 0.0863)
+  and is promoted over the rival by 0.0339 against a tie band of 0.0154. Three
+  guard tests used the cell as their sole-survivor case; they now take the
+  rival alone, which is the case the guards are about, and a test pins that
+  the frozen failure no longer happens. The flag-sensitivity sweep on the same
+  residual series is judged on the rival alone for the same reason.
+  (b) *Bootstrap parameter bands* (`epistemic/bootstrap.py`) centred the
+  resampled problems on a trajectory integrated at 1e-3 and refitted them at
+  the new tolerance; the band no longer contained the estimate it was built
+  around. The centre is integrated at the fitter's tolerances.
+  (c) *Noiseless two-DOF saturation test:* both models now reach a training
+  loss of ~2e-14 and holdout errors of 3e-7 to 7e-7; its 5 % and 1 %
+  comparisons were integrator noise there (CI's 3.10 leg had already failed it
+  under the old fitter: 5.65e-7 against 6.37e-7). Both comparisons hold above a
+  stated floor.
+  (d) *The provenance-fallback tests* (J-16) return to the production route
+  (default start, lowest training loss); the generating-parameter start is
+  gone. The converged truth carries |rho1| 0.548 raw and 0.447 on
+  standardized innovations, and at the production flag of 0.5 it is the
+  innovation fallback that admits it; that is pinned.
+  The scientific drift guardrail and the known-truth recovery gate pass
+  unchanged. Not re-derived: benchmark records written by scripts that call the
+  fitter; no test flags them, and they describe the old fitter until re-run.
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on
 this machine and has no verdict; the committed mutation report, still the

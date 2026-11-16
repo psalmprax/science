@@ -29,8 +29,6 @@ Two contracts are pinned:
 """
 from __future__ import annotations
 
-from typing import ClassVar
-
 import numpy as np
 import pytest
 
@@ -289,26 +287,20 @@ class TestProvenanceFallbackFiresEndToEnd:
                                            y.shape)
         return dataclasses.replace(prob, train=train, holdout=holdout)
 
-    #: Generating parameters of apedp_dyn.problems.duffing, by grammar term.
-    GENERATING: ClassVar[dict[str, float]] = {"u": 1.0, "x": -4.0, "x3": -2.0, "v": -0.2}
-
     @classmethod
     def _best_fit(cls):
-        """The true model, fitted by the real fitter from its generating parameters.
+        """The production route: fit the whole slate, keep the lowest training loss.
 
-        Until 2026-11-16 this took the lowest-train-loss fit over the whole
-        slate from the fitter's default start. On this record that fit stops
-        with the cubic coefficient 31-35 % off (-2.62 with scipy 1.18.1, -2.70
-        with 1.17.1; least_squares status 3, optimality ~1e7): x**3 is barely
-        exercised at the training amplitude, so the cost is flat along it and
-        where the optimizer stops belongs to the scipy release. The holdout
-        verdict followed: gate 4 passed on 1.18 (margin 0.94) and failed on
-        1.17 (margin 1.03), and the test failed on CI for that reason.
-        Started from the generating parameters, the same fitter returns -2.0007
-        under scipy 1.15.3, 1.17.1 and 1.18.1 alike, with gate-4 margin 0.40.
-        The record is still a real fitter-produced one; only its start is fixed.
-        docs/SYSTEM_FLAWS_AUDIT.md, J-16, records what this says about the
-        fitter.
+        On 2026-11-16 this was briefly started from the generating parameters,
+        because from the default start the fitter stopped short of the minimum
+        at a point that depended on the scipy release (cubic coefficient -2.62
+        under 1.18.1, -2.70 under 1.17.1) and gate 4 passed under one and failed
+        under the other. The fitter now converges (FIT_RTOL, FIT_DIFF_STEP in
+        apedp_dyn/fitting/parameter_fit.py; docs/SYSTEM_FLAWS_AUDIT.md J-16):
+        the true structure wins at the same training loss to seven figures
+        under 1.15.3, 1.17.1 and 1.18.1, with the cubic coefficient at -1.63 --
+        the noise's optimum, not the generating -2.0 -- so the production route
+        is reproducible again and the crutch is gone.
         """
         from apedp_dyn.fitting.parameter_fit import fit_candidate
         from apedp_dyn.grammar import enumerate_candidates, prune_admissible
@@ -316,10 +308,11 @@ class TestProvenanceFallbackFiresEndToEnd:
         prob = cls._noisy_duffing()
         kept = prune_admissible(prob, enumerate_candidates(
             required=("u",), optional=("x", "x3", "v"), max_terms=4))
-        truth = next(k.candidate for k in kept
-                     if sorted(k.candidate.term_set()) == sorted(cls.GENERATING))
-        x0 = np.array([cls.GENERATING[t.name] for t in truth.terms])
-        best = fit_candidate(prob, truth, x0=x0)
+        scored = [fit_candidate(prob, k.candidate) for k in kept]
+        scored = [s for s in scored if s.train_loss is not None and np.isfinite(s.train_loss)]
+        best = min(scored, key=lambda s: s.train_loss)
+        assert sorted(best.candidate.term_set()) == ["u", "v", "x", "x3"], (
+            "precondition: the true structure has the lowest training loss")
         assert best.provenance["gate4_status"]["passed"], (
             "precondition: the fitted truth must survive gate 4, or adjudicate() "
             f"never reaches the guards ({best.provenance['gate4_status']['detail']})")
@@ -363,31 +356,31 @@ class TestProvenanceFallbackFiresEndToEnd:
         assert best.holdout_rmse < SOLE_SURVIVOR_GAMMA * calibrated_sigma(
             g4["holdout_noise_sigma"])
 
+    #: A flag both of Guard 2's statistics exceed on this record (raw |rho1|
+    #: 0.548, standardized innovations 0.447), so the refusal below cannot be
+    #: rescued by the innovation fallback.
+    LOW_FLAG = RESID_RHO_FLAG / 2
+
     def test_fallback_abstains_without_any_explicit_series(self):
         """The end-to-end claim: no resid_sole, real fit, guard-2 abstention.
 
         adjudicate() is called with a single candidate and no residual series
         at all, so the series it judges can only have come from gate 4's
-        record. The flag is set just below the |rho1| of that recorded series,
-        and the reason must quote exactly that value: a guard reading any
-        other series, or none, cannot produce it. (Until 2026-11-16 the flag
-        was RESID_RHO_FLAG / 2 and the refusal came from the structure an
-        unconverged fit leaves; see _best_fit.)
+        record. The reason must quote the |rho1| of exactly that recorded
+        series: a guard reading any other series, or none, cannot produce it.
         """
         from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
 
         best = self._best_fit()
         recorded = best.provenance["gate4_status"]["holdout_residuals"]
-        rho = self._lag1(recorded)
-        flag = rho * 0.999
-        assert not _sole_survivor_whiteness(recorded, flag)[0], "precondition: refused at this flag"
+        assert not _sole_survivor_whiteness(recorded, self.LOW_FLAG)[0], "precondition"
 
-        adj = adjudicate([best], sole_rho_flag=flag)
+        adj = adjudicate([best], sole_rho_flag=self.LOW_FLAG)
         assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
         assert adj.promoted is None
         # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
         assert "absolute ceiling" in adj.reason
-        assert f"|rho1|={rho:.3f}" in adj.reason
+        assert f"|rho1|={self._lag1(recorded):.3f}" in adj.reason
 
     def test_the_same_recorded_series_clears_a_flag_just_above_it(self):
         """The other side of the boundary: the refusal above was the series, not the flag."""
@@ -397,10 +390,17 @@ class TestProvenanceFallbackFiresEndToEnd:
         assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
         assert adj.promoted is best
 
-    def test_the_fitted_truth_is_promoted_at_the_production_flag(self):
-        """At 5 % noise the true model's holdout residuals are white (|rho1| 0.058)."""
+    def test_the_production_flag_accepts_the_truth_on_its_innovations(self):
+        """At the production flag the raw series fails (0.548) and the standardized
+        innovations pass (0.447): the truth is promoted, and it is the fallback
+        that admits it. Pinned so a change to either statistic is seen."""
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
+
         best = self._best_fit()
-        assert self._lag1(best.provenance["gate4_status"]["holdout_residuals"]) < RESID_RHO_FLAG
+        recorded = best.provenance["gate4_status"]["holdout_residuals"]
+        assert self._lag1(recorded) > RESID_RHO_FLAG
+        ok, why = _sole_survivor_whiteness(recorded, RESID_RHO_FLAG)
+        assert ok and "standardized innovations" in why
         adj = adjudicate([best])
         assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
         assert adj.promoted is best
@@ -421,7 +421,7 @@ class TestProvenanceFallbackFiresEndToEnd:
         series = best.provenance["gate4_status"]["holdout_residuals"]
         rho = self._lag1(series)
 
-        for flag in (rho * 0.999, rho * 1.001, RESID_RHO_FLAG):
+        for flag in (self.LOW_FLAG, rho * 1.001, RESID_RHO_FLAG):
             via_provenance = adjudicate([best], sole_rho_flag=flag)
             via_argument = adjudicate([best], resid_sole=series, sole_rho_flag=flag)
             assert via_provenance.status is via_argument.status, flag

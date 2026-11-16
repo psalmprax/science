@@ -15,6 +15,17 @@ inferred releases.
 
 ### Changed
 
+- **The parameter fitter converges, and its verdicts no longer depend on the
+  scipy release (2026-11-16).** `fit_candidate` integrates at
+  `FIT_RTOL = 1e-7` / `FIT_ATOL = 1e-9` and differentiates with
+  `FIT_DIFF_STEP = 1e-5` and `x_scale="jac"`, instead of `rtol=1e-3` with the
+  default step. The old fit stopped short of the minimum at points that
+  differed between scipy releases. The recorded STAB/10/rep2 failure (truth
+  collapses on holdout, rival promoted) no longer occurs: the truth is
+  promoted. `param_bootstrap_ci` centres its resamples at the same tolerance.
+  Fits cost about twice as long; the CI test job's limit is 75 minutes.
+  `docs/SYSTEM_FLAWS_AUDIT.md`, J-18.
+
 - **Every failure of the first full test run is traced to a cause; 43 of 44
   are resolved (2026-11-16).** Detail and evidence in
   `docs/SYSTEM_FLAWS_AUDIT.md`, entries J-01 to J-15. Changes to behaviour:
