@@ -182,52 +182,82 @@ impl Graph {
     /// packets). Node sharing is expanded, so the string can be exponential in
     /// the number of nodes; RIME graphs are small by construction.
     pub fn describe(&self) -> String {
-        fn rec(g: &Graph, i: usize, memo: &mut Vec<Option<String>>) -> String {
+        fn rec(
+            g: &Graph,
+            i: usize,
+            memo: &mut Vec<Option<String>>,
+            visiting: &mut Vec<bool>,
+        ) -> String {
             if let Some(s) = memo.get(i).and_then(|m| m.clone()) {
                 return s;
             }
+            if i >= visiting.len() {
+                return "<?>".to_string();
+            }
+            if visiting[i] {
+                return "<cycle>".to_string();
+            }
+            visiting[i] = true;
             let s = match g.nodes.get(i) {
                 None => "<?>".to_string(),
                 Some(Node::Input(v)) => format!("v{}", v),
                 Some(Node::Const(c)) => format!("{:.6}", c),
-                Some(Node::Add(a, b)) => format!("({} + {})", rec(g, *a, memo), rec(g, *b, memo)),
-                Some(Node::Mul(a, b)) => format!("({} * {})", rec(g, *a, memo), rec(g, *b, memo)),
+                Some(Node::Add(a, b)) => {
+                    format!(
+                        "({} + {})",
+                        rec(g, *a, memo, visiting),
+                        rec(g, *b, memo, visiting)
+                    )
+                }
+                Some(Node::Mul(a, b)) => {
+                    format!(
+                        "({} * {})",
+                        rec(g, *a, memo, visiting),
+                        rec(g, *b, memo, visiting)
+                    )
+                }
                 Some(Node::SafeDiv(a, b)) => {
-                    format!("safediv({}, {})", rec(g, *a, memo), rec(g, *b, memo))
+                    format!(
+                        "safediv({}, {})",
+                        rec(g, *a, memo, visiting),
+                        rec(g, *b, memo, visiting)
+                    )
                 }
                 Some(Node::Power { src, p_num, p_den }) => {
                     if *p_den == 1 {
-                        format!("({}^{})", rec(g, *src, memo), p_num)
+                        format!("({}^{})", rec(g, *src, memo, visiting), p_num)
                     } else {
-                        format!("({}^({}/{}))", rec(g, *src, memo), p_num, p_den)
+                        format!("({}^({}/{}))", rec(g, *src, memo, visiting), p_num, p_den)
                     }
                 }
-                Some(Node::Sin(a)) => format!("sin({})", rec(g, *a, memo)),
-                Some(Node::Cos(a)) => format!("cos({})", rec(g, *a, memo)),
-                Some(Node::SafeExp(a)) => format!("exp({})", rec(g, *a, memo)),
-                Some(Node::SafeLog(a)) => format!("safelog({})", rec(g, *a, memo)),
-                Some(Node::Diff(a)) => format!("diff({})", rec(g, *a, memo)),
-                Some(Node::Neg(a)) => format!("(-{})", rec(g, *a, memo)),
-                Some(Node::Tanh(a)) => format!("tanh({})", rec(g, *a, memo)),
-                Some(Node::Sign(a)) => format!("sign({})", rec(g, *a, memo)),
-                Some(Node::Abs(a)) => format!("abs({})", rec(g, *a, memo)),
-                Some(Node::Lag(a, k)) => format!("{}[t-{}]", rec(g, *a, memo), k),
+                Some(Node::Sin(a)) => format!("sin({})", rec(g, *a, memo, visiting)),
+                Some(Node::Cos(a)) => format!("cos({})", rec(g, *a, memo, visiting)),
+                Some(Node::SafeExp(a)) => format!("exp({})", rec(g, *a, memo, visiting)),
+                Some(Node::SafeLog(a)) => format!("safelog({})", rec(g, *a, memo, visiting)),
+                Some(Node::Diff(a)) => format!("diff({})", rec(g, *a, memo, visiting)),
+                Some(Node::Neg(a)) => format!("(-{})", rec(g, *a, memo, visiting)),
+                Some(Node::Tanh(a)) => format!("tanh({})", rec(g, *a, memo, visiting)),
+                Some(Node::Sign(a)) => format!("sign({})", rec(g, *a, memo, visiting)),
+                Some(Node::Abs(a)) => format!("abs({})", rec(g, *a, memo, visiting)),
+                Some(Node::Lag(a, k)) => format!("{}[t-{}]", rec(g, *a, memo, visiting), k),
                 Some(Node::State { src, decay, init }) => {
                     format!(
                         "state_{:.4}({}; init={:.4})",
                         decay,
-                        rec(g, *src, memo),
+                        rec(g, *src, memo, visiting),
                         init
                     )
                 }
             };
+            visiting[i] = false;
             if i < memo.len() {
                 memo[i] = Some(s.clone());
             }
             s
         }
         let mut memo = vec![None; self.nodes.len()];
-        rec(self, self.output, &mut memo)
+        let mut visiting = vec![false; self.nodes.len()];
+        rec(self, self.output, &mut memo, &mut visiting)
     }
 
     /// True when any node reads time: a `Lag` delay or a `State` memory cell.

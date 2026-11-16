@@ -11,16 +11,32 @@ from pathlib import Path
 
 import numpy as np
 
+from apedp_dyn.epistemic.adjudicate import DataOrigin
+
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
-AVAILABLE_ASSETS: tuple[str, ...] = (
+REAL_OBSERVATIONAL_ASSETS: tuple[str, ...] = (
     "sp500",
     "nasdaq100",
+)
+
+SYNTHETIC_PROXY_ASSETS: tuple[str, ...] = (
     "russell2000",
     "dow30",
     "crypto_btc",
     "treasury10y",
 )
+
+AVAILABLE_ASSETS: tuple[str, ...] = REAL_OBSERVATIONAL_ASSETS + SYNTHETIC_PROXY_ASSETS
+
+
+def asset_data_origin(asset: str) -> DataOrigin:
+    """Return honest epistemic DataOrigin for each supported market asset."""
+    if asset in REAL_OBSERVATIONAL_ASSETS:
+        return DataOrigin.REAL_OBSERVATIONAL
+    if asset in SYNTHETIC_PROXY_ASSETS:
+        return DataOrigin.SYNTHETIC
+    raise ValueError(f"Unknown asset {asset!r}. Available: {AVAILABLE_ASSETS}")
 
 _SERIES_CACHE: dict[str, tuple[list[str], np.ndarray]] = {}
 

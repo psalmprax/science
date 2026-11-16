@@ -92,3 +92,26 @@ def test_engine_discovers_transport_terms():
     if "u" in terms:
         assert _relative_error(coefficients["u"], -TRUE_DECAY) < 1e-2, coefficients
     assert result.holdout_r2 > 0.999, result.holdout_r2
+
+
+def test_zero_mass_snapshots_return_nan_without_divide_warnings():
+    import warnings
+
+    snapshots = np.zeros((5, 32), dtype=np.float64)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", RuntimeWarning)
+        com = snapshot_centre_of_mass(snapshots, dx=0.1)
+        var = snapshot_variance(snapshots, dx=0.1)
+    assert len(caught) == 0, [str(w.message) for w in caught]
+    assert np.all(np.isnan(com))
+    assert np.all(np.isnan(var))
+
+
+def test_spectral_recovery_handles_strong_decay():
+    snapshots, dx, dt = simulate_lob_transport(
+        n_x=128, n_t=100, drift_velocity=0.35, diffusion=0.12, decay_rate=1.8
+    )
+    recovery = spectral_transport_recovery(snapshots, dx, dt)
+    assert _relative_error(recovery.drift_velocity, 0.35) < 1e-6
+    assert _relative_error(recovery.diffusion, 0.12) < 1e-6
+    assert _relative_error(recovery.decay_rate, 1.8) < 1e-6

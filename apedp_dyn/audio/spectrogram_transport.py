@@ -43,7 +43,7 @@ class ChirpSpec:
 
     def phase_at(self, t: np.ndarray) -> np.ndarray:
         t = np.asarray(t, dtype=np.float64)
-        return (
+        _out: np.ndarray = (
             _TWO_PI
             * (
                 self.start_freq * t
@@ -52,6 +52,7 @@ class ChirpSpec:
             )
             + self.phase
         )
+        return _out
 
 
 def synthesize_chirps(
@@ -79,10 +80,12 @@ def stft_magnitude(
     Returns ``(magnitude, frequencies_hz, frame_times_s)``; frame times mark the
     window centres.
     """
-    if window_size % 2 != 0:
-        raise ValueError("window_size must be even")
+    if window_size <= 0 or window_size % 2 != 0:
+        raise ValueError("window_size must be a positive even integer")
     if hop <= 0:
         raise ValueError("hop must be positive")
+    if sample_rate <= 0.0:
+        raise ValueError("sample_rate must be positive")
     signal = np.asarray(signal, dtype=np.float64)
     if signal.size < window_size:
         raise ValueError("signal shorter than one window")
@@ -105,21 +108,30 @@ def _parabolic_peak(values: np.ndarray, index: int) -> float:
         return float(index)
     left, centre, right = values[index - 1], values[index], values[index + 1]
     denominator = left - 2.0 * centre + right
-    if abs(denominator) < 1e-15:
+    # Parabolic vertex offset is valid only at a strict concave local maximum.
+    if denominator >= -1e-15:
         return float(index)
-    _out: float = float(index) + 0.5 * (left - right) / denominator
+    offset = max(-0.5, min(0.5, 0.5 * (left - right) / denominator))
+    _out: float = float(index) + offset
     return _out
 
 
 def ridge_instantaneous_frequency(magnitude: np.ndarray, frequencies: np.ndarray) -> np.ndarray:
     """Sub-bin dominant frequency per frame via parabolic ridge interpolation."""
     magnitude = np.asarray(magnitude, dtype=np.float64)
-    _n_freq, n_frames = magnitude.shape
+    frequencies = np.asarray(frequencies, dtype=np.float64)
+    n_freq, n_frames = magnitude.shape
+    if n_freq < 2:
+        raise ValueError("at least 2 frequency bins are required")
     bin_width = float(frequencies[1] - frequencies[0])
     ridge = np.empty(n_frames, dtype=np.float64)
     for frame in range(n_frames):
-        peak = int(np.argmax(magnitude[:, frame]))
-        refined = _parabolic_peak(magnitude[:, frame], peak)
+        col = magnitude[:, frame]
+        if not np.any(col > 0.0):
+            ridge[frame] = np.nan
+            continue
+        peak = int(np.argmax(col))
+        refined = _parabolic_peak(col, peak)
         ridge[frame] = frequencies[0] + refined * bin_width
     _out: np.ndarray = ridge
     return _out

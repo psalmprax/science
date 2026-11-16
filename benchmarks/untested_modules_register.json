@@ -2,11 +2,11 @@
   "schema": "apedp.untested-module-register/v1",
   "module_root": "apedp_dyn",
   "basis": "A module counts as referenced when a tests/ source names its dotted path, imports it, or imports its name from its package -- including a from-import that continues across lines inside parentheses. A bare word match does not count: prose and unrelated identifiers are not coverage. Import coverage from test_smoke_imports.py is separate and is not counted here, because importing a module is not testing it.",
-  "pinned_ceiling": 69,
+  "pinned_ceiling": 68,
   "totals": {
     "modules": 392,
-    "referenced": 323,
-    "unreferenced": 69
+    "referenced": 324,
+    "unreferenced": 68
   },
   "unreferenced": [
     "apedp_dyn/discovery_l2/discovery_stability_harness.py",
@@ -22,7 +22,6 @@
     "apedp_dyn/harness/ledger.py",
     "apedp_dyn/harness/roles.py",
     "apedp_dyn/market/fetch_crypto_orderflow.py",
-    "apedp_dyn/market/sweep.py",
     "apedp_dyn/pde/data.py",
     "apedp_dyn/pde/dispatch.py",
     "apedp_dyn/pde/higher_order_engine.py",

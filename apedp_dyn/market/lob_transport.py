@@ -237,10 +237,12 @@ def spectral_transport_recovery(
     decay_rates = np.empty(len(mode_indices))
     phase_slopes = np.empty(len(mode_indices))
     for column, mode in enumerate(mode_indices):
-        log_fit = np.polyfit(times, log_amplitudes[:, column], 1)
+        valid = amplitudes[:, column] > 1e-12 * max(float(amplitudes[0, column]), 1e-300)
+        fit_mask = valid if int(np.sum(valid)) >= 3 else slice(None)
+        log_fit = np.polyfit(times[fit_mask], log_amplitudes[fit_mask, column], 1)
         decay_rates[column] = -log_fit[0]
         phases = np.unwrap(np.angle(spectrum[:, mode]))
-        phase_fit = np.polyfit(times, phases, 1)
+        phase_fit = np.polyfit(times[fit_mask], phases[fit_mask], 1)
         phase_slopes[column] = phase_fit[0]
 
     k_modes = k[mode_indices]
@@ -328,9 +330,11 @@ def snapshot_variance(snapshots: np.ndarray, dx: float) -> np.ndarray:
     mean_angle = np.arctan2(sin_moment, cos_moment)
     deviation = theta[None, :] - mean_angle[:, None]
     deviation = (deviation + np.pi) % _TWO_PI - np.pi
-    var_theta = np.sum(snapshots * deviation ** 2, axis=1) * dx / total_mass
+    weighted_dev = np.sum(snapshots * deviation ** 2, axis=1) * dx
+    valid_mass = np.abs(total_mass) >= 1e-12
+    var_theta = np.full(snapshots.shape[0], np.nan, dtype=np.float64)
+    np.divide(weighted_dev, total_mass, out=var_theta, where=valid_mass)
     out = (domain_length / _TWO_PI) ** 2 * var_theta
-    out[np.abs(total_mass) < 1e-12] = np.nan
     _out: np.ndarray = out
     return _out
 

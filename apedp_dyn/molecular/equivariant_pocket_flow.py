@@ -211,6 +211,54 @@ def build_pocket_force_field(graph: MolecularGraph) -> PocketConditionedForceFie
     )
 
 
+def torsion_energy_and_grad(
+    coords: np.ndarray,
+    torsions: tuple[TorsionTerm, ...],
+) -> tuple[float, np.ndarray]:
+    """Compute periodic dihedral torsion energy and Blondel-Karplus gradients."""
+    coords = np.asarray(coords, dtype=np.float64)
+    grad = np.zeros_like(coords)
+    total_e = 0.0
+    eps_sq = 1e-18
+    for term in torsions:
+        b1 = coords[term.j] - coords[term.i]
+        b2 = coords[term.k] - coords[term.j]
+        b3 = coords[term.atom_l] - coords[term.k]
+        b2_sq = float(np.dot(b2, b2))
+        if b2_sq < eps_sq:
+            continue
+        b2_norm = math.sqrt(b2_sq)
+        m = np.cross(b1, b2)
+        n_vec = np.cross(b2, b3)
+        m_sq = float(np.dot(m, m))
+        n_sq = float(np.dot(n_vec, n_vec))
+        if m_sq < eps_sq or n_sq < eps_sq:
+            total_e += term.barrier_kcal * (1.0 + math.cos(-term.phase_rad))
+            continue
+        mn_norm = math.sqrt(m_sq * n_sq)
+        cos_phi = max(-1.0, min(1.0, float(np.dot(m, n_vec)) / mn_norm))
+        b2_hat = b2 / b2_norm
+        sin_phi = float(np.dot(np.cross(m, n_vec), b2_hat)) / mn_norm
+        phi = math.atan2(sin_phi, cos_phi)
+        arg = term.periodicity * phi - term.phase_rad
+        total_e += term.barrier_kcal * (1.0 + math.cos(arg))
+        de_dphi = -term.barrier_kcal * term.periodicity * math.sin(arg)
+
+        # Blondel-Karplus analytical gradients preserving zero net force/torque
+        dphi_di = -(b2_norm / m_sq) * m
+        dphi_dl = (b2_norm / n_sq) * n_vec
+        proj_12 = float(np.dot(b1, b2)) / b2_sq
+        proj_23 = float(np.dot(b2, b3)) / b2_sq
+        dphi_dj = -(1.0 + proj_12) * dphi_di + proj_23 * dphi_dl
+        dphi_dk = proj_12 * dphi_di - (1.0 + proj_23) * dphi_dl
+
+        grad[term.i] += de_dphi * dphi_di
+        grad[term.j] += de_dphi * dphi_dj
+        grad[term.k] += de_dphi * dphi_dk
+        grad[term.atom_l] += de_dphi * dphi_dl
+    return float(total_e), grad
+
+
 def intramolecular_energy_and_grad(
     coords: np.ndarray,
     ff: PocketConditionedForceField,
@@ -252,6 +300,18 @@ def intramolecular_energy_and_grad(
         grad[ang.k] += scale * dcos_dv
         grad[ang.j] -= scale * (dcos_du + dcos_dv)
 
+    # Exclude 1-2 and 1-3 atom pairs implied by declared torsions even when
+    # explicit bonds/angles are omitted from the force-field specification.
+    for term in ff.torsions:
+        for a, b in (
+            (term.i, term.j),
+            (term.j, term.k),
+            (term.k, term.atom_l),
+            (term.i, term.k),
+            (term.j, term.atom_l),
+        ):
+            bonded_set.add((min(a, b), max(a, b)))
+
     # 3. Non-bonded intramolecular soft-core repulsion (1-4 and higher pairs)
     # Intramolecular steric core radius (~1.35 A) with soft-core smoothing prevents
     # 1-4 aromatic ring atoms (~2.4-2.8 A apart) from experiencing artificial LJ walls.
@@ -287,6 +347,11 @@ def intramolecular_energy_and_grad(
         grad[k] += scale * gk
         grad[atom_l] += scale * gl
         grad[i] -= scale * (gj + gk + gl)
+
+    # 5. Periodic dihedral torsion terms: E = V_n * (1 + cos(n * phi - gamma))
+    e_tor, g_tor = torsion_energy_and_grad(coords, ff.torsions)
+    total_e += e_tor
+    grad += g_tor
 
     return float(total_e), grad
 
@@ -421,15 +486,28 @@ def relax_ligand_in_pocket(
     trajectory_e = [initial_total]
 
     current = coords.copy()
+    current_e = initial_total
     for _ in range(n_steps):
-        e_in, g_in = intramolecular_energy_and_grad(current, ff)
-        e_out, g_out = intermolecular_energy_and_grad(current, ff, pocket)
+        _, g_in = intramolecular_energy_and_grad(current, ff)
+        _, g_out = intermolecular_energy_and_grad(current, ff, pocket)
         g_total = g_in + g_out
         gnorm = float(np.linalg.norm(g_total))
         if gnorm > max_grad_norm:
             g_total = g_total * (max_grad_norm / gnorm)
-        current = current - step_size * g_total
-        trajectory_e.append(e_in + e_out)
+        alpha = step_size
+        accepted = current
+        for _bt in range(6):
+            cand = current - alpha * g_total
+            ce_in, _ = intramolecular_energy_and_grad(cand, ff)
+            ce_out, _ = intermolecular_energy_and_grad(cand, ff, pocket)
+            cand_e = ce_in + ce_out
+            if cand_e <= current_e:
+                accepted = cand
+                current_e = cand_e
+                break
+            alpha *= 0.5
+        current = accepted
+        trajectory_e.append(current_e)
 
     e_intra_f, _ = intramolecular_energy_and_grad(current, ff)
     e_inter_f, _ = intermolecular_energy_and_grad(current, ff, pocket)
