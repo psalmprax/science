@@ -32,7 +32,7 @@ import json
 import sys
 from pathlib import Path
 
-import pytest
+from tests.kickmix_availability import require_kickmix
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT = ROOT / "benchmarks" / "quantum_compilation" / "dqi_predicate_gating.json"
@@ -183,11 +183,7 @@ def test_mr_clear_ratio_holds_across_widths():
 def test_remeasured_small_instance_matches_the_record_when_kickmix_is_importable():
     sys.path.insert(0, str(BUNDLE / "kickmix"))
     sys.path.insert(0, str(BUNDLE / "verifiers" / "dqi"))
-    try:
-        import kickmix  # noqa: F401
-    except Exception as exc:  # noqa: BLE001 - any import failure of this
-        # extension means "not importable in this interpreter".
-        pytest.skip(f"kickmix not importable here: {exc}")
+    require_kickmix()
 
     sys.path.insert(0, str(ROOT / "scripts"))
     import probe_dqi_predicate_gating as probe

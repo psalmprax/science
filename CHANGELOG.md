@@ -15,6 +15,14 @@ inferred releases.
 
 ### Changed
 
+- **Six kickmix tests no longer mistake an empty directory for the extension
+  (2026-11-16).** They skipped unless `import kickmix` succeeded; with the
+  extension's parent directory on `sys.path` that import returns an empty
+  namespace package, the guard passes, and the test fails for lack of
+  `CircuitBuilder`. The first CI run of the test matrix to reach the suite
+  stopped on one of them after 849 passes. The guards now use
+  `tests/kickmix_availability.py`, which checks the capability.
+
 - **`import apedp` works on Python 3.10 again; quality limits re-pinned from
   CI (2026-11-16).** `apedp/ingestion/ingestion_academic_apis.py` and two
   scripts imported `datetime.UTC` (3.11+) although the package declares

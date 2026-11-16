@@ -35,6 +35,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.kickmix_availability import usable_kickmix
+
 ROOT = Path(__file__).resolve().parent.parent
 BUNDLE = ROOT / "apedp_dyn" / "sandbox" / "google-verifiable-quantum-circuit-compilation"
 SCRIPTS = ROOT / "scripts"
@@ -59,13 +61,7 @@ def _in_process() -> bool:
     for path in (BUNDLE / "kickmix", BUNDLE / "verifiers", SCRIPTS):
         if str(path) not in sys.path:
             sys.path.insert(0, str(path))
-    try:
-        import kickmix  # noqa: F401
-
-        return True
-    except Exception:  # noqa: BLE001 - ImportError or OSError from an ABI
-        # mismatch; either way this interpreter cannot use the module.
-        return False
+    return usable_kickmix() is not None
 
 
 def _report_key(name: str) -> dict:

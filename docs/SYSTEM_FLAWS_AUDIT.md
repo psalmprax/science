@@ -158,6 +158,28 @@ be observed here without the kernel" is superseded by F-05.
   guarded; the 3.10 CI leg remains the real check, and what it finds after
   the import is not yet known.
 
+- **F-07 six tests mistook an empty directory for the kickmix extension —
+  FIXED; this is what stopped the first test-matrix run.** Run 43815370584
+  (after F-06) is the first in which a test leg reached the suite: on 3.11 the
+  kernel import check, the drift guardrail, the known-truth gate, the smoke
+  tier and collection (5,942 tests) passed, and the regression run stopped at
+  its first failure after 849 passes,
+  `test_dqi_gluzdov_v6.py::test_circuit_builder_candidate_when_kickmix_available`
+  — one of the order-dependent failures F-05 lists. The cause is the guard,
+  not the order: these tests skip unless `import kickmix` succeeds, and the
+  extension's directory exists in every checkout whether or not the extension
+  has been built into it, so once its parent is on `sys.path` (other tests put
+  it there) the import returns an empty namespace package and the guard
+  passes. Reproduced deterministically by putting that directory on the path:
+  six failures and four errors before, none after. The six guards now ask
+  `tests/kickmix_availability.py` whether kickmix can build circuits, not
+  whether a name imports.
+  Not addressed: `test_faros_isq` (five) and `test_dyn_kickmix_build_pin`
+  (four) require the built extension outright and fail in any checkout
+  without it, CI included; whether those should skip or the build should be
+  provisioned in CI is the owner's decision. With `-x`, the matrix will stop
+  at whichever of the F-05 failures comes next.
+
 Limits of this round: the local kernel is built with Rust 1.97.0, not the
 pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy
 or numerics; and a full local run is one machine, once.
