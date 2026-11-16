@@ -155,7 +155,14 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
+      # Full history, not the default single commit: the
+      # TestAgainstTheRealRepository tests in tests/test_run_provenance.py read
+      # the last 40 to 80 commits. In a one-commit clone they saw only HEAD, and
+      # failed whenever HEAD touched apedp/ or tests/ (3.11 leg on dd46f18, after
+      # 4,769 passes). The history is 67 MB.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       # Avoid component conflicts in the hosted runner's preinstalled toolchains:
       # every later Rust step in this job shares this job-local home, including

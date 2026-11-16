@@ -208,3 +208,11 @@ def test_the_deselect_expires_when_the_manifest_is_signed_again():
         f"{GOVERNANCE_TEST} from .github/workflows/test.yml and this test with it"
     )
     assert "GOVERNANCE DRIFT" in result.stdout + result.stderr
+
+
+def test_the_test_job_checks_out_full_history():
+    """tests/test_run_provenance.py reads recent commits; a one-commit clone has none."""
+    text = (ROOT / ".github" / "workflows" / "test.yml").read_text(encoding="utf-8")
+    job = text.split("\n  test:\n", 1)[1].split("\n  build:\n", 1)[0]
+    checkout = job.split("- uses: actions/checkout@", 1)[1].split("\n      - ", 1)[0]
+    assert "fetch-depth: 0" in checkout
