@@ -665,6 +665,13 @@ pub fn search_rational_pairs(
                 children: vec![num, den],
             });
             let out = dag.eval_node(root, vars, &mut memo);
+            // `eval_node` caches every node it evaluates, which is what makes
+            // the shared numerators and denominators cheap. The quotient
+            // itself is scored once, here, and never read again; left in the
+            // cache, each (numerator, denominator) pair kept an n-vector for
+            // the life of the search. Measured on a 200-row, one-feature
+            // problem: 2.7 GB, which killed the test worker on an 8 GB machine.
+            memo.remove(&root);
             if out.iter().any(|v| !v.is_finite()) {
                 continue;
             }
