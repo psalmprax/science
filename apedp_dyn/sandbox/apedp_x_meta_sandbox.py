@@ -172,7 +172,7 @@ def measure_kepler_claim_support() -> dict[str, Any]:
     exactly, which agrees with the density claim and is why the structural
     claim (which arrangement) stays unresolved in the polytype case.
     """
-    interventions = []
+    interventions: list[dict[str, Any]] = []
     for n_cells in (2, 3, 4):
         for radius in (0.25, 0.5, 1.0):
             packing = generate_fcc_3d(n_cells=n_cells, radius=radius)
@@ -180,7 +180,7 @@ def measure_kepler_claim_support() -> dict[str, Any]:
                 "n_cells": n_cells, "radius": radius, "density": float(packing.density),
                 "feasible": bool(audit_feasibility(packing)[0]),
             })
-    rivals = []
+    rivals: list[dict[str, Any]] = []
     for name, generate in (("hcp", generate_hcp_3d), ("bcc", generate_bcc_3d)):
         packing = generate(n_cells=3)
         rivals.append({"lattice": name, "density": float(packing.density),

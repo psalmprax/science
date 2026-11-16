@@ -237,7 +237,7 @@ def audit_physical_invariants(
 #: to the default run: each sets one argument of the simulator, do(X)-style.
 #: They are chosen inside the scheme's stated domain (stability number <= 1,
 #: nu >= 0), so a failure is the scheme's and not the question's.
-PDE_INTERVENTIONS: tuple[tuple[str, dict[str, float | int]], ...] = (
+PDE_INTERVENTIONS: tuple[tuple[str, dict[str, Any]], ...] = (
     ("nu halved", {"nu": 0.005}),
     ("nu doubled", {"nu": 0.02}),
     ("inviscid", {"nu": 0.0}),
