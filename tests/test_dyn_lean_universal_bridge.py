@@ -33,6 +33,7 @@ from apedp_dyn.epistemic.claim_ladder import (
 from apedp_dyn.epistemic.lean_universal_bridge import (
     LeanUniversalBridge,
 )
+from tests.toolchain_availability import require_lean
 
 
 @pytest.fixture
@@ -42,6 +43,7 @@ def bridge(tmp_path):
 
 def test_mathlib_candidate_uncompiled_reports_p1_candidate(bridge):
     """Case 1: Mathlib-targeted module in standalone invocation reports P1_CANDIDATE (never overclaims to P2)."""
+    require_lean()  # asserts the compiler's exit code
     inv_energy = DeclaredInvariant(
         name="hamiltonian_energy_conservation",
         kind=InvariantKind.CONSERVATION_LAW,
@@ -335,6 +337,8 @@ def test_in_memory_equation_verification_zero_disk_files():
     """Verify arbitrary equations directly in memory without writing any files to disk."""
     from apedp_dyn.epistemic.lean_universal_bridge import verify_equation_in_memory
 
+    require_lean()  # asserts kernel_exit_code == 0
+
     # Test 1: Saturated market impact equation. The module compiles, but it
     # declares the saturation axioms it proves against, so the status is P1.
     res_tanh = verify_equation_in_memory("y = c * tanh(velocity)", candidate_id="SATURATED_FLOW")
@@ -387,6 +391,8 @@ def test_in_memory_equation_trap_refuted():
 def test_in_memory_raw_lean_code_verification():
     """Verify raw Lean 4 code strings directly via stdin without touching disk."""
     from apedp_dyn.epistemic.lean_universal_bridge import verify_raw_lean_code_in_memory
+
+    require_lean()  # asserts P2, which only a kernel run can give
 
     # Valid proof term
     valid_code = "theorem tautology (p : Prop) (h : p) : p := h\n"

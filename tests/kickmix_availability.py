@@ -21,11 +21,24 @@ The guard is therefore the capability, not the import.
 
 from __future__ import annotations
 
+from pathlib import Path
 from types import ModuleType
 
 import pytest
 
-__all__ = ["require_kickmix", "usable_kickmix"]
+#: The verifier's own kickmix build. `*.so` is git-ignored, so this file exists
+#: only where someone has built it (scripts/setup_verifier_env.py); it is not
+#: in a clone and CI does not build it.
+SHIPPED_EXTENSION = (
+    Path(__file__).resolve().parents[1]
+    / "apedp_dyn"
+    / "sandbox"
+    / "google-verifiable-quantum-circuit-compilation"
+    / "kickmix"
+    / "kickmix.so"
+)
+
+__all__ = ["SHIPPED_EXTENSION", "require_kickmix", "require_shipped_extension", "usable_kickmix"]
 
 
 def usable_kickmix() -> ModuleType | None:
@@ -41,5 +54,25 @@ def require_kickmix() -> ModuleType:
     """Skip the calling test unless kickmix can build circuits here."""
     module = usable_kickmix()
     if module is None:
-        pytest.skip("kickmix cannot build circuits in this interpreter (extension not built or not loadable)")
+        pytest.skip(
+            "kickmix cannot build circuits in this interpreter (extension not built or not loadable)"
+        )
     return module
+
+
+def require_shipped_extension() -> Path:
+    """Skip the calling test unless the verifier's kickmix extension is on disk.
+
+    Contracts are locked to that file's bytes
+    (``apedp_dyn.quantum_compilation.contracts``), so a test that asserts a
+    lock, compiles a FAROS candidate or checks the build pin has nothing to
+    check in a checkout where the extension was never built. There it used to
+    fail with ``FileNotFoundError``, which reads as a broken contract and is
+    not one.
+    """
+    if not SHIPPED_EXTENSION.is_file():
+        pytest.skip(
+            "the verifier's kickmix extension is not built in this checkout "
+            f"({SHIPPED_EXTENSION.name} is git-ignored; run scripts/setup_verifier_env.py)"
+        )
+    return SHIPPED_EXTENSION

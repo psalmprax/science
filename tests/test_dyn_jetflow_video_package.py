@@ -13,6 +13,7 @@ Verifies:
 """
 from __future__ import annotations
 
+import pytest
 import torch
 from jetflow_video import (
     ContinuousWaveletVAE,
@@ -191,9 +192,36 @@ def test_jetflow_trainer_and_dataset():
     assert metrics["mean_total_loss"] > 0.0
 
 
+def _hub_dataset_is_reachable(repo_id: str) -> bool:
+    import urllib.error
+    import urllib.request
+
+    request = urllib.request.Request(
+        f"https://huggingface.co/api/datasets/{repo_id}", headers={"User-Agent": "Mozilla/5.0"}
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:  # noqa: S310 - same literal https:// URL
+            return response.status == 200
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return False
+
+
+@pytest.mark.integration
 def test_video_dataset_hf_streaming():
+    """Streams a third party's dataset from the Hugging Face hub.
+
+    That is a live external service, which is what the ``integration`` marker
+    is for: this ran in the ordinary regression tier, where it fails on any
+    machine without a route to the hub, and where ``VideoDataset`` swallowing
+    the network error turns "could not connect" into ``assert 1 == 2``. It now
+    runs with the other integration tests and skips when the hub or the
+    dataset cannot be reached.
+    """
+    repo = "Jnaranjo/video-dit-latents-hq"
+    if not _hub_dataset_is_reachable(repo):
+        pytest.skip(f"the Hugging Face hub dataset {repo} is not reachable from here")
     # Test streaming pre-computed video matrices from Hugging Face directly into memory
-    dataset = VideoDataset(hf_repo="Jnaranjo/video-dit-latents-hq", max_hf_samples=2, num_frames=16)
+    dataset = VideoDataset(hf_repo=repo, max_hf_samples=2, num_frames=16)
     assert len(dataset) == 2
     item = dataset[0]
     assert "latent" in item
