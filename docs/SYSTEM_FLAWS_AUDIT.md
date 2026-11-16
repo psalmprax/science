@@ -265,6 +265,13 @@ Each entry: cause, what changed, the pin for it.
   that way. What wrote it is not established from the logs. The toolchain is
   now installed in the step right after the isolation, into a home that is
   emptied first; if it is ever found non-empty, a warning lists what was there.
+  (d) CI's 3.11 leg then ran 3,207 tests and stopped at
+  `test_dyn_tournament.py::TestRmseRel::test_present_iff_holdout_reached`: there,
+  C1 on rep 2 was fitted to parameters whose holdout run overflowed, so it
+  stopped at gate 4 with no RMSE ("holdout simulation invalid"). The tournament
+  already records that case as `None`; the test assumed it could not happen. It
+  now requires such a row to stop at gate 4 and say why. Same cause as J-16, a
+  third library- and interpreter-dependent stopping point.
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on
 this machine and has no verdict; the committed mutation report, still the
