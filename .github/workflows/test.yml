@@ -98,8 +98,36 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The home is emptied first and the toolchain is installed straight
+      # after, before any other step can run a Rust proxy against it. Twice on
+      # 2026-11-16 (stage 7a7f5b5 attempt 1, test (3.12); a46360f attempt 3,
+      # test (3.11)) rustup found a half-installed 1.99.0 here before the
+      # install step ran -- "recovering from a partially installed toolchain",
+      # with rust-docs among the removed components, which the minimal profile
+      # never installs -- and failed on "detected conflict: 'bin/cargo-clippy'".
+      # Which step left it is not established; if the directory is found
+      # non-empty again, the warning below lists what was in it.
       - name: Isolate Rust toolchain home
-        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
+        run: |
+          if [ -e "$RUNNER_TEMP/rustup" ]; then
+            echo "::warning::$RUNNER_TEMP/rustup existed before isolation; contents follow and it is removed"
+            find "$RUNNER_TEMP/rustup" -maxdepth 3 | head -50
+            rm -rf "$RUNNER_TEMP/rustup"
+          fi
+          echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
+
+      # The native kernel behind `apedp/rust_bridge.py` lives in
+      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
+      # and the sixteen differential tests in
+      # `tests/test_cross_implementation_conformance.py` skip -- green, and
+      # checking nothing. So the kernel is built here, and the next step asserts
+      # it is actually importable before any test tier runs. A build that stops
+      # building fails loudly instead of turning into sixteen skips.
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
@@ -116,19 +144,6 @@ jobs:
           python -m pip install -e ".[dev,test,orchestration]"
           python -m pip install -e packages/jetflow-video
           python -m pytest --version
-
-      # The native kernel behind `apedp/rust_bridge.py` lives in
-      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
-      # and the sixteen differential tests in
-      # `tests/test_cross_implementation_conformance.py` skip -- green, and
-      # checking nothing. So the kernel is built here, and the next step asserts
-      # it is actually importable before any test tier runs. A build that stops
-      # building fails loudly instead of turning into sixteen skips.
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: '1.99.0'
-          components: rustfmt, clippy
 
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2
