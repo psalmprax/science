@@ -180,6 +180,32 @@ be observed here without the kernel" is superseded by F-05.
   provisioned in CI is the owner's decision. With `-x`, the matrix will stop
   at whichever of the F-05 failures comes next.
 
+- **F-08 where CI stands at the end of this round (run 43817593950, `stage`
+  at `cc50e3b`).** Passing, each for the first time on this branch: Python
+  quality (lint, both baselines, the CI-contract tests), Rust quality (format,
+  Clippy and the Rust tests on the pinned 1.99.0), audit-artefact drift, the
+  Lean core, the kernel wheel build, workflow validity, and the mutation
+  battery — which answers what F-02 left open: on the hosted runner, with the
+  pinned toolchain, all 37 mutants were verified fresh and killed, none from
+  cache, in three consecutive runs. The committed
+  `benchmarks/mutation_battery_report.json` is still the stale 2026-10-23
+  file; CI uploads the current report as a workflow artefact and it has not
+  been copied into the repository.
+  Failing: the governance-manifest job, as designed, until the trustees
+  re-sign (FLAW-01); and the test matrix, whose 3.10 leg now gets through the
+  import, the kernel check, the drift guardrail, the known-truth gate, the
+  smoke tier and collection, and stops after 955 passes at
+  `tests/test_dqi_submission_score.py::test_the_recorded_patch_is_the_exact_patch_that_was_applied`
+  — a recorded patch hash that does not match the file, one of the thirteen
+  F-05 lists as unexplained, and now known to fail on the hosted runner as
+  well as here. `fail-fast` then cancels the 3.11 and 3.12 legs. That test
+  compares a research record with its source; changing either to make them
+  agree is not something this audit can do honestly. The same holds for the
+  rest of that list, which the matrix will reach one at a time.
+  So the build job, which needs every gate, cannot go green on this branch
+  until two things happen that are outside this audit: the trustees sign, and
+  the owner triages those tests.
+
 Limits of this round: the local kernel is built with Rust 1.97.0, not the
 pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy
 or numerics; and a full local run is one machine, once.
