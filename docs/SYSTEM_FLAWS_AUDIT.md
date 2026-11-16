@@ -209,6 +209,37 @@ Each entry: cause, what changed, the pin for it.
   reached constrains nothing: either these modules are split or the size
   budget should be dropped. That is the owner's decision.
 
+- **J-16 the fitter's verdict on the true model depends on the scipy release
+  — test fixed; the fitter itself OPEN.** After the merge, CI's 3.11 leg ran
+  1,007 tests and stopped at
+  `test_dyn_adjudicate_regression.py::TestProvenanceFallbackFiresEndToEnd::test_fallback_abstains_without_any_explicit_series`,
+  which passes here. Reproduced under scipy 1.17.1. The fixture fits the true
+  Duffing model at 5 % noise from the fitter's default start. The cubic term
+  is barely exercised at the training amplitude, the cost is flat along its
+  coefficient, and `least_squares` stops with status 3 and optimality ~1e7:
+  the coefficient comes out at −2.62 (scipy 1.18.1) or −2.70 (1.17.1) against
+  a generating −2.0, with the same training cost to three figures. The holdout
+  verdict on the *true model* follows the stopping point: gate 4 passes on
+  1.18 (margin 0.94) and fails on 1.17 (1.03), and the residuals left by the
+  wrong coefficient are structured (|rho1| 0.71–0.75), so the referee refuses
+  the truth either way. Started from the generating parameters, the same
+  fitter returns −2.0007 under scipy 1.15.3, 1.17.1 and 1.18.1 alike, gate-4
+  margin 0.40, |rho1| 0.058, and the referee promotes it at the production
+  flag. The test now fits from the generating parameters, sets the flag just
+  below and just above the recorded series' |rho1|, and requires the reason
+  to quote that value; that is a sharper test of the provenance fallback than
+  the one it replaces, and it passes under all three releases. The companion
+  test compared the fallback with an explicit `holdout_sq_error` series, the
+  squared-error series `_residual_series` stopped using; it compares signed
+  residuals at three flags.
+  *What stays open:* the default-start fit, which production uses, stops 30 %
+  off on a well-posed problem, and the referee's verdict on the true model at
+  5 % noise is decided by that stopping point. It is the same mechanism as
+  J-08's tournament boundary. `fit_candidate_multistart` exists and is not
+  used by these paths; whether to use it, rescale the problem, or tighten the
+  fit-time integrator tolerance (`simulate` defaults to `rtol=1e-3`, chosen
+  "for fitter throughput") changes every recorded fit and is the owner's
+  decision.
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on
 this machine and has no verdict; the committed mutation report, still the
