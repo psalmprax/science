@@ -16,7 +16,7 @@ delegates to.
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, TypedDict
 
@@ -169,6 +169,18 @@ _ASYMPTOTE_AMPLITUDE_FAMILIES = frozenset({
 })
 
 
+#: A fit is carried out on ``y / max(|y|)`` when ``max(|y|)`` lies outside
+#: this band, and on the raw target inside it. The lower edge is where the
+#: optimizer's absolute tolerances stop resolving the objective; the upper edge
+#: is where an amplitude of order ``y`` and rates of order 1 stop being
+#: optimizable as one vector. Raw fits were measured identical to unit scale
+#: through ``max(|y|) = 2.8e4`` and all failed at ``2.8e6`` (see
+#: ``fit_candidate``), so the upper edge sits where the raw path is still
+#: verified rather than at the first observed failure.
+_Y_NORMALIZATION_BELOW = 1e-2
+_Y_NORMALIZATION_ABOVE = 1e4
+
+
 def _amplitude_cap(y_max: float, family_label: str) -> float:
     """Upper bound for amplitude-like parameters, asymptote-aware."""
     cap = max(100.0, 50.0 * y_max)
@@ -292,6 +304,52 @@ def _input_normalization_scale(
     return x_abs_max if np.isfinite(x_abs_max) and x_abs_max > 0.0 else 1.0
 
 
+def _stage_d_x_scales(x_values: np.ndarray) -> tuple[float, ...]:
+    """The x scales Stage D refines in; the best accepted result across them is kept.
+
+    Stage D optimizes on ``x / scale`` so that a change of x units leaves the
+    optimizer's domain unchanged and amplitudes and rates live where the
+    y-scaled bounds mean something (``A = 1e5`` at ``x ~ 1e-4`` would otherwise
+    sit a thousand times outside its bound and rail). Both scales returned here
+    are equivariant: multiply x by a constant and each is multiplied by it.
+
+    ``max|x|`` puts every sample at ``x_tilde <= 1``. That is the right frame
+    for a form whose amplitude is its value at the far end of the window, and
+    the wrong one for a peaked form with a large onset power: ``x_tilde**p`` is
+    then small across the whole window, the amplitude needed to reach the data
+    is ``y * x_tilde**-p``, and it leaves the cap that was written for an
+    amplitude of the order of ``y``. Measured on TIER_B_01 (Planck in
+    wavelength, x in [0.4, 3.5]): the in-bounds envelope optimum in raw x is
+    ``A = 3.30, B = 3.46`` with validation R-squared 0.99905; in ``x / 3.5``
+    the same function needs ``A = 1731, B = 1481`` against caps of 126, every
+    start rails on both, the refinement is rejected, and the coarse template
+    (R-squared 0.940, residual autocorrelation 0.80) made the synthesizer
+    abstain on a problem its own benchmark report records at R-squared > 0.999.
+
+    The geometric mean of ``|x|`` puts the samples on both sides of 1, where
+    ``x_tilde**p`` is of order 1 for any ``p``. Neither frame dominates: over
+    the 60 public EXT-BENCH problems and the four Tier B/C problems, replacing
+    one by the other moved four selected families toward the truth and one away
+    (R26, where the rational form's multi-start reached a better optimum in
+    ``x / max|x|``). So both are run and the acceptance gates, which judge a
+    refinement by its validation error and not by the coordinates it was found
+    in, choose. ``max|x|`` is first, so an exact tie keeps the earlier
+    behaviour. With both, the same 64 problems differ from ``max|x|`` alone in
+    three selections -- C42 and R24 now carry their true family and TIER_B_01
+    is fitted at R-squared 0.9991 instead of abstained on -- and no problem's
+    validation R-squared is lower.
+    """
+    magnitude = np.abs(np.asarray(x_values, dtype=float))
+    magnitude = magnitude[np.isfinite(magnitude) & (magnitude > 0.0)]
+    if magnitude.size == 0:
+        return (1.0,)
+    largest = float(np.max(magnitude))
+    centre = float(np.exp(np.mean(np.log(magnitude))))
+    if not (np.isfinite(centre) and centre > 0.0) or centre == largest:
+        return (largest,)
+    return (largest, centre)
+
+
 #: Minimum samples before :func:`_regime_identifiability` will let
 #: ``detect_regimes`` classify at all.
 #:
@@ -399,6 +457,73 @@ _NEAR_OOD_MAY_PROMOTE = False
 #: ``power_law``), taking named-family accuracy 23/27 -> 24/27, with no
 #: abstention change. See docs/NEAR_OOD_PROMOTION.md.
 _NEAR_OOD_VETO_FLOOR: float | str = "auto"
+
+
+def _parsimony_tiebreak(
+    fitted_models: Sequence[SynthesizedModel],
+    *,
+    n_val: int,
+    promote_allowed: bool,
+    near_ood_veto_floor: float | str,
+    complexity: Callable[[SynthesizedModel], float],
+) -> int:
+    """Index of the candidate the parsimony (Occam) rule selects; 0 keeps the incumbent.
+
+    ``fitted_models`` is ordered by validation MSE and must not be empty. Among
+    candidates tied with the incumbent on validation, a strictly simpler one is
+    preferred, provided near-OOD (when both have it) is not degraded more than
+    1.5x *beyond what the noise floor can resolve*. Both the margin and the
+    veto are calibrated to the measured train noise floor
+    (``best.train_mse / n_val``): a difference below it is not evidence. The
+    margin falls back to 15 % of the incumbent's validation MSE when the noise
+    estimate is degenerate (a near-perfect train fit). ``near_ood_veto_floor``
+    is ``"auto"`` for that noise floor or a number in near-OOD MSE units;
+    ``0.0`` is the bare ratio the floor replaced. ``promote_allowed`` lets a
+    candidate with less than half the incumbent's near-OOD MSE win without
+    being simpler. Deterministic: validation-ordered scan, each qualifier
+    becomes the incumbent for the comparisons that follow.
+
+    This was inline in ``AutonomousModelSynthesizer.synthesize`` until
+    2026-11-16 and is moved here unchanged so that the rule can be exercised on
+    stated candidates. Its only behavioural test ran the whole synthesizer on
+    one corpus problem (EXT-BENCH P05) and required the bare veto to pick the
+    wrong family there; once the candidate pool changed, the bare veto no
+    longer fired on P05 or on any other of the 60 problems, and the test could
+    only report that it had stopped covering the defect.
+    """
+    best = fitted_models[0]
+    noise_floor = best.train_mse / max(n_val, 1)
+    tie_margin = max(0.15 * best.val_mse, noise_floor)
+    near_ood_floor = (
+        float(near_ood_veto_floor)
+        if isinstance(near_ood_veto_floor, (int, float))
+        else noise_floor
+    )
+    best_idx = 0
+    best_comp = complexity(best)
+    for i in range(1, len(fitted_models)):
+        m = fitted_models[i]
+        if m.val_mse - best.val_mse > tie_margin:
+            break
+        m_comp = complexity(m)
+
+        ood_superior = (
+            promote_allowed
+            and best.near_ood_mse is not None and m.near_ood_mse is not None
+            and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
+            and m.near_ood_mse < best.near_ood_mse * 0.5
+        )
+
+        if not ood_superior and m_comp >= best_comp:
+            continue
+        if (best.near_ood_mse is not None and m.near_ood_mse is not None
+                and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
+                and m.near_ood_mse > best.near_ood_mse * 1.5 + near_ood_floor):
+            continue
+        best_idx = i
+        best = m
+        best_comp = m_comp
+    return best_idx
 
 
 def _robust_noise_floor(ys: np.ndarray) -> float:

@@ -230,55 +230,124 @@ class TestNearOodVetoIsNoiseFloored:
     1.5x ratio. A ratio has no absolute scale, so when the incumbent's near-OOD
     MSE is small the threshold is small too.
 
-    EXT-BENCH P05 is the measured case. The veto compares 3.9136e-3 against
-    5.8819e-3 -- a 0.20% gap -- with a threshold of 5.8704e-3, and both values
-    sit ~25x below the data's own train noise floor. It fired, and the correct
-    one-parameter ``power_law`` lost to a four-parameter ``rational_transition``
-    whose validation advantage (0.00226) was well inside the tie margin
-    (0.01251). Measured over all 60 problems, flooring the veto changes exactly
-    one recorded family and lifts named-family accuracy 23/27 -> 24/27.
+    EXT-BENCH P05 is the measured case. The veto compared 3.9136e-3 against
+    5.8819e-3 -- a 0.20% gap -- with a threshold of 5.8704e-3. It fired, and
+    the correct one-parameter ``power_law`` lost to a four-parameter
+    ``rational_transition`` whose validation advantage (0.00226) was well
+    inside the tie margin (0.01251).
 
-    This runs the real selection on the real corpus problem rather than
-    re-deriving the arithmetic, so the assertion is about behaviour. It is slow
-    for that reason and marked as such; the cheap end of the claim -- that the
-    constant is wired to the noise floor and not to a hard-coded number -- is
-    pinned separately below.
+    That pair is kept here as a fixture and put through the real rule,
+    ``_parsimony_tiebreak``. Until 2026-11-16 this class instead ran the whole
+    synthesizer on P05 twice and required the bare veto to return the wrong
+    family there. It stopped doing so when the candidate pool changed: a
+    two-parameter ``logarithmic_boundary_layer`` now leads P05 on validation
+    with a near-OOD MSE of 2.78e-2, the power law's 5.88e-3 is below any
+    threshold that incumbent can set, and the bare veto does not fire. Measured
+    the same day over all 60 public problems, the bare and floored arms select
+    the same family on every one. The old test therefore failed on its own
+    guard ("this test no longer covers the defect"), on every library version
+    tried, and what it guarded -- the floor -- had no test that could fail.
     """
 
     #: P05 is ``power-1.5`` in the corpus manifest.
     PROBLEM = "P05"
     TRUTH_FAMILY = "power_law"
+    #: Rows in P05's validation grid; the noise floor is ``train_mse / n_val``.
+    N_VAL = 20
 
-    def _synthesize(self):
-        import numpy as np
+    @staticmethod
+    def _model(family, n_params, *, val, near, train):
+        import sympy as sp
 
-        from apedp.model_synthesis import AutonomousModelSynthesizer
-        from benchmarks.external_60_adapters import load_public_grids
+        from apedp.model_synthesis import SynthesizedModel
 
-        g = load_public_grids(CORPUS, self.PROBLEM)
-        tr, va, near = g["train.csv"], g["validation.csv"], g["near_ood.csv"]
-        return AutonomousModelSynthesizer().synthesize(
-            np.asarray(tr[:, 0]), np.asarray(tr[:, 1]),
-            np.asarray(va[:, 0]), np.asarray(va[:, 1]),
-            np.asarray(near[:, 0]), np.asarray(near[:, 1]),
-        )[0]
+        return SynthesizedModel(
+            expression_str=f"<{family}>",
+            sympy_expr=sp.Symbol("x"),
+            parameters={f"p{i}": 1.0 for i in range(n_params)},
+            train_mse=train,
+            val_mse=val,
+            near_ood_mse=near,
+            structural_family=family,
+        )
 
-    @pytest.mark.slow
-    def test_the_floor_restores_the_true_family_on_p05(self, monkeypatch):
-        import apedp.model_synthesis as ms
+    def _recorded_pair(self):
+        """The two candidates of docs/NEAR_OOD_PROMOTION.md, validation-ordered.
 
-        monkeypatch.setattr(ms, "_NEAR_OOD_VETO_FLOOR", 0.0)
-        bare = self._synthesize().structural_family
+        ``val_mse`` and near-OOD MSE are the recorded values. The record does
+        not give the train MSEs; these are what the synthesizer measures for
+        the same two families on P05 today (8.8241e-2 and 9.1337e-2).
+        """
+        return [
+            self._model("rational_transition", 4, val=0.083419, near=0.0039136, train=0.088241),
+            self._model(self.TRUTH_FAMILY, 1, val=0.085677, near=0.0058819, train=0.091337),
+        ]
 
-        monkeypatch.setattr(ms, "_NEAR_OOD_VETO_FLOOR", "auto")
-        floored = self._synthesize().structural_family
+    def _select(self, models, floor, *, promote=False):
+        from apedp.model_synthesis_helpers import _parsimony_tiebreak
 
-        assert bare != self.TRUTH_FAMILY, (
-            f"{self.PROBLEM} is {self.TRUTH_FAMILY} in the corpus; if the bare "
-            f"veto already returns it, this test no longer covers the defect")
-        assert floored == self.TRUTH_FAMILY, (
-            f"noise-floored veto returned {floored}, expected "
-            f"{self.TRUTH_FAMILY} (bare returned {bare})")
+        chosen = _parsimony_tiebreak(
+            models,
+            n_val=self.N_VAL,
+            promote_allowed=promote,
+            near_ood_veto_floor=floor,
+            complexity=lambda m: float(len(m.parameters)),
+        )
+        return models[chosen].structural_family
+
+    def test_the_bare_veto_picks_the_overfit_family_on_the_recorded_pair(self):
+        """The defect, reproduced: without a floor the 0.20% gap decides it."""
+        pair = self._recorded_pair()
+        assert pair[1].near_ood_mse > pair[0].near_ood_mse * 1.5, "fixture drifted"
+        assert pair[1].near_ood_mse / (pair[0].near_ood_mse * 1.5) - 1 < 0.0025
+        assert self._select(pair, 0.0) == "rational_transition"
+
+    def test_the_floor_restores_the_true_family_on_the_recorded_pair(self):
+        assert self._select(self._recorded_pair(), "auto") == self.TRUTH_FAMILY
+
+    def test_the_floor_does_not_switch_the_veto_off(self):
+        """A simpler candidate that is clearly worse out of range still loses."""
+        pair = self._recorded_pair()
+        floor = pair[0].train_mse / self.N_VAL
+        worse = self._model(self.TRUTH_FAMILY, 1, val=0.085677,
+                            near=pair[0].near_ood_mse * 1.5 + 2 * floor, train=0.091337)
+        assert self._select([pair[0], worse], "auto") == "rational_transition"
+
+    def test_a_zero_floor_restores_the_bare_ratio_exactly(self):
+        """The escape hatch is exact, so the old behaviour is reproducible.
+
+        Needed to re-derive the 23/27 vs 24/27 measurement in
+        docs/NEAR_OOD_PROMOTION.md without editing the source. Swept on both
+        sides of the bare threshold, through the rule itself.
+        """
+        incumbent = self._recorded_pair()[0]
+        threshold = incumbent.near_ood_mse * 1.5
+        for factor, survives in ((0.90, True), (0.999, True), (1.001, False), (1.10, False)):
+            challenger = self._model(self.TRUTH_FAMILY, 1, val=0.085677,
+                                     near=threshold * factor, train=0.091337)
+            selected = self._select([incumbent, challenger], 0.0)
+            assert (selected == self.TRUTH_FAMILY) is survives, (factor, selected)
+
+    def test_a_candidate_outside_the_tie_margin_is_not_considered(self):
+        """Parsimony is a tiebreak: it does not buy a worse fit."""
+        incumbent = self._recorded_pair()[0]
+        margin = max(0.15 * incumbent.val_mse, incumbent.train_mse / self.N_VAL)
+        far = self._model(self.TRUTH_FAMILY, 1, val=incumbent.val_mse + 1.01 * margin,
+                          near=0.0, train=0.091337)
+        assert self._select([incumbent, far], "auto") == "rational_transition"
+
+    def test_promotion_on_near_ood_alone_needs_the_per_call_flag(self):
+        """``promote_allowed`` is consumed by the rule, not only forwarded to it.
+
+        tests/test_model_synthesis.py pins that ``synthesize`` reads the flag
+        once; since the rule moved into a helper that read is the hand-off, so
+        this is the check that the helper acts on it.
+        """
+        incumbent = self._model("rational_transition", 2, val=0.0834, near=0.040, train=0.0882)
+        not_simpler = self._model("exponential_envelope", 3, val=0.0840, near=0.010, train=0.0890)
+        models = [incumbent, not_simpler]
+        assert self._select(models, "auto", promote=False) == "rational_transition"
+        assert self._select(models, "auto", promote=True) == "exponential_envelope"
 
     def test_the_default_floor_is_the_measured_noise_floor(self):
         """Not a tuned constant: 'auto' means train_mse / n_val.
@@ -292,19 +361,39 @@ class TestNearOodVetoIsNoiseFloored:
             "the shipped default must be the measured noise floor, not a "
             f"literal: {ms._NEAR_OOD_VETO_FLOOR!r}")
 
-    def test_a_zero_floor_restores_the_bare_ratio_exactly(self):
-        """The escape hatch is exact, so the old behaviour is reproducible.
+    @pytest.mark.slow
+    def test_synthesize_hands_the_configured_floor_to_the_rule_on_p05(self, monkeypatch):
+        """End to end on the corpus problem: the truth is returned, and the
+        floor the rule receives is the module's, read at call time."""
+        import numpy as np
 
-        Needed to re-derive the 23/27 vs 24/27 measurement in
-        docs/NEAR_OOD_PROMOTION.md without editing the source.
-        """
         import apedp.model_synthesis as ms
+        from benchmarks.external_60_adapters import load_public_grids
 
-        assert ms._NEAR_OOD_VETO_FLOOR == "auto"
-        best_near, challenger_near, noise_floor = 0.0039136, 0.0058819, 0.097
-        assert challenger_near > best_near * 1.5, "fixture drifted"
-        assert not (challenger_near > best_near * 1.5 + noise_floor), (
-            "fixture drifted: the floor must suppress this veto")
+        g = load_public_grids(CORPUS, self.PROBLEM)
+        tr, va, near = g["train.csv"], g["validation.csv"], g["near_ood.csv"]
+        assert len(va) == self.N_VAL, "fixture drifted: P05's validation grid changed size"
+
+        received = []
+        real_rule = ms._parsimony_tiebreak
+
+        def recording_rule(models, **kwargs):
+            received.append(kwargs["near_ood_veto_floor"])
+            return real_rule(models, **kwargs)
+
+        monkeypatch.setattr(ms, "_parsimony_tiebreak", recording_rule)
+
+        def synthesize():
+            return ms.AutonomousModelSynthesizer().synthesize(
+                np.asarray(tr[:, 0]), np.asarray(tr[:, 1]),
+                np.asarray(va[:, 0]), np.asarray(va[:, 1]),
+                np.asarray(near[:, 0]), np.asarray(near[:, 1]),
+            )[0]
+
+        assert synthesize().structural_family == self.TRUTH_FAMILY
+        monkeypatch.setattr(ms, "_NEAR_OOD_VETO_FLOOR", 0.0)
+        synthesize()
+        assert received == ["auto", 0.0]
 
 
 def test_abstaining_model_emits_no_predictions(monkeypatch):
