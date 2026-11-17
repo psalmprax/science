@@ -72,8 +72,11 @@ class OrderBookResiliencyProposer(ProposerBase):
                     recoveries.append(np.array(disp))
 
         if len(recoveries) < 10:
-            # Fallback to calibrated textbook decay parameters if sample shocks are sparse
+            # Textbook decay constants, not a fit: fewer than ten shocks in the
+            # window. Recorded as such in `parameters_source` below -- until
+            # 2026-11-17 these came back looking exactly like fitted values.
             beta_fit, gamma_fit = 0.35, 0.45
+            parameters_source = f"textbook_default (only {len(recoveries)} shocks, 10 needed)"
         else:
             rec_mat = np.array(recoveries)
             mean_traj = np.mean(rec_mat, axis=0)
@@ -81,8 +84,10 @@ class OrderBookResiliencyProposer(ProposerBase):
             try:
                 popt, _ = curve_fit(_exp_decay, k_steps, mean_traj, p0=[0.5, 0.5], maxfev=1000)
                 beta_fit, gamma_fit = float(popt[0]), max(float(popt[1]), 0.05)
-            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
+                parameters_source = f"fitted ({len(recoveries)} shocks)"
+            except Exception as exc:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 beta_fit, gamma_fit = 0.35, 0.45
+                parameters_source = f"textbook_default (fit failed on {len(recoveries)} shocks: {type(exc).__name__})"
 
         formula_str = f"Shock_t * {beta_fit:.4f} * exp(-{gamma_fit:.4f} * k)"
 
@@ -112,6 +117,9 @@ class OrderBookResiliencyProposer(ProposerBase):
                     "literature_family": "ORDER_BOOK_RESILIENCY",
                     "citation": "Large (2007) Journal of Financial Markets",
                     "n_shocks_calibrated": len(recoveries),
+                    #: Whether `parameters` came from the data in front of the
+                    #: proposer or from the literature's constants.
+                    "parameters_source": parameters_source,
                 },
             )
         )

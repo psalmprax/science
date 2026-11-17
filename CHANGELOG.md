@@ -15,6 +15,17 @@ inferred releases.
 
 ### Changed
 
+- **Running the tests no longer rewrites committed evidence (2026-11-17).**
+  The five-gate programme's two report files and the two Rust profile records
+  were replaced on every run with the running machine's timings and workspace
+  path. Writing is now opt-in (`run_all_gates(write=True)`,
+  `APEDP_WRITE_BENCHMARK_ARTIFACTS=1`); the figures are still printed and the
+  gates still assert on them. Also fixed in the same pass: `faros_isq`
+  substituted four nominal resource figures for measured ones behind a comment
+  promising a `circuit_stats_source` field that did not exist, and
+  `resiliency_proposer` emitted textbook decay constants as if they had been
+  fitted. `docs/SYSTEM_FLAWS_AUDIT.md`, L-01 to L-03.
+
 - **The three subsystems outside the referee were audited against something
   other than themselves (2026-11-17).** Eight defects found and fixed, each
   pinned by a test that fails on the old code: the video dataset and VAE

@@ -100,6 +100,38 @@ Every defect below is pinned by a test that fails on the code as it stood.
   so its family-wise false-alarm rate is about 0.4 over 8,192 outcomes at the
   default four sigma. That is in the receipt, with the per-outcome rate.
 
+- **L-01 running the tests rewrote four tracked evidence files — FIXED.**
+  F-05's remaining half. `benchmarks/run_five_gate_validation.py`'s
+  `run_all_gates()` wrote `benchmarks/five_gate_validation_results.json` and
+  `docs/five_gate_validation_results.md` on every call, and
+  `tests/test_dyn_five_gate_validation.py` calls it; the two Rust profile tests
+  (`rime_profile.rs`, `sre_tree_vs_arena_profile.rs`) wrote their records on
+  every `cargo test`. So any full run replaced committed measurements with this
+  machine's timings and its own workspace path, left the tree dirty, and made
+  the recorded measurement indistinguishable from an incidental rerun. Writing
+  is now opt-in (`run_all_gates(write=True)`,
+  `APEDP_WRITE_BENCHMARK_ARTIFACTS=1`), the numbers are still printed, and the
+  gates still assert on them. Pinned by
+  `tests/test_committed_evidence_is_not_rewritten.py`, which also fails when
+  the committed mutation report stops covering the mutant register.
+- **L-02 a handler's own comment promised a provenance field that did not
+  exist — FIXED.** In `quantum_compilation/faros_isq.py`, when the second
+  interpreter that reads the emitted circuit fails, four resource figures (90
+  qubits, 1,448 Toffolis, 1 T-like, 44 rotations) are substituted. The
+  handler's `noqa` comment said `circuit_stats_source` records whether the
+  figures are measured or nominal; no such field existed anywhere in the
+  repository, so nominal numbers reached `evaluate_cost` and the returned
+  metadata indistinguishably from measured ones. This is the defect class that
+  retracted three modules on 2026-11-03. The field exists now, with
+  `circuit_stats_error` beside it.
+- **L-03 a proposer emitted textbook constants as if fitted — FIXED.**
+  `proposers/resiliency_proposer.py` falls back to beta = 0.35, gamma = 0.45
+  when fewer than ten shocks are in the window or `curve_fit` raises, and
+  emitted a `CandidateProposal` whose formula string, candidate id and
+  `parameters` looked exactly like a fit. `n_shocks_calibrated` was the only
+  hint, and it does not distinguish a failed fit from a successful one.
+  `parameters_source` now says which, and why.
+
 What was checked and found sound: the quantum subsystem's tests pass whole
 (1,150 passed, 26 skipped, nothing failing), including the stabilizer/dense
 agreement corpus and the Lean-checked promotion models; the five
@@ -112,6 +144,16 @@ Not done, and not code: the quantum compilation claims rest on circuit
 emission audited inside this repository, with no external replication; the
 biopharma funnel has no wet-lab confirmation and, after K-05 and K-06, no
 calibrated property model either; the video benchmarks remain at 16x16.
+
+Open after this round, and each a judgement rather than a defect: 67 of 394
+`apedp_dyn` modules are named by no test (`benchmarks/untested_modules_register.json`,
+ceiling pinned); `scripts/` and `benchmarks/` carry 603 and 202 lint findings
+and the legacy `apedp` package 882 type findings, all ratcheted downward only;
+`apedp_dyn/harness/manifest.py` falls back between three deterministic hashing
+routes on an exception, so a fingerprint can differ by which route ran without
+the record saying which; and the benchmark records written by scripts that call
+the parameter fitter still describe the pre-2026-11-16 fitter until each is
+re-run (J-18).
 
 ---
 

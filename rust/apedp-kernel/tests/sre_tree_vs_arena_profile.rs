@@ -21,8 +21,9 @@
 //!    equality between the per-row tree evaluator and the series-at-a-time
 //!    arena evaluator).
 //! 4. Throughput measurement of BOTH engines over the identical candidate
-//!    set, written to `benchmarks/sre_tree_vs_arena_baseline.json` with the
-//!    recorded gate decision text.
+//!    set, printed with the recorded gate decision text, and written to
+//!    `benchmarks/sre_tree_vs_arena_baseline.json` only when
+//!    `APEDP_WRITE_BENCHMARK_ARTIFACTS=1` asks for a re-measurement.
 
 use std::time::Instant;
 
@@ -287,11 +288,24 @@ fn sre_tree_vs_arena_baseline() {
         },
         "gates": {"parity_mismatches": 0, "gate_decision": gate_decision},
     });
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../benchmarks/sre_tree_vs_arena_baseline.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&artifact).unwrap())
-        .expect("write sre baseline artifact");
-    println!("artifact written: {}", path.display());
+    // The record is committed evidence, so only a deliberate re-measurement
+    // replaces it: `APEDP_WRITE_BENCHMARK_ARTIFACTS=1 cargo test`. Until
+    // 2026-11-17 every `cargo test` rewrote it with the machine's own timings,
+    // which left the tree dirty after any run and made the recorded
+    // measurement indistinguishable from an incidental rerun
+    // (docs/SYSTEM_FLAWS_AUDIT.md, F-05). The numbers are printed either way,
+    // and the gate below asserts on them either way.
+    let rendered = serde_json::to_string_pretty(&artifact).unwrap();
+    if std::env::var("APEDP_WRITE_BENCHMARK_ARTIFACTS").as_deref() == Ok("1") {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../benchmarks/sre_tree_vs_arena_baseline.json");
+        std::fs::write(&path, &rendered).expect("write sre baseline artifact");
+        println!("artifact written: {}", path.display());
+    } else {
+        println!(
+            "artifact (not written; set APEDP_WRITE_BENCHMARK_ARTIFACTS=1 to re-pin):\n{rendered}"
+        );
+    }
 
     // Guard against silent degenerate workloads only — NOT a throughput or
     // coverage threshold: the measured truth (2026-10-22) is coverage 10.1%
