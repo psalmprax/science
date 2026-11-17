@@ -17,6 +17,7 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -172,10 +173,23 @@ def test_a_saturation_rival_buys_nothing_on_the_linear_coupled_problem():
 
     # Nesting means the rival can only fit train better; the question is
     # whether that extra freedom transfers.
-    assert scored_rival.train_loss <= scored_truth.train_loss * 1.05
-    assert scored_rival.holdout_rmse >= scored_truth.holdout_rmse * 0.99, (
+    # Training losses are mean squared standardized residuals. Since the fitter
+    # converges (2026-11-16) both reach about 2e-14 on this noiseless problem,
+    # where the 5 % margin is integrator noise (scipy 1.17.1: rival 1.94e-14
+    # against truth 1.83e-14); under 1e-10 neither fits worse.
+    assert scored_rival.train_loss <= scored_truth.train_loss * 1.05 or max(
+        scored_rival.train_loss, scored_truth.train_loss) < 1e-10
+    # Both holdout errors sit at the integration floor on this noiseless
+    # problem (3e-7 to 7e-7 against a signal RMS of 1.18), where which one is
+    # smaller is the integrator's choice: CI's 3.10 leg on 2026-11-16 had the
+    # rival at 5.65e-7 and the truth at 6.37e-7. "Buys nothing" means no gain
+    # above that floor.
+    obs = np.asarray(prob.holdout["truth_y"], dtype=float)
+    floor = 1e-6 * float(np.sqrt(np.mean(obs**2)))
+    gain = scored_truth.holdout_rmse - scored_rival.holdout_rmse
+    assert scored_rival.holdout_rmse >= scored_truth.holdout_rmse * 0.99 or gain < floor, (
         "the saturating rival beat the linear truth on confirmation: "
-        f"{scored_rival.holdout_rmse} vs {scored_truth.holdout_rmse}")
+        f"{scored_rival.holdout_rmse} vs {scored_truth.holdout_rmse} (floor {floor:.3g})")
 
 
 # ------------------------------------------------------- the recorded run

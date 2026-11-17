@@ -190,6 +190,26 @@ def fit_candidate_multistart(problem: Any, candidate: Any, n_starts: int = 5,
                   "best_train_loss": best.train_loss}
 
 
+#: Fit-time numerics. The fit used to simulate at simulate()'s default
+#: rtol=1e-3 with least_squares' default finite-difference step (~1.5e-8
+#: relative). A parameter step that small moves the trajectory far less than
+#: an adaptive integrator at 1e-3 moves it by changing its own step sequence,
+#: so the Jacobian was integration noise: on the true Duffing model at 5 %
+#: noise the fit stopped with status 3 and first-order optimality up to 1e10,
+#: at a cubic coefficient of -2.60 (scipy 1.18.1) or -2.73 (1.17.1), short of
+#: the minimum, and where it stopped decided the referee's verdict on the true
+#: model (docs/SYSTEM_FLAWS_AUDIT.md, J-16). With these settings both releases
+#: reach -1.6323 on that record, training loss equal to seven figures, and on
+#: four noise seeds the gate-4 verdict agrees across scipy 1.15.3, 1.17.1 and
+#: 1.18.1 where it used to differ on two. A fit costs about twice as long.
+#: Gate 4 already simulates tighter (1e-9) for the same reason.
+FIT_RTOL = 1e-7
+FIT_ATOL = 1e-9
+#: Relative finite-difference step: large against the integration error at
+#: FIT_RTOL, small against any parameter's own scale.
+FIT_DIFF_STEP = 1e-5
+
+
 def fit_candidate(problem: Any, candidate: Any,
                   x0: np.ndarray | None = None,
                   max_nfev: int = 300) -> ScoredCandidate:
@@ -255,13 +275,15 @@ def fit_candidate(problem: Any, candidate: Any,
     def residuals(p: Any) -> Any:
         m = _with_values(model0, _bind(names, p))
         res = simulate(m, reg["t_span"], reg["u_of_t"],
-                       np.asarray(reg["x0"], dtype=float), n_eval=len(t_eval))
+                       np.asarray(reg["x0"], dtype=float), n_eval=len(t_eval),
+                       rtol=FIT_RTOL, atol=FIT_ATOL)
         if not res.success:
             return np.full(Y.size, 1e3)
         return ((res.y.T - Y) / scale).ravel()
 
     sol = least_squares(residuals, probe, bounds=(lo, hi), max_nfev=max_nfev,
-                        xtol=1e-10, ftol=1e-10, gtol=1e-10)
+                        xtol=1e-10, ftol=1e-10, gtol=1e-10,
+                        diff_step=FIT_DIFF_STEP, x_scale="jac")
     values = _bind(names, sol.x)
     model = _with_values(model0, values)
     train_loss = float(np.mean(residuals(sol.x) ** 2))

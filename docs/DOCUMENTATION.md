@@ -3103,6 +3103,27 @@ including the false positive this experiment caught in its own first version.
 | [`tests/test_dyn_basis_proposer_transfer.py`](../tests/test_dyn_basis_proposer_transfer.py) | Fits a polynomial basis proposer on development observations for two distinct synthetic equation families and evaluates the returned frozen scorer on disjoint out-of-range observations; this pins code-path transfer only, not empirical cross-domain science | `experimental` |
 
 *Documentation generated for APEDP-X v2.0.0 — Autonomous Physics, Engineering & Market Discovery Platform*
+### Point-in-time crypto panel and preregistration PREREG-CRYPTO-PIT-2026-11
+
+The first run of the referee on data none of its authors has looked at. The
+dataset is built by a workflow, not committed by hand, and the analysis is
+frozen by digest before the dataset exists.
+
+| Module | Role | Status |
+| :--- | :--- | :--- |
+| [`scripts/build_point_in_time_crypto_panel.py`](../scripts/build_point_in_time_crypto_panel.py) | Builds a daily panel of every Binance spot pair quoted in USDT from the public archive at data.binance.vision, including pairs that stopped trading before the end date. Lists the archive's S3 bucket, downloads each monthly kline zip, checks it against the archive's `.CHECKSUM` file, and refuses any host other than the archive and its listing. Excludes stablecoin and fiat bases (`PEGGED_BASES`) and leveraged tokens (a base ending in UP/DOWN/BULL/BEAR whose remainder is itself a listed base). Writes `panel_development.csv.gz`, `panel_holdout.csv.gz` (split at `--holdout-start`, default 2026-01-01) and `manifest.json` (the SHA-256 of every source file, the universe-selection disclosure, the pairs that stopped trading). Columns per asset: close, volume, taker-buy volume, and order-flow imbalance `(2·taker − volume)/volume`. Tests: `tests/test_point_in_time_crypto_panel.py` against a fake archive | `experimental` |
+| [`scripts/run_prereg_crypto_pit.py`](../scripts/run_prereg_crypto_pit.py) | The frozen analysis. Three candidates go through `PromotionTracker`: a known effect the referee should promote (`CPLUS-VOL`, 20-day volatility → next-day absolute return), a placebo it should refuse (`CZERO-PLAC`), and the hypothesis under test (`H1-OFI`, order-flow imbalance → next-day return, sign fixed on development data). The holdout is split by date so each candidate that reaches stage 4 claims its own window in `FullLineageExperimentLedger`; candidates refused earlier never touch the holdout. Refuses to write into an existing output directory, so it runs once | `audit-only` |
+| [`scripts/check_preregistration.py`](../scripts/check_preregistration.py) | Recomputes the SHA-256 of the preregistration text, the builder and the analysis script and compares them with `preregistration/DIGEST.json`. The data workflow runs it before downloading anything | `audit-only` |
+| [`.github/workflows/market-data.yml`](../.github/workflows/market-data.yml) | Runs on a push to `market-data-build` or by hand: checks the digest, builds the panel on a GitHub runner, adds the building commit and the preregistration digest to the manifest, and commits the result to the orphan branch `market-data` under `crypto_usdt_daily/` | `experimental` |
+
+The preregistration itself is
+[`preregistration/PREREG-CRYPTO-PIT-2026-11.md`](../preregistration/PREREG-CRYPTO-PIT-2026-11.md).
+It states in advance what counts as the referee behaving as designed (the known
+effect passes stage 4 and the placebo is refused at stage 2 or 3), states no
+pass criterion for H1, and records the expectation that H1 is refused at stage 4
+or 5. A change to any frozen file after the data exists is a deviation and must
+be reported as one.
+
 ## What this repository cannot certify about itself
 
 Every referee named in this index — the stabilizer and dense tiers, Stim, MQT QCEC, the

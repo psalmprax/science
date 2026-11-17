@@ -166,7 +166,12 @@ jobs:
   test:
     needs: [python-quality, rust-quality]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The suite had never run to completion here. Measured on 2026-11-16: the
+    # 3.11 leg ran 4,769 tests in 25 minutes and the 3.10 leg 3,270 in 21,
+    # so a full run takes about 32; the fitter now integrates at FIT_RTOL
+    # (apedp_dyn/fitting/parameter_fit.py), which made the full local run 38 %
+    # slower. 45 minutes would end the job before the suite does.
+    timeout-minutes: 75
     services:
       redis:
         image: redis:7-alpine
@@ -189,7 +194,14 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
+      # Full history, not the default single commit: the
+      # TestAgainstTheRealRepository tests in tests/test_run_provenance.py read
+      # the last 40 to 80 commits. In a one-commit clone they saw only HEAD, and
+      # failed whenever HEAD touched apedp/ or tests/ (3.11 leg on dd46f18, after
+      # 4,769 passes). The history is 67 MB.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       # Avoid component conflicts in the hosted runner's preinstalled toolchains:
       # every later Rust step in this job shares this job-local home, including
@@ -198,8 +210,38 @@ jobs:
       # `RUSTUP_HOME: ${{ runner.temp }}/rustup` there made the whole workflow
       # file invalid, so no job in it ran on this branch from 2026-10-20 until
       # this was moved (docs/SYSTEM_FLAWS_AUDIT.md, E-07).
+      #
+      # The home is emptied first and the toolchain is installed straight
+      # after, before any other step can run a Rust proxy against it. Twice on
+      # 2026-11-16 (stage 7a7f5b5 attempt 1, test (3.12); a46360f attempt 3,
+      # test (3.11)) rustup found a half-installed 1.99.0 here before the
+      # install step ran -- "recovering from a partially installed toolchain",
+      # with rust-docs among the removed components, which the minimal profile
+      # never installs -- and failed on "detected conflict: 'bin/cargo-clippy'".
+      # Which step left it is not established; if the directory is found
+      # non-empty again, the warning below lists what was in it.
       - name: Isolate Rust toolchain home
-        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
+        run: |
+          if [ -e "$RUNNER_TEMP/rustup" ]; then
+            echo "::warning::$RUNNER_TEMP/rustup existed before isolation; contents follow and it is removed"
+            find "$RUNNER_TEMP/rustup" -maxdepth 3 | head -50
+            rm -rf "$RUNNER_TEMP/rustup"
+          fi
+          echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
+
+      # The native kernel behind `apedp/rust_bridge.py` lives in
+      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
+      # and the sixteen differential tests in
+      # `tests/test_cross_implementation_conformance.py` skip -- green, and
+      # checking nothing. So the kernel is built here, and the next step asserts
+      # it is actually importable before any test tier runs. A build that stops
+      # building fails loudly instead of turning into sixteen skips.
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
@@ -233,19 +275,6 @@ jobs:
             -C "${{ runner.temp }}/lean-toolchain" --strip-components=1
       - name: Put lean and lake on PATH
         run: echo "${{ runner.temp }}/lean-toolchain/bin" >> "$GITHUB_PATH"
-
-      # The native kernel behind `apedp/rust_bridge.py` lives in
-      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
-      # and the sixteen differential tests in
-      # `tests/test_cross_implementation_conformance.py` skip -- green, and
-      # checking nothing. So the kernel is built here, and the next step asserts
-      # it is actually importable before any test tier runs. A build that stops
-      # building fails loudly instead of turning into sixteen skips.
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: '1.99.0'
-          components: rustfmt, clippy
 
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2

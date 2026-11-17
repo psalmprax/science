@@ -118,10 +118,23 @@ class TestRmseRel:
         for rep in (0, 1, 2):
             for cid, r in _by_rep(traces, rep)["rows"].items():
                 if r["eliminated_at"] in ("gate4", "adjudication", "promotion"):
-                    assert r["rmse_rel"] is not None and r["rmse_rel"] >= 0, (rep, cid, r)
+                    if r["rmse_rel"] is None:
+                        # The holdout was reached and could not be simulated:
+                        # there is no error to report, and the candidate must
+                        # stop at gate 4 and say why. CI's 3.11 leg on
+                        # 2026-11-16 fitted C1 on rep 2 to parameters whose
+                        # holdout run overflowed (an environment-dependent
+                        # stopping point, docs/SYSTEM_FLAWS_AUDIT.md J-16);
+                        # until then this branch assumed it could not happen.
+                        assert r["eliminated_at"] == "gate4", (rep, cid, r)
+                        assert r["holdout_rmse"] is None, (rep, cid, r)
+                        assert "holdout simulation invalid" in r["detail"], (rep, cid, r)
+                        continue
+                    assert r["rmse_rel"] >= 0, (rep, cid, r)
                     assert abs(r["rmse_rel"] - r["holdout_rmse"] / _obs_rms(rep)) < 1e-9
                 else:
                     assert r["rmse_rel"] is None, (rep, cid, r)
+
 
     def test_rmse_rel_is_audit_only(self):
         assert "rmse_rel" not in inspect.getsource(adjudicate_fn)

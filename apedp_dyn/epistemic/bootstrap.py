@@ -195,7 +195,13 @@ def param_bootstrap_ci(problem: Any, candidate_ir: Any, fitted_values: dict[str,
 
     import numpy as _np
 
-    from apedp_dyn.fitting.parameter_fit import _train_arrays, _with_values, fit_candidate
+    from apedp_dyn.fitting.parameter_fit import (
+        FIT_ATOL,
+        FIT_RTOL,
+        _train_arrays,
+        _with_values,
+        fit_candidate,
+    )
     from apedp_dyn.grammar import materialize
     from apedp_dyn.grammar.candidate_ir import SystemCandidate
 
@@ -210,8 +216,15 @@ def param_bootstrap_ci(problem: Any, candidate_ir: Any, fitted_values: dict[str,
     reg, t, Y, _U = _train_arrays(problem)
     from apedp_dyn.simulation import simulate
 
+    # The resampled problems are centred on this trajectory and refitted by
+    # fit_candidate, so it is integrated with the fitter's own tolerances. At
+    # simulate()'s default rtol=1e-3 the centre carried integration error the
+    # refits then fitted: on clean Duffing every refit of the damping term
+    # landed in [-0.1995, -0.1987] around a fit of -0.2000, and the band did not
+    # contain the estimate it was built around.
     res = simulate(fitted, reg["t_span"], reg["u_of_t"],
-                   np.asarray(reg["x0"], dtype=float), n_eval=len(t))
+                   np.asarray(reg["x0"], dtype=float), n_eval=len(t),
+                   rtol=FIT_RTOL, atol=FIT_ATOL)
     if not res.success:
         raise RuntimeError(f"fitted-model train simulation invalid: {res.detail}")
     resid = Y - res.y.T  # (n, states)

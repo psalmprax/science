@@ -209,6 +209,128 @@ Each entry: cause, what changed, the pin for it.
   reached constrains nothing: either these modules are split or the size
   budget should be dropped. That is the owner's decision.
 
+- **J-16 the fitter's verdict on the true model depends on the scipy release
+  — test fixed; the fitter itself OPEN.** After the merge, CI's 3.11 leg ran
+  1,007 tests and stopped at
+  `test_dyn_adjudicate_regression.py::TestProvenanceFallbackFiresEndToEnd::test_fallback_abstains_without_any_explicit_series`,
+  which passes here. Reproduced under scipy 1.17.1. The fixture fits the true
+  Duffing model at 5 % noise from the fitter's default start. The cubic term
+  is barely exercised at the training amplitude, the cost is flat along its
+  coefficient, and `least_squares` stops with status 3 and optimality ~1e7:
+  the coefficient comes out at −2.62 (scipy 1.18.1) or −2.70 (1.17.1) against
+  a generating −2.0, with the same training cost to three figures. The holdout
+  verdict on the *true model* follows the stopping point: gate 4 passes on
+  1.18 (margin 0.94) and fails on 1.17 (1.03), and the residuals left by the
+  wrong coefficient are structured (|rho1| 0.71–0.75), so the referee refuses
+  the truth either way. Started from the generating parameters, the same
+  fitter returns −2.0007 under scipy 1.15.3, 1.17.1 and 1.18.1 alike, gate-4
+  margin 0.40, |rho1| 0.058, and the referee promotes it at the production
+  flag. The test now fits from the generating parameters, sets the flag just
+  below and just above the recorded series' |rho1|, and requires the reason
+  to quote that value; that is a sharper test of the provenance fallback than
+  the one it replaces, and it passes under all three releases. The companion
+  test compared the fallback with an explicit `holdout_sq_error` series, the
+  squared-error series `_residual_series` stopped using; it compares signed
+  residuals at three flags.
+  *Resolved by J-18:* the default-start fit, which production uses, stopped 30 %
+  off on a well-posed problem, and the referee's verdict on the true model at
+  5 % noise is decided by that stopping point. It is the same mechanism as
+  J-08's tournament boundary. `fit_candidate_multistart` exists and is not
+  used by these paths; whether to use it, rescale the problem, or tighten the
+  fit-time integrator tolerance (`simulate` defaults to `rtol=1e-3`, chosen
+  "for fitter throughput") changes every recorded fit and is the owner's
+  decision.
+- **J-17 four more, from the hosted runner and a full run under its
+  libraries — FIXED.** With J-16 pushed, CI's 3.10 leg ran 2,155 tests and
+  stopped at `test_dyn_notebook_adapter.py::test_detect_platform_cluster`: a
+  GitHub runner sets `GITHUB_ACTIONS=true`, `detect_platform()` checks CI
+  before Slurm, and the test blanked `CI` but not `GITHUB_ACTIONS`. The
+  adapter tests now start with every variable the adapter reads unset (a test
+  enforces that the list covers the source), and reproduce the runner's
+  environment explicitly. A full local run under numpy 2.4.6 and scipy 1.17.1,
+  CI's 3.11/3.12 libraries, then gave 5,843 passed and 2 failed. (a)
+  `test_kernel_rational_search_memory` (J-09) read `ru_maxrss` in a child
+  process; on Linux that survives fork and exec, so the child of a 3.2 GB
+  pytest worker reported 3.2 GB for a search that peaks at 376 MB. It reads
+  the child's `VmHWM`. (b)
+  `test_vqc_stabilizer::test_an_exact_distribution_is_refused_past_the_enumerated_width`
+  asserted the Rust tier's refusal message unconditionally; the CI test job
+  does not build `apedp_vqc`, so there is no Rust tier there to refuse. That
+  half is now conditional on the extension, as
+  `tests/test_vqc_native_parity.py` already is, and the other branch checks
+  the call was answered by Python. (c) The rustup step failed twice on
+  2026-11-16 (`detected conflict: 'bin/cargo-clippy'`) after finding a
+  half-installed 1.99.0, with `rust-docs` among its components, in a home that
+  had been isolated a minute earlier and that the minimal profile never fills
+  that way. What wrote it is not established from the logs. The toolchain is
+  now installed in the step right after the isolation, into a home that is
+  emptied first; if it is ever found non-empty, a warning lists what was there.
+  (d) CI's 3.11 leg then ran 3,207 tests and stopped at
+  `test_dyn_tournament.py::TestRmseRel::test_present_iff_holdout_reached`: there,
+  C1 on rep 2 was fitted to parameters whose holdout run overflowed, so it
+  stopped at gate 4 with no RMSE ("holdout simulation invalid"). The tournament
+  already records that case as `None`; the test assumed it could not happen. It
+  now requires such a row to stop at gate 4 and say why. Same cause as J-16, a
+  third library- and interpreter-dependent stopping point.
+- **J-18 the fitter converges — FIXED, and a recorded referee failure was the
+  fitter's.** J-16's open half. The fit simulated at `simulate()`'s default
+  `rtol=1e-3` and differentiated with `least_squares`' default step (~1.5e-8
+  relative), so its Jacobian was the integrator's step selection, not the
+  model: on the true Duffing model at 5 % noise it stopped with status 3 and
+  first-order optimality up to 1e10, at a cubic coefficient of −2.60 (scipy
+  1.18.1) or −2.73 (1.17.1), short of the minimum at −1.63. It now integrates
+  at `FIT_RTOL = 1e-7`, `FIT_ATOL = 1e-9` and differentiates with
+  `FIT_DIFF_STEP = 1e-5` and `x_scale="jac"`
+  (`apedp_dyn/fitting/parameter_fit.py`). Measured on four noise seeds under
+  scipy 1.15.3, 1.17.1 and 1.18.1: training losses agree to seven figures, the
+  lowest-loss structure is the truth in all twelve fits (the old fitter chose
+  the linear rival on seed 22 under one release), and the gate-4 verdict
+  agrees across releases on every seed. A fit costs about twice as long; the
+  full local suite went from 23 to 32 minutes, and the CI test job's limit is
+  75 minutes, with the measurement in the workflow.
+  What it moved. A full run gave 7 failures; each is explained and none is
+  re-pinned to a new snapshot.
+  (a) *STAB/10/rep2, the "frozen failure" in
+  `outputs/dyn_epistemic_freeze.json`:* the cubic truth "blew up on holdout"
+  and the linear rival was promoted unopposed. The blow-up was the fitter's
+  stopping point. Converged, the truth passes gate 4 (0.0416 against 0.0863)
+  and is promoted over the rival by 0.0339 against a tie band of 0.0154. Three
+  guard tests used the cell as their sole-survivor case; they now take the
+  rival alone, which is the case the guards are about, and a test pins that
+  the frozen failure no longer happens. The flag-sensitivity sweep on the same
+  residual series is judged on the rival alone for the same reason.
+  (b) *Bootstrap parameter bands* (`epistemic/bootstrap.py`) centred the
+  resampled problems on a trajectory integrated at 1e-3 and refitted them at
+  the new tolerance; the band no longer contained the estimate it was built
+  around. The centre is integrated at the fitter's tolerances.
+  (c) *Noiseless two-DOF saturation test:* both models now reach a training
+  loss of ~2e-14 and holdout errors of 3e-7 to 7e-7; its 5 % and 1 %
+  comparisons were integrator noise there (CI's 3.10 leg had already failed it
+  under the old fitter: 5.65e-7 against 6.37e-7). Both comparisons hold above a
+  stated floor.
+  (d) *The provenance-fallback tests* (J-16) return to the production route
+  (default start, lowest training loss); the generating-parameter start is
+  gone. The converged truth carries |rho1| 0.548 raw and 0.447 on
+  standardized innovations here, so at the production flag of 0.5 the
+  innovation fallback admits it.
+  *Addendum (2026-11-17):* that statistic is not reproducible, and the tests
+  no longer pin it. CI's 3.10 leg on `c43c972` measured the same recorded
+  series at raw 0.304 (1 failed, 1011 passed); a local Python 3.10.20 with
+  CI's numpy 2.2.6 and scipy 1.15.3 measured 0.548 again. The training loss
+  agrees to seven figures; the residual structure does not, because the cubic
+  coefficient sits on a flat direction of the training loss and where along it
+  the fit stops moves the holdout residuals. The tests now pin the guard's
+  behaviour on whatever series gate 4 recorded: refusal at a flag just below
+  its |rho1| (quoted in the reason), admission just above it, and promotion of
+  the truth at the production flag. The flag sweep on the rival alone keeps its
+  fixed pins: the rival's |rho1| is 0.5934 under both local environments, and
+  the truth's moves in the fourth figure (0.2268 against 0.2261) on the same
+  cell. What this leaves open: on this cell the guard's verdict is stable, but
+  the margin it is decided by is a property of the machine as well as the
+  data.
+  The scientific drift guardrail and the known-truth recovery gate pass
+  unchanged. Not re-derived: benchmark records written by scripts that call the
+  fitter; no test flags them, and they describe the old fitter until re-run.
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on
 this machine and has no verdict; the committed mutation report, still the

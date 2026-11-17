@@ -8,17 +8,23 @@ of ``tests/test_dyn_rime_ad_screening.py`` one call took the process from
 machine because its worker was killed, and it took four other workers' tests
 with it in the next full run.
 
-The call is measured in a child process so that the peak belongs to it alone.
+The call is measured in a child process so that the peak belongs to it alone,
+and by the child's ``VmHWM``, not ``getrusage``: on Linux ``ru_maxrss`` survives
+fork and exec, so a child of a pytest worker that had reached 3.2 GB reported
+3.2 GB for a search that peaks at 376 MB (full run of 2026-11-16).
 """
 from __future__ import annotations
 
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
 pytest.importorskip("apedp_kernel")
+if not Path("/proc/self/status").exists():
+    pytest.skip("VmHWM is read from /proc/self/status, which this platform lacks", allow_module_level=True)
 
 #: Peak resident set allowed for the child, in MB. Measured: 2,992 before the
 #: fix, about 600 after for the whole screening test and less for one call. The
@@ -27,7 +33,7 @@ pytest.importorskip("apedp_kernel")
 PEAK_LIMIT_MB = 1200
 
 _CHILD = r"""
-import json, resource, sys
+import json
 import numpy as np
 import apedp_kernel as ak
 
@@ -39,10 +45,9 @@ raw = ak.rime_rational_search_json(
     json.dumps([[float(v) for v in data["x3"]]]), json.dumps(target.tolist()),
     json.dumps(["x3"]), False, False, False, False, 2, 3,
 )
-print(json.dumps({
-    "candidates": len(json.loads(raw)),
-    "peak_mb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss // 1024,
-}))
+with open("/proc/self/status", encoding="ascii") as status:
+    peak_kb = next(int(line.split()[1]) for line in status if line.startswith("VmHWM:"))
+print(json.dumps({"candidates": len(json.loads(raw)), "peak_mb": peak_kb // 1024}))
 """
 
 
