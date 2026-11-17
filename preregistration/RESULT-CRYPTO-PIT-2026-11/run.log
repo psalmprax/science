@@ -1,0 +1,5 @@
+/home/claude/science/apedp_dyn/epistemic/gate4_provenance.py:47: RuntimeWarning: Governance manifest is sealed to a different canonical-spec hash (a6d026f303a7…) than the one on disk (a8177b252d81…). The Python pin passes, but the signed certification does not cover this spec revision; re-signing requires the registered trustees (AGENTS.md §1.3, FLAW-01).
+  from apedp_dyn.conf.canonical_spec import DIEBOLD_MARIANO_P_VALUE_THRESHOLD
+CPLUS-VOL: highest stage passed STAGE_4_OUT_OF_SAMPLE_TRANSFER, halted=False
+CZERO-PLAC: highest stage passed STAGE_1_MATHEMATICAL_CONSISTENCY, halted=True
+H1-OFI: highest stage passed STAGE_1_MATHEMATICAL_CONSISTENCY, halted=True

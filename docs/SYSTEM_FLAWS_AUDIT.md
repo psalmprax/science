@@ -328,6 +328,18 @@ Each entry: cause, what changed, the pin for it.
   cell. What this leaves open: on this cell the guard's verdict is stable, but
   the margin it is decided by is a property of the machine as well as the
   data.
+- **J-19 a memory test asserted an ordering the kernel does not keep — FIXED
+  in the test.** CI's 3.11 leg on `6d20a3f` ran 5,626 tests and failed one:
+  `tests/test_vqc_memory.py`, window peak 158,822,400 bytes against a floor of
+  158,826,496, one 4 KiB page apart. The floor is VmRSS read just after
+  resetting the peak counter; the peak is VmHWM, which Linux raises lazily
+  (before an unmap, not on every fault), so a page faulted in after the reset
+  and released without an unmap leaves the peak a page under the floor. The
+  three orderings the tests asserted (peak ≥ floor, whole-life peak ≥ floor,
+  growth ≥ 0) now allow four pages. The measuring code is unchanged: it is
+  pinned by `benchmarks/` through the external-comparison record, its
+  reported growth is window peak minus floor as documented, and a one-page
+  negative growth is within the resolution of what it measures.
   The scientific drift guardrail and the known-truth recovery gate pass
   unchanged. Not re-derived: benchmark records written by scripts that call the
   fitter; no test flags them, and they describe the old fitter until re-run.

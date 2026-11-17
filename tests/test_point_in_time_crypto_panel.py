@@ -16,7 +16,7 @@ import json
 import sys
 import zipfile
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 import pandas as pd
 import pytest
@@ -58,6 +58,7 @@ class FakeArchive:
         self.symbols = sorted(series)
 
     def __call__(self, url: str) -> bytes:
+        url.encode("ascii")  # what urllib does to the request line; a raw non-ASCII key fails here
         parsed = urlparse(url)
         if url.startswith(builder.LISTING):
             query = {k: v[0] for k, v in parse_qs(parsed.query).items()}
@@ -68,7 +69,7 @@ class FakeArchive:
                 body = "".join(f"<Contents><Key>{k}</Key></Contents>" for k in sorted(self.objects)
                                if k.startswith(prefix) and not k.endswith(".CHECKSUM"))
             return f"<ListBucketResult><IsTruncated>false</IsTruncated>{body}</ListBucketResult>".encode()
-        return self.objects[parsed.path.lstrip("/")]
+        return self.objects[unquote(parsed.path.lstrip("/"))]
 
 
 def _daily(start: str, end: str, close: float = 10.0, volume: float = 100.0, taker: float = 60.0):
@@ -181,3 +182,27 @@ def test_the_fetcher_refuses_any_host_but_the_archive():
 def test_only_derivatives_of_a_listed_base_count_as_leveraged(symbol, expected):
     listed = frozenset({"BTC", "ETH", "BNB", "JUP", "SYRUP", "SUPER", "USDC"})
     assert builder.eligible(symbol, listed) == expected
+
+
+def test_a_pair_whose_symbol_is_not_ascii_is_fetched(tmp_path):
+    """The archive lists 币安人生USDT. Its first run on GitHub (2026-11-17) failed
+    after ten minutes: the key went into the request line unencoded and urllib
+    refused it. The fake refuses the same way, so this fails without the fix."""
+    fake = FakeArchive({
+        "AAAUSDT": _daily("2024-11-01", "2025-02-28"),
+        "币安人生USDT": _daily("2024-12-01", "2025-02-28", close=0.2, volume=9000.0, taker=5000.0),
+    })
+    manifest = builder.build(tmp_path, dt.date(2024, 11, 1), dt.date(2025, 2, 28), dt.date(2025, 2, 1), fetch=fake)
+    with gzip.open(tmp_path / "panel_development.csv.gz", "rt", encoding="utf-8") as fh:
+        header = fh.readline().strip().split(",")
+    assert "币安人生_CLOSE" in header and "AAA_CLOSE" in header
+    assert any("币安人生USDT" in f["file"] for f in manifest["source_files"])
+
+
+def test_archive_urls_are_ascii_and_round_trip():
+    key = f"{builder.KLINE_PREFIX}币安人生USDT/1d/币安人生USDT-1d-2026-01.zip"
+    url = builder.archive_url(key)
+    url.encode("ascii")
+    assert unquote(url[len(builder.ARCHIVE) + 1:]) == key
+    plain = f"{builder.KLINE_PREFIX}BTCUSDT/1d/BTCUSDT-1d-2026-01.zip"
+    assert builder.archive_url(plain) == f"{builder.ARCHIVE}/{plain}"
