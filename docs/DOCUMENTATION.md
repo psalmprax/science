@@ -3140,6 +3140,7 @@ frozen by digest before the dataset exists.
 | :--- | :--- | :--- |
 | [`scripts/build_point_in_time_crypto_panel.py`](../scripts/build_point_in_time_crypto_panel.py) | Builds a daily panel of every Binance spot pair quoted in USDT from the public archive at data.binance.vision, including pairs that stopped trading before the end date. Lists the archive's S3 bucket, downloads each monthly kline zip, checks it against the archive's `.CHECKSUM` file, and refuses any host other than the archive and its listing. Excludes stablecoin and fiat bases (`PEGGED_BASES`) and leveraged tokens (a base ending in UP/DOWN/BULL/BEAR whose remainder is itself a listed base). Writes `panel_development.csv.gz`, `panel_holdout.csv.gz` (split at `--holdout-start`, default 2026-01-01) and `manifest.json` (the SHA-256 of every source file, the universe-selection disclosure, the pairs that stopped trading). Columns per asset: close, volume, taker-buy volume, and order-flow imbalance `(2·taker − volume)/volume`. Tests: `tests/test_point_in_time_crypto_panel.py` against a fake archive | `experimental` |
 | [`scripts/run_prereg_crypto_pit.py`](../scripts/run_prereg_crypto_pit.py) | The frozen analysis. Three candidates go through `PromotionTracker`: a known effect the referee should promote (`CPLUS-VOL`, 20-day volatility → next-day absolute return), a placebo it should refuse (`CZERO-PLAC`), and the hypothesis under test (`H1-OFI`, order-flow imbalance → next-day return, sign fixed on development data). The holdout is split by date so each candidate that reaches stage 4 claims its own window in `FullLineageExperimentLedger`; candidates refused earlier never touch the holdout. Refuses to write into an existing output directory, so it runs once | `audit-only` |
+| [`scripts/run_calibration_crypto_dev.py`](../scripts/run_calibration_crypto_dev.py) | The second preregistration, [`PREREG-CRYPTO-CAL-2026-11`](../preregistration/PREREG-CRYPTO-CAL-2026-11.md): the false-pass rate and power of stages 2 and 3 on the real development panel (2021–2025; the script refuses anything later and is never given the holdout). 500 placebos seeded by their ids, 100 injected signals at each of six strengths built from the next day's standardized return rank, and the two literature factors themselves, each through a fresh `PromotionTracker` on the frozen analysis's pairing. Refuses to run if it or its preregistration differs from `preregistration/DIGEST-CAL.json`. Tests: `tests/test_calibration_crypto_dev.py` (synthetic panels) | `audit-only` |
 | [`scripts/check_preregistration.py`](../scripts/check_preregistration.py) | Recomputes the SHA-256 of the preregistration text, the builder and the analysis script and compares them with `preregistration/DIGEST.json`. The data workflow runs it before downloading anything | `audit-only` |
 | [`.github/workflows/market-data.yml`](../.github/workflows/market-data.yml) | Runs on a push to `market-data-build` or by hand: checks the digest, builds the panel on a GitHub runner, adds the building commit and the preregistration digest to the manifest, and commits the result to the orphan branch `market-data` under `crypto_usdt_daily/` | `experimental` |
 
@@ -3161,6 +3162,13 @@ holdout. Built under one recorded deviation
 ([`DEVIATION-01`](../preregistration/DEVIATION-01-2026-11-17-builder-url-encoding.md):
 the builder could not fetch a pair with a non-ASCII symbol; fixed before any
 data existed).
+
+**Calibration (2026-11-17), run once:**
+[`preregistration/RESULT-CRYPTO-CAL-2026-11.md`](../preregistration/RESULT-CRYPTO-CAL-2026-11.md).
+On the real development panel, 0 of 500 placebos passed stage 2 (95% upper
+bound 0.74%); injected effects passed stage 2 at 1% (ρ = 0.01), 55% (0.02),
+97% (0.03) and 100% (0.05); one-day reversal passed stage 2 and was refused at
+stage 3 as a literature factor. All three preregistered expectations held.
 
 ## What this repository cannot certify about itself
 

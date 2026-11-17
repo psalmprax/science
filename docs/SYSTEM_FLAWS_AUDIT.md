@@ -343,6 +343,13 @@ Each entry: cause, what changed, the pin for it.
   The scientific drift guardrail and the known-truth recovery gate pass
   unchanged. Not re-derived: benchmark records written by scripts that call the
   fitter; no test flags them, and they describe the old fitter until re-run.
+**CI, 2026-11-17.** On `d07c3a5` (run 43998024449) the test matrix passed on
+Python 3.10, 3.11 and 3.12 (5,886 passed, 173 skipped, 1 expected failure on
+each), the first time all three legs have been green; every other job passed
+except the governance manifest, which waits on the trustees (FLAW-01). The
+3.11 leg took 46 minutes of its 75. `test_market_discovery_covid_promotes`
+passed there; it is the local machine that cannot run it.
+
 Still open after this round: the governance signature (FLAW-01); J-02;
 `test_market_discovery_covid_promotes`, which kills the interpreter on
 this machine and has no verdict; the committed mutation report, still the

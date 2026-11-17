@@ -1,0 +1,119 @@
+{
+ "days": 1765,
+ "development_period": [
+  "2021-01-01",
+  "2025-12-31"
+ ],
+ "frozen": {
+  "preregistration/PREREG-CRYPTO-CAL-2026-11.md": "80d794fcf9dbf88417d17b0a51ac02224ed5aa18d9663ae8b64cc25ccb2a9e6b",
+  "scripts/run_calibration_crypto_dev.py": "28ed0b5e05507a23641f7aca4433754e0167d1d7340a5708d773e849fdd603d7"
+ },
+ "literature": [
+  {
+   "candidate": "CAL-LIT-reversal",
+   "cv_stable": true,
+   "dm_p_value": 0.004129293160590186,
+   "highest_stage_passed": "STAGE_2_PREDICTIVE_RECOVERY",
+   "ic": 0.028703087074950236,
+   "max_literature_r2": 1.0,
+   "stage2": true,
+   "stage3": false
+  },
+  {
+   "candidate": "CAL-LIT-momentum",
+   "cv_stable": false,
+   "highest_stage_passed": "STAGE_1_MATHEMATICAL_CONSISTENCY",
+   "ic": -0.002782883966333652,
+   "stage2": false,
+   "stage3": null
+  }
+ ],
+ "pairs": 52887,
+ "placebo": {
+  "ic_max_abs": 0.017845337946316035,
+  "ic_mean": 0.00025061441221036683,
+  "ic_sd": 0.004613509230713678,
+  "n": 500,
+  "stage2_false_passes": 0,
+  "stage2_rate_interval_95": [
+   0.0,
+   0.007350610051907784
+  ],
+  "stage3_false_passes": 0
+ },
+ "power": [
+  {
+   "mean_measured_ic": 0.009482103519612171,
+   "n": 100,
+   "rho": 0.01,
+   "stage2_interval_95": [
+    0.00025314603297742086,
+    0.054459385392080645
+   ],
+   "stage2_passes": 1,
+   "stage2_rate": 0.01,
+   "stage3_passes": 0
+  },
+  {
+   "mean_measured_ic": 0.014896154762033235,
+   "n": 100,
+   "rho": 0.015,
+   "stage2_interval_95": [
+    0.05620702028548747,
+    0.18830113219644257
+   ],
+   "stage2_passes": 11,
+   "stage2_rate": 0.11,
+   "stage3_passes": 11
+  },
+  {
+   "mean_measured_ic": 0.02041875561089852,
+   "n": 100,
+   "rho": 0.02,
+   "stage2_interval_95": [
+    0.44728018877393605,
+    0.6496797707603279
+   ],
+   "stage2_passes": 55,
+   "stage2_rate": 0.55,
+   "stage3_passes": 50
+  },
+  {
+   "mean_measured_ic": 0.02493249190188028,
+   "n": 100,
+   "rho": 0.025,
+   "stage2_interval_95": [
+    0.7762720186294323,
+    0.9212945950730342
+   ],
+   "stage2_passes": 86,
+   "stage2_rate": 0.86,
+   "stage3_passes": 86
+  },
+  {
+   "mean_measured_ic": 0.029192726314138603,
+   "n": 100,
+   "rho": 0.03,
+   "stage2_interval_95": [
+    0.91482394702572,
+    0.9937700284616936
+   ],
+   "stage2_passes": 97,
+   "stage2_rate": 0.97,
+   "stage3_passes": 97
+  },
+  {
+   "mean_measured_ic": 0.04884964260527086,
+   "n": 100,
+   "rho": 0.05,
+   "stage2_interval_95": [
+    0.9637833073548235,
+    1.0
+   ],
+   "stage2_passes": 100,
+   "stage2_rate": 1.0,
+   "stage3_passes": 100
+  }
+ ],
+ "preregistration": "PREREG-CRYPTO-CAL-2026-11"
+}
