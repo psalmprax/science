@@ -603,6 +603,34 @@ be observed here without the kernel" is superseded by F-05.
   loads it by file path, and fifteen files are hash-pinned by the freeze
   records. Extracting a package is now a mechanical move behind an enforced
   boundary, and a decision for whoever owns those pins.
+  *Addendum (2026-11-17): extracted.* The eight modules moved, with history,
+  to `apedp_referee/`, which is its own distribution (`apedp-referee` 0.1.0,
+  `apedp_referee/pyproject.toml`) as well as part of the full one. Each old
+  path is a four-line alias that installs the package's module object under
+  the old name in `sys.modules`, with a `.pyi` stub for type checkers, so
+  `apedp_dyn.conf.canonical_spec` (AGENTS.md's name), string monkeypatch
+  targets and every existing import resolve to the same objects. None of the
+  eight files was among those the freeze records pin (searched: the only
+  path-keyed record naming one was the exception-hygiene size budget, carried
+  over). The governance drift script loads `apedp_referee/canonical_spec.py`
+  by file path. The package ships a copy of the canonical specification;
+  `tests/test_referee_core_boundary.py` requires it to be byte-identical to
+  `specifications/canonical_preregistered_spec_v1.json`, which the trustees
+  sign, and both to hash to the pin. The governance manifest stays a
+  repository record: installed alone, the referee reports it absent. Two edges
+  back into `apedp_dyn` remain, both in `apedp_referee/_host.py`, both inside
+  functions, both reached only for host conveniences (default ledger location,
+  storage backend from the environment), and both raise a message saying what
+  to pass instead when `apedp_dyn` is not installed; the third, a
+  type-checking import of `BaseStorageBackend`, is replaced by a three-method
+  `LedgerStorage` protocol. One latent defect surfaced: the full distribution
+  never declared pandas, which `market/universe.py` imports; it does now.
+  Verified: in a fresh Python 3.12 environment holding numpy, scipy, pandas
+  and pytest, `pip install ./apedp_referee` builds a wheel of exactly the ten
+  modules, the specification and `py.typed`, and the package's tests pass from
+  a directory outside the checkout, including the test that asserts the
+  module came from site-packages and that `apedp_dyn`, `apedp`, the kernel,
+  torch and SymPy are not importable. CI's `referee-core` job repeats that.
 
 Limits of this round: the local kernel is built with Rust 1.97.0, not the
 pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy

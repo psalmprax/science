@@ -43,14 +43,14 @@ reproduce: kernel
 	       tests/test_dyn_pde_transfer.py -q
 
 test:
-	$(PYTHON) -m pytest tests/ -v
+	$(PYTHON) -m pytest tests/ apedp_referee/tests/ -v
 
-# The full configured ruleset (pyproject [tool.ruff.lint]) on the two trees that
-# are held clean, then the pinned baseline for the trees that are not yet. The
-# old gate ran --select E9,F, which let the configured rule set accumulate
+# The full configured ruleset (pyproject [tool.ruff.lint]) on the three trees
+# that are held clean, then the pinned baseline for the trees that are not yet.
+# The old gate ran --select E9,F, which let the configured rule set accumulate
 # findings while reporting success.
 lint:
-	$(PYTHON) -m ruff check apedp/ tests/
+	$(PYTHON) -m ruff check apedp/ apedp_referee/ tests/
 	$(PYTHON) scripts/check_quality_baseline.py --ruff-only
 
 # Strict mypy on the conf/ integrity boundary (pyproject [tool.mypy] `files`),

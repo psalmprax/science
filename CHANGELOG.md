@@ -15,6 +15,22 @@ inferred releases.
 
 ### Changed
 
+- **The referee core is its own package, `apedp-referee` (2026-11-17).**
+  `canonical_spec`, `promotion_lifecycle`, `experiment_ledger`,
+  `trial_ledger`, `novelty_adjudication`, `universe`, `proof_claim` and
+  `proof_evidence` moved to `apedp_referee/`, installable on its own
+  (`pip install ./apedp_referee`; numpy, scipy, pandas) and carried by the
+  full distribution too. The old module paths are aliases that return the same
+  module objects, with `.pyi` stubs for type checkers; no import changes.
+  `apedp_referee/_host.py` is the only place the referee reaches `apedp_dyn`,
+  for three host conveniences. `experiment_ledger` types its backend with a
+  `LedgerStorage` protocol instead of importing `BaseStorageBackend`. The
+  package ships a byte-identical copy of the canonical specification, checked
+  against the signed one. The full distribution now declares pandas. CI's
+  `referee-core` job installs the package into an empty environment and runs
+  its tests from outside the checkout. `docs/SYSTEM_FLAWS_AUDIT.md`, G-01
+  addendum.
+
 - **The parameter fitter converges, and its verdicts no longer depend on the
   scipy release (2026-11-16).** `fit_candidate` integrates at
   `FIT_RTOL = 1e-7` / `FIT_ATOL = 1e-9` and differentiates with

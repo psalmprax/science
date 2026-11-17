@@ -28,12 +28,12 @@ from typing import Any
 
 import pytest
 
-from apedp_dyn.epistemic.experiment_ledger import (
+from apedp_referee.experiment_ledger import (
     DatasetRole,
     FullLineageExperimentLedger,
     HoldoutContaminationError,
 )
-from apedp_dyn.epistemic.promotion_lifecycle import (
+from apedp_referee.promotion_lifecycle import (
     PromotionPrerequisiteError,
     PromotionTracker,
 )
@@ -209,7 +209,7 @@ def test_holdout_guard_agrees_with_the_lean_model_on_every_short_sequence(budget
 
 def test_a_rejected_candidate_burns_the_slices_it_inspected() -> None:
     """The ledger's second route to `burn`: a terminal lifecycle state."""
-    from apedp_dyn.epistemic.experiment_ledger import CandidateLifecycleState
+    from apedp_referee.experiment_ledger import CandidateLifecycleState
 
     ledger = FullLineageExperimentLedger(max_holdout_inspections=2)
     for c in CANDIDATES:

@@ -1,45 +1,30 @@
-"""The referee runs by itself: thresholds, state machine, ledgers, universe audit.
+"""apedp-referee runs by itself: thresholds, state machine, ledgers, universe audit.
 
-Every import in this file is the referee core, numpy or pandas
-(``tests/referee_core_manifest.py``). CI's ``referee-core`` job runs it in an
-environment with numpy, scipy, pandas and pytest and nothing else -- no
-torch, no SymPy, no native kernel, and the repository itself not installed --
-so a pass there is the constructive proof that a promotion decision does not
-depend on anything the referee is supposed to be judging.
+Every import in this file is ``apedp_referee``, numpy, pandas or the evidence
+helpers beside it. CI's ``referee-core`` job installs the package from its own
+directory into an environment that has numpy, scipy, pandas and pytest and
+nothing else, then runs these tests from outside the checkout: no torch, no
+SymPy, no native kernel, no ``apedp_dyn``. A pass there is the constructive
+proof that a promotion decision does not depend on anything the referee is
+supposed to be judging. ``test_this_is_the_package_under_test`` makes sure the
+copy being tested is the one that was installed when that is what the job
+says it is testing.
 
-These tests are not a second copy of the integrity suites
+These tests are not a second copy of the repository's integrity suites
 (``tests/test_integrity_*.py``). They walk the main paths once each, enough to
-show the whole decision surface is reachable without the rest of the tree.
+show the whole decision surface is reachable from the package alone.
 """
 
 from __future__ import annotations
 
 import datetime
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
-
-from apedp_dyn.conf import canonical_spec
-from apedp_dyn.epistemic import promotion_lifecycle as pl
-from apedp_dyn.epistemic.experiment_ledger import (
-    DatasetRole,
-    FullLineageExperimentLedger,
-    HoldoutContaminationError,
-    LedgerIntegrityError,
-    fingerprint_holdout_slice,
-)
-from apedp_dyn.epistemic.promotion_lifecycle import (
-    PromotionPrerequisiteError,
-    PromotionStage,
-    PromotionTracker,
-    PromotionViolationError,
-)
-from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
-from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
-from apedp_dyn.market.universe import UniverseAudit, audit_universe
-from tests.promotion_evidence import (
+from referee_evidence import (
     business_days,
     correlated_pair,
     evidence_backed_tracker,
@@ -48,7 +33,49 @@ from tests.promotion_evidence import (
     strategy_returns,
 )
 
+from apedp_referee import canonical_spec
+from apedp_referee import promotion_lifecycle as pl
+from apedp_referee.experiment_ledger import (
+    DatasetRole,
+    FullLineageExperimentLedger,
+    HoldoutContaminationError,
+    LedgerIntegrityError,
+    fingerprint_holdout_slice,
+)
+from apedp_referee.promotion_lifecycle import (
+    PromotionPrerequisiteError,
+    PromotionStage,
+    PromotionTracker,
+    PromotionViolationError,
+)
+from apedp_referee.proof_claim import ProofClaimStatus
+from apedp_referee.trial_ledger import CandidateTrialLedger
+from apedp_referee.universe import UniverseAudit, audit_universe
+
 UTC = datetime.timezone.utc
+
+
+def test_this_is_the_package_under_test() -> None:
+    """When CI says it is testing an installed copy, it is, and nothing else came along.
+
+    ``APEDP_REFEREE_EXPECT_INSTALLED=1`` is set by the job that installs the
+    package into a clean environment. There the module must come from
+    site-packages, not from a checkout on ``sys.path``, and the rest of the
+    repository must not be importable at all.
+    """
+    import importlib.util
+    import os
+    import sysconfig
+    from pathlib import Path
+
+    import apedp_referee
+
+    if os.environ.get("APEDP_REFEREE_EXPECT_INSTALLED") != "1":
+        pytest.skip("only meaningful where the job installed the package alone")
+    site = Path(sysconfig.get_paths()["purelib"]).resolve()
+    assert Path(apedp_referee.__file__).resolve().is_relative_to(site), apedp_referee.__file__
+    for name in ("apedp_dyn", "apedp", "apedp_kernel", "torch", "sympy"):
+        assert importlib.util.find_spec(name) is None, f"{name} is importable here"
 
 
 def _freeze_clock(monkeypatch: pytest.MonkeyPatch, moment: datetime.datetime) -> None:
@@ -64,7 +91,7 @@ def test_the_spec_on_disk_is_the_pinned_spec() -> None:
 
 
 def test_a_candidate_reaches_stage_six_on_derived_evidence_alone(
-    tmp_path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     frozen = datetime.datetime(2026, 1, 5, 12, 0, tzinfo=UTC)
     _freeze_clock(monkeypatch, frozen)
@@ -82,7 +109,7 @@ def test_a_candidate_reaches_stage_six_on_derived_evidence_alone(
     tracker.assert_consistent()
 
 
-def test_reported_numbers_are_refused_and_stages_cannot_be_skipped(tmp_path) -> None:
+def test_reported_numbers_are_refused_and_stages_cannot_be_skipped(tmp_path: Path) -> None:
     tracker = PromotionTracker("cand")
     with pytest.raises(PromotionViolationError):
         tracker.verify_stage_2(in_sample_ic=0.9, cv_stable=True)  # a number, not evidence
@@ -119,7 +146,7 @@ def test_noise_fails_stage_two_and_the_failure_is_final() -> None:
         tracker.verify_stage_2_from_predictions(*correlated_pair(600, 0.30, seed=1))
 
 
-def test_the_holdout_is_claimed_by_content_once_and_burned_on_failure(tmp_path) -> None:
+def test_the_holdout_is_claimed_by_content_once_and_burned_on_failure(tmp_path: Path) -> None:
     ledger = FullLineageExperimentLedger(persistence_path=tmp_path / "experiments.jsonl")
     for name in ("first", "second", "third"):
         ledger.register_candidate(name, "proposer", f"f_{name}")
@@ -160,7 +187,7 @@ def test_the_holdout_is_claimed_by_content_once_and_burned_on_failure(tmp_path) 
         reopened.record_data_exposure("second", "SPY", "2025", DatasetRole.CONFIRMATION_HOLDOUT)
 
 
-def test_an_edited_ledger_is_refused_on_load(tmp_path) -> None:
+def test_an_edited_ledger_is_refused_on_load(tmp_path: Path) -> None:
     path = tmp_path / "experiments.jsonl"
     ledger = FullLineageExperimentLedger(persistence_path=path)
     ledger.register_candidate("cand", "proposer", "f(x)")
@@ -175,7 +202,7 @@ def test_an_edited_ledger_is_refused_on_load(tmp_path) -> None:
         FullLineageExperimentLedger(persistence_path=path)
 
 
-def test_the_trial_count_is_journaled_and_deflates_the_sharpe(tmp_path) -> None:
+def test_the_trial_count_is_journaled_and_deflates_the_sharpe(tmp_path: Path) -> None:
     path = tmp_path / "trials.jsonl"
     ledger = persistent_trial_ledger(path, n_trials=40)
     assert ledger.is_persistent
@@ -191,7 +218,7 @@ def test_the_trial_count_is_journaled_and_deflates_the_sharpe(tmp_path) -> None:
 
 
 def test_stage_five_refuses_a_universe_chosen_with_hindsight(
-    tmp_path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _freeze_clock(monkeypatch, datetime.datetime(2026, 1, 5, tzinfo=UTC))
     rng = np.random.default_rng(1)

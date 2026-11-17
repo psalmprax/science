@@ -24,7 +24,7 @@
     "apedp_dyn/epistemic/temporal_rate_modulation.py": 1201,
     "apedp/rust_bridge.py": 1192,
     "apedp_dyn/problems/catalog.py": 1156,
-    "apedp_dyn/epistemic/promotion_lifecycle.py": 1148,
+    "apedp_referee/promotion_lifecycle.py": 1148,
     "apedp_dyn/vqc/external.py": 1140,
     "apedp_dyn/epistemic/adjudicate.py": 1127,
     "apedp_dyn/epistemic/rime_repair_engine.py": 1123,

@@ -17,6 +17,7 @@ WORKDIR /app
 COPY pyproject.toml README.md Makefile ./
 COPY apedp/ ./apedp/
 COPY apedp_dyn/ ./apedp_dyn/
+COPY apedp_referee/ ./apedp_referee/
 COPY specifications/ ./specifications/
 COPY --from=builder /build/wheels/*.whl /tmp/wheels/
 
