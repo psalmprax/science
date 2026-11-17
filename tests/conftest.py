@@ -109,3 +109,21 @@ def pytest_make_collect_report(collector):
                 str(collector.path), 0, f"Skipped: optional native dependency not installed: {module}"
             )
             return
+
+
+# --------------------------------------------------------------------------
+# Import-boundary evidence
+# --------------------------------------------------------------------------
+# tests/test_referee_core_boundary.py runs the referee core's tests in a child
+# pytest and needs to know which modules that run loaded. Reading
+# ``sys.modules`` at the end of the child's session is the direct measurement;
+# the child asks for it by naming a file here. Unset (every ordinary run), this
+# does nothing.
+RECORD_LOADED_MODULES_ENV = "APEDP_RECORD_LOADED_MODULES"
+
+
+def pytest_sessionfinish(session: pytest.Session) -> None:
+    target = os.environ.get(RECORD_LOADED_MODULES_ENV)
+    if not target or hasattr(session.config, "workerinput"):  # not from an xdist worker
+        return
+    Path(target).write_text("\n".join(sorted(sys.modules)) + "\n", encoding="utf-8")

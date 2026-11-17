@@ -31,7 +31,7 @@ import os
 import re
 import shutil
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -51,6 +51,16 @@ from apedp_dyn.epistemic.claim_ladder import (
     adjudicate_scientific_claim,
 )
 from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
+
+# The result records are defined in proof_evidence (standard library only) so
+# the promotion lifecycle can judge a result without importing this bridge;
+# re-exported here unchanged (`X as X` is the explicit re-export form).
+from apedp_dyn.epistemic.proof_evidence import (
+    LeanTheoremVerification as LeanTheoremVerification,
+)
+from apedp_dyn.epistemic.proof_evidence import (
+    LeanVerificationResult as LeanVerificationResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,57 +132,7 @@ def _declares_axioms(lean_code: str) -> bool:
 
 
 # ── Formal Verification Outcome Data Structures ───────────────────────────
-
-@dataclass(frozen=True)
-class LeanTheoremVerification:
-    invariant_name: str
-    invariant_kind: InvariantKind
-    theorem_identifier: str
-    lean_theorem_statement: str
-    lean_proof_script: str
-    is_formally_proven: bool
-    proof_method: str  # e.g., "lean4_kernel", "symbolic_deduction", "counterexample_refuted"
-    diagnostic_message: str
-    # True when the proof is discharged against an axiom this module declared.
-    # Such a record is a schema check, never an independent derivation, and the
-    # verifier caps the candidate at P1 whenever one is present.
-    axiom_dependent: bool = False
-
-
-@dataclass
-class LeanVerificationResult:
-    candidate_id: str
-    formula_repr: str
-    all_theorems_proven: bool
-    proof_claim_status: ProofClaimStatus  # P0, P1, P2
-    theorems: list[LeanTheoremVerification] = field(default_factory=list)
-    lean_source_code: str = ""
-    lean_file_path: Path | None = None
-    kernel_exit_code: int | None = None
-    notes: str = ""
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "candidate_id": self.candidate_id,
-            "formula_repr": self.formula_repr,
-            "all_theorems_proven": self.all_theorems_proven,
-            "proof_claim_status": self.proof_claim_status.value,
-            "theorems": [
-                {
-                    "invariant_name": t.invariant_name,
-                    "invariant_kind": t.invariant_kind.value,
-                    "theorem_identifier": t.theorem_identifier,
-                    "lean_statement": t.lean_theorem_statement,
-                    "proof_method": t.proof_method,
-                    "is_formally_proven": t.is_formally_proven,
-                    "axiom_dependent": t.axiom_dependent,
-                    "diagnostic": t.diagnostic_message,
-                }
-                for t in self.theorems
-            ],
-            "lean_file_path": str(self.lean_file_path) if self.lean_file_path else None,
-            "notes": self.notes,
-        }
+# LeanTheoremVerification and LeanVerificationResult: see proof_evidence.py.
 
 
 @dataclass(frozen=True)

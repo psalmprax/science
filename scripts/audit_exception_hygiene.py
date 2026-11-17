@@ -46,7 +46,7 @@ SCHEMA = "apedp.exception-hygiene.v1"
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE_PATH = ROOT / "benchmarks" / "exception_hygiene_baseline.json"
 
-SCAN_ROOTS = ("apedp", "apedp_dyn", "src")
+SCAN_ROOTS = ("apedp", "apedp_dyn", "apedp_referee", "src")
 
 #: Not policed: harness trees, vendored sources, and build/VCS noise.
 EXCLUDED_DIRS = frozenset(

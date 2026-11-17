@@ -57,6 +57,53 @@ jobs:
       - name: Rust kernel unit tests
         run: cargo test --workspace --locked
 
+  # The referee by itself. Everything this job installs is on the next ten
+  # lines: numpy, scipy, pandas, pytest, and finally apedp-referee from its
+  # own directory. No torch, no SymPy, no native kernel, and the repository is
+  # not pip-installed. If the thresholds, the promotion state machine, the
+  # ledgers or the universe audit ever need anything else, this job fails at
+  # import. tests/referee_core_manifest.py declares the boundary;
+  # tests/test_referee_core_boundary.py checks it statically, at import, under
+  # test and as a distribution.
+  referee-core:
+    name: Referee core in isolation (numpy, scipy, pandas only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the core's requirements and nothing else
+        run: |
+          python -m venv "$RUNNER_TEMP/core"
+          "$RUNNER_TEMP/core/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/core/bin/python" -m pip install numpy scipy pandas pytest
+          "$RUNNER_TEMP/core/bin/python" -m pip list
+      # -I: isolated mode, so the checkout in the working directory does not
+      # count as "installed" and only the environment itself is inspected.
+      - name: The environment really is that small
+        run: |
+          "$RUNNER_TEMP/core/bin/python" -I - <<'PY'
+          import importlib.util
+          present = [name for name in ("torch", "sympy", "jax", "apedp_kernel", "apedp") if importlib.util.find_spec(name)]
+          assert not present, f"this job must not have {present} installed"
+          PY
+      - name: Run the referee's tests and its import boundary
+        run: make test-referee-core PYTHON="$RUNNER_TEMP/core/bin/python"
+      # Then as a distribution: build apedp-referee from its own directory,
+      # install it, and run its tests from a directory that holds nothing but
+      # those tests. APEDP_REFEREE_EXPECT_INSTALLED makes the first test assert
+      # that the module came from site-packages and that apedp_dyn, apedp,
+      # the kernel, torch and SymPy cannot be imported at all.
+      - name: Install apedp-referee as a package and test the installed copy
+        run: |
+          cp -r apedp_referee "$RUNNER_TEMP/referee-src"
+          "$RUNNER_TEMP/core/bin/python" -m pip install "$RUNNER_TEMP/referee-src"
+          cp -r apedp_referee/tests "$RUNNER_TEMP/referee-tests"
+          cd "$RUNNER_TEMP/referee-tests"
+          APEDP_REFEREE_EXPECT_INSTALLED=1 "$RUNNER_TEMP/core/bin/python" -I -m pytest -q -p no:cacheprovider
+
   governance-manifest:
     name: Governance manifest covers the spec pin
     runs-on: ubuntu-latest
@@ -294,7 +341,7 @@ jobs:
       - name: Collection smoke (import every test module)
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ --collect-only -q
+          python -m pytest tests/ apedp_referee/tests/ --collect-only -q
 
       # One test is deselected, and it is not hidden: the signed governance
       # manifest seals an earlier revision of the canonical spec, only the
@@ -307,7 +354,7 @@ jobs:
         id: regression_tests
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression" \
+          python -m pytest tests/ apedp_referee/tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression" \
             --deselect tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid
 
       - name: Run live integration tests
@@ -340,7 +387,7 @@ jobs:
     # green, not just the test matrix. `needs: test` alone let a release ship
     # while the governance manifest, the generated audit artefacts, or the
     # mutation battery were red.
-    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked]
+    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked, referee-core]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:

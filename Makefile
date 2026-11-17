@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
+.PHONY: install test test-referee-core lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
 
 # Interpreter used by every gate. When the project virtualenv exists it is used
 # automatically, so `make lint` / `make typecheck` work without PATH tweaks and
@@ -43,14 +43,14 @@ reproduce: kernel
 	       tests/test_dyn_pde_transfer.py -q
 
 test:
-	$(PYTHON) -m pytest tests/ -v
+	$(PYTHON) -m pytest tests/ apedp_referee/tests/ -v
 
-# The full configured ruleset (pyproject [tool.ruff.lint]) on the two trees that
-# are held clean, then the pinned baseline for the trees that are not yet. The
-# old gate ran --select E9,F, which let the configured rule set accumulate
+# The full configured ruleset (pyproject [tool.ruff.lint]) on the three trees
+# that are held clean, then the pinned baseline for the trees that are not yet.
+# The old gate ran --select E9,F, which let the configured rule set accumulate
 # findings while reporting success.
 lint:
-	$(PYTHON) -m ruff check apedp/ tests/
+	$(PYTHON) -m ruff check apedp/ apedp_referee/ tests/
 	$(PYTHON) scripts/check_quality_baseline.py --ruff-only
 
 # Strict mypy on the conf/ integrity boundary (pyproject [tool.mypy] `files`),
@@ -59,6 +59,15 @@ lint:
 typecheck:
 	$(PYTHON) -m mypy
 	$(PYTHON) scripts/check_quality_baseline.py --mypy-only
+
+# The referee core's own tests plus its import boundary. Meant to be run with an
+# interpreter that has only numpy, scipy, pandas and pytest installed (CI's
+# `referee-core` job does exactly that): a pass there shows that a promotion
+# decision needs nothing else in this repository. The module and test lists
+# live in tests/referee_core_manifest.py.
+test-referee-core:
+	$(PYTHON) -m pytest $$($(PYTHON) -c "from tests.referee_core_manifest import CORE_TESTS; print(' '.join(CORE_TESTS))") \
+		tests/test_referee_core_boundary.py -q -o addopts="" -p no:cacheprovider
 
 # The format check covers the kernel crate only. rust/apedp-vqc's seven source
 # files are pinned byte-for-byte by the machine and timing record in

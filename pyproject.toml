@@ -21,6 +21,7 @@ dependencies = [
     "uvicorn>=0.30",
     "scikit-learn>=1.3",
     "scipy>=1.10",
+    "pandas>=2.0",
     "cryptography>=41.0",
 ]
 
@@ -86,6 +87,9 @@ exclude = ["apedp_kernel*"]
 
 [tool.setuptools.package-data]
 apedp = ["py.typed"]
+# The referee core (apedp_referee/) is also its own distribution, built from
+# apedp_referee/pyproject.toml; the full distribution carries it too.
+apedp_referee = ["canonical_preregistered_spec_v1.json", "py.typed"]
 
 [tool.coverage.run]
 # Branch data, not just line data. A module can execute every one of its
@@ -97,7 +101,8 @@ apedp = ["py.typed"]
 branch = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# apedp_referee/tests ships with the referee package (apedp_referee/pyproject.toml).
+testpaths = ["tests", "apedp_referee/tests"]
 addopts = ["-v", "--tb=short"]
 # A test marked xfail that starts passing is a real signal (the bug it pinned
 # was fixed, or the mark is stale). Without strict, pytest reports XPASS and
@@ -239,7 +244,7 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-files = ["apedp_dyn/conf/paths.py", "apedp_dyn/conf/canonical_spec.py"]
+files = ["apedp_dyn/conf/paths.py", "apedp_referee/canonical_spec.py"]
 strict = true
 # Phase 1 checks the path/specification integrity boundary strictly. Keep
 # imported legacy modules opaque until their typing debt is remediated.
@@ -266,3 +271,10 @@ follow_imports = "normal"
 [[tool.mypy.overrides]]
 module = ["fastapi.*", "pydantic.*", "starlette.*", "sqlmodel.*"]
 follow_imports = "normal"
+
+[[tool.mypy.overrides]]
+# The referee is its own package; apedp_dyn reaches it through aliases whose
+# stubs re-export it. Follow it for its types; its own errors are counted when
+# it is checked as its own path (quality_baseline.json, "apedp_referee").
+module = ["apedp_referee", "apedp_referee.*"]
+follow_imports = "silent"

@@ -562,6 +562,94 @@ be observed here without the kernel" is superseded by F-05.
   So the build job, which needs every gate, cannot go green on this branch
   until two things happen that are outside this audit: the trustees sign, and
   the owner triages those tests.
+- **G-01 the referee could not be loaded without what it referees — FIXED as
+  a dependency boundary; the files have not moved.** This is the first step of
+  the "repository split" earlier rounds listed as not done, and it is the part
+  that changes behaviour. Measured on `stage` in a fresh interpreter:
+  `import apedp_dyn.epistemic.promotion_lifecycle` executed 74 repository
+  modules (96 for the whole core), among them the native kernel, SymPy, pint
+  and the discovery engines, because importing a submodule runs its parent
+  packages and `apedp_dyn/__init__.py` imported everything. The module's own
+  dependencies are numpy and scipy.
+  Three changes: (a) `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market`
+  re-export lazily (`apedp_dyn/_lazy.py`, PEP 562): same names, same
+  `__all__`, each resolved on first access. (b) The evidence types stage 1
+  judges (`InvariantKind`, `LeanTheoremVerification`,
+  `LeanVerificationResult`) move to `epistemic/proof_evidence.py`, standard
+  library only, and are re-exported from their old modules as the same class
+  objects. (c) `tests/referee_core_manifest.py` declares the eight core
+  modules and what they may depend on — numpy, scipy, pandas and three named
+  optional paths — and `tests/test_referee_core_boundary.py` enforces it
+  statically, at import and under test, with a planted-leak check.
+  After: the same import executes 6 repository modules and loads numpy; the
+  whole core is 13 (8 core modules, their 4 parent packages and `_lazy.py`)
+  with numpy, scipy and pandas. In an environment with
+  only those and pytest — no torch, no SymPy, no kernel, the repository not
+  installed — the core's tests and the boundary tests pass (36 passed, 1
+  skipped: the planted leak cannot even be imported there). CI's
+  `referee-core` job repeats that on every push.
+  Two things the equivalence test (`tests/test_lazy_package_exports.py`)
+  caught while this was being written, both of which would have shipped
+  otherwise: `apedp_dyn.epistemic.adjudicate` is both an exported function
+  and a submodule, and a naive lazy package hands back the *module* once
+  anything imports the submodule (handled; pinned from four different first
+  touches); and `from apedp_dyn import ode, pde` exports subpackages, which a
+  name-to-module table sends into infinite recursion (handled).
+  A third was caught by the full suite, not by the new tests: the coverage
+  audit classifies pure re-export modules as façades
+  (`tools/coverage_audit.py`) and `tests/test_facade_contracts.py` pins
+  `apedp_dyn` among them; a lazy `__init__` is not "imports plus `__all__`",
+  so the package silently left the set whose exports that test checks. The
+  classifier now recognises the lazy shape, and only that shape — a
+  `TYPE_CHECKING` block of imports, string-literal tables, and the one
+  `lazy_exports(...)` call — with ten near-miss variants pinned as *not* a
+  façade (`tests/test_coverage_audit.py`).
+  And one in the boundary check itself, raised in review of the pull
+  request: the static rule recorded only the package a `from` import names,
+  so `from apedp_dyn.epistemic import agnostic_adapter` passed as an import
+  of the allowed parent, and inside a function no test calls neither
+  runtime check would have seen it. It now resolves each imported name to
+  the submodule or lazy re-export it loads; ten ways of writing an
+  undeclared import are pinned as detected, the first three of which the
+  earlier version let through.
+  One behaviour is not reproduced, and is stated in that test: a submodule of
+  a package that is not lazy is an attribute only once imported, as in any
+  Python package. Eager imports used to make every such chain work by
+  accident. No use of one was found in the repository.
+  What this is not: a second distribution. There is no `apedp-referee`
+  package and no file changed path, because paths are load-bearing here —
+  AGENTS.md names `apedp_dyn.conf.canonical_spec`, the governance drift script
+  loads it by file path, and fifteen files are hash-pinned by the freeze
+  records. Extracting a package is now a mechanical move behind an enforced
+  boundary, and a decision for whoever owns those pins.
+  *Addendum (2026-11-17): extracted.* The eight modules moved, with history,
+  to `apedp_referee/`, which is its own distribution (`apedp-referee` 0.1.0,
+  `apedp_referee/pyproject.toml`) as well as part of the full one. Each old
+  path is a four-line alias that installs the package's module object under
+  the old name in `sys.modules`, with a `.pyi` stub for type checkers, so
+  `apedp_dyn.conf.canonical_spec` (AGENTS.md's name), string monkeypatch
+  targets and every existing import resolve to the same objects. None of the
+  eight files was among those the freeze records pin (searched: the only
+  path-keyed record naming one was the exception-hygiene size budget, carried
+  over). The governance drift script loads `apedp_referee/canonical_spec.py`
+  by file path. The package ships a copy of the canonical specification;
+  `tests/test_referee_core_boundary.py` requires it to be byte-identical to
+  `specifications/canonical_preregistered_spec_v1.json`, which the trustees
+  sign, and both to hash to the pin. The governance manifest stays a
+  repository record: installed alone, the referee reports it absent. Two edges
+  back into `apedp_dyn` remain, both in `apedp_referee/_host.py`, both inside
+  functions, both reached only for host conveniences (default ledger location,
+  storage backend from the environment), and both raise a message saying what
+  to pass instead when `apedp_dyn` is not installed; the third, a
+  type-checking import of `BaseStorageBackend`, is replaced by a three-method
+  `LedgerStorage` protocol. One latent defect surfaced: the full distribution
+  never declared pandas, which `market/universe.py` imports; it does now.
+  Verified: in a fresh Python 3.12 environment holding numpy, scipy, pandas
+  and pytest, `pip install ./apedp_referee` builds a wheel of exactly the ten
+  modules, the specification and `py.typed`, and the package's tests pass from
+  a directory outside the checkout, including the test that asserts the
+  module came from site-packages and that `apedp_dyn`, `apedp`, the kernel,
+  torch and SymPy are not importable. CI's `referee-core` job repeats that.
 
 Limits of this round: the local kernel is built with Rust 1.97.0, not the
 pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy

@@ -10,7 +10,7 @@ When modifying, auditing, or extending this codebase, you **MUST** follow these 
 
 ### 1.1 Strict Proposer vs. Referee Separation
 - Proposers (in `apedp_dyn/proposers/`) generate candidate hypotheses.
-- Referees (in `apedp_dyn/epistemic/`) adjudicate hypotheses.
+- Referees (in `apedp_dyn/epistemic/`) adjudicate hypotheses. The promotion referee itself — thresholds, the six-stage lifecycle, the holdout and trial ledgers, the universe audit — is the `apedp_referee` package, which must import nothing from the rest of the repository (`tests/referee_core_manifest.py`).
 - **Rule:** A proposer must never decide its own acceptance, bypass gates, or inspect confirmation holdout data. Proposers only emit standardized `CandidateProposal` objects.
 
 ### 1.2 Anti-Snooping Holdout Discipline
@@ -20,8 +20,8 @@ When modifying, auditing, or extending this codebase, you **MUST** follow these 
 
 ### 1.3 Canonical Specification Integrity
 - All preregistered thresholds (e.g. tactical active window $[5\%, 90\%]$, $DSR \ge 0.95$, Diebold-Mariano $p < 0.01$, literature $R^2 < 0.85$, referee FPR/CAR/VRR) are defined in [`specifications/canonical_preregistered_spec_v1.json`](specifications/canonical_preregistered_spec_v1.json).
-- `apedp_dyn/conf/canonical_spec.py` enforces a SHA-256 hash check upon import.
-- **Rule:** Never define arbitrary hardcoded threshold literals. Always import from `apedp_dyn.conf.canonical_spec`. Never modify `canonical_preregistered_spec_v1.json` without updating its pinned hash and documenting the rationale in `CHANGELOG.md`.
+- `apedp_referee/canonical_spec.py` (also importable as `apedp_dyn.conf.canonical_spec`, the same module) enforces a SHA-256 hash check upon import. The referee package ships a byte-identical copy of the specification at `apedp_referee/canonical_preregistered_spec_v1.json`.
+- **Rule:** Never define arbitrary hardcoded threshold literals. Always import from `apedp_dyn.conf.canonical_spec` (or `apedp_referee.canonical_spec` inside the referee package). Never modify `canonical_preregistered_spec_v1.json` without updating its pinned hash, copying it into `apedp_referee/`, and documenting the rationale in `CHANGELOG.md`.
 
 ### 1.4 Documentary & Repository Integrity
 - **Rule:** Never claim a documentation file exists unless it is verified on disk within the repository workspace (e.g. `docs/`, `specifications/`, or the repo root). Do not confuse temporary IDE/CLI artifact folders (`~/.gemini/antigravity-cli/brain/...`) with the git repository workspace.

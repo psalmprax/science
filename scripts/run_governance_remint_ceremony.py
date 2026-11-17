@@ -4,8 +4,9 @@
 The structural gap this closes: ``specifications/governance_manifest.json``
 still seals the GENESIS specification SHA while the canonical spec on disk —
 legitimately revised post-certification and re-pinned by
-``apedp_dyn/conf/canonical_spec.py`` (``PINNED_SPEC_SHA256``; read it, never
-restate it here) — hashes differently. The verification side is sound (``enforce_preregistration_governance``
+``apedp_referee/canonical_spec.py`` (``PINNED_SPEC_SHA256``, also importable as
+``apedp_dyn.conf.canonical_spec``; read it, never restate it here) — hashes
+differently. The verification side is sound (``enforce_preregistration_governance``
 fails closed, the tamper check trips live); what is MISSING is the
 formalized procedure to re-close the chain. Per AGENTS.md §1.2/§1.3 this
 repository must never bypass, re-mint, or forge the manifest — so this

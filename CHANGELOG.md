@@ -15,6 +15,22 @@ inferred releases.
 
 ### Changed
 
+- **The referee core is its own package, `apedp-referee` (2026-11-17).**
+  `canonical_spec`, `promotion_lifecycle`, `experiment_ledger`,
+  `trial_ledger`, `novelty_adjudication`, `universe`, `proof_claim` and
+  `proof_evidence` moved to `apedp_referee/`, installable on its own
+  (`pip install ./apedp_referee`; numpy, scipy, pandas) and carried by the
+  full distribution too. The old module paths are aliases that return the same
+  module objects, with `.pyi` stubs for type checkers; no import changes.
+  `apedp_referee/_host.py` is the only place the referee reaches `apedp_dyn`,
+  for three host conveniences. `experiment_ledger` types its backend with a
+  `LedgerStorage` protocol instead of importing `BaseStorageBackend`. The
+  package ships a byte-identical copy of the canonical specification, checked
+  against the signed one. The full distribution now declares pandas. CI's
+  `referee-core` job installs the package into an empty environment and runs
+  its tests from outside the checkout. `docs/SYSTEM_FLAWS_AUDIT.md`, G-01
+  addendum.
+
 - **The parameter fitter converges, and its verdicts no longer depend on the
   scipy release (2026-11-16).** `fit_candidate` integrates at
   `FIT_RTOL = 1e-7` / `FIT_ATOL = 1e-9` and differentiates with
@@ -25,6 +41,27 @@ inferred releases.
   promoted. `param_bootstrap_ci` centres its resamples at the same tolerance.
   Fits cost about twice as long; the CI test job's limit is 75 minutes.
   `docs/SYSTEM_FLAWS_AUDIT.md`, J-18.
+
+- **The referee core loads, and is tested, without the rest of the tree
+  (2026-11-16).** `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market`
+  re-export their public names lazily (`apedp_dyn/_lazy.py`); the names and
+  `__all__` are unchanged. `InvariantKind`, `LeanTheoremVerification` and
+  `LeanVerificationResult` are defined in the new, dependency-free
+  `apedp_dyn/epistemic/proof_evidence.py` and re-exported from
+  `agnostic_adapter` and `lean_universal_bridge` as the same objects.
+  Importing `promotion_lifecycle` went from 74 repository modules (with the
+  kernel, SymPy and pint) to 6 (with numpy); the whole core from 96 to 13.
+  `tests/referee_core_manifest.py` declares the core and its allowed
+  dependencies; `tests/test_referee_core_boundary.py` enforces them;
+  `tests/test_referee_core_standalone.py` walks the referee's main paths with
+  core-only imports; `tests/test_lazy_package_exports.py` pins that every
+  export is still the object its module defines; `tools/coverage_audit.py`
+  recognises the lazy shape as a re-export façade so
+  `tests/test_facade_contracts.py` keeps checking these packages' exports.
+  New `make test-referee-core`
+  and CI job `referee-core`, which installs numpy, scipy, pandas and pytest
+  and nothing else. No file moved and no package was split out; see
+  `docs/SYSTEM_FLAWS_AUDIT.md`, G-01.
 
 - **Every failure of the first full test run is traced to a cause; 43 of 44
   are resolved (2026-11-16).** Detail and evidence in

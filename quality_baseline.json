@@ -10,11 +10,13 @@
     "apedp": 0,
     "tests": 0,
     "apedp_dyn": 0,
+    "apedp_referee": 0,
     "scripts": 603,
     "benchmarks": 202
   },
   "mypy": {
     "apedp": 897,
-    "apedp_dyn": 25
+    "apedp_dyn": 25,
+    "apedp_referee": 0
   }
 }

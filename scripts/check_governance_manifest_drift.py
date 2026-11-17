@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail when the signed governance manifest lags the canonical-spec pin.
 
-The import-time hash check in ``apedp_dyn/conf/canonical_spec.py`` proves the
+The import-time hash check in ``apedp_referee/canonical_spec.py`` proves the
 disk spec matches its Python pin. It deliberately does not prove that the
 Ed25519 governance manifest seals the same revision; when the two disagree the
 Python gate is green while the signed certification is stale (FLAW-01). This
@@ -23,19 +23,22 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
-_CANONICAL_SPEC = ROOT / "apedp_dyn" / "conf" / "canonical_spec.py"
+_CANONICAL_SPEC = ROOT / "apedp_referee" / "canonical_spec.py"
 
 
 def _load_governance_manifest_status() -> Callable[[], dict[str, Any]]:
-    """Load ``canonical_spec`` by file path, without importing ``apedp_dyn``.
+    """Load ``canonical_spec`` by file path, without importing any package.
 
-    ``canonical_spec`` itself needs only the standard library, but
-    ``from apedp_dyn.conf.canonical_spec import ...`` first runs
-    ``apedp_dyn/__init__.py``, which imports SymPy and the rest of the package.
-    The CI job that runs this script installs nothing, so that import crashed
-    with ``ModuleNotFoundError`` and the job failed without ever comparing the
-    two hashes. Loading the one file keeps the gate dependency-free and makes
-    its failure mean what it says.
+    ``canonical_spec`` itself needs only the standard library, but importing
+    it through ``apedp_dyn.conf.canonical_spec`` once ran
+    ``apedp_dyn/__init__.py``, which imported SymPy and the rest of the
+    package. The CI job that runs this script installs nothing, so that import
+    crashed with ``ModuleNotFoundError`` and the job failed without ever
+    comparing the two hashes. Loading the one file keeps the gate
+    dependency-free and makes its failure mean what it says. The file is
+    ``apedp_referee/canonical_spec.py``; it reads the specification copy beside
+    it, which ``tests/test_referee_core_boundary.py`` keeps identical to
+    ``specifications/canonical_preregistered_spec_v1.json``.
     """
     spec = importlib.util.spec_from_file_location("_apedp_canonical_spec", _CANONICAL_SPEC)
     if spec is None or spec.loader is None:
