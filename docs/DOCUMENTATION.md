@@ -3101,6 +3101,13 @@ holdout. Built under one recorded deviation
 the builder could not fetch a pair with a non-ASCII symbol; fixed before any
 data existed).
 
+**Calibration (2026-11-17), run once:**
+[`preregistration/RESULT-CRYPTO-CAL-2026-11.md`](../preregistration/RESULT-CRYPTO-CAL-2026-11.md).
+On the real development panel, 0 of 500 placebos passed stage 2 (95% upper
+bound 0.74%); injected effects passed stage 2 at 1% (ρ = 0.01), 55% (0.02),
+97% (0.03) and 100% (0.05); one-day reversal passed stage 2 and was refused at
+stage 3 as a literature factor. All three preregistered expectations held.
+
 ## What this repository cannot certify about itself
 
 Every referee named in this index — the stabilizer and dense tiers, Stim, MQT QCEC, the

@@ -392,6 +392,12 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Calibration of stages 2 and 3 on real returns: PREREG-CRYPTO-CAL-2026-11
+  (2026-11-17).** Frozen, then run once on the development panel: 0 of 500
+  placebos passed stage 2 (95% upper bound 0.74%); injected effects passed at
+  1% (rho 0.01), 55% (0.02), 97% (0.03), 100% (0.05); reversal passed stage 2
+  and was refused at stage 3 as a literature factor. Every preregistered
+  expectation held. `preregistration/RESULT-CRYPTO-CAL-2026-11.md`.
 - **First preregistered run on unseen data: PREREG-CRYPTO-PIT-2026-11
   (2026-11-17).** The panel (692 USDT assets, 183 delisted before the end,
   24,693 checksummed source files) was built on GitHub Actions into the
