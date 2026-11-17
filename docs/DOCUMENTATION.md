@@ -3089,6 +3089,17 @@ pass criterion for H1, and records the expectation that H1 is refused at stage 4
 or 5. A change to any frozen file after the data exists is a deviation and must
 be reported as one.
 
+**Result (2026-11-17), run once:**
+[`preregistration/RESULT-CRYPTO-PIT-2026-11.md`](../preregistration/RESULT-CRYPTO-PIT-2026-11.md).
+The known effect passed stage 4 (January 2026 holdout IC 0.426, p = 2.2e-15) and
+the placebo was refused at stage 2, so the referee behaved as designed by the
+preregistered criterion. The order-flow hypothesis was refused at stage 2 on
+development data (|IC| 0.0013 against a 0.02 bar) and never reached the
+holdout. Built under one recorded deviation
+([`DEVIATION-01`](../preregistration/DEVIATION-01-2026-11-17-builder-url-encoding.md):
+the builder could not fetch a pair with a non-ASCII symbol; fixed before any
+data existed).
+
 ## What this repository cannot certify about itself
 
 Every referee named in this index — the stabilizer and dense tiers, Stim, MQT QCEC, the

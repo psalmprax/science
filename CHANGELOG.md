@@ -392,6 +392,15 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **First preregistered run on unseen data: PREREG-CRYPTO-PIT-2026-11
+  (2026-11-17).** The panel (692 USDT assets, 183 delisted before the end,
+  24,693 checksummed source files) was built on GitHub Actions into the
+  `market-data` branch under Deviation 01, and the frozen analysis ran once.
+  Positive control (volatility persistence) passed stage 4 on the January 2026
+  holdout; placebo refused at stage 2; the order-flow hypothesis refused at
+  stage 2 on development data and never touched the holdout. Report and
+  unedited outputs: `preregistration/RESULT-CRYPTO-PIT-2026-11.md` and
+  `preregistration/RESULT-CRYPTO-PIT-2026-11/`.
 - **Preregistration PREREG-CRYPTO-PIT-2026-11 and the point-in-time data it
   will run on (2026-11-17).** `scripts/build_point_in_time_crypto_panel.py`
   builds a daily panel of every Binance USDT spot pair, delisted pairs

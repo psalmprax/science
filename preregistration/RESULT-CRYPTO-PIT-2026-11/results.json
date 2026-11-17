@@ -1,0 +1,231 @@
+{
+ "candidates": {
+  "CPLUS-VOL": {
+   "candidate": "CPLUS-VOL",
+   "development_days": 1765,
+   "development_pairs": 52887,
+   "evidence_backed_through_highest": false,
+   "formula": "rank(mean |r| over 20 bars) -> rank(|r_{t+1}|)",
+   "halt_reason": null,
+   "halted": false,
+   "highest_stage_passed": "STAGE_4_OUT_OF_SAMPLE_TRANSFER",
+   "holdout_days": 30,
+   "holdout_pairs": 900,
+   "holdout_window": [
+    "2026-01-01",
+    "2026-01-31"
+   ],
+   "sign": 1.0,
+   "stages": [
+    {
+     "evidence_source": "caller_reported",
+     "metrics": {
+      "bounded": true,
+      "dimensions_consistent": true,
+      "lean_status": "MATHEMATICALLY_CONSISTENT"
+     },
+     "passed": true,
+     "reason": "Mathematical consistency satisfied.",
+     "recorded_at": "2026-11-17T01:44:24.831604+00:00",
+     "stage": "STAGE_1_MATHEMATICAL_CONSISTENCY",
+     "status_label": "MATHEMATICAL_CONSISTENCY_VERIFIED_ON_REPORTED_METRICS"
+    },
+    {
+     "evidence_source": "derived",
+     "metrics": {
+      "cv_stable": true,
+      "fold_ics": [
+       0.25300528906921055,
+       0.3149010745326351,
+       0.3767248447831221,
+       0.34080824287933786,
+       0.3912448194911372
+      ],
+      "ic_method": "spearman",
+      "in_sample_ic": 0.33530238634735954,
+      "n_folds": 5,
+      "n_observations": 52887
+     },
+     "passed": true,
+     "reason": "Predictive recovery satisfied: IC=0.3353.",
+     "recorded_at": "2026-11-17T01:44:24.957828+00:00",
+     "stage": "STAGE_2_PREDICTIVE_RECOVERY",
+     "status_label": "PREDICTIVE_RECOVERY_VERIFIED"
+    },
+    {
+     "evidence_source": "derived",
+     "metrics": {
+      "dm_hardest_incumbent": "zero",
+      "dm_loss_reduction": 0.010018048323035116,
+      "dm_p_value": 0.0,
+      "dm_p_values": {
+       "zero": 0.0
+      },
+      "literature_closest_baseline": "JOINT_SPAN(reversal, momentum)",
+      "literature_features_evaluated": [
+       "momentum",
+       "reversal"
+      ],
+      "literature_features_supplied": [
+       "momentum",
+       "reversal"
+      ],
+      "max_literature_r2": 0.013286121826903474
+     },
+     "passed": true,
+     "reason": "Unique identification confirmed.",
+     "recorded_at": "2026-11-17T01:44:24.967881+00:00",
+     "stage": "STAGE_3_UNIQUE_IDENTIFICATION",
+     "status_label": "UNIQUE_IDENTIFICATION_VERIFIED"
+    },
+    {
+     "evidence_source": "derived",
+     "metrics": {
+      "holdout_content_hash": "dc81c7bd2c4da3dad74d84590da2f25afbdc6bc203effba3f2daa6a4f4a44de5",
+      "holdout_dataset_id": "binance-usdt-every-pair-daily",
+      "holdout_slice_identifier": "CPLUS-VOL@2026-01-01..2026-01-31",
+      "horizon": 1,
+      "ic_method": "spearman",
+      "in_sample_ic": 0.33530238634735954,
+      "n_effective": 309,
+      "n_effective_measured": 309,
+      "n_observations": 900,
+      "oos_ic": 0.42641453466814977,
+      "oos_p_value": 2.2008091024492503e-15,
+      "retention": 1.271731285044902
+     },
+     "passed": true,
+     "reason": "Out-of-sample transfer verified: OOS IC=0.4264 (p=0.0000), retention=1.27 >= 0.50.",
+     "recorded_at": "2026-11-17T01:44:24.978528+00:00",
+     "stage": "STAGE_4_OUT_OF_SAMPLE_TRANSFER",
+     "status_label": "OUT_OF_SAMPLE_TRANSFER_VERIFIED"
+    }
+   ]
+  },
+  "CZERO-PLAC": {
+   "candidate": "CZERO-PLAC",
+   "development_days": 1765,
+   "development_pairs": 52887,
+   "evidence_backed_through_highest": false,
+   "formula": "rank(sha256(asset, date)) -> rank(r_{t+1})",
+   "halt_reason": "Failed: IC=-0.0025 < 0.0200 or CV unstable.",
+   "halted": true,
+   "highest_stage_passed": "STAGE_1_MATHEMATICAL_CONSISTENCY",
+   "holdout_days": 0,
+   "holdout_pairs": 0,
+   "holdout_window": null,
+   "sign": 1.0,
+   "stages": [
+    {
+     "evidence_source": "caller_reported",
+     "metrics": {
+      "bounded": true,
+      "dimensions_consistent": true,
+      "lean_status": "MATHEMATICALLY_CONSISTENT"
+     },
+     "passed": true,
+     "reason": "Mathematical consistency satisfied.",
+     "recorded_at": "2026-11-17T01:44:24.985999+00:00",
+     "stage": "STAGE_1_MATHEMATICAL_CONSISTENCY",
+     "status_label": "MATHEMATICAL_CONSISTENCY_VERIFIED_ON_REPORTED_METRICS"
+    },
+    {
+     "evidence_source": "derived",
+     "metrics": {
+      "cv_stable": false,
+      "fold_ics": [
+       -0.015831780891463344,
+       -0.0012816270132399172,
+       -0.0030707445706585124,
+       0.0080226325723611,
+       -0.0003127030181441461
+      ],
+      "ic_method": "spearman",
+      "in_sample_ic": -0.002509701141531727,
+      "n_folds": 5,
+      "n_observations": 52887
+     },
+     "passed": false,
+     "reason": "Failed: IC=-0.0025 < 0.0200 or CV unstable.",
+     "recorded_at": "2026-11-17T01:44:25.109017+00:00",
+     "stage": "STAGE_2_PREDICTIVE_RECOVERY",
+     "status_label": "PREDICTIVE_RECOVERY_REFUSED"
+    }
+   ]
+  },
+  "H1-OFI": {
+   "candidate": "H1-OFI",
+   "development_days": 1765,
+   "development_pairs": 52887,
+   "evidence_backed_through_highest": false,
+   "formula": "rank(-OFI_t) -> rank(r_{t+1})",
+   "halt_reason": "Failed: IC=0.0013 < 0.0200 or CV unstable.",
+   "halted": true,
+   "highest_stage_passed": "STAGE_1_MATHEMATICAL_CONSISTENCY",
+   "holdout_days": 272,
+   "holdout_pairs": 8153,
+   "holdout_window": [
+    "2026-02-01",
+    "2026-10-31"
+   ],
+   "sign": -1.0,
+   "stages": [
+    {
+     "evidence_source": "caller_reported",
+     "metrics": {
+      "bounded": true,
+      "dimensions_consistent": true,
+      "lean_status": "MATHEMATICALLY_CONSISTENT"
+     },
+     "passed": true,
+     "reason": "Mathematical consistency satisfied.",
+     "recorded_at": "2026-11-17T01:44:25.117488+00:00",
+     "stage": "STAGE_1_MATHEMATICAL_CONSISTENCY",
+     "status_label": "MATHEMATICAL_CONSISTENCY_VERIFIED_ON_REPORTED_METRICS"
+    },
+    {
+     "evidence_source": "derived",
+     "metrics": {
+      "cv_stable": false,
+      "fold_ics": [
+       0.0024552493745287453,
+       -0.018715681983372562,
+       0.016669967241490107,
+       0.0038005425796811656,
+       0.002516683045882253
+      ],
+      "ic_method": "spearman",
+      "in_sample_ic": 0.0013415622685085393,
+      "n_folds": 5,
+      "n_observations": 52887
+     },
+     "passed": false,
+     "reason": "Failed: IC=0.0013 < 0.0200 or CV unstable.",
+     "recorded_at": "2026-11-17T01:44:25.280234+00:00",
+     "stage": "STAGE_2_PREDICTIVE_RECOVERY",
+     "status_label": "PREDICTIVE_RECOVERY_REFUSED"
+    }
+   ]
+  }
+ },
+ "h1_sign_rule": {
+  "development_ic_of_raw_ofi": -0.0013415622685085393,
+  "sign": -1.0
+ },
+ "periods": {
+  "control_window_end": "2026-01-31",
+  "dev_end": "2025-12-31",
+  "dev_start": "2021-01-01",
+  "holdout_end": "2026-10-31",
+  "holdout_start": "2026-01-01",
+  "test_window_start": "2026-02-01"
+ },
+ "preregistration": "PREREG-CRYPTO-PIT-2026-11",
+ "universe": {
+  "assets_ever_members": 217,
+  "assets_in_panel": 692,
+  "lookback_bars": 60,
+  "rebalance_every": 21,
+  "top_n": 30
+ }
+}
