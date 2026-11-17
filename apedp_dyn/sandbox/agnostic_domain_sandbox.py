@@ -422,6 +422,8 @@ def run_arm_a_specialized(case: AblationTestCase) -> dict[str, Any]:
         bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
         bundle.add(EvidenceRequirement.REGIME_TRANSFER_EXTRAPOLATION)
         bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
+        if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
+            bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         if case.candidate.metadata.get("dual_bound_certified", False):
             bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
 
@@ -454,6 +456,8 @@ def run_arm_b_core_only(case: AblationTestCase) -> dict[str, Any]:
     if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
         # Naive empirical system pretends R2 = 0.98 means formally verified!
         bundle.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
+        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
         bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
     elif case.candidate.proposed_claim == ClaimLevel.C4_CAUSAL_MECHANISTIC:
