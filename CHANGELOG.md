@@ -15,6 +15,20 @@ inferred releases.
 
 ### Changed
 
+- **The three subsystems outside the referee were audited against something
+  other than themselves (2026-11-17).** Eight defects found and fixed, each
+  pinned by a test that fails on the old code: the video dataset and VAE
+  bridge substituted synthetic or untrained stand-ins for data and weights
+  that failed to load; the video README claimed comparisons with production
+  models, memory savings and photorealism nobody had measured; the solenoidal
+  projector was float32-exact only; a dead native branch cost a copy per
+  forward pass; the chemistry bridge rejected five of eighteen real drugs as
+  impossible and got two hydrogen counts wrong; "95 % distribution-free" ADMET
+  intervals were built from hand-written numbers; the FEP gateway's docstring
+  described Langevin sampling it does not do; and the module that decides
+  whether a quantum claim stands was untested and did not score forbidden
+  outcomes. `docs/SYSTEM_FLAWS_AUDIT.md`, K-01 to K-08.
+
 - **The referee core is its own package, `apedp-referee` (2026-11-17).**
   `canonical_spec`, `promotion_lifecycle`, `experiment_ledger`,
   `trial_ledger`, `novelty_adjudication`, `universe`, `proof_claim` and

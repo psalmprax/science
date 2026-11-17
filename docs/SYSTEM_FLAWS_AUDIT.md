@@ -6,6 +6,115 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-17 round — the three subsystems outside the referee
+
+Basis: `stage` after the referee package merged (PR #64). The question asked
+was whether the quantum, biopharma and video subsystems are good, and if not
+whether they can be made good. Each was taken on its own terms: run its tests,
+check its claims against something outside itself, repair what was wrong.
+Every defect below is pinned by a test that fails on the code as it stood.
+
+- **K-01 the video package substituted silently, in three places — FIXED.**
+  `VideoDataset(hf_repo=...)`: a hub dataset that could not be listed printed
+  one line and left the dataset holding a single generated vortex clip, so a
+  run told to train on 15,614 real latents trained on synthetic data and said
+  nothing; a file that failed to download three times became a synthetic clip
+  mixed into a batch of real ones. `VideoVAEBridge(use_diffusers=True)`: a
+  failed load printed a line and substituted a randomly initialised VAE, so a
+  caller who asked for pretrained weights got untrained ones. All three now
+  raise, naming what failed and what to pass instead.
+- **K-02 the video package's README claimed what nobody had measured —
+  FIXED.** It compared JetFlow with Sora, CogVideoX and Hunyuan, claimed 75x
+  to 186x memory savings, "guaranteed" incompressibility and photorealism in
+  two to four steps. The repository's own matched benchmark is ten synthetic
+  clips of 16x16 pixels: two steps match a 48-step diffusion sampler of the
+  same size on fluid clips (SSIM 0.51 against 0.49) and lose clearly on
+  collision clips (0.017 against 0.066), which is what the preregistered v0.3
+  confirmation already recorded as a *non-transfer*. Tensor-train storage is
+  lossy: on this repository's 64x64 vortex clips, rank 16 stores 5.5x less and
+  leaves 64 % of the variance unexplained, and it shrinks the latent clip, not
+  the network, so it was never a VRAM figure. The README now states those
+  numbers and what has not been compared.
+- **K-03 the solenoidal projector was not exact in double precision — FIXED.**
+  It built float32 wavenumbers whatever the input dtype, leaving a residual
+  divergence of ~6e-8 on a float64 field against the ~1e-16 the README's
+  "exact incompressibility" implies. Now ~2e-16, pinned with idempotence at
+  both precisions. What the fix does not buy: in the model the projector acts
+  on *latent* channel pairs, which are not physical velocities, so it still
+  implies nothing about mass or shape in decoded pixels; the README says so.
+- **K-04 a dead native branch cost a copy per forward pass — FIXED.**
+  `MambaTemporalBlock` called `apedp_kernel.mamba2_selective_scan` whenever
+  the kernel was installed. That call could never succeed (wrong argument
+  shapes, and the native function refuses with `NotImplementedError` by
+  design), a catch-all swallowed it, and the price was a device-to-host copy
+  and a float64 conversion on every forward pass. The block always computed
+  the gated causal convolution; it now says that is what it is.
+- **K-05 the chemistry bridge had never been compared with anything — FIXED,
+  three defects.** `docs/DOCUMENTATION.md` called its descriptors exact and
+  the module was labelled `production`. Measured against RDKit on 18 drugs and
+  simple molecules (`tests/test_dyn_chemistry_bridge_reference.py`): (a)
+  aromatic bond orders were summed as 1.5 each, so a fused aromatic carbon
+  read 4.5 and the valence check rejected naphthalene, caffeine, naproxen,
+  sildenafil and warfarin as impossible structures — five of eighteen; (b) the
+  molecular weight counted implicit hydrogens only, leaving out every bracket
+  atom's hydrogen (cholesterol 380.62 g/mol against 386.66); (c) an aromatic
+  nitrogen could take nitrogen's 5-valent target and gain a phantom hydrogen
+  (sildenafil 476.60 against 474.59). After the fixes the molecular weight and
+  heavy-atom count match exactly on all eighteen. The valence bound is now the
+  smallest valence any Kekule structure could give the atom, which is the
+  right direction for a necessary condition; this module does not kekulize and
+  now says so.
+  What the measurement also established, and what no fix changes: `logP`,
+  `TPSA`, `SAScore` and `QED` are this module's own expressions, not Crippen's,
+  Ertl's or Bickerton's, and they differ from them by about 2.1 log units,
+  12 A^2 and 0.20 on that set. `retrosynthesis_gate`'s `sa_score < 3.5` and
+  the ADMET models' logP terms decide on numbers with that much systematic
+  error. The deviations are pinned as ceilings and the status label is now
+  `experimental`.
+- **K-06 "95 % distribution-free" intervals had no calibration data — FIXED.**
+  `ConformalADMETReferee` built its intervals from three residual arrays
+  written into the source by hand, with no dataset, model or coverage behind
+  them, and labelled the result 95 % conformal. The construction is the
+  standard one, so it now takes `calibration_residuals` and reports the usual
+  marginal guarantee over that distribution; without them it reports
+  `calibrated=False` and a coverage claim of none. Both ADMET and FEP gates
+  now state that nothing promoted through them is safe to dose.
+- **K-07 the FEP gateway's docstring described a calculation it does not do —
+  FIXED.** It said "stratified lambda-window Langevin sampling". It perturbs
+  one docked pose with independent isotropic Gaussian displacements (0.045 A),
+  so the configurations are not drawn from either end state's Boltzmann
+  distribution, and its "windows" scale one intermolecular energy by d_lambda
+  rather than interpolating two Hamiltonians. The Zwanzig and BAR estimators
+  themselves are implemented and tested; what the gateway returns is a
+  reproducible score, not a binding free energy, and it says so.
+- **K-08 the module that decides whether a quantum claim stands was untested,
+  and had a hole — FIXED.** `apedp_dyn/vqc/receipts.py` was on
+  `benchmarks/untested_modules_register.json`: no test named it. Its
+  consistency check scored only outcomes with a declared probability above
+  zero, so a circuit emitting *forbidden* strings passed whenever the declared
+  outcomes stayed in tolerance. Pinned by a case where four declared outcomes
+  sit 1.2 standard errors from expectation while a fifth, declared impossible,
+  appears on 2 % of shots: VALID before, INVALID now. Nine tests cover the
+  three verdicts, a dirty ancilla and an invalid circuit.
+  Also now reported rather than left to the reader: the check is per-outcome,
+  so its family-wise false-alarm rate is about 0.4 over 8,192 outcomes at the
+  default four sigma. That is in the receipt, with the per-outcome rate.
+
+What was checked and found sound: the quantum subsystem's tests pass whole
+(1,150 passed, 26 skipped, nothing failing), including the stabilizer/dense
+agreement corpus and the Lean-checked promotion models; the five
+`quantum_compilation` modules the register lists as untested all import and
+expose the API their rows claim; the video suite passes (284 tests) and its
+preregistered v0.3 confirmation already disclosed its negative result, which
+is why K-02 could be written from the repository's own records.
+
+Not done, and not code: the quantum compilation claims rest on circuit
+emission audited inside this repository, with no external replication; the
+biopharma funnel has no wet-lab confirmation and, after K-05 and K-06, no
+calibrated property model either; the video benchmarks remain at 16x16.
+
+---
+
 ## 2026-11-16 follow-up — the first full run's failures, each traced to a cause
 
 Basis: `stage` from `96c4e60` to the commit that carries this section. F-05
