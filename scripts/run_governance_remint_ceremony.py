@@ -295,7 +295,21 @@ def status_report() -> dict[str, Any]:
     manifest = GovernanceManifest.from_file(MANIFEST_PATH)
     verification = verify_governance_manifest(manifest, SPEC_PATH)
     registered = {t.trustee_id for t in manifest.trustees}
-    pending = sorted(registered - set(verification.valid_signers))
+    # Signatures in the manifest are verified against the digest the manifest
+    # SEALS, so `verification.valid_signers` are the trustees who signed the OLD
+    # digest. Until 2026-11-17 the outstanding set was `registered` minus those,
+    # which named one trustee and read as "one signature to go" -- while in fact
+    # nobody has signed the digest that needs sealing and the quorum owes two.
+    # Both sets are reported, each labelled by the digest it is about.
+    signed_sealed = sorted(set(verification.valid_signers))
+    signed_disk = sorted(
+        trustee.trustee_id
+        for trustee in manifest.trustees
+        for sig in manifest.signatures
+        if sig.trustee_id == trustee.trustee_id
+        and verify_ed25519_signature(trustee.public_key_hex, disk_sha, sig.signature_hex)
+    )
+    outstanding = manifest.quorum_threshold - len(signed_disk)
     return {
         "ceremony": "governance_remint",
         "disk_spec_sha256": disk_sha,
@@ -305,7 +319,11 @@ def status_report() -> dict[str, Any]:
         "desync": manifest.spec_sha256 != disk_sha,
         "quorum_threshold": manifest.quorum_threshold,
         "valid_signature_count_on_current_manifest": verification.valid_signature_count,
-        "trustees_awaiting_re_signature": pending,
+        "trustees_who_signed_the_sealed_digest": signed_sealed,
+        "trustees_who_signed_the_disk_digest": signed_disk,
+        "signatures_still_needed_over_the_disk_digest": max(0, outstanding),
+        "trustees_who_may_still_sign": sorted(registered - set(signed_disk)),
+        "trustees_awaiting_re_signature": sorted(registered - set(signed_disk)),
         "trustee_keys_are_held": "externally (never in this repository) — "
                                  "the ceremony can only record signatures "
                                  "that verify against the registered keys",
