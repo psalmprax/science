@@ -6,7 +6,10 @@ Scope & honesty ceiling:
 - Implements Layer 4 and Layer 5 biophysical and toxicological referees for the APEDP-X
   drug discovery pipeline:
   1. **Statistical Mechanics Free Energy Perturbation (`AlchemicalFEPGateway`)**:
-     Computes alchemical relative binding free energies ($\Delta\Delta G_{\text{bind}}$) across
+     Implements the two estimators and drives them from energies sampled around a single
+     docked pose by isotropic Gaussian displacement -- not a Langevin or MD trajectory, so the
+     returned number is a reproducible score, not a binding free energy (see
+     `evaluate_binding_free_energy`). Computes nominal $\Delta\Delta G$ across
      $\lambda \in [0, 1]$ coupling windows using both the Zwanzig exponential average
      $$\Delta G_{0 \to 1} = -k_B T \ln \left\langle \exp\left(-\frac{\Delta U}{k_B T}\right) \right\rangle_0$$
      and the self-consistent **Bennett Acceptance Ratio (BAR)** estimator with minimal variance,
@@ -14,11 +17,15 @@ Scope & honesty ceiling:
      $RT \approx 0.59616\text{ kcal/mol}$) to dissociation constant $K_d = \exp(\Delta G / RT)$.
      Enforces a strict convergence threshold ($\sigma_{\Delta\Delta G} \le 0.5\text{ kcal/mol}$).
   2. **Split-Conformal ADMET Referee (`ConformalADMETReferee`)**:
-     Constructs distribution-free $(1 - \alpha) = 95\%$ conformal prediction intervals from
-     non-conformity calibration residuals on solubility ($\log S > -4.0$), cardiac hERG potassium
-     channel safety ($IC_{50} > 10\text{ }\mu\text{M}$), and human microsomal metabolic stability
-     ($t_{1/2} > 30\text{ min}$). A candidate passes only if its worst-case $95\%$ confidence bound
-     clears every safety threshold.
+     Applies the split-conformal construction to three hand-written property models
+     (ESOL-style $\log S$, an hERG $IC_{50}$ expression, a microsomal $t_{1/2}$ expression) and
+     refuses a candidate whose interval's worst case misses a threshold
+     ($\log S > -4.0$, $IC_{50} > 10\text{ }\mu\text{M}$, $t_{1/2} > 30\text{ min}$).
+     **The coverage is only as good as the residuals it is given.** Pass
+     `calibration_residuals` to get the usual marginal $(1 - \alpha)$ guarantee over that
+     calibration distribution; without them the module's built-in half-widths are
+     hand-written placeholders and the result reports `calibrated=False` and a coverage claim of
+     none. Nothing promoted through this gate is safe to dose.
 """
 from __future__ import annotations
 
@@ -33,6 +40,12 @@ from apedp_dyn.molecular.equivariant_pocket_flow import (
     build_pocket_force_field,
     intermolecular_energy_and_grad,
     relax_ligand_in_pocket,
+)
+
+#: What the intervals mean when nobody supplied calibration residuals.
+PLACEHOLDER_COVERAGE_CLAIM = (
+    "none: the interval half-widths are hand-written placeholders, not quantiles of "
+    "held-out residuals, so these bounds carry no coverage guarantee"
 )
 
 # Gas constant in kcal / (mol * K)
@@ -71,7 +84,15 @@ class ConformalInterval:
 
 @dataclass
 class ADMETConformalGateResult:
-    """Conformal ADMET safety and pharmacokinetic screening result."""
+    """ADMET screening result.
+
+    ``coverage_claim`` says what the intervals mean. With caller-supplied
+    calibration residuals the split-conformal construction gives the usual
+    marginal (1 - alpha) coverage, for the model and population those residuals
+    came from. With the module's built-in placeholder residuals it gives
+    nothing: the width is a stand-in, and the field says so. Until 2026-11-17
+    the result was labelled 95 % either way.
+    """
 
     passed_gate: bool
     log_solubility_mol_l: ConformalInterval
@@ -80,6 +101,8 @@ class ADMETConformalGateResult:
     caco2_permeability_cm_s: float
     cyp3a4_inhibition_risk: float
     rejection_reasons: list[str] = field(default_factory=list)
+    coverage_claim: str = PLACEHOLDER_COVERAGE_CLAIM
+    calibrated: bool = False
 
 
 def zwanzig_free_energy(
@@ -184,7 +207,20 @@ class AlchemicalFEPGateway:
         docked_coords: np.ndarray | None = None,
         seed: int = 42,
     ) -> AlchemicalFEPResult:
-        """Run stratified lambda-window Langevin sampling and BAR free energy integration."""
+        """Apply the BAR and Zwanzig estimators to energies sampled around one pose.
+
+        What this is not: a molecular dynamics free-energy calculation. The
+        configurations are the docked pose plus independent isotropic Gaussian
+        displacements (0.045 A), not a Langevin trajectory, so they are not
+        drawn from the Boltzmann distribution of either end state and the
+        samples are uncorrelated by construction. The "windows" scale one
+        intermolecular energy by d_lambda rather than interpolating two
+        Hamiltonians. The estimators are implemented and tested
+        (``zwanzig_free_energy``, ``bennett_acceptance_ratio``); the number this
+        returns is a reproducible score built from them, and it is not a
+        binding free energy. Until 2026-11-17 the docstring said Langevin
+        sampling.
+        """
         ff = build_pocket_force_field(graph)
         if docked_coords is None:
             dock_res = relax_ligand_in_pocket(graph, pocket, n_steps=120, seed=seed)
@@ -271,7 +307,26 @@ class AlchemicalFEPGateway:
 
 
 class ConformalADMETReferee:
-    """Distribution-free split-conformal ADMET safety and bioavailability referee (1 - alpha = 95%)."""
+    """Split-conformal ADMET gate over three property models.
+
+    The construction is the standard one: the interval is the point estimate
+    plus and minus the ceil((n + 1)(1 - alpha)) / n quantile of held-out
+    absolute residuals. Its coverage is inherited from those residuals, so the
+    caller supplies them (``calibration_residuals``) for a real guarantee.
+
+    Without them the module's built-in widths are used. They were written into
+    the source by hand, with no dataset behind them, and the referee then
+    reports ``calibrated=False`` and a coverage claim of none. The three
+    property models (an ESOL-style solubility regression, an hERG expression
+    and a microsomal half-life expression) are hand-written in terms of this
+    repository's own descriptors, whose logP differs from Crippen's by about
+    two log units (``tests/test_dyn_chemistry_bridge_reference.py``), so the
+    point estimates are coarse too.
+
+    This gate is therefore a structural placeholder: it shows where ADMET
+    evidence enters the funnel and refuses on the thresholds it is given. It is
+    not a safety assessment, and nothing promoted through it is safe to dose.
+    """
 
     def __init__(
         self,
@@ -279,6 +334,7 @@ class ConformalADMETReferee:
         min_log_solubility: float = -4.0,
         min_herg_ic50_um: float = 10.0,
         min_half_life_min: float = 30.0,
+        calibration_residuals: dict[str, np.ndarray] | None = None,
     ) -> None:
         if not (0.0 < alpha < 1.0):
             raise ValueError("alpha must be in (0, 1)")
@@ -287,7 +343,34 @@ class ConformalADMETReferee:
         self.min_herg_ic50_um = min_herg_ic50_um
         self.min_half_life_min = min_half_life_min
 
-        # Non-conformity residual calibration quantiles from reference ADMET calibration set
+        if calibration_residuals is not None:
+            missing = {"log_solubility", "herg_ic50_um", "half_life_min"} - set(calibration_residuals)
+            if missing:
+                raise ValueError(f"calibration_residuals is missing {sorted(missing)}")
+            arrays = {}
+            for key, values in calibration_residuals.items():
+                array = np.abs(np.asarray(values, dtype=np.float64)).ravel()
+                if array.size < math.ceil(1.0 / self.alpha) - 1:
+                    raise ValueError(
+                        f"{key}: {array.size} residuals cannot support a "
+                        f"{(1 - self.alpha) * 100:.0f}% conformal interval"
+                    )
+                arrays[key] = array
+            self._solubility_residuals = arrays["log_solubility"]
+            self._herg_residuals = arrays["herg_ic50_um"]
+            self._halflife_residuals = arrays["half_life_min"]
+            self.calibrated = True
+            self.coverage_claim = (
+                f"marginal {(1 - self.alpha) * 100:.0f}% coverage over the caller's calibration "
+                "distribution (exchangeability assumed)"
+            )
+            return
+
+        self.calibrated = False
+        self.coverage_claim = PLACEHOLDER_COVERAGE_CLAIM
+        # Placeholder interval widths, written by hand. NOT calibration data:
+        # no dataset, no model, no coverage. Supply calibration_residuals for a
+        # real interval.
         self._solubility_residuals = np.array(
             [0.12, 0.18, 0.22, 0.25, 0.29, 0.31, 0.35, 0.38, 0.41, 0.44, 0.48, 0.52, 0.55, 0.59, 0.62, 0.68, 0.72, 0.78, 0.82, 0.91],
             dtype=np.float64,
@@ -365,6 +448,8 @@ class ConformalADMETReferee:
 
         return ADMETConformalGateResult(
             passed_gate=len(reasons) == 0,
+            coverage_claim=self.coverage_claim,
+            calibrated=self.calibrated,
             log_solubility_mol_l=logs_interval,
             herg_ic50_um=herg_interval,
             metabolic_half_life_min=hl_interval,

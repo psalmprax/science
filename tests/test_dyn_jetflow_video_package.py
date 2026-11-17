@@ -449,7 +449,7 @@ def test_a_failed_download_is_an_error_not_a_synthetic_clip(monkeypatch):
     monkeypatch.setattr("time.sleep", lambda s: None)
     dataset = VideoDataset(hf_repo="someone/latents", max_hf_samples=2, num_frames=4)
     assert len(dataset) == 1
-    with pytest.raises(RuntimeError, match="could not load .*clip_0.pt after 3 attempts"):
+    with pytest.raises(RuntimeError, match=r"could not load .*clip_0\.pt after 3 attempts"):
         dataset[0]
     assert calls["files"] == 3
 
@@ -482,7 +482,7 @@ def test_a_downloaded_file_is_loaded_as_data_never_as_code(monkeypatch):
     dataset = VideoDataset(hf_repo="someone/latents", max_hf_samples=2, num_frames=4, frame_size=(8, 8))
     by_name = {url.rsplit("/", 1)[1]: i for i, url in enumerate(dataset.hf_files)}
     assert dataset[by_name["good.pt"]]["latent"].shape == (12, 4, 8, 8)
-    with pytest.raises(RuntimeError, match="bad.pt"):
+    with pytest.raises(RuntimeError, match=r"bad\.pt"):
         dataset[by_name["bad.pt"]]
 
 

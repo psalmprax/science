@@ -1,17 +1,24 @@
 """Molecular Graph Primitives, SMILES/SELFIES Parsing, Valence Sanitization, and 3D Distance Geometry.
 
-Status: production
+Status: experimental
 
 Scope & honesty ceiling:
 - Provides deterministic molecular graph construction (`MolecularGraph`, `AtomNode`, `BondEdge`)
   from SMILES and SELFIES strings without relying on static lookup tables as model outputs.
-- Enforces strict chemical valence rules (octet/duet/expanded valence bounds, formal charge
-  accounting, aromaticity Hückel 4n+2 verification on conjugated rings, and Bredt's rule
-  against bridgehead double bonds in small bicyclic systems).
-- Computes exact topological and physicochemical descriptors from the molecular graph:
-  molecular weight (MW), Wildman-Crippen atomic logP contributions, hydrogen bond donors (HBD),
-  hydrogen bond acceptors (HBA), Ertl topological polar surface area (TPSA), rotatable bond
-  count, ring complexity, and Synthetic Accessibility Score (SAScore).
+- Enforces chemical valence bounds (octet/duet/expanded valence, formal charge accounting, and
+  Bredt's rule against bridgehead double bonds in small bicyclic systems). The bound on an
+  aromatic atom is a necessary condition only: it uses the smallest valence any Kekule structure
+  could give the atom, because this module does not kekulize. A structure that passes is not
+  thereby proved kekulizable.
+- Computes descriptors from the molecular graph. Measured against RDKit on 18 drugs and simple
+  molecules (`tests/test_dyn_chemistry_bridge_reference.py`): molecular weight and the
+  heavy-atom count are exact; hydrogen-bond donors agree within 1 and rotatable bonds within 3
+  (this module's definitions differ, e.g. fluorine counts as an acceptor here); logP, TPSA,
+  SAScore and QED are this module's own expressions, in the spirit of Crippen's, Ertl's and
+  Bickerton's but not those models, and on that set they differ by about 2.1 log units, 12 A^2
+  and 0.20 respectively. Callers that gate on them (`retrosynthesis_gate`,
+  `biophysics.alchemical_fep_gateway`) inherit that error; the status above is why.
+  Until 2026-11-17 this said "exact ... descriptors" and had never been compared with anything.
 - Generates 3D atomic coordinates via metric matrix distance-geometry embedding (bounds
   smoothing via triangle inequality + eigenvalue decomposition + analytical stress minimization)
   with tetrahedral chirality volume constraints.
@@ -142,13 +149,39 @@ class MolecularGraph:
                 total += b.order
         return total
 
+    def minimum_kekule_valence(self, atom_idx: int) -> float:
+        """The smallest valence any Kekule structure could give this atom.
+
+        An aromatic bond is written with order 1.5, which is no atom's bond
+        order: in a Kekule structure each aromatic bond is single or double, so
+        an atom with ``k`` aromatic bonds contributes at least ``k`` and at most
+        ``k + 1``. The lower end is what a valence *bound* must use. Summing the
+        1.5s instead made a fused aromatic carbon (three aromatic bonds) read
+        4.5 and rejected naphthalene, caffeine, naproxen, sildenafil and
+        warfarin as impossible structures (fixed 2026-11-17).
+        """
+        total = 0.0
+        for b in self.bonds:
+            if b.u == atom_idx or b.v == atom_idx:
+                total += 1.0 if b.is_aromatic else b.order
+        return total
+
     def implicit_hydrogens(self, atom_idx: int) -> int:
         atom = self.atoms[atom_idx]
         if atom.element == "H":
             return 0
         spec = _element_registry(atom.element)
+        if atom.is_aromatic and atom.element != "C":
+            # SMILES convention: an aromatic heteroatom's hydrogen is written in
+            # brackets ([nH]), so a bare aromatic n, o or s carries none. Taking
+            # the first allowed valence at or above the bond sum instead let
+            # nitrogen's 5-valent target add a phantom hydrogen: sildenafil came
+            # out at 476.60 g/mol against 474.59 (fixed 2026-11-17).
+            return 0
         bond_sum = self.bond_order_sum(atom_idx)
-        # Aromatic carbon/nitrogen valence adjustment
+        # An aromatic bond's 1.5 is not a bond order any atom has; rounding the
+        # sum gives the Kekule valence (3.0 -> 3 for a CH, 4.5 -> 4 for a fused
+        # carbon, Python rounding ties to even).
         effective_bond_sum = round(bond_sum)
         total_explicit = effective_bond_sum + atom.explicit_hydrogens
         charge_adjusted_targets = [max(0, v + atom.formal_charge) if atom.element == "N" else max(0, v - abs(atom.formal_charge)) for v in spec.allowed_valences]
@@ -254,7 +287,11 @@ def sanitize_molecular_graph(graph: MolecularGraph) -> MolecularGraph:
     # Check individual atom valences
     for i, atom in enumerate(graph.atoms):
         spec = _element_registry(atom.element)
-        bond_sum = graph.bond_order_sum(i)
+        # The bound is a necessary condition: an atom is impossible only if even
+        # the cheapest Kekule assignment of its aromatic bonds exceeds its
+        # maximum valence. A structure that passes is not thereby proved
+        # kekulizable; this module does not kekulize.
+        bond_sum = graph.minimum_kekule_valence(i)
         total_valence = bond_sum + atom.explicit_hydrogens
         max_allowed = max(spec.allowed_valences)
         if atom.element == "N" and atom.formal_charge == 1:
@@ -545,8 +582,12 @@ def compute_descriptors(graph: MolecularGraph) -> PhysicochemicalDescriptors:
 
         if atom.element != "H":
             heavy_atoms += 1
-        mw += spec.atomic_mass + imp_h * h_spec.atomic_mass
-        logp += spec.base_logp + imp_h * h_spec.base_logp
+        # total_h, not imp_h: a hydrogen written in brackets ([C@H], [nH]) is
+        # explicit, and counting only the implicit ones left every bracket atom's
+        # hydrogen out of the molecular weight -- nicotine 161.23 against 162.24,
+        # cholesterol 380.62 against 386.66 (fixed 2026-11-17).
+        mw += spec.atomic_mass + total_h * h_spec.atomic_mass
+        logp += spec.base_logp + total_h * h_spec.base_logp
 
         # Neighbor electronegativity environment correction for logP
         nbr_polar = sum(1 for nbr, _, _ in adj[idx] if graph.atoms[nbr].element in ("N", "O", "F", "Cl", "Br"))
