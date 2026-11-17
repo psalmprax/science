@@ -426,6 +426,8 @@ def run_arm_a_specialized(case: AblationTestCase) -> dict[str, Any]:
             bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         if case.candidate.metadata.get("dual_bound_certified", False):
             bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+        if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
+            bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
 
     adj = adjudicate_scientific_claim(
         candidate_id=case.candidate.candidate_id,
@@ -460,6 +462,8 @@ def run_arm_b_core_only(case: AblationTestCase) -> dict[str, Any]:
         bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
         bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
+        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
     elif case.candidate.proposed_claim == ClaimLevel.C4_CAUSAL_MECHANISTIC:
         # Naive system assumes correlation == causation!
         bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
