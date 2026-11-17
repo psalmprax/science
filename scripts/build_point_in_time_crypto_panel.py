@@ -68,6 +68,16 @@ LEVERAGED = re.compile(r"^(?P<under>[A-Z0-9]+?)(UP|DOWN|BULL|BEAR)$")
 Fetch = Callable[[str], bytes]
 
 
+def archive_url(key: str) -> str:
+    """The URL of an object in the archive, path percent-encoded.
+
+    Pair symbols are not all ASCII (``币安人生USDT`` is listed), and an HTTP
+    request line is. Every ASCII key the archive uses -- letters, digits,
+    ``-``, ``_``, ``.``, ``/`` -- comes back unchanged.
+    """
+    return f"{ARCHIVE}/{urllib.parse.quote(key, safe='/')}"
+
+
 def http_get(url: str, attempts: int = 4) -> bytes:
     """GET with retries; raises after the last attempt."""
     if not url.startswith((ARCHIVE + "/", LISTING + "?")):
@@ -179,8 +189,8 @@ def fetch_symbol(symbol: str, wanted: Iterable[str], fetch: Fetch = http_get) ->
         key = f"{KLINE_PREFIX}{symbol}/1d/{name}"
         if key not in keys:
             continue
-        blob = fetch(f"{ARCHIVE}/{key}")
-        checksum = fetch(f"{ARCHIVE}/{key}.CHECKSUM").decode("utf-8")
+        blob = fetch(archive_url(key))
+        checksum = fetch(archive_url(f"{key}.CHECKSUM")).decode("utf-8")
         for date, close, volume, taker in read_month(blob, checksum, name):
             bars[date] = (close, volume, taker)
         files.append({"file": key, "sha256": hashlib.sha256(blob).hexdigest()})
