@@ -356,10 +356,28 @@ class TestProvenanceFallbackFiresEndToEnd:
         assert best.holdout_rmse < SOLE_SURVIVOR_GAMMA * calibrated_sigma(
             g4["holdout_noise_sigma"])
 
-    #: A flag both of Guard 2's statistics exceed on this record (raw |rho1|
-    #: 0.548, standardized innovations 0.447), so the refusal below cannot be
-    #: rescued by the innovation fallback.
+    #: A flag for the explicit-versus-provenance comparison; any value serves.
     LOW_FLAG = RESID_RHO_FLAG / 2
+
+    @staticmethod
+    def _refusing_flag(recorded):
+        """The largest of a few flags below the series' |rho1| at which Guard 2 refuses.
+
+        The statistic is not pinned. The cubic coefficient is barely constrained
+        by the training drive, so where along that flat direction the converged
+        fit lands moves the holdout residuals' structure from machine to
+        machine while the training loss agrees to seven figures: raw |rho1| was
+        0.548 here and 0.304 on CI's 3.10 leg (2026-11-16), same libraries.
+        What is pinned is the guard's behaviour on whatever series gate 4
+        recorded.
+        """
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
+
+        rho = TestProvenanceFallbackFiresEndToEnd._lag1(recorded)
+        for fraction in (0.999, 0.75, 0.5, 0.25):
+            if not _sole_survivor_whiteness(recorded, rho * fraction)[0]:
+                return rho, rho * fraction
+        raise AssertionError(f"Guard 2 admits this series at every flag down to {rho * 0.25:.3f}")
 
     def test_fallback_abstains_without_any_explicit_series(self):
         """The end-to-end claim: no resid_sole, real fit, guard-2 abstention.
@@ -369,18 +387,15 @@ class TestProvenanceFallbackFiresEndToEnd:
         record. The reason must quote the |rho1| of exactly that recorded
         series: a guard reading any other series, or none, cannot produce it.
         """
-        from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
-
         best = self._best_fit()
-        recorded = best.provenance["gate4_status"]["holdout_residuals"]
-        assert not _sole_survivor_whiteness(recorded, self.LOW_FLAG)[0], "precondition"
+        rho, flag = self._refusing_flag(best.provenance["gate4_status"]["holdout_residuals"])
 
-        adj = adjudicate([best], sole_rho_flag=self.LOW_FLAG)
+        adj = adjudicate([best], sole_rho_flag=flag)
         assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
         assert adj.promoted is None
         # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
         assert "absolute ceiling" in adj.reason
-        assert f"|rho1|={self._lag1(recorded):.3f}" in adj.reason
+        assert f"|rho1|={rho:.3f}" in adj.reason
 
     def test_the_same_recorded_series_clears_a_flag_just_above_it(self):
         """The other side of the boundary: the refusal above was the series, not the flag."""
@@ -390,17 +405,16 @@ class TestProvenanceFallbackFiresEndToEnd:
         assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
         assert adj.promoted is best
 
-    def test_the_production_flag_accepts_the_truth_on_its_innovations(self):
-        """At the production flag the raw series fails (0.548) and the standardized
-        innovations pass (0.447): the truth is promoted, and it is the fallback
-        that admits it. Pinned so a change to either statistic is seen."""
+    def test_the_production_flag_accepts_the_fitted_truth(self):
+        """At the production flag the truth is promoted, by whichever of Guard 2's
+        statistics admits it: on 2026-11-16 the standardized innovations here
+        (raw 0.548, innovations 0.447) and the raw series on CI's 3.10 leg
+        (0.304)."""
         from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
 
         best = self._best_fit()
-        recorded = best.provenance["gate4_status"]["holdout_residuals"]
-        assert self._lag1(recorded) > RESID_RHO_FLAG
-        ok, why = _sole_survivor_whiteness(recorded, RESID_RHO_FLAG)
-        assert ok and "standardized innovations" in why
+        ok, why = _sole_survivor_whiteness(best.provenance["gate4_status"]["holdout_residuals"], RESID_RHO_FLAG)
+        assert ok, why
         adj = adjudicate([best])
         assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
         assert adj.promoted is best

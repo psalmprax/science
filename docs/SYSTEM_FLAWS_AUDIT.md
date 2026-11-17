@@ -311,8 +311,23 @@ Each entry: cause, what changed, the pin for it.
   (d) *The provenance-fallback tests* (J-16) return to the production route
   (default start, lowest training loss); the generating-parameter start is
   gone. The converged truth carries |rho1| 0.548 raw and 0.447 on
-  standardized innovations, and at the production flag of 0.5 it is the
-  innovation fallback that admits it; that is pinned.
+  standardized innovations here, so at the production flag of 0.5 the
+  innovation fallback admits it.
+  *Addendum (2026-11-17):* that statistic is not reproducible, and the tests
+  no longer pin it. CI's 3.10 leg on `c43c972` measured the same recorded
+  series at raw 0.304 (1 failed, 1011 passed); a local Python 3.10.20 with
+  CI's numpy 2.2.6 and scipy 1.15.3 measured 0.548 again. The training loss
+  agrees to seven figures; the residual structure does not, because the cubic
+  coefficient sits on a flat direction of the training loss and where along it
+  the fit stops moves the holdout residuals. The tests now pin the guard's
+  behaviour on whatever series gate 4 recorded: refusal at a flag just below
+  its |rho1| (quoted in the reason), admission just above it, and promotion of
+  the truth at the production flag. The flag sweep on the rival alone keeps its
+  fixed pins: the rival's |rho1| is 0.5934 under both local environments, and
+  the truth's moves in the fourth figure (0.2268 against 0.2261) on the same
+  cell. What this leaves open: on this cell the guard's verdict is stable, but
+  the margin it is decided by is a property of the machine as well as the
+  data.
   The scientific drift guardrail and the known-truth recovery gate pass
   unchanged. Not re-derived: benchmark records written by scripts that call the
   fitter; no test flags them, and they describe the old fitter until re-run.
