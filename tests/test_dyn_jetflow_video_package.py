@@ -100,6 +100,22 @@ def test_noether_solenoidal_projector():
     assert loss_div.item() >= 0.0
 
 
+def test_the_projector_is_exact_to_the_input_precision_and_idempotent():
+    """The README says "exact incompressibility": on a periodic grid, under the
+    central-difference divergence the projector uses, that means machine
+    precision. Until 2026-11-17 the wavenumbers were float32 whatever the
+    input, and a float64 field kept a residual divergence of about 6e-8."""
+    engine = NoetherConservationEngine()
+    torch.manual_seed(3)
+    for dtype, tolerance in ((torch.float32, 1e-5), (torch.float64, 1e-12)):
+        for n in (16, 17, 64):
+            vx, vy = torch.randn(n, n, dtype=dtype), torch.randn(n, n, dtype=dtype)
+            ax, ay, residual = engine.project_divergence_free_2d_torch(vx, vy)
+            assert ax.dtype == dtype and residual < tolerance, (dtype, n, residual)
+            bx, by, _ = engine.project_divergence_free_2d_torch(ax, ay)
+            assert torch.allclose(bx, ax, atol=10 * tolerance) and torch.allclose(by, ay, atol=10 * tolerance)
+
+
 def test_physical_steering_controller():
     controller = PhysicalSteeringController(
         PhysicalSteeringConfig(
@@ -384,3 +400,114 @@ def test_four_architectural_pillars_95_readiness():
     assert torch.isfinite(rgb_vid).all()
 
 
+
+
+class _Response:
+    def __init__(self, body: bytes):
+        self._body = body
+
+    def read(self) -> bytes:
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_an_unreachable_hub_is_an_error_not_a_synthetic_clip(monkeypatch):
+    """Until 2026-11-17 a failed hub query printed a line and the dataset fell
+    back to one generated vortex clip, so training "on" a hub dataset could
+    train on a synthetic one without anyone being told."""
+    import urllib.error
+    import urllib.request
+
+    def unreachable(*args, **kwargs):
+        raise urllib.error.URLError("no route to the hub")
+
+    monkeypatch.setattr(urllib.request, "urlopen", unreachable)
+    with pytest.raises(RuntimeError, match="nothing could be loaded from someone/latents"):
+        VideoDataset(hf_repo="someone/latents", max_hf_samples=2, num_frames=4)
+
+
+def test_a_failed_download_is_an_error_not_a_synthetic_clip(monkeypatch):
+    import json
+    import urllib.request
+
+    listing = json.dumps({"siblings": [{"rfilename": "clip_0.pt"}]}).encode()
+    calls = {"files": 0}
+
+    def hub(request, timeout=None):
+        url = request.full_url if hasattr(request, "full_url") else request
+        if "/api/datasets/" in url:
+            return _Response(listing)
+        calls["files"] += 1
+        raise OSError("connection reset")
+
+    monkeypatch.setattr(urllib.request, "urlopen", hub)
+    monkeypatch.setattr("time.sleep", lambda s: None)
+    dataset = VideoDataset(hf_repo="someone/latents", max_hf_samples=2, num_frames=4)
+    assert len(dataset) == 1
+    with pytest.raises(RuntimeError, match="could not load .*clip_0.pt after 3 attempts"):
+        dataset[0]
+    assert calls["files"] == 3
+
+
+def test_a_downloaded_file_is_loaded_as_data_never_as_code(monkeypatch):
+    """A .pt file from the network is unpickled with weights_only=True: tensors
+    load, an object that would run code on unpickling is refused."""
+    import io
+    import json
+    import urllib.request
+
+    class Payload:
+        def __reduce__(self):
+            return (print, ("this ran on load",))
+
+    good, bad = io.BytesIO(), io.BytesIO()
+    torch.save(torch.zeros(4, 12, 8, 8), good)
+    torch.save(Payload(), bad)
+    files = {"good.pt": good.getvalue(), "bad.pt": bad.getvalue()}
+    listing = json.dumps({"siblings": [{"rfilename": name} for name in files]}).encode()
+
+    def hub(request, timeout=None):
+        url = request.full_url
+        if "/api/datasets/" in url:
+            return _Response(listing)
+        return _Response(files[url.rsplit("/", 1)[1]])
+
+    monkeypatch.setattr(urllib.request, "urlopen", hub)
+    monkeypatch.setattr("time.sleep", lambda s: None)
+    dataset = VideoDataset(hf_repo="someone/latents", max_hf_samples=2, num_frames=4, frame_size=(8, 8))
+    by_name = {url.rsplit("/", 1)[1]: i for i, url in enumerate(dataset.hf_files)}
+    assert dataset[by_name["good.pt"]]["latent"].shape == (12, 4, 8, 8)
+    with pytest.raises(RuntimeError, match="bad.pt"):
+        dataset[by_name["bad.pt"]]
+
+
+def test_a_pretrained_vae_that_cannot_load_is_an_error_not_an_untrained_one():
+    """Until 2026-11-17 a failed diffusers load printed a line and substituted a
+    randomly initialised VAE."""
+    with pytest.raises(RuntimeError, match="could not be loaded"):
+        VideoVAEBridge(use_diffusers=True, diffusers_model="no-such-org/no-such-vae", latent_channels=4)
+
+
+def test_the_temporal_block_is_a_differentiable_gated_convolution():
+    """The block's native "selective scan" branch never ran (wrong argument shapes,
+    and the native function refuses); it was removed on 2026-11-17. Its output is
+    the gated causal convolution, and gradients reach every parameter."""
+    from jetflow_video.model import MambaTemporalBlock
+
+    torch.manual_seed(0)
+    block = MambaTemporalBlock(8)
+    torch.nn.init.normal_(block.out_proj.weight)
+    x = torch.randn(3, 5, 8)
+    block(x).sum().backward()
+    for name, parameter in block.named_parameters():
+        assert parameter.grad is not None and parameter.grad.abs().sum() > 0, name
+    # Causal: the first output step does not depend on later inputs.
+    y = block(x)
+    x_later = x.clone()
+    x_later[:, 1:] += 1.0
+    assert torch.allclose(block(x_later)[:, 0], y[:, 0])

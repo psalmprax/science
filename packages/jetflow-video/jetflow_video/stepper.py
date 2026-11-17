@@ -72,8 +72,11 @@ class JetFlowTrajectory:
 class JetFlowStepper:
     r"""PyTorch GPU/CPU 2nd-Order Jet2 Curvature Flow Stepper.
 
-    Achieves photorealistic video latent integration in 2 to 4 steps by accounting
-    for trajectory curvature along the continuous probability path.
+    A second-order Taylor step, ``z + dt*v + dt**2/2 * a``, that accounts for the
+    trajectory's curvature so fewer steps are needed than with Euler. How few is an
+    empirical question: on the repository's matched 16x16 fluid benchmark two steps
+    reach the image quality of a 48-step diffusion sampler; on the collision domain
+    they do not (benchmarks/jetflow_vs_diffusion_matched*_results.json).
     """
 
     def __init__(self, config: Optional[JetFlowConfig] = None) -> None:
