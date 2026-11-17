@@ -39,6 +39,15 @@ from apedp_dyn.vqc.synthesis import ghz_target
 
 MIB = 2 ** 20
 
+#: How far below the floor a window peak may read without meaning anything.
+#: ``floor_bytes`` is VmRSS read just after the reset; ``window_peak_bytes`` is
+#: VmHWM, which Linux keeps lazily (``mm->hiwater_rss`` is raised before an
+#: unmap, not on every page fault). A page faulted in between the reset and the
+#: floor read, then released without an unmap, leaves the peak a page below the
+#: floor: CI's 3.11 leg read 158,822,400 against 158,826,496 on 2026-11-17,
+#: exactly one 4 KiB page. Four pages of slack; anything more is a real fault.
+PAGE_SLACK = 4 * mmap.PAGESIZE
+
 
 def _fresh_resident_block(size: int) -> mmap.mmap:
     """``size`` bytes the process did not have resident a moment ago.
@@ -148,10 +157,10 @@ def test_a_measured_engine_is_measured_on_the_recorded_samples():
     assert measurement.engine == "grammar"
     assert measurement.variant == reference.variant
     assert measurement.floor_bytes > 0
-    assert measurement.window_peak_bytes >= measurement.floor_bytes
+    assert measurement.window_peak_bytes >= measurement.floor_bytes - PAGE_SLACK
     assert measurement.growth_bytes == (
         measurement.window_peak_bytes - measurement.floor_bytes)
-    assert measurement.absolute_peak_bytes >= measurement.floor_bytes
+    assert measurement.absolute_peak_bytes >= measurement.floor_bytes - PAGE_SLACK  # read before the reset
     assert measurement.peak_reset is True
     payload = measurement.as_dict()
     assert payload["growth_mib"] == pytest.approx(measurement.growth_bytes / MIB)
@@ -228,5 +237,5 @@ def test_the_measurement_is_reproducible_in_shape():
     assert first.counts_sha256 == second.counts_sha256
     assert first.target_sha256 == second.target_sha256
     assert first.shots == second.shots == 1_000
-    assert first.growth_bytes >= 0 and second.growth_bytes >= 0
+    assert first.growth_bytes >= -PAGE_SLACK and second.growth_bytes >= -PAGE_SLACK
     assert dataclasses.asdict(first)["method"] == dataclasses.asdict(second)["method"]
