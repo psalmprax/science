@@ -1601,26 +1601,12 @@ print(json.dumps(res))
             check=True,
         )
         circ_stats = json.loads(proc.stdout.strip().splitlines()[-1])
-        num_qubits = int(circ_stats["num_qubits"])
-        static_toffoli = int(circ_stats["static_toffoli"])
-        t_like = int(circ_stats["t_like"])
-        rotations = int(circ_stats["rotations"])
-        circuit_stats_source = "measured"
-        circuit_stats_error = None
+        num_qubits, static_toffoli, t_like, rotations = (
+            int(circ_stats[k]) for k in ("num_qubits", "static_toffoli", "t_like", "rotations"))
+        circuit_stats_source, circuit_stats_error = "measured", None
     except Exception as exc:  # noqa: BLE001 - the statistics come from a second interpreter reading the circuit file; a missing kickmix, a timeout or non-JSON output must not abort compilation
-        # These four are NOMINAL: the figures this architecture is expected to
-        # produce, not figures read off the emitted circuit. Until 2026-11-17
-        # they were returned indistinguishably from measured ones, and this
-        # handler's own comment claimed a `circuit_stats_source` field that did
-        # not exist anywhere in the repository. Every consumer of the metadata
-        # below can now tell the two apart, and `cost_evaluation` built from
-        # nominal inputs is a nominal cost.
-        num_qubits = 90
-        static_toffoli = 1448
-        t_like = 1
-        rotations = 44
-        circuit_stats_source = "nominal"
-        circuit_stats_error = f"{type(exc).__name__}: {exc}"
+        num_qubits, static_toffoli, t_like, rotations = 90, 1448, 1, 44  # NOMINAL, not read off the circuit (audit L-02)
+        circuit_stats_source, circuit_stats_error = "nominal", f"{type(exc).__name__}: {exc}"
 
     digest = sha256_file(out_file)
     margin_units = 73_326_605
@@ -1641,11 +1627,7 @@ print(json.dumps(res))
         "static_toffoli": static_toffoli,
         "t_like": t_like,
         "rotations": rotations,
-        #: "measured" (read off the emitted circuit by a second interpreter) or
-        #: "nominal" (this architecture's expected figures, substituted because
-        #: that read failed; `circuit_stats_error` says why). A cost evaluation
-        #: computed from nominal inputs is not a measurement of this circuit.
-        "circuit_stats_source": circuit_stats_source,
+        "circuit_stats_source": circuit_stats_source,  # "measured" | "nominal"; nominal cost then
         "circuit_stats_error": circuit_stats_error,
         "min_margin_units": margin_units,
         "cost_evaluation": cost_eval,
