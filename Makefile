@@ -1,4 +1,4 @@
-.PHONY: install test test-referee-core lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
+.PHONY: install test test-referee-core lint typecheck typecheck-core typecheck-baseline lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
 
 # Interpreter used by every gate. When the project virtualenv exists it is used
 # automatically, so `make lint` / `make typecheck` work without PATH tweaks and
@@ -57,8 +57,14 @@ lint:
 # Strict mypy on the conf/ integrity boundary (pyproject [tool.mypy] `files`),
 # then the pinned full-package baseline. Bare `mypy` alone checks two modules
 # and says nothing about the other ~1,200 files.
-typecheck:
+typecheck: typecheck-core typecheck-baseline
+
+# CI runs the two halves in different jobs: the baseline's counts depend on
+# which libraries are installed, so it runs where the full stack is.
+typecheck-core:
 	$(PYTHON) -m mypy
+
+typecheck-baseline:
 	$(PYTHON) scripts/check_quality_baseline.py --mypy-only
 
 # The referee core's own tests plus its import boundary. Meant to be run with an

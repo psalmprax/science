@@ -33,8 +33,12 @@ jobs:
           mypy --version
       - name: Lint Python
         run: make lint
+      # Only the strict core here: the full-package baseline counts findings
+      # that depend on which libraries are installed (torch, fastapi, the
+      # scientific stack), and this job installs none of them. It runs in the
+      # test job, where they are.
       - name: Strict core type check
-        run: make typecheck
+        run: make typecheck-core
       - name: CI configuration regression checks
         run: >-
           python -m pytest tests/test_ci_quality_contract.py
@@ -327,6 +331,14 @@ jobs:
           python -m pip install -e packages/jetflow-video
           python -m pytest --version
 
+      # The ratchet's limits were measured with the full stack installed and
+      # Python 3.12, so it runs once, on that entry, before the kernel build.
+      - name: Full-package type baseline
+        if: matrix.python-version == '3.12'
+        run: |
+          source .venv/bin/activate
+          make typecheck-baseline
+
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2
         with:
@@ -597,6 +609,7 @@ jobs:
           path: wheelhouse
       - name: Install and require the native kernel
         run: |
+          source .venv/bin/activate
           python -m pip install wheelhouse/*.whl
           python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
       - name: Run targeted mutation battery (referee + leakage paths)

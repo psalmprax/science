@@ -183,12 +183,27 @@ def test_rust_home_is_set_in_a_step_not_invalid_job_context():
     assert any('RUSTUP_HOME=$RUNNER_TEMP/rustup' in step.get("run", "") for step in job["steps"])
 
 
+def test_full_package_type_baseline_runs_where_the_stack_is_installed():
+    """The quality job installs only the tools, so the baseline (whose counts
+    depend on torch, fastapi and the scientific stack being importable) runs in
+    the test job, after its full install, on the 3.12 entry it was pinned on."""
+    quality = "\n".join(s.get("run", "") for s in _workflow("test.yml")["jobs"]["python-quality"]["steps"])
+    assert "make typecheck-core" in quality and "typecheck-baseline" not in quality
+    steps = _workflow("test.yml")["jobs"]["test"]["steps"]
+    names = [s.get("name", "") for s in steps]
+    baseline = steps[names.index("Full-package type baseline")]
+    assert "make typecheck-baseline" in baseline["run"] and "3.12" in baseline["if"]
+    assert names.index("Install dependencies") < names.index("Full-package type baseline")
+
+
 def test_mutation_battery_installs_its_native_prerequisite():
     job = _workflow("test.yml")["jobs"]["mutation-battery"]
     assert job["needs"] == "build-kernel-wheel"
     steps = job["steps"]
     script = "\n".join(step.get("run", "") for step in steps)
     assert "python -m pip install wheelhouse/*.whl" in script
+    install = next(s["run"] for s in steps if s.get("name") == "Install and require the native kernel")
+    assert install.lstrip().startswith("source .venv/bin/activate"), "the wheel must go into the job's venv"
     assert "assert is_rust_kernel_available()" in script
     assert any(step.get("uses", "").startswith("actions/download-artifact@") for step in steps)
 
