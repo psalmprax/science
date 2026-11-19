@@ -1,0 +1,135 @@
+# The main search path and the in-house GA/GP on the SRBench protocol
+# (preregistration/PREREG-MAIN-SEARCH-2026-11.md).
+#   push to srbench-main-search-smoke-*  -> both engines on two problems, short budget
+#   push to srbench-main-search-run-*    -> smoke, then the one preregistered run
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: SRBench main search
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['srbench-main-search-smoke-*', 'srbench-main-search-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build manylinux wheel (pyo3/maturin container)
+        uses: PyO3/maturin-action@v1
+        with:
+          working-directory: rust/apedp-kernel
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
+          command: build
+          args: --release --locked --out ../../wheelhouse --interpreter python3.12
+      - uses: actions/upload-artifact@v7
+        with:
+          name: main-search-kernel-wheel
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  smoke:
+    needs: kernel
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: main-search-kernel-wheel
+          path: wheelhouse
+      - name: Install and require the native kernel
+        run: |
+          python -m pip install wheelhouse/*.whl
+          python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
+      - name: Both engines on two problems
+        run: python scripts/run_srbench_main_search.py smoke --out smoke-out
+
+  shard:
+    needs: smoke
+    if: startsWith(github.ref_name, 'srbench-main-search-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: main-search-kernel-wheel
+          path: wheelhouse
+      - name: Install and require the native kernel
+        run: |
+          python -m pip install wheelhouse/*.whl
+          python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
+      - name: Run shard ${{ matrix.k }} of 32
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_srbench_main_search.py run --shard "$SHARD/32" --out srbench-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: main-search-shard-${{ matrix.k }}
+          path: srbench-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: main-search-shard-*
+          path: srbench-out
+          merge-multiple: true
+      - name: Merge the shards
+        run: python scripts/run_srbench_main_search.py collect --out srbench-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: main-search-results
+          path: |
+            srbench-out/runs.jsonl
+            srbench-out/results.json
+            srbench-out/runs-shard-*.jsonl
+          if-no-files-found: error
+      # The artifact store is not reachable from every environment that has to commit the
+      # results, so they are also printed, with their checksums, for rebuilding from the log.
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd srbench-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

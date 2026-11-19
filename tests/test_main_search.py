@@ -179,3 +179,43 @@ def test_among_laws_that_cannot_be_told_apart_the_simplest_is_reported():
     assert result.action == "equivalent_class"
     assert "sin" not in result.law and _same_shape(result.law, "a*exp(-0.37*b)")
     assert result.adequacy["passed"]
+
+
+def test_noise_free_data_confirms_an_exact_law_directly_and_refuses_a_close_approximation():
+    X, y, pool, measure, read = _problem("a/(a + b)", noise=0.0)
+    exact = main_search.discover(X, y, pool, measure)
+    assert exact.action == "confirmed" and _same_shape(exact.law, "a/(a + b)")
+    assert exact.adequacy["exact_fit"] and exact.contrast is None and exact.rows_read == len(set(read)) == 30
+    # an exact first pass settles the matter: the search stage is not run, and a formula in unknown names is ignored
+    settled = main_search.discover(X, y, pool, measure, proposer=_Scripted(None))
+    assert settled.first_pass["settled"] and not settled.search["ran"] and settled.action == "confirmed"
+    stray = main_search.discover(X, y, pool, measure, proposer=_Scripted(["a*zeta", "a/(a + b)"]), always_search=True)
+    assert stray.action in ("confirmed", "equivalent_class") and "zeta" not in stray.law
+    # the law has a constant the enumeration cannot write; the only candidates are close approximations
+    X, y, pool, measure, _read = _problem("a*exp(-0.37*b)", noise=0.0)
+    close = main_search.discover(X, y, pool, measure, proposer=_Scripted(["a*(-0.35 + 3.9/(b + 2.72))", "a/(b + 1.5)"]),
+                                 always_search=True)
+    assert close.action == "widen_search" and close.law is None
+
+
+def test_adequacy_passes_a_true_law_and_refuses_one_a_smoother_beats():
+    rng = np.random.default_rng(5)
+    X = rng.uniform(1.0, 5.0, (400, 2))
+    truth = X[:, 0] * np.sin(X[:, 1])
+    y = truth + 0.05 * rng.standard_normal(400)
+    good = main_search.adequacy(y - truth, X, y, k=8)
+    assert good["passed"] and good["error_vs_smoother"] < 1.0
+    flat = main_search.adequacy(y - y.mean(), X, y, k=8)  # a constant "law": the smoother predicts far better
+    assert not flat["passed"] and flat["error_vs_smoother"] > 1.0
+
+
+def test_constants_from_the_search_are_refitted_so_a_true_law_is_exact_on_noise_free_data():
+    X, y, pool, measure, _read = _problem("a*exp(-0.37*b)", noise=0.0)
+    names = ["a", "b"]
+    dev_X = np.column_stack([X["a"], X["b"]])
+    rough = sp.sympify("a*exp(-0.3702*b)")  # right to three digits, as a search might leave it
+    refit = main_search.polish(rough, names, dev_X, y)
+    assert float(next(iter(refit.atoms(sp.Float)))) == pytest.approx(-0.37, abs=1e-9)
+    assert main_search.polish(sp.sympify("a/b"), names, dev_X, y) == sp.sympify("a/b")  # nothing to refit
+    result = main_search.discover(X, y, pool, measure, proposer=_Scripted(["a*exp(-0.3702*b)", "a/(b + 1.5)"]), always_search=True)
+    assert result.action == "confirmed" and result.adequacy["exact_fit"] and _same_shape(result.law, "a*exp(-0.37*b)")

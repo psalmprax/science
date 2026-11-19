@@ -1,0 +1,18 @@
+{
+ "preregistration": "PREREG-MAIN-SEARCH-2026-11",
+ "sha256": {
+  "apedp/evolutionary_search.py": "bf5906adcd460630e094d08715bb227fef220cd66d58f5c1b5cf165782ed6747",
+  "apedp_dyn/discovery_l2/confirmed_stop.py": "ce13a721d801c6db81d9bd2618b1aa252fba30ef5353100aadac145366148e66",
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/contrast_resolution.py": "6c6001b7285295c8f1121bd48743b69fe6ff96b4f86a8cd37e3a17366562ee2b",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/proposers/pysr_proposer.py": "4128358c515432921195577a1caa079a8b66b4790356174d4b8d0ad14569c554",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-MAIN-SEARCH-2026-11.md": "6b33fac8fe043fc3c614a92f291a5e0c32e8d7c6e73bc71e23ccb65f81f94665",
+  "scripts/fetch_srbench_ground_truth.py": "527b4d980b888bfcac3039b9e9a4da16de641271ce1f479a8323f1ffc3b0ff73",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "1207a9eec7fed7c610c4b2c0bd080d6bd950a725fefa99cfc40304835f46a171"
+ }
+}
