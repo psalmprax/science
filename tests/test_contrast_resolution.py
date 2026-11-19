@@ -41,7 +41,8 @@ def test_a_law_outside_every_rung_ends_in_widen_search_not_in_a_wrong_law():
     dims = {"u": Dimension(), "v": Dimension()}
     X, y, pool, measure, sigma, _ = _world(lambda A: 5 * np.exp(-A[:, 0] / 3), dims)
     rounds = cr.climb(X, y, dims, Dimension(), pool, measure, ledger=CandidateTrialLedger(), search_id="t2", noise_sigma=sigma)
-    assert [r["action"] for r in rounds] == ["widen_search", "widen_search"]
+    assert [r["rung"] for r in rounds] == ["strict", "unit_coefficients", "superposition"]
+    assert [r["action"] for r in rounds] == ["widen_search"] * 3
     assert all(r["law"] is None for r in rounds)
 
 
@@ -71,3 +72,21 @@ def test_the_referees_verdict_is_reported_untouched():
     # With these units u/w is the only expression of the right dimension, so nothing challenges it.
     assert resolution.action in ("confirmed", "unchallenged") and resolution.law == "u/w"
     assert cr.referee_abstained(result) is (before[1] is None)
+
+
+def test_the_climb_feeds_and_uses_the_refusal_memory():
+    """After two datasets of a domain needed the second rung, a third starts there."""
+    from apedp_dyn.discovery_l2 import refusal_memory
+
+    dims = {"mass": Dimension(m=1), "span": Dimension(l=1)}
+    ledger = CandidateTrialLedger()
+    for k, name in enumerate(("d1", "d2", "d3")):
+        X, y, pool, measure, sigma, _ = _world(lambda A: 9.81 * A[:, 0], dims, seed=k)
+        rounds = cr.climb(X, y, dims, Dimension(m=1, l=1, t=-2), pool, measure, ledger=ledger, search_id=f"m-{name}",
+                          noise_sigma=sigma, domain="mechanics", dataset_id=name)
+        expected = ["strict", "unit_coefficients"] if name != "d3" else ["unit_coefficients"]
+        assert [r["rung"] for r in rounds] == expected
+        assert rounds[-1]["action"] == "confirmed"
+    views = refusal_memory.RefusalMemory(ledger, "mechanics")._views()
+    assert all(set(v) <= refusal_memory.READABLE_FIELDS for v in views)  # still verdict fields only
+    assert refusal_memory.RefusalMemory(ledger, "optics").rungs_to_try("x") == [0, 1, 2]

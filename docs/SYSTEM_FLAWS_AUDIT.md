@@ -107,8 +107,16 @@ three preregistered expectations missed.
   ODE discovery there; the expectation that the weak form alone would lift the
   ODE engine was wrong. Candidates for selection: contrast confirmation on a
   second trajectory, or longer data. Wired in as an opt-in coefficient
-  estimator of `CoupledOdeProposer` (the kernel still selects the terms); the
-  PDE path is not done.
+  estimator of `CoupledOdeProposer` (the kernel still selects the terms).
+- **M-08 the PDE kernel does not survive 1 % noise — ADDRESSED FOR 1-D.** On a
+  heat equation u_t = 0.8 u_xx the pointwise kernel returns five terms and a
+  diffusion coefficient of 0.03 at 1 % noise (second derivatives of noisy
+  data). `pde/weak_form.py` identifies it exactly in 10 of 10 seeds through
+  10 % noise and viscous Burgers in 9 of 10 (development study; both fail at
+  20 %). Here, unlike the ODE case, the weak form fixes selection as well.
+  Opt-in in `PdeProposer`, 1-D grids only; its library is the divergence-form
+  one, so `|grad u|^2` and `u*laplacian(u)` are not available in it; 2-D and
+  a preregistered test are not done.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
