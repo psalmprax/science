@@ -45,6 +45,17 @@ three preregistered expectations missed.
   noise. Separately, the benchmark's comparison raises on a promoted law that
   is not a sum of monomials; none was promoted, so the run is unaffected.
 
+Built in the same round, from the plan agreed on 2026-11-18 with its four
+corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
+learns per domain from verdicts only, on a proposer-validation half, with
+every round charged as a trial and the confirmation half spent once; and a
+broker-free work queue (`discovery_l2/work_queue.py`) whose single ledger
+writer makes the verdicts independent of the number of workers. The plan's
+step of stopping the loop on the refusal's attribution was dropped: the
+referee reports a law outside the search space as
+`intrinsic_observational_nonidentifiability`, so that rule would stop exactly
+where it should climb.
+
 ---
 
 ## 2026-11-17 round — the three subsystems outside the referee
