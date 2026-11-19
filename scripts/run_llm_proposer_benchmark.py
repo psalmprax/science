@@ -163,8 +163,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command in ("models", "smoke"):
         listed = llm_clients.available_models()
         print(f"{len(listed)} models listed; preferred and listed: {[m for m in llm_clients.PREFERRED_MODELS if m in listed]}", flush=True)
+        print("LISTED " + " | ".join(listed), flush=True)
         if args.command == "models":
-            print("\n".join(listed))
             return 0
         model = os.environ.get("LLM_MODEL") or llm_clients.pick_model()
         print(f"model that answered: {model}", flush=True)

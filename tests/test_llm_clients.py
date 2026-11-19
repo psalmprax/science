@@ -90,4 +90,20 @@ def test_pick_model_takes_the_first_preference_that_is_listed_and_answers(monkey
     _serve(monkeypatch, handler)
     assert llm_clients.pick_model(("a/not-listed", "b/listed-but-refused", "c/works"), sleep=lambda s: None) == "c/works"
     with pytest.raises(llm_clients.LlmUnavailableError, match="no preferred model answered"):
-        llm_clients.pick_model(("a/not-listed", "b/listed-but-refused"), sleep=lambda s: None)
+        llm_clients.pick_model(("a/not-listed", "b/listed-but-refused"), sleep=lambda s: None, fall_back_to_listed=False)
+    # with no preference listed, the catalogue itself is tried, skipping names that are not chat models
+    assert llm_clients.pick_model(("a/not-listed",), sleep=lambda s: None) == "c/works"
+
+
+def test_fallback_skips_models_that_are_not_chat_models(monkeypatch):
+    monkeypatch.setenv(llm_clients.KEY_VARIABLE, KEY)
+    asked = []
+
+    def handler(request):
+        if request.full_url.endswith("/models"):
+            return _Reply(json.dumps({"data": [{"id": "x/embed-large"}, {"id": "x/guard-2"}, {"id": "x/chat-1"}]}).encode())
+        asked.append(json.loads(request.data)["model"])
+        return _chat("ok")
+
+    _serve(monkeypatch, handler)
+    assert llm_clients.pick_model((), sleep=lambda s: None) == "x/chat-1" and asked == ["x/chat-1"]

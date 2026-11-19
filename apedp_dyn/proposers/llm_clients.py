@@ -33,6 +33,9 @@ PREFERRED_MODELS = (
     "meta/llama-3.3-70b-instruct", "nvidia/llama-3.3-nemotron-super-49b-v1", "nvidia/nemotron-3-super-120b-a12b",
     "meta/llama-3.1-70b-instruct", "mistralai/mistral-large-2-instruct", "meta/llama-3.1-8b-instruct",
 )
+#: listed models whose names say they are not general chat models; never tried as a fallback
+_NOT_CHAT = ("embed", "rerank", "guard", "safety", "detect", "vision", "-vl", "whisper", "parakeet", "tts", "ocr", "clip",
+             "retriev", "reward", "translate", "asr", "audio", "image", "video", "diffusion", "pii", "topic-control")
 _THINKING = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 
@@ -109,11 +112,20 @@ def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVI
 
 
 def pick_model(preferences: Sequence[str] = PREFERRED_MODELS, *, api_key: str | None = None, base_url: str = NVIDIA_BASE_URL,
-               sleep: Callable[[float], None] = time.sleep) -> str:
-    """The first preferred model that is listed and answers a one-line prompt."""
-    listed = set(available_models(api_key, base_url))
+               sleep: Callable[[float], None] = time.sleep, fall_back_to_listed: bool = True) -> str:
+    """The first preferred model that is listed and answers a one-line prompt.
+
+    If none of the preferences is listed (the catalogue changes), every listed
+    model whose name does not mark it as something other than a chat model is
+    tried in the order listed, unless ``fall_back_to_listed`` is off.
+    """
+    listing = available_models(api_key, base_url)
+    listed = set(listing)
     failures = []
-    for model in preferences:
+    candidates = list(preferences)
+    if fall_back_to_listed:
+        candidates += [m for m in listing if m not in preferences and not any(word in m.lower() for word in _NOT_CHAT)]
+    for model in candidates:
         if model not in listed:
             failures.append(f"{model}: not listed")
             continue
