@@ -1,0 +1,10 @@
+{
+ "preregistration": "PREREG-GRAPHS-2026-11",
+ "sha256": {
+  "apedp_dyn/proposers/causal_graph.py": "3d3116baec193abab5b3fc9c151c93fc8c58dff07b3e8a7ba8d946de659e5836",
+  "apedp_dyn/proposers/pcmci_proposer.py": "4c5e89fe19d831d51cb3a7bb02017d4ab0fe4fa322b9a467995129e8e6c1e3e0",
+  "preregistration/PREREG-GRAPHS-2026-11.md": "3083ea39715f3f15fcb493f88cde050c87d8e56a7a6545d5d99389cafb55e6b1",
+  "scripts/causal_graph_worlds.py": "8ffdcbbaaff7dd3aabacfc5dfd47891144355e1966e1c717da43facecec8dab3",
+  "scripts/run_prereg_graphs.py": "c0977207fec61d3584f5a716d8542cc6ee4fe4183f58f7918113b0e3c4ef7707"
+ }
+}
