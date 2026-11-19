@@ -15,6 +15,16 @@ inferred releases.
 
 ### Changed
 
+- **Two engines measured for the first time, both with every expectation held (2026-11-19).**
+  *PDE in two dimensions* (`apedp_dyn/pde/weak_form_2d.py`, PREREG-PDE-2D-2026-11): the exact equation
+  in 117 of 120 runs on six simulated equations, 90 of 90 at noise up to 5 %, coefficients to about
+  1 %, no false term in any run; term selection by evidence recovers Fisher-KPP, which the threshold
+  rule loses in 8 of 20 runs. *Causal graphs* (`apedp_dyn/proposers/causal_graph.py`,
+  PREREG-GRAPHS-2026-11): the whole lagged graph from one PCMCI+ run, precision 0.963 and recall 0.937
+  on 60 simulated series, a third of a vector autoregression's false links; an added pass finds 57 of
+  58 links that act through an even function. Both are on simulated data that meet the methods'
+  assumptions; the results say what is not shown. Audit M-08 extended, M-12 added.
+
 - **A GPU-scale network expert for MMLM, and a correction (2026-11-19).**
   `apedp_mmlm/transformer_expert.py` is a byte-level transformer that enters the mixture as the LSTM
   does; `scripts/train_mmlm_gpu_expert.py` trains it and measures the mixture on the development

@@ -117,6 +117,22 @@ three preregistered expectations missed.
   Opt-in in `PdeProposer`, 1-D grids only; its library is the divergence-form
   one, so `|grad u|^2` and `u*laplacian(u)` are not available in it; 2-D and
   a preregistered test are not done.
+  **Two dimensions, 2026-11-19:** `apedp_dyn/pde/weak_form_2d.py` with
+  evidence-based term selection. PREREG-PDE-2D-2026-11, all four expectations
+  held: the exact equation in 117 of 120 runs on six simulated equations
+  (90 of 90 at noise up to 5 %), coefficients to about 1 %, no false term in
+  any run. Still open: measured fields, boundaries, terms outside the
+  divergence-form library, and three space dimensions.
+- **M-12 the graph engine had never been measured — ADDRESSED ON SIMULATED
+  DATA.** `apedp_dyn/proposers/causal_graph.py` returns the whole lagged graph
+  from one PCMCI+ run and adds a pass for links through an even function.
+  PREREG-GRAPHS-2026-11, all four expectations held: precision 0.963 and
+  recall 0.937 on 60 series (a third of a vector autoregression's false
+  links); the pass finds 57 of 58 even links. Open: the series meet PCMCI+'s
+  assumptions (no hidden common cause, no links within a time step, a fixed
+  graph), which market data do not; and the even pass adds false links on
+  heavy-tailed series (precision 0.899 against 0.962), so it should be off or
+  made robust there.
 - **M-09 MMLM had no measured result — ADDRESSED; TWO LIMITS OPEN.** MMLM now
   has two measured models, each tested once on data it had not seen.
   *Generic (text):* MMLM-CM (`apedp_mmlm/context_mixing.py`), counting, match
