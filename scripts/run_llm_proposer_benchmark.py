@@ -36,7 +36,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import run_srbench_baseline as base  # noqa: E402
 import run_srbench_main_search as path_run  # noqa: E402
 
-from apedp_dyn.discovery_l2 import main_search  # noqa: E402
+from apedp_dyn.discovery_l2 import main_search, route  # noqa: E402
 from apedp_dyn.grammar.proposer_interface import CandidateProposal, ProposerBase  # noqa: E402
 from apedp_dyn.proposers import llm_clients  # noqa: E402
 from apedp_dyn.proposers.llm_proposer import LlmEquationProposer  # noqa: E402
@@ -46,9 +46,13 @@ DIGEST = ROOT / "preregistration" / "DIGEST-LLM-PROPOSER.json"
 FROZEN = ("preregistration/PREREG-LLM-PROPOSER-2026-11.md", "scripts/run_llm_proposer_benchmark.py",
           "scripts/run_srbench_main_search.py", "scripts/run_srbench_baseline.py", "benchmarks/srbench/manifest.json",
           "apedp_dyn/proposers/llm_proposer.py", "apedp_dyn/proposers/llm_clients.py",
-          "apedp_dyn/discovery_l2/main_search.py")
+          "apedp_dyn/discovery_l2/main_search.py", "apedp_dyn/discovery_l2/route.py",
+          "apedp_dyn/discovery_l2/contrast_confirmation.py", "apedp_dyn/discovery_l2/contrast_resolution.py")
 #: fixed before the preregistered run, from what ``models`` and ``smoke`` show; ``None`` until then
 MODEL: str | None = None
+THINKING: bool | None = False        # chat_template_kwargs.enable_thinking for the preregistered run
+REASONING_BUDGET: int | None = None  # used only when THINKING is on
+SURVEY_SETTINGS: tuple[tuple[bool, int | None], ...] = ((False, None), (True, 2000))
 NOISE_LEVELS = (0.0, 0.01)
 ROUNDS, PER_ROUND, MAX_PROPOSALS = 3, 5, 8
 INTERVAL_S = 3.2      # between requests of one shard: two shards stay under about 40 requests a minute
@@ -74,8 +78,10 @@ class Recording(ProposerBase):
 
 def llm_path(X: dict[str, np.ndarray], y: np.ndarray, pool_X: np.ndarray, measure: Any, model: str,
              interval: float = INTERVAL_S, always_search: bool = False, rounds: int = ROUNDS,
-             retries: int = 4) -> tuple[Any, dict[str, Any]]:
-    client = llm_clients.nvidia_client(model, min_interval=interval, retries=retries)
+             retries: int = 4, thinking: bool | None = THINKING,
+             reasoning_budget: int | None = REASONING_BUDGET) -> tuple[Any, dict[str, Any]]:
+    client = llm_clients.nvidia_client(model, min_interval=interval, retries=retries, thinking=thinking,
+                                       reasoning_budget=reasoning_budget)
     proposer = Recording(LlmEquationProposer(client, target_col="__target__", rounds=rounds, per_round=PER_ROUND,
                                              max_proposals=MAX_PROPOSALS))
     result = main_search.discover(X, y, pool_X, measure, proposer=proposer, noise="absolute", seed=base.SEED,
@@ -104,6 +110,17 @@ def run_llm_path(split: dict[str, Any], entry: dict[str, Any], budget: float = 0
     extra = {"action": result.action, "found_by": result.found_by, "rejected_law": result.rejected_law,
              "adequacy": result.adequacy, "rows_read": result.rows_read, "first_pass": result.first_pass,
              "search": result.search, "candidates": result.candidates, "llm": record}
+    if result.law:
+        # the law as the path confirmed it (audit M-13): one refitted coefficient per additive term
+        confirmed = sp.sympify(route.as_confirmed(result.law, {n: X[dev, i] for i, n in enumerate(names)}, y[dev], "absolute"),
+                               locals={n: sp.Symbol(n) for n in names})
+        r2 = base._r2(split["y_test"], path_run._predict(confirmed, names, split["X_test"]))
+        try:
+            recovered = bool(base.symbolic_recovery(confirmed, base.truth_expr(entry), names, split["X_test"])["recovered"])
+        except Exception:  # noqa: BLE001 - a form the scorer cannot handle is scored as not recovered
+            recovered = False
+        extra.update({"confirmed_form": str(confirmed), "confirmed_test_r2": r2,
+                      "confirmed_accurate": bool(r2 is not None and r2 >= base.R2_ACCURACY), "confirmed_symbolic": recovered})
     return {"model": law, "pred": path_run._predict(law, names, split["X_test"]) if law is not None else None,
             "formula": result.law, "extra": extra}
 
@@ -129,6 +146,10 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 "symbolic": sum(bool(r["symbolic"]) for r in ok), "accuracy_solution": sum(bool(r["accuracy_solution"]) for r in ok),
                 "reported": len(reported), "reported_symbolic": sum(bool(r["symbolic"]) for r in reported),
                 "reported_not_accurate": sum(not r["accuracy_solution"] for r in reported),
+                # the same counts for the law in the form the path confirmed (audit M-13)
+                "confirmed_symbolic": sum(bool(r.get("confirmed_symbolic")) for r in reported),
+                "confirmed_not_accurate": sum(not r.get("confirmed_accurate") for r in reported),
+                "model_found_and_recovered": sum(r.get("found_by") == "search" and bool(r.get("confirmed_symbolic")) for r in reported),
                 "found_by": {s: sum(r.get("found_by") == s for r in reported) for s in ("first_pass", "search")},
                 "model_asked": len(asked), "model_calls": sum(r["llm"]["calls"] for r in asked),
                 "model_proposals": sum(r["llm"]["proposals"] for r in asked),
@@ -173,14 +194,17 @@ def main(argv: list[str] | None = None) -> int:
         truth = "x0*exp(-0.37*x1)"
         X, y, pool, measure = toy(truth, seed=7)
         for model in [m for m in llm_clients.PREFERRED_MODELS if m in listed]:
-            started = time.time()
-            try:
-                result, record = llm_path(X, y, pool, measure, model, interval=1.6, always_search=True, rounds=2, retries=1)
-                print("SURVEY " + json.dumps({"model": model, "seconds": round(time.time() - started, 1), "action": result.action,
-                                              "law": result.law, "found_by": result.found_by, **record}, default=str), flush=True)
-            except Exception as exc:  # noqa: BLE001 - a model that fails is a survey result, not a crash
-                print("SURVEY " + json.dumps({"model": model, "seconds": round(time.time() - started, 1),
-                                              "failed": f"{type(exc).__name__}: {exc}"[:200]}), flush=True)
+            for thinking, budget in SURVEY_SETTINGS:
+                started = time.time()
+                head = {"model": model, "thinking": thinking, "reasoning_budget": budget}
+                try:
+                    result, record = llm_path(X, y, pool, measure, model, interval=1.6, always_search=True, rounds=2, retries=1,
+                                              thinking=thinking, reasoning_budget=budget)
+                    print("SURVEY " + json.dumps({**head, "seconds": round(time.time() - started, 1), "action": result.action,
+                                                  "law": result.law, "found_by": result.found_by, **record}, default=str), flush=True)
+                except Exception as exc:  # noqa: BLE001 - a model that fails is a survey result, not a crash
+                    print("SURVEY " + json.dumps({**head, "seconds": round(time.time() - started, 1),
+                                                  "failed": f"{type(exc).__name__}: {exc}"[:200]}), flush=True)
         return 0
     check_frozen()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -197,7 +221,8 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"expected {len(all_jobs())} runs, found {len(rows)}")
     (args.out / "runs.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
     (args.out / "results.json").write_text(json.dumps(
-        {"preregistration": PREREGISTRATION_ID, "model": MODEL, "frozen": frozen_digests(), "summary": summarise(rows)},
+        {"preregistration": PREREGISTRATION_ID, "model": MODEL, "thinking": THINKING, "reasoning_budget": REASONING_BUDGET,
+         "frozen": frozen_digests(), "summary": summarise(rows)},
         indent=1, sort_keys=True) + "\n", encoding="utf-8")
     print(f"collected {len(rows)} runs into {args.out}")
     return 0

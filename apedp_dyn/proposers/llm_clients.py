@@ -28,12 +28,11 @@ from typing import Any
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 KEY_VARIABLE = "NVIDIA_API_KEY"
-#: tried in order; the first that answers is used. These five answered within the time limit in the survey
-#: of 2026-11-19; four others the catalogue lists timed out (kimi-k3.1-pro, gemma-4-31b-it, glm-5.3-flash,
-#: muse-glimmer-30b).
+#: tried in order; the first that answers is used. These three answered within the time limit in both surveys
+#: of 2026-11-19; six others the catalogue lists timed out in at least one (kimi-k3.1-pro, gemma-4-31b-it,
+#: glm-5.3-flash, muse-glimmer-30b, step-5-preview, mistral-large-4-1t-a52b).
 PREFERRED_MODELS = (
     "nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-3-ultra-550b-a55b", "minimaxai/minimax-m3.1-flash",
-    "stepfun-ai/step-5-preview", "mistralai/mistral-large-4-1t-a52b",
 )
 #: listed models whose names say they are not general chat models; never tried as a fallback
 _NOT_CHAT = ("embed", "rerank", "guard", "safety", "detect", "vision", "-vl", "whisper", "parakeet", "tts", "ocr", "clip",
@@ -101,6 +100,7 @@ def available_models(api_key: str | None = None, base_url: str = NVIDIA_BASE_URL
 
 def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVIDIA_BASE_URL, temperature: float = 0.0,
                   max_tokens: int = 4096, min_interval: float = 1.6, retries: int = 4, timeout: float = 120.0,
+                  thinking: bool | None = False, reasoning_budget: int | None = None,
                   sleep: Callable[[float], None] = time.sleep) -> Callable[[str], str]:
     """A ``prompt -> reply`` callable for one model. ``client.calls`` counts requests; ``client.model`` names the model.
 
@@ -109,6 +109,13 @@ def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVI
     a model wraps in ``<think>`` tags is removed from the reply (:func:`reply_text`).
     ``client.last`` describes the latest answer (where the text was found, why
     the model stopped, token counts) and never contains the key or the prompt.
+
+    ``thinking`` is sent as ``chat_template_kwargs.enable_thinking``, the switch
+    NVIDIA documents for its hosted reasoning models; ``None`` leaves the model's
+    default. It is off by default because a proposer needs the answer, and with
+    thinking on the models surveyed on 2026-11-19 spent 4,096 tokens working
+    through the rows by hand and never reached one. ``reasoning_budget`` caps the
+    working when thinking is on.
     """
     state = {"last": 0.0}
 
@@ -121,8 +128,13 @@ def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVI
             state["last"] = time.monotonic()
             client.calls += 1  # type: ignore[attr-defined]
             try:
-                reply = _request("/chat/completions", {"model": model, "messages": [{"role": "user", "content": prompt}],
-                                                       "temperature": temperature, "max_tokens": max_tokens}, api_key, base_url, timeout)
+                body: dict[str, Any] = {"model": model, "messages": [{"role": "user", "content": prompt}],
+                                        "temperature": temperature, "max_tokens": max_tokens}
+                if thinking is not None:
+                    body["chat_template_kwargs"] = {"enable_thinking": thinking}
+                    if thinking and reasoning_budget is not None:
+                        body["reasoning_budget"] = reasoning_budget
+                reply = _request("/chat/completions", body, api_key, base_url, timeout)
                 choice = reply["choices"][0]
                 text, source = reply_text(choice["message"])
                 client.last = {"source": source, "finish_reason": choice.get("finish_reason"), "characters": len(text),  # type: ignore[attr-defined]
@@ -165,7 +177,7 @@ def pick_model(preferences: Sequence[str] = PREFERRED_MODELS, *, api_key: str | 
             failures.append(f"{model}: not listed")
             continue
         try:
-            nvidia_client(model, api_key=api_key, base_url=base_url, max_tokens=8, retries=1, sleep=sleep)("Reply with the word ok.")
+            nvidia_client(model, api_key=api_key, base_url=base_url, max_tokens=64, retries=1, sleep=sleep)("Reply with the word ok.")
             return model
         except LlmUnavailableError as exc:
             failures.append(str(exc)[:120])

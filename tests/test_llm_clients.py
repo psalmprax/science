@@ -117,3 +117,22 @@ def test_reply_text_finds_the_answer_wherever_a_model_puts_it():
     assert source == "reasoning_content" and text.endswith("c0*x0*exp(-c1*x1)")
     assert llm_clients.reply_text({"content": "<think>never closed c0*x0"}) == ("never closed c0*x0", "content")
     assert llm_clients.reply_text({"content": ""}) == ("", "nothing")
+
+
+def test_thinking_is_switched_off_by_default_and_can_be_bounded(monkeypatch):
+    sent = []
+
+    def fake(request, timeout=0):
+        sent.append(json.loads(request.data.decode()))
+        return io.BytesIO(json.dumps({"choices": [{"message": {"content": "x0"}, "finish_reason": "stop"}]}).encode())
+
+    monkeypatch.setattr(llm_clients.urllib.request, "urlopen", fake)
+    monkeypatch.setenv(llm_clients.KEY_VARIABLE, KEY)
+    client = llm_clients.nvidia_client("m", min_interval=0.0, sleep=lambda _s: None)
+    assert client("p") == "x0" and client.last["source"] == "content" and client.last["finish_reason"] == "stop"
+    assert sent[-1]["chat_template_kwargs"] == {"enable_thinking": False} and "reasoning_budget" not in sent[-1]
+    llm_clients.nvidia_client("m", min_interval=0.0, sleep=lambda _s: None, thinking=True, reasoning_budget=2000)("p")
+    assert sent[-1]["chat_template_kwargs"] == {"enable_thinking": True} and sent[-1]["reasoning_budget"] == 2000
+    llm_clients.nvidia_client("m", min_interval=0.0, sleep=lambda _s: None, thinking=None)("p")
+    assert "chat_template_kwargs" not in sent[-1]
+    assert KEY not in json.dumps(client.last)
