@@ -454,6 +454,12 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Blind discovery benchmark frozen: PREREG-BLIND-L2-2026-11 (2026-11-19).** The first
+  measurement of the discoverer rather than the referee: 288 runs of `L2DiscoveryEngine` on
+  12 textbook laws and 24 invented ones over meaningless names, with a distractor variable
+  and a noise ladder. Expectations fixed before the run: false discoveries at most 5% at
+  noise up to 5%, recovery at least 80% at noise up to 1%, and no more than 15 points between
+  known and invented laws. `scripts/run_blind_discovery_benchmark.py`.
 - **Calibration of stages 2 and 3 on real returns: PREREG-CRYPTO-CAL-2026-11
   (2026-11-17).** Frozen, then run once on the development panel: 0 of 500
   placebos passed stage 2 (95% upper bound 0.74%); injected effects passed at
