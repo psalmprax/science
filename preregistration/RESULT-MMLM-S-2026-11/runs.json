@@ -1,0 +1,1726 @@
+{
+ "part_a_invented": [
+  {
+   "candidates": 9560,
+   "model_order": 3,
+   "name": "invented_00",
+   "reachable": true,
+   "size_order": 2
+  },
+  {
+   "candidates": 29593,
+   "model_order": 6,
+   "name": "invented_01",
+   "reachable": true,
+   "size_order": 88
+  },
+  {
+   "name": "invented_02",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 31,
+   "name": "invented_03",
+   "reachable": true,
+   "size_order": 12
+  },
+  {
+   "candidates": 29593,
+   "model_order": 47,
+   "name": "invented_04",
+   "reachable": true,
+   "size_order": 581
+  },
+  {
+   "name": "invented_05",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_06",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "candidates": 29593,
+   "model_order": 943,
+   "name": "invented_07",
+   "reachable": true,
+   "size_order": 2691
+  },
+  {
+   "name": "invented_08",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 3,
+   "name": "invented_09",
+   "reachable": true,
+   "size_order": 2
+  },
+  {
+   "candidates": 29593,
+   "model_order": 43,
+   "name": "invented_10",
+   "reachable": true,
+   "size_order": 459
+  },
+  {
+   "name": "invented_11",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 7,
+   "name": "invented_12",
+   "reachable": true,
+   "size_order": 233
+  },
+  {
+   "candidates": 29593,
+   "model_order": 48,
+   "name": "invented_13",
+   "reachable": true,
+   "size_order": 131
+  },
+  {
+   "name": "invented_14",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 2,
+   "name": "invented_15",
+   "reachable": true,
+   "size_order": 8
+  },
+  {
+   "name": "invented_16",
+   "reachable": false
+  },
+  {
+   "name": "invented_17",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 6,
+   "name": "invented_18",
+   "reachable": true,
+   "size_order": 7
+  },
+  {
+   "candidates": 29593,
+   "model_order": 386,
+   "name": "invented_19",
+   "reachable": true,
+   "size_order": 23982
+  },
+  {
+   "name": "invented_20",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_21",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "name": "invented_22",
+   "reachable": false
+  },
+  {
+   "name": "invented_23",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 1,
+   "name": "invented_24",
+   "reachable": true,
+   "size_order": 1
+  },
+  {
+   "candidates": 29593,
+   "model_order": 401,
+   "name": "invented_25",
+   "reachable": true,
+   "size_order": 3956
+  },
+  {
+   "name": "invented_26",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 3,
+   "name": "invented_27",
+   "reachable": true,
+   "size_order": 2
+  },
+  {
+   "candidates": 29593,
+   "model_order": 425,
+   "name": "invented_28",
+   "reachable": true,
+   "size_order": 24304
+  },
+  {
+   "name": "invented_29",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_30",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "candidates": 29593,
+   "model_order": 2416,
+   "name": "invented_31",
+   "reachable": true,
+   "size_order": 2749
+  },
+  {
+   "name": "invented_32",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 31,
+   "name": "invented_33",
+   "reachable": true,
+   "size_order": 12
+  },
+  {
+   "candidates": 29593,
+   "model_order": 43,
+   "name": "invented_34",
+   "reachable": true,
+   "size_order": 459
+  },
+  {
+   "name": "invented_35",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 31,
+   "name": "invented_36",
+   "reachable": true,
+   "size_order": 12
+  },
+  {
+   "candidates": 29593,
+   "model_order": 4,
+   "name": "invented_37",
+   "reachable": true,
+   "size_order": 529
+  },
+  {
+   "name": "invented_38",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 6,
+   "name": "invented_39",
+   "reachable": true,
+   "size_order": 7
+  },
+  {
+   "candidates": 29593,
+   "model_order": 220,
+   "name": "invented_40",
+   "reachable": true,
+   "size_order": 3789
+  },
+  {
+   "name": "invented_41",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 2,
+   "name": "invented_42",
+   "reachable": true,
+   "size_order": 8
+  },
+  {
+   "candidates": 29593,
+   "model_order": 89,
+   "name": "invented_43",
+   "reachable": true,
+   "size_order": 519
+  },
+  {
+   "name": "invented_44",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 1,
+   "name": "invented_45",
+   "reachable": true,
+   "size_order": 1
+  },
+  {
+   "candidates": 29593,
+   "model_order": 113,
+   "name": "invented_46",
+   "reachable": true,
+   "size_order": 133
+  },
+  {
+   "name": "invented_47",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 6,
+   "name": "invented_48",
+   "reachable": true,
+   "size_order": 7
+  },
+  {
+   "candidates": 29593,
+   "model_order": 89,
+   "name": "invented_49",
+   "reachable": true,
+   "size_order": 519
+  },
+  {
+   "name": "invented_50",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_51",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "candidates": 29593,
+   "model_order": 48,
+   "name": "invented_52",
+   "reachable": true,
+   "size_order": 131
+  },
+  {
+   "name": "invented_53",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 6,
+   "name": "invented_54",
+   "reachable": true,
+   "size_order": 7
+  },
+  {
+   "candidates": 29593,
+   "model_order": 13,
+   "name": "invented_55",
+   "reachable": true,
+   "size_order": 561
+  },
+  {
+   "name": "invented_56",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 2,
+   "name": "invented_57",
+   "reachable": true,
+   "size_order": 8
+  },
+  {
+   "candidates": 29593,
+   "model_order": 268,
+   "name": "invented_58",
+   "reachable": true,
+   "size_order": 2759
+  },
+  {
+   "name": "invented_59",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 31,
+   "name": "invented_60",
+   "reachable": true,
+   "size_order": 12
+  },
+  {
+   "candidates": 29593,
+   "model_order": 2417,
+   "name": "invented_61",
+   "reachable": true,
+   "size_order": 2760
+  },
+  {
+   "name": "invented_62",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 3,
+   "name": "invented_63",
+   "reachable": true,
+   "size_order": 2
+  },
+  {
+   "candidates": 29593,
+   "model_order": 83,
+   "name": "invented_64",
+   "reachable": true,
+   "size_order": 542
+  },
+  {
+   "name": "invented_65",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 1,
+   "name": "invented_66",
+   "reachable": true,
+   "size_order": 1
+  },
+  {
+   "candidates": 29593,
+   "model_order": 12,
+   "name": "invented_67",
+   "reachable": true,
+   "size_order": 551
+  },
+  {
+   "name": "invented_68",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 3,
+   "name": "invented_69",
+   "reachable": true,
+   "size_order": 2
+  },
+  {
+   "name": "invented_70",
+   "reachable": false
+  },
+  {
+   "name": "invented_71",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 6,
+   "name": "invented_72",
+   "reachable": true,
+   "size_order": 7
+  },
+  {
+   "candidates": 29593,
+   "model_order": 3,
+   "name": "invented_73",
+   "reachable": true,
+   "size_order": 87
+  },
+  {
+   "name": "invented_74",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 7,
+   "name": "invented_75",
+   "reachable": true,
+   "size_order": 233
+  },
+  {
+   "candidates": 29593,
+   "model_order": 305,
+   "name": "invented_76",
+   "reachable": true,
+   "size_order": 23918
+  },
+  {
+   "name": "invented_77",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 7,
+   "name": "invented_78",
+   "reachable": true,
+   "size_order": 233
+  },
+  {
+   "candidates": 29593,
+   "model_order": 164,
+   "name": "invented_79",
+   "reachable": true,
+   "size_order": 563
+  },
+  {
+   "name": "invented_80",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_81",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "candidates": 29593,
+   "model_order": 73,
+   "name": "invented_82",
+   "reachable": true,
+   "size_order": 460
+  },
+  {
+   "name": "invented_83",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 7,
+   "name": "invented_84",
+   "reachable": true,
+   "size_order": 233
+  },
+  {
+   "candidates": 29593,
+   "model_order": 46,
+   "name": "invented_85",
+   "reachable": true,
+   "size_order": 580
+  },
+  {
+   "name": "invented_86",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 7,
+   "name": "invented_87",
+   "reachable": true,
+   "size_order": 233
+  },
+  {
+   "candidates": 29593,
+   "model_order": 5,
+   "name": "invented_88",
+   "reachable": true,
+   "size_order": 540
+  },
+  {
+   "name": "invented_89",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_90",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "candidates": 29593,
+   "model_order": 305,
+   "name": "invented_91",
+   "reachable": true,
+   "size_order": 23918
+  },
+  {
+   "name": "invented_92",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 6,
+   "name": "invented_93",
+   "reachable": true,
+   "size_order": 7
+  },
+  {
+   "name": "invented_94",
+   "reachable": false
+  },
+  {
+   "name": "invented_95",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 2,
+   "name": "invented_96",
+   "reachable": true,
+   "size_order": 8
+  },
+  {
+   "candidates": 29593,
+   "model_order": 111,
+   "name": "invented_97",
+   "reachable": true,
+   "size_order": 418
+  },
+  {
+   "name": "invented_98",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 2,
+   "name": "invented_99",
+   "reachable": true,
+   "size_order": 8
+  },
+  {
+   "candidates": 29593,
+   "model_order": 74,
+   "name": "invented_100",
+   "reachable": true,
+   "size_order": 461
+  },
+  {
+   "name": "invented_101",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 1,
+   "name": "invented_102",
+   "reachable": true,
+   "size_order": 1
+  },
+  {
+   "candidates": 29593,
+   "model_order": 5135,
+   "name": "invented_103",
+   "reachable": true,
+   "size_order": 19404
+  },
+  {
+   "name": "invented_104",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 3,
+   "name": "invented_105",
+   "reachable": true,
+   "size_order": 2
+  },
+  {
+   "candidates": 29593,
+   "model_order": 89,
+   "name": "invented_106",
+   "reachable": true,
+   "size_order": 519
+  },
+  {
+   "name": "invented_107",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 2,
+   "name": "invented_108",
+   "reachable": true,
+   "size_order": 8
+  },
+  {
+   "candidates": 29593,
+   "model_order": 47,
+   "name": "invented_109",
+   "reachable": true,
+   "size_order": 581
+  },
+  {
+   "name": "invented_110",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 23,
+   "name": "invented_111",
+   "reachable": true,
+   "size_order": 38
+  },
+  {
+   "candidates": 29593,
+   "model_order": 5135,
+   "name": "invented_112",
+   "reachable": true,
+   "size_order": 19404
+  },
+  {
+   "name": "invented_113",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 1,
+   "name": "invented_114",
+   "reachable": true,
+   "size_order": 1
+  },
+  {
+   "candidates": 29593,
+   "model_order": 7,
+   "name": "invented_115",
+   "reachable": true,
+   "size_order": 89
+  },
+  {
+   "name": "invented_116",
+   "reachable": false
+  },
+  {
+   "candidates": 9560,
+   "model_order": 1,
+   "name": "invented_117",
+   "reachable": true,
+   "size_order": 1
+  },
+  {
+   "candidates": 29593,
+   "model_order": 619,
+   "name": "invented_118",
+   "reachable": true,
+   "size_order": 23919
+  },
+  {
+   "name": "invented_119",
+   "reachable": false
+  }
+ ],
+ "part_a_other_fields": [
+  {
+   "candidates": 29593,
+   "model_order": 129,
+   "name": "saturation_fraction",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) / (((x0) + (x1))))",
+   "selected_with_model": "((x0) / (((x0) + (x1))))",
+   "shape_in_training": false,
+   "size_order": 3544
+  },
+  {
+   "candidates": 29593,
+   "model_order": 1460,
+   "name": "arrhenius_factor",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "(1/(exp(((x0) / (x1)))))",
+   "selected_with_model": "(1/(exp(((x0) / (x1)))))",
+   "shape_in_training": false,
+   "size_order": 2486
+  },
+  {
+   "candidates": 61717,
+   "model_order": 365,
+   "name": "ideal_gas_pressure",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (((x1) / (x2))))",
+   "selected_with_model": "((x0) * (((x1) / (x2))))",
+   "shape_in_training": false,
+   "size_order": 6269
+  },
+  {
+   "candidates": 29593,
+   "model_order": 57,
+   "name": "radiated_power",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (((((x1)**2))**2)))",
+   "selected_with_model": "((x0) * (((((x1)**2))**2)))",
+   "shape_in_training": false,
+   "size_order": 3429
+  },
+  {
+   "candidates": 29593,
+   "model_order": 1046,
+   "name": "kepler_period",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (sqrt(((x0) / (x1)))))",
+   "selected_with_model": "((x0) * (sqrt(((x0) / (x1)))))",
+   "shape_in_training": false,
+   "size_order": 23650
+  },
+  {
+   "candidates": 61717,
+   "model_order": 4937,
+   "name": "beer_lambert",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) / (exp(((x1) * (x2)))))",
+   "selected_with_model": "((x0) / (exp(((x1) * (x2)))))",
+   "shape_in_training": true,
+   "size_order": 49184
+  },
+  {
+   "candidates": 29593,
+   "model_order": 138,
+   "name": "logistic_growth_rate",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (((x0) - (x1))))",
+   "selected_with_model": "((x0) * (((x0) - (x1))))",
+   "shape_in_training": false,
+   "size_order": 3431
+  },
+  {
+   "candidates": 61717,
+   "model_order": 5658,
+   "name": "nernst_potential",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (log(((x1) / (x2)))))",
+   "selected_with_model": "((x0) * (log(((x1) / (x2)))))",
+   "shape_in_training": false,
+   "size_order": 47187
+  },
+  {
+   "candidates": 61717,
+   "model_order": 4796,
+   "name": "compound_growth",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (exp(((x1) * (x2)))))",
+   "selected_with_model": "((x0) * (exp(((x1) * (x2)))))",
+   "shape_in_training": true,
+   "size_order": 47148
+  },
+  {
+   "candidates": 29593,
+   "model_order": 48,
+   "name": "geometric_mean_output",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "sqrt(((x0) * (x1)))",
+   "selected_with_model": "sqrt(((x0) * (x1)))",
+   "shape_in_training": false,
+   "size_order": 131
+  },
+  {
+   "candidates": 61717,
+   "model_order": 936,
+   "name": "drag_force",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (((x2) * (((x1)**2)))))",
+   "selected_with_model": "((x0) * (((x2) * (((x1)**2)))))",
+   "shape_in_training": true,
+   "size_order": 47643
+  },
+  {
+   "candidates": 61717,
+   "model_order": 365,
+   "name": "reynolds_number",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (((x1) / (x2))))",
+   "selected_with_model": "((x0) * (((x1) / (x2))))",
+   "shape_in_training": false,
+   "size_order": 6269
+  },
+  {
+   "candidates": 29593,
+   "model_order": 13783,
+   "name": "parallel_resistance",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "(1/((((1/(x0))) + ((1/(x1))))))",
+   "selected_with_model": "(1/((((1/(x0))) + ((1/(x1))))))",
+   "shape_in_training": false,
+   "size_order": 19299
+  },
+  {
+   "candidates": 29593,
+   "model_order": 242,
+   "name": "hypotenuse",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "sqrt(((((x0)**2)) + (((x1)**2))))",
+   "selected_with_model": "sqrt(((((x0)**2)) + (((x1)**2))))",
+   "shape_in_training": false,
+   "size_order": 5921
+  },
+  {
+   "candidates": 29593,
+   "model_order": 112,
+   "name": "escape_speed",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "sqrt(((x0) / (x1)))",
+   "selected_with_model": "sqrt(((x0) / (x1)))",
+   "shape_in_training": false,
+   "size_order": 132
+  },
+  {
+   "candidates": 61717,
+   "model_order": 11733,
+   "name": "boltzmann_ratio",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "exp(((((x0) - (x1))) / (x2)))",
+   "selected_with_model": "exp(((((x0) - (x1))) / (x2)))",
+   "shape_in_training": false,
+   "size_order": 17405
+  },
+  {
+   "candidates": 9560,
+   "model_order": 50,
+   "name": "entropy_term",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) * (log(x0)))",
+   "selected_with_model": "((x0) * (log(x0)))",
+   "shape_in_training": false,
+   "size_order": 230
+  },
+  {
+   "candidates": 29593,
+   "model_order": 12,
+   "name": "body_mass_index",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) / (((x1)**2)))",
+   "selected_with_model": "((x0) / (((x1)**2)))",
+   "shape_in_training": false,
+   "size_order": 551
+  },
+  {
+   "candidates": 61717,
+   "model_order": 3700,
+   "name": "radioactive_decay",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) / (exp(((x1) / (x2)))))",
+   "selected_with_model": "((x0) / (exp(((x1) / (x2)))))",
+   "shape_in_training": true,
+   "size_order": 49188
+  },
+  {
+   "candidates": 61717,
+   "model_order": 236,
+   "name": "sharpe_ratio",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((((x0) - (x1))) / (x2))",
+   "selected_with_model": "((((x0) - (x1))) / (x2))",
+   "shape_in_training": false,
+   "size_order": 7805
+  },
+  {
+   "candidates": 61717,
+   "model_order": 187,
+   "name": "kelly_fraction",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) - (((x1) / (x2))))",
+   "selected_with_model": "((x0) - (((x1) / (x2))))",
+   "shape_in_training": false,
+   "size_order": 5954
+  },
+  {
+   "candidates": 29593,
+   "model_order": 5,
+   "name": "cylinder_volume",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x1) * (((x0)**2)))",
+   "selected_with_model": "((x1) * (((x0)**2)))",
+   "shape_in_training": true,
+   "size_order": 540
+  },
+  {
+   "candidates": 29593,
+   "model_order": 97,
+   "name": "tidal_force",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "((x0) / (((x1) * (((x1)**2)))))",
+   "selected_with_model": "((x0) / (((x1) * (((x1)**2)))))",
+   "shape_in_training": false,
+   "size_order": 24734
+  },
+  {
+   "candidates": 29593,
+   "model_order": 557,
+   "name": "log_return",
+   "reachable": true,
+   "recovered_plain": true,
+   "recovered_with_model": true,
+   "selected_plain": "log(((x0) / (x1)))",
+   "selected_with_model": "log(((x0) / (x1)))",
+   "shape_in_training": false,
+   "size_order": 219
+  }
+ ],
+ "part_b_invented_stream": [
+  {
+   "adaptive": 13.65942054257314,
+   "frozen": 13.65942054257314,
+   "name": "invented_00"
+  },
+  {
+   "adaptive": 23.375339880274076,
+   "frozen": 25.020498166466556,
+   "name": "invented_01"
+  },
+  {
+   "adaptive": 23.138748038711885,
+   "frozen": 24.658261879595127,
+   "name": "invented_02"
+  },
+  {
+   "adaptive": 16.822006213689328,
+   "frozen": 17.312822945003088,
+   "name": "invented_03"
+  },
+  {
+   "adaptive": 15.56253036959945,
+   "frozen": 13.84379134027311,
+   "name": "invented_04"
+  },
+  {
+   "adaptive": 34.74487013507221,
+   "frozen": 39.32962515938848,
+   "name": "invented_05"
+  },
+  {
+   "adaptive": 9.460535688507525,
+   "frozen": 11.078322612762474,
+   "name": "invented_06"
+  },
+  {
+   "adaptive": 8.444457293605483,
+   "frozen": 7.985006220274622,
+   "name": "invented_07"
+  },
+  {
+   "adaptive": 24.399125582735653,
+   "frozen": 26.300080475322712,
+   "name": "invented_08"
+  },
+  {
+   "adaptive": 8.252278056853322,
+   "frozen": 10.01275535355663,
+   "name": "invented_09"
+  },
+  {
+   "adaptive": 28.656986607926324,
+   "frozen": 29.89295306841577,
+   "name": "invented_10"
+  },
+  {
+   "adaptive": 18.659852398301293,
+   "frozen": 20.237705274327336,
+   "name": "invented_11"
+  },
+  {
+   "adaptive": 7.523231015840739,
+   "frozen": 10.01275535355663,
+   "name": "invented_12"
+  },
+  {
+   "adaptive": 19.81282154939921,
+   "frozen": 22.88362805349391,
+   "name": "invented_13"
+  },
+  {
+   "adaptive": 21.1561716253088,
+   "frozen": 29.366682523900224,
+   "name": "invented_14"
+  },
+  {
+   "adaptive": 8.300143196848552,
+   "frozen": 11.078322612762474,
+   "name": "invented_15"
+  },
+  {
+   "adaptive": 12.091652828464344,
+   "frozen": 13.84379134027311,
+   "name": "invented_16"
+  },
+  {
+   "adaptive": 22.754538234505805,
+   "frozen": 29.124502183425903,
+   "name": "invented_17"
+  },
+  {
+   "adaptive": 13.178108488362653,
+   "frozen": 15.429114988835304,
+   "name": "invented_18"
+  },
+  {
+   "adaptive": 12.510472082928635,
+   "frozen": 15.671373752728053,
+   "name": "invented_19"
+  },
+  {
+   "adaptive": 20.014908749396987,
+   "frozen": 26.837743929344473,
+   "name": "invented_20"
+  },
+  {
+   "adaptive": 9.828408540582538,
+   "frozen": 17.312822945003088,
+   "name": "invented_21"
+  },
+  {
+   "adaptive": 13.59335657381115,
+   "frozen": 25.020498166466556,
+   "name": "invented_22"
+  },
+  {
+   "adaptive": 17.64718194312873,
+   "frozen": 21.840858370744595,
+   "name": "invented_23"
+  },
+  {
+   "adaptive": 7.1480669805706345,
+   "frozen": 11.078322612762474,
+   "name": "invented_24"
+  },
+  {
+   "adaptive": 12.591156491922654,
+   "frozen": 10.82047006047313,
+   "name": "invented_25"
+  },
+  {
+   "adaptive": 19.605462144051888,
+   "frozen": 25.669114801084568,
+   "name": "invented_26"
+  },
+  {
+   "adaptive": 10.495869066880477,
+   "frozen": 13.65942054257314,
+   "name": "invented_27"
+  },
+  {
+   "adaptive": 18.13035398135926,
+   "frozen": 26.501429286790543,
+   "name": "invented_28"
+  },
+  {
+   "adaptive": 21.874727902078718,
+   "frozen": 31.352638789391076,
+   "name": "invented_29"
+  },
+  {
+   "adaptive": 7.186442253527582,
+   "frozen": 10.01275535355663,
+   "name": "invented_30"
+  },
+  {
+   "adaptive": 18.443875229034663,
+   "frozen": 22.43532454491439,
+   "name": "invented_31"
+  },
+  {
+   "adaptive": 10.229224510205256,
+   "frozen": 39.32962515938848,
+   "name": "invented_32"
+  },
+  {
+   "adaptive": 6.472636149748973,
+   "frozen": 10.01275535355663,
+   "name": "invented_33"
+  },
+  {
+   "adaptive": 11.91453422123826,
+   "frozen": 15.22291285686786,
+   "name": "invented_34"
+  },
+  {
+   "adaptive": 11.13391434214297,
+   "frozen": 33.218510534278934,
+   "name": "invented_35"
+  },
+  {
+   "adaptive": 7.45758185168854,
+   "frozen": 17.312822945003088,
+   "name": "invented_36"
+  },
+  {
+   "adaptive": 8.616529858784071,
+   "frozen": 10.82047006047313,
+   "name": "invented_37"
+  },
+  {
+   "adaptive": 17.396061528935785,
+   "frozen": 24.69360576910912,
+   "name": "invented_38"
+  },
+  {
+   "adaptive": 9.750772145026291,
+   "frozen": 15.429114988835304,
+   "name": "invented_39"
+  },
+  {
+   "adaptive": 6.261523646845395,
+   "frozen": 7.985006220274622,
+   "name": "invented_40"
+  },
+  {
+   "adaptive": 15.566637370508156,
+   "frozen": 26.00267495360967,
+   "name": "invented_41"
+  },
+  {
+   "adaptive": 6.649124672770303,
+   "frozen": 17.312822945003088,
+   "name": "invented_42"
+  },
+  {
+   "adaptive": 15.294500247426287,
+   "frozen": 19.442805937603378,
+   "name": "invented_43"
+  },
+  {
+   "adaptive": 11.607418095742114,
+   "frozen": 35.6790838982681,
+   "name": "invented_44"
+  },
+  {
+   "adaptive": 7.771631197361973,
+   "frozen": 15.429114988835304,
+   "name": "invented_45"
+  },
+  {
+   "adaptive": 15.53431159791456,
+   "frozen": 13.94677563748388,
+   "name": "invented_46"
+  },
+  {
+   "adaptive": 15.586707901143857,
+   "frozen": 25.987376829073607,
+   "name": "invented_47"
+  },
+  {
+   "adaptive": 6.051518276026545,
+   "frozen": 10.01275535355663,
+   "name": "invented_48"
+  },
+  {
+   "adaptive": 9.319608028991292,
+   "frozen": 13.94677563748388,
+   "name": "invented_49"
+  },
+  {
+   "adaptive": 16.95738666853586,
+   "frozen": 30.714255199711054,
+   "name": "invented_50"
+  },
+  {
+   "adaptive": 6.613427651878726,
+   "frozen": 11.078322612762474,
+   "name": "invented_51"
+  },
+  {
+   "adaptive": 13.415533216193683,
+   "frozen": 19.286296920353326,
+   "name": "invented_52"
+  },
+  {
+   "adaptive": 17.76194468936756,
+   "frozen": 25.868439319903633,
+   "name": "invented_53"
+  },
+  {
+   "adaptive": 6.171903902211554,
+   "frozen": 17.312822945003088,
+   "name": "invented_54"
+  },
+  {
+   "adaptive": 5.843896034449105,
+   "frozen": 7.985006220274622,
+   "name": "invented_55"
+  },
+  {
+   "adaptive": 8.17016067820112,
+   "frozen": 35.6790838982681,
+   "name": "invented_56"
+  },
+  {
+   "adaptive": 5.779280437479705,
+   "frozen": 17.312822945003088,
+   "name": "invented_57"
+  },
+  {
+   "adaptive": 5.537706045119567,
+   "frozen": 7.985006220274622,
+   "name": "invented_58"
+  },
+  {
+   "adaptive": 10.698204029208071,
+   "frozen": 23.398838665265167,
+   "name": "invented_59"
+  },
+  {
+   "adaptive": 7.124784415975247,
+   "frozen": 4.985456187611756,
+   "name": "invented_60"
+  },
+  {
+   "adaptive": 10.102489827227203,
+   "frozen": 15.365310411817195,
+   "name": "invented_61"
+  },
+  {
+   "adaptive": 13.59724585372732,
+   "frozen": 24.165475082635073,
+   "name": "invented_62"
+  },
+  {
+   "adaptive": 11.096248813514558,
+   "frozen": 8.27286433350321,
+   "name": "invented_63"
+  },
+  {
+   "adaptive": 8.108559640209844,
+   "frozen": 10.82047006047313,
+   "name": "invented_64"
+  },
+  {
+   "adaptive": 8.706684532417734,
+   "frozen": 25.987376829073607,
+   "name": "invented_65"
+  },
+  {
+   "adaptive": 8.7352876692833,
+   "frozen": 8.27286433350321,
+   "name": "invented_66"
+  },
+  {
+   "adaptive": 13.090421795955692,
+   "frozen": 21.76722131788763,
+   "name": "invented_67"
+  },
+  {
+   "adaptive": 12.987760119126468,
+   "frozen": 22.28306759010013,
+   "name": "invented_68"
+  },
+  {
+   "adaptive": 5.764330321489943,
+   "frozen": 10.01275535355663,
+   "name": "invented_69"
+  },
+  {
+   "adaptive": 14.873116841804702,
+   "frozen": 17.253808390854463,
+   "name": "invented_70"
+  },
+  {
+   "adaptive": 14.026621234772698,
+   "frozen": 19.35877814007462,
+   "name": "invented_71"
+  },
+  {
+   "adaptive": 7.899718756915074,
+   "frozen": 13.65942054257314,
+   "name": "invented_72"
+  },
+  {
+   "adaptive": 7.7187526078182165,
+   "frozen": 13.84379134027311,
+   "name": "invented_73"
+  },
+  {
+   "adaptive": 9.487283776762304,
+   "frozen": 25.868439319903633,
+   "name": "invented_74"
+  },
+  {
+   "adaptive": 7.437892186070223,
+   "frozen": 8.27286433350321,
+   "name": "invented_75"
+  },
+  {
+   "adaptive": 7.40533044727456,
+   "frozen": 13.94677563748388,
+   "name": "invented_76"
+  },
+  {
+   "adaptive": 19.468824720999063,
+   "frozen": 21.827310744415676,
+   "name": "invented_77"
+  },
+  {
+   "adaptive": 6.3058424330339955,
+   "frozen": 11.078322612762474,
+   "name": "invented_78"
+  },
+  {
+   "adaptive": 9.454221885787344,
+   "frozen": 15.22291285686786,
+   "name": "invented_79"
+  },
+  {
+   "adaptive": 8.51848641342856,
+   "frozen": 29.124502183425903,
+   "name": "invented_80"
+  },
+  {
+   "adaptive": 5.546917335844592,
+   "frozen": 10.01275535355663,
+   "name": "invented_81"
+  },
+  {
+   "adaptive": 14.745301454045975,
+   "frozen": 23.702394494017593,
+   "name": "invented_82"
+  },
+  {
+   "adaptive": 7.312122700170755,
+   "frozen": 29.124502183425903,
+   "name": "invented_83"
+  },
+  {
+   "adaptive": 5.929460618714525,
+   "frozen": 11.078322612762474,
+   "name": "invented_84"
+  },
+  {
+   "adaptive": 6.985023407984239,
+   "frozen": 13.84379134027311,
+   "name": "invented_85"
+  },
+  {
+   "adaptive": 8.262339530510479,
+   "frozen": 23.398838665265167,
+   "name": "invented_86"
+  },
+  {
+   "adaptive": 5.684252866327581,
+   "frozen": 17.312822945003088,
+   "name": "invented_87"
+  },
+  {
+   "adaptive": 9.495378117123348,
+   "frozen": 22.43532454491439,
+   "name": "invented_88"
+  },
+  {
+   "adaptive": 14.348025338601765,
+   "frozen": 18.263843725453064,
+   "name": "invented_89"
+  },
+  {
+   "adaptive": 6.316108911232544,
+   "frozen": 4.985456187611756,
+   "name": "invented_90"
+  },
+  {
+   "adaptive": 13.334987340969365,
+   "frozen": 17.34577440296627,
+   "name": "invented_91"
+  },
+  {
+   "adaptive": 8.923995554357477,
+   "frozen": 26.837743929344473,
+   "name": "invented_92"
+  },
+  {
+   "adaptive": 6.947901504355576,
+   "frozen": 13.65942054257314,
+   "name": "invented_93"
+  },
+  {
+   "adaptive": 6.496429519505135,
+   "frozen": 13.84379134027311,
+   "name": "invented_94"
+  },
+  {
+   "adaptive": 12.413633531708768,
+   "frozen": 37.34499115562325,
+   "name": "invented_95"
+  },
+  {
+   "adaptive": 7.158824883795326,
+   "frozen": 15.429114988835304,
+   "name": "invented_96"
+  },
+  {
+   "adaptive": 8.832248054206614,
+   "frozen": 19.442805937603378,
+   "name": "invented_97"
+  },
+  {
+   "adaptive": 16.473812562987312,
+   "frozen": 32.38497673048971,
+   "name": "invented_98"
+  },
+  {
+   "adaptive": 6.769574434562817,
+   "frozen": 8.27286433350321,
+   "name": "invented_99"
+  },
+  {
+   "adaptive": 6.506434757511454,
+   "frozen": 6.752675081995787,
+   "name": "invented_100"
+  },
+  {
+   "adaptive": 8.460788563536239,
+   "frozen": 31.352638789391076,
+   "name": "invented_101"
+  },
+  {
+   "adaptive": 6.284909507887391,
+   "frozen": 8.27286433350321,
+   "name": "invented_102"
+  },
+  {
+   "adaptive": 9.595911883422785,
+   "frozen": 21.76722131788763,
+   "name": "invented_103"
+  },
+  {
+   "adaptive": 8.75164753134546,
+   "frozen": 21.840858370744595,
+   "name": "invented_104"
+  },
+  {
+   "adaptive": 5.928747088282465,
+   "frozen": 8.27286433350321,
+   "name": "invented_105"
+  },
+  {
+   "adaptive": 8.25642664734466,
+   "frozen": 15.22291285686786,
+   "name": "invented_106"
+  },
+  {
+   "adaptive": 11.560877293309986,
+   "frozen": 33.922592636219846,
+   "name": "invented_107"
+  },
+  {
+   "adaptive": 5.455087439415053,
+   "frozen": 10.01275535355663,
+   "name": "invented_108"
+  },
+  {
+   "adaptive": 8.479147717711335,
+   "frozen": 15.671373752728053,
+   "name": "invented_109"
+  },
+  {
+   "adaptive": 7.479636857274503,
+   "frozen": 26.837743929344473,
+   "name": "invented_110"
+  },
+  {
+   "adaptive": 5.658988526880714,
+   "frozen": 8.27286433350321,
+   "name": "invented_111"
+  },
+  {
+   "adaptive": 9.32093814034809,
+   "frozen": 22.88362805349391,
+   "name": "invented_112"
+  },
+  {
+   "adaptive": 14.300550403176194,
+   "frozen": 18.686915877735693,
+   "name": "invented_113"
+  },
+  {
+   "adaptive": 5.649294837064629,
+   "frozen": 17.312822945003088,
+   "name": "invented_114"
+  },
+  {
+   "adaptive": 6.2214747971965165,
+   "frozen": 13.84379134027311,
+   "name": "invented_115"
+  },
+  {
+   "adaptive": 8.994691199019915,
+   "frozen": 18.263843725453064,
+   "name": "invented_116"
+  },
+  {
+   "adaptive": 5.8392069177586094,
+   "frozen": 11.078322612762474,
+   "name": "invented_117"
+  },
+  {
+   "adaptive": 16.993513493855428,
+   "frozen": 27.539107018317193,
+   "name": "invented_118"
+  },
+  {
+   "adaptive": 13.337476095429924,
+   "frozen": 15.108407125381243,
+   "name": "invented_119"
+  }
+ ],
+ "part_b_other_field_stream": [
+  {
+   "adaptive": 16.578958422669608,
+   "frozen": 16.578958422669608,
+   "name": "saturation_fraction"
+  },
+  {
+   "adaptive": 18.244452922430742,
+   "frozen": 18.502345472471884,
+   "name": "arrhenius_factor"
+  },
+  {
+   "adaptive": 9.962323932709303,
+   "frozen": 10.037767948131908,
+   "name": "ideal_gas_pressure"
+  },
+  {
+   "adaptive": 13.199828399005332,
+   "frozen": 14.399980333246159,
+   "name": "radiated_power"
+  },
+  {
+   "adaptive": 21.511696113399072,
+   "frozen": 21.767049790658085,
+   "name": "kepler_period"
+  },
+  {
+   "adaptive": 11.323540456068796,
+   "frozen": 10.474852172342116,
+   "name": "beer_lambert"
+  },
+  {
+   "adaptive": 17.73015894464885,
+   "frozen": 17.412349608516077,
+   "name": "logistic_growth_rate"
+  },
+  {
+   "adaptive": 23.598900135743317,
+   "frozen": 23.763819401597324,
+   "name": "nernst_potential"
+  },
+  {
+   "adaptive": 10.670652586903632,
+   "frozen": 10.474852172342116,
+   "name": "compound_growth"
+  },
+  {
+   "adaptive": 13.165612347948796,
+   "frozen": 14.001460560393724,
+   "name": "geometric_mean_output"
+  },
+  {
+   "adaptive": 11.40158378006831,
+   "frozen": 10.313316884605058,
+   "name": "drag_force"
+  },
+  {
+   "adaptive": 8.476310631132929,
+   "frozen": 10.037767948131908,
+   "name": "reynolds_number"
+  },
+  {
+   "adaptive": 29.383324344946885,
+   "frozen": 30.340535286699645,
+   "name": "parallel_resistance"
+  },
+  {
+   "adaptive": 16.92059170926529,
+   "frozen": 18.094884784400527,
+   "name": "hypotenuse"
+  },
+  {
+   "adaptive": 11.855726501576124,
+   "frozen": 16.146576718844557,
+   "name": "escape_speed"
+  },
+  {
+   "adaptive": 22.856282451364855,
+   "frozen": 25.95482567810167,
+   "name": "boltzmann_ratio"
+  },
+  {
+   "adaptive": 17.521300933225614,
+   "frozen": 17.728996427598567,
+   "name": "entropy_term"
+  },
+  {
+   "adaptive": 12.200165247803739,
+   "frozen": 10.82047006047313,
+   "name": "body_mass_index"
+  },
+  {
+   "adaptive": 7.792445412066738,
+   "frozen": 10.474852172342116,
+   "name": "radioactive_decay"
+  },
+  {
+   "adaptive": 10.864656630540122,
+   "frozen": 15.810103665401193,
+   "name": "sharpe_ratio"
+  },
+  {
+   "adaptive": 13.401763775729636,
+   "frozen": 15.267432808031618,
+   "name": "kelly_fraction"
+  },
+  {
+   "adaptive": 6.425131129035825,
+   "frozen": 7.985006220274622,
+   "name": "cylinder_volume"
+  },
+  {
+   "adaptive": 16.626894580020526,
+   "frozen": 15.490862536578758,
+   "name": "tidal_force"
+  },
+  {
+   "adaptive": 17.86582791003878,
+   "frozen": 20.227568656777205,
+   "name": "log_return"
+  }
+ ]
+}

@@ -454,6 +454,12 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **MMLM Track S made self-adjusting and tested: PREREG-MMLM-S-2026-11 (2026-11-19), all three expectations
+  held.** `SelfAdjustingEquationModel` re-weights four engines by how well each predicted every confirmed law,
+  learns the law, and can retract one. Frozen, then run once: on 24 laws from other fields the law's median
+  position in the search fell from 6,111.5 to 303.5; selection from data was unchanged (already 24 of 24);
+  on a stream of 120 invented laws the adaptive copy cost 53 % of a frozen copy's bits in the second half.
+  Position is a count, not yet time saved. `preregistration/RESULT-MMLM-S-2026-11.md`.
 - **MMLM Track S: a language model of equations as a discovery prior (`apedp_mmlm/equation_language.py`).**
   The owner's direction for MMLM is language toward science, replacing the "research track" note of earlier
   today. Cross-validated development study on SRBench's 133 formulas: 33.7 bits per held-out

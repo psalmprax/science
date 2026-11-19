@@ -117,6 +117,16 @@ three preregistered expectations missed.
   Opt-in in `PdeProposer`, 1-D grids only; its library is the divergence-form
   one, so `|grad u|^2` and `u*laplacian(u)` are not available in it; 2-D and
   a preregistered test are not done.
+- **M-09 MMLM had no measured result — ADDRESSED FOR ONE TRACK.** Tracks A-C
+  (text) still have no evaluation on real text. Track S
+  (`apedp_mmlm/equation_language.py`) models equations and is used as a
+  search prior; its self-adjusting form passed all three expectations of
+  PREREG-MMLM-S-2026-11 (law's median search position 6,111.5 to 303.5 on 24
+  other-field laws; adaptive copy at 53 % of a frozen copy's cost on a
+  stream). Open: the order is not yet turned into saved work (no early-stop
+  rule), the selection test hit a ceiling, the tensor-train engine does worse
+  than a uniform code on equations, and nothing is tested on data without a
+  physical-law style.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
