@@ -49,11 +49,19 @@ c₁·x^p + c₂·y^q with unequal coefficients; the known family contains none.
 On one-term laws the invented family is 7 points behind the known one at 1 % noise and 12 at 5 %
 (both inside the 15-point margin), and ahead at 0, where the known laws lose runs to the exact-fit
 refusal below. The design meant to compare familiarity and compared grammar shape as well, which
-expectation 3 did not anticipate. With its default `coefficient_synthesis=False` the engine fits one scale per
-candidate, so a sum with two different coefficients is outside the space it searches, and it
-abstains (`MULTI_HYPOTHESIS` or `INSUFFICIENT_EVIDENCE`, attribution `hypothesis_space_limited`).
-That is the referee doing its job on a hypothesis space that is too small; it is also why the
-engine is not yet an open-ended discoverer.
+expectation 3 did not anticipate.
+
+The two-term laws are inside the space the engine searches: each additive term gets its own fitted
+coefficient. Re-running the eight at 1 % noise, seed 0, for diagnosis: the true law was generated in
+all eight and ranked first by holdout error in six. The refusals come from the referee's resolution
+criterion. Two candidates count as distinct only if their holdout errors differ by more than τ, and
+τ is never below `REL_FLOOR` = 5 % of the signal's RMS (`epistemic/adjudicate.py`, calibrated against
+the Duffing pairs). In every two-term law the generator drew, the smaller term moves the holdout
+error by less than that, so the law with the term and the law without it are "observationally
+indistinguishable" and the referee abstains (`MULTI_HYPOTHESIS`). That is the referee working as
+calibrated: a term contributing under 5 % of the signal cannot be confirmed from passive data of
+this kind, whatever the noise. It limits what this engine can discover, and only an intervention
+that makes the small term large (`discovery_l2/active_intervention.py`) can get past it.
 
 **All seven false discoveries are the dominant term of a two-term law** (`f6**3` for
 2.71·f6³ + 2.91·v6⁻², `q5**3` for 0.945·p1^(−1/2) + 1.331·q5³, `sqrt(f9)` for
@@ -75,9 +83,13 @@ as structured residuals.
 - The discoverer's error rate is the strong result: 7 promotions of a wrong law in 288 runs, each
   the dominant term of a two-term law (six of them with the other term below the noise), and none
   on a textbook law.
-- Its reach is the weak one: one-term power laws only, unless coefficient synthesis is switched on.
-  The next preregistration should measure `coefficient_synthesis=True` on two-term laws whose terms
-  are both identifiable at the stated noise, and keep this run's numbers as the baseline.
+- Its reach is the weak one: on passive data it confirms power laws and sums whose every term
+  carries at least about 5 % of the signal, and abstains on the rest. The next preregistration
+  should draw two-term laws whose smaller term clears that floor, and separately measure designed
+  interventions on laws whose smaller term does not, keeping this run's numbers as the baseline.
+- The benchmark's comparison function raises on a promoted law that is not a sum of monomials
+  (such as `1/(x + y)**3`). No such law was promoted in this run, so no result is affected; a
+  successor must count it as a false discovery instead of crashing.
 - The exact-fit refusal is recorded as an audit finding (`docs/SYSTEM_FLAWS_AUDIT.md`, M-01). It is
   not changed here: `adjudicate.py` is pinned by `APEDPX_FROZEN_v1_18.json`, and the change is a
   referee decision for the repository owner.

@@ -25,20 +25,25 @@ three preregistered expectations missed.
   noise-free simulation benchmark. Not changed: `adjudicate.py` is pinned by
   `APEDPX_FROZEN_v1_18.json`, and what an exact fit should earn is for the
   owner to decide.
-- **M-02 two-term laws with unequal coefficients are outside the default
-  search — OPEN, by design until measured.** With `coefficient_synthesis=False`
-  each candidate gets one fitted scale, so c₁·x^p + c₂·y^q cannot be expressed:
-  of 64 such runs, 7 recovered, 7 promoted the dominant term, 50 abstained.
-  On one-term laws the invented family recovers 75–94 %, close to the known
-  family; the preregistered familiarity gap is mostly this. The next
-  preregistration should measure `coefficient_synthesis=True` on two-term laws
-  whose terms are both identifiable at the stated noise.
+- **M-02 a term carrying less than 5 % of the signal cannot be confirmed —
+  RECORDED, by design.** Of 64 two-term runs, 7 recovered, 7 promoted the
+  dominant term, 50 abstained. Diagnosed after the run: the true law is in the
+  search space (each additive term has its own coefficient), was generated for
+  all eight laws and ranked first in six, and was refused because the referee's
+  resolution threshold never drops below `REL_FLOOR` = 5 % of the signal RMS,
+  and every smaller term the generator drew moves the holdout error by less.
+  The floor is calibrated and stays; what it means is that on passive data the
+  engine discovers only laws whose every term is large, and anything finer
+  needs a designed intervention (`discovery_l2/active_intervention.py`).
+  (The run's first report and the commit that added it blamed one fitted scale
+  per candidate; that was wrong, and is corrected here and in the report.)
 - **M-03 the benchmark generator did not check identifiability — RECORDED.**
   Six of the seven false discoveries come from laws whose second term varies by
   at most 3 against a first term reaching thousands, below the noise at 1 %.
   They stay counted as false discoveries, as preregistered; a successor
   generator should reject draws whose terms differ in spread by more than the
-  noise.
+  noise. Separately, the benchmark's comparison raises on a promoted law that
+  is not a sum of monomials; none was promoted, so the run is unaffected.
 
 ---
 
