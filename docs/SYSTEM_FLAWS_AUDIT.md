@@ -58,7 +58,10 @@ three preregistered expectations missed.
   from a two-entry table, blocks are the manifest's own strings, the route
   normalises with `realpath` and admits by prefix (a `/tmp-lookalike` sibling
   is refused), and the client gets the exception class only.
-  `tests/test_user_paths_stay_inside_their_roots.py`.
+  `tests/test_user_paths_stay_inside_their_roots.py`. `ui/server.py` is a
+  freeze guard file, so `APEDPX_FROZEN_v1_18.json` is re-minted for it with a
+  `remint_log` entry (the first push missed this and CI's freeze guard
+  caught it); the governance digest awaiting trustee signatures is unchanged.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
