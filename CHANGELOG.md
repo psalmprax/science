@@ -454,6 +454,13 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **MMLM Track S: a language model of equations as a discovery prior (`apedp_mmlm/equation_language.py`).**
+  The owner's direction for MMLM is language toward science, replacing the "research track" note of earlier
+  today. Cross-validated development study on SRBench's 133 formulas: 33.7 bits per held-out
+  equation (automaton engine) against 52.1 uniform; ordering the exhaustive search by the model
+  reaches a held-out law after a median of 112 candidates against 6268 in size order
+  (30 reachable laws). The tensor-train engine fails here. `exhaustive_search` accepts the
+  model as an optional structure cost.
 - **Weak-form PDE identification (`apedp_dyn/pde/weak_form.py`, experimental; `PdeProposer(estimator="weak_form")`
   for 1-D grids).** Development study: the heat equation is identified exactly through 10 % noise, where the
   pointwise kernel's diffusion coefficient is already 96 % off at 1 %. The contrast ladder now covers all
@@ -486,7 +493,7 @@ inferred releases.
   term selection. Development study, 20 seeds.
 - **Owner's decisions, 2026-11-19.** The referee's 5 %-of-signal resolution floor stays as calibrated;
   small terms are to be addressed by contrast confirmation, and the floor is revisited only if its
-  preregistered test fails. `apedp_mmlm` becomes a research track with no performance claims. The
+  preregistered test fails. `apedp_mmlm` was marked a research track (corrected the same day: see the Track S entry above). The
   in-house GA/GP and the template search keep their place until the shared benchmark has numbers for
   them and for PySR.
 - **Contrast confirmation (`apedp_dyn/discovery_l2/contrast_confirmation.py`, experimental).** Rival

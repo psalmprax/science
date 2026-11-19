@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import itertools
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -142,13 +142,17 @@ def _fit(columns: list[np.ndarray], y: np.ndarray) -> tuple[np.ndarray, float] |
     return coef, max(float(np.sum((y - A @ coef) ** 2)), floor)
 
 
-def description_length(rss: float, n: int, complexity: int, n_params: int, alphabet: int) -> float:
-    return 0.5 * n * math.log(max(rss, 1e-300) / n) + complexity * math.log(alphabet) + 0.5 * n_params * math.log(n)
+def description_length(rss: float, n: int, complexity: int, n_params: int, alphabet: int,
+                       structure_nats: float | None = None) -> float:
+    """``structure_nats`` replaces the flat ``complexity * ln(alphabet)`` cost when a learned prior supplies one."""
+    structure = complexity * math.log(alphabet) if structure_nats is None else structure_nats
+    return 0.5 * n * math.log(max(rss, 1e-300) / n) + structure + 0.5 * n_params * math.log(n)
 
 
 def score_slice(
     X: np.ndarray, y: np.ndarray, names: Sequence[str], max_complexity: int, *, part: int = 0, parts: int = 1,
     keep: int = 40, unary: Sequence[str] = tuple(UNARY), binary: Sequence[str] = tuple(BINARY),
+    structure_bits: Callable[[Node], float] | None = None,
 ) -> list[dict[str, Any]]:
     """The ``keep`` best single-term fits among every ``parts``-th candidate starting at ``part``."""
     X = np.asarray(X, dtype=float)
@@ -162,16 +166,18 @@ def score_slice(
         if fit is None:
             continue
         coef, rss = fit
+        nats = None if structure_bits is None else structure_bits(node) * math.log(2.0)
         rows.append({"index": index, "expression": to_string(node, names), "complexity": c, "rss": rss,
-                     "coef": [float(v) for v in coef],
-                     "description_length": description_length(rss, len(y), c, 2, alphabet)})
+                     "coef": [float(v) for v in coef], "structure_nats": nats,
+                     "description_length": description_length(rss, len(y), c, 2, alphabet, nats)})
     rows.sort(key=lambda r: (r["description_length"], r["index"]))
     return rows[:keep]
 
 
 def merge(
     slices: Sequence[Sequence[dict[str, Any]]], X: np.ndarray, y: np.ndarray, names: Sequence[str],
-    max_complexity: int, *, pair_pool: int = 40, partner_complexity: int = 3, unary: Sequence[str] = tuple(UNARY), binary: Sequence[str] = tuple(BINARY),
+    max_complexity: int, *, pair_pool: int = 40, partner_complexity: int = 3,
+    structure_bits: Callable[[Node], float] | None = None, unary: Sequence[str] = tuple(UNARY), binary: Sequence[str] = tuple(BINARY),
 ) -> list[Scored]:
     """Combine the slices' best terms, pair each of the best ``pair_pool`` with every simple term, rank everything.
 
@@ -186,10 +192,12 @@ def merge(
     ranked = [Scored(r["expression"], (r["expression"],), r["complexity"], 2, r["rss"], r["description_length"], tuple(r["coef"]))
               for r in singles]
     nodes = enumerate_expressions(X.shape[1], max_complexity, unary, binary)
-    partners = [(to_string(node, names), c, evaluate(node, X)) for node, c in nodes if c <= partner_complexity]
+    partners = [(to_string(node, names), c, evaluate(node, X),
+                 None if structure_bits is None else structure_bits(node) * math.log(2.0))
+                for node, c in nodes if c <= partner_complexity]
     for first in singles[:pair_pool]:
         first_values = evaluate(nodes[first["index"]][0], X)
-        for expr, c_b, partner_values in partners:
+        for expr, c_b, partner_values, partner_nats in partners:
             if expr == first["expression"]:
                 continue
             fit = _fit([first_values, partner_values], y)
@@ -197,8 +205,11 @@ def merge(
                 continue
             coef, rss = fit
             c = first["complexity"] + c_b + 1
+            pair_nats = (None if partner_nats is None or first.get("structure_nats") is None
+                         else first["structure_nats"] + partner_nats + math.log(alphabet))
             ranked.append(Scored(f"({first['expression']}) + ({expr})", (first["expression"], expr), c, 3, rss,
-                                 description_length(rss, len(y), c, 3, alphabet), tuple(float(v) for v in coef)))
+                                 description_length(rss, len(y), c, 3, alphabet, pair_nats),
+                                 tuple(float(v) for v in coef)))
     ranked.sort(key=lambda s: s.description_length)
     return ranked
 
@@ -206,10 +217,16 @@ def merge(
 def search(
     X: np.ndarray, y: np.ndarray, names: Sequence[str], max_complexity: int = 5,
     unary: Sequence[str] = tuple(UNARY), binary: Sequence[str] = tuple(BINARY),
+    structure_bits: Callable[[Node], float] | None = None,
 ) -> list[Scored]:
-    """Single-process convenience: one slice, then merge."""
-    one = score_slice(X, y, names, max_complexity, unary=unary, binary=binary)
-    return merge([one], X, y, names, max_complexity, unary=unary, binary=binary)
+    """Single-process convenience: one slice, then merge.
+
+    ``structure_bits(node)`` is an optional learned code length for a
+    candidate's structure (``apedp_mmlm.equation_language.search_prior``); without
+    it every node costs ``ln(alphabet)``.
+    """
+    one = score_slice(X, y, names, max_complexity, unary=unary, binary=binary, structure_bits=structure_bits)
+    return merge([one], X, y, names, max_complexity, unary=unary, binary=binary, structure_bits=structure_bits)
 
 
 def model_string(scored: Scored) -> str:
