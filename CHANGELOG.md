@@ -454,6 +454,11 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Owner's decisions, 2026-11-19.** The referee's 5 %-of-signal resolution floor stays as calibrated;
+  small terms are to be addressed by contrast confirmation, and the floor is revisited only if its
+  preregistered test fails. `apedp_mmlm` becomes a research track with no performance claims. The
+  in-house GA/GP and the template search keep their place until the shared benchmark has numbers for
+  them and for PySR.
 - **Contrast confirmation (`apedp_dyn/discovery_l2/contrast_confirmation.py`, experimental).** Rival
   laws are decided on rows chosen where they disagree, with power computed before any target is
   read, certified equivalence in place of a bare abstention, and a refutation test that reports a

@@ -2,6 +2,11 @@
 
 Status: experimental
 
+Research track (owner's decision, 2026-11-19): no committed evaluation on real text
+exists and none of its language-modelling hypotheses is claimed as shown. It is kept
+for study, not developed as a route to the project's discovery goals; language-model
+ability enters the pipeline through an external LLM proposer instead.
+
 Provides the three-track Multi-Mathematical Language Model research architecture
 and the Quantum-Reach MMLM Circuit Discovery subsystem:
   - Track A (`NonNeuralMMLM_A0`): Pure non-neural mathematical language modeling
