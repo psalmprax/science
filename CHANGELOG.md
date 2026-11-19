@@ -15,6 +15,13 @@ inferred releases.
 
 ### Changed
 
+- **SRBench outside-engine result recorded: PySR recovers three times what L2 does (2026-11-19).**
+  PREREG-SRBENCH-EXTERNAL-2026-11 ran once (798 runs); both expectations held. Feynman symbolic
+  recovery of 119 at noise 0 and 1 %: PySR 73 and 68, PhySO 41 and 40, exhaustive search with MDL 31
+  and 31, against L2's 24 and 24. Recorded as audit entry M-11 (open, owner's decision). Outputs
+  unedited in `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11/`; report in
+  `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11.md`.
+
 - **SRBench baseline result recorded: the referee's promotions are mostly wrong on it (2026-11-19).**
   PREREG-SRBENCH-BASELINE-2026-11 ran once (2,128 runs). Symbolic recovery over four noise levels:
   L2 108 of 532 (20.3 %), extended hierarchical 36, RIME 24, RIME-AD 11. The one expectation was

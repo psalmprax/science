@@ -145,6 +145,13 @@ three preregistered expectations missed.
   on laws the search can express and does not transfer. No referee change has
   been made: it needs its own preregistered test. Result:
   `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
+- **M-11 the in-house search is dominated by an outside engine — OPEN, OWNER'S
+  DECISION.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once, both expectations held):
+  on the 119 Feynman problems PySR recovers 73 at zero noise and 68 at 1 %, PhySO
+  41 and 40, the in-house exhaustive search 31 and 31, L2 24 and 24. PySR recovers
+  every problem L2 does. The outside engines had 240 s per run against 120 s.
+  Which in-house engines to retire or reposition has not been decided. Result:
+  `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11.md`.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

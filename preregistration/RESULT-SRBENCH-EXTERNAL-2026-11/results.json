@@ -1,0 +1,390 @@
+{
+ "frozen": {
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-SRBENCH-EXTERNAL-2026-11.md": "74de3caaa3f12428ed11666d9af4214294b420da5b5f12c10299ef8c80c323f7",
+  "scripts/fetch_srbench_ground_truth.py": "527b4d980b888bfcac3039b9e9a4da16de641271ce1f479a8323f1ffc3b0ff73",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_external.py": "e75b89eb0731c0bf71c0708e6cdbac1f965f08056828e86c89f581c0f763b530"
+ },
+ "preregistration": "PREREG-SRBENCH-EXTERNAL-2026-11",
+ "summary": {
+  "exhaustive_mdl|all|0.0": {
+   "accuracy_rate": 0.3383458646616541,
+   "accuracy_solution": 45,
+   "errors": 0,
+   "median_seconds": 9.19,
+   "n": 133,
+   "symbolic": 34,
+   "symbolic_interval_95": [
+    0.18398603161319907,
+    0.3384960205164367
+   ],
+   "symbolic_rate": 0.2556390977443609,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|all|0.01": {
+   "accuracy_rate": 0.3383458646616541,
+   "accuracy_solution": 45,
+   "errors": 0,
+   "median_seconds": 9.2,
+   "n": 133,
+   "symbolic": 34,
+   "symbolic_interval_95": [
+    0.18398603161319907,
+    0.3384960205164367
+   ],
+   "symbolic_rate": 0.2556390977443609,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|all|all": {
+   "accuracy_rate": 0.3383458646616541,
+   "accuracy_solution": 90,
+   "errors": 0,
+   "median_seconds": 9.19,
+   "n": 266,
+   "symbolic": 68,
+   "symbolic_interval_95": [
+    0.20432334896541435,
+    0.31248970587219
+   ],
+   "symbolic_rate": 0.2556390977443609,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|feynman|0.0": {
+   "accuracy_rate": 0.33613445378151263,
+   "accuracy_solution": 40,
+   "errors": 0,
+   "median_seconds": 10.9,
+   "n": 119,
+   "symbolic": 31,
+   "symbolic_interval_95": [
+    0.18436257006118076,
+    0.34893888864838063
+   ],
+   "symbolic_rate": 0.2605042016806723,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|feynman|0.01": {
+   "accuracy_rate": 0.33613445378151263,
+   "accuracy_solution": 40,
+   "errors": 0,
+   "median_seconds": 11.0,
+   "n": 119,
+   "symbolic": 31,
+   "symbolic_interval_95": [
+    0.18436257006118076,
+    0.34893888864838063
+   ],
+   "symbolic_rate": 0.2605042016806723,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|feynman|all": {
+   "accuracy_rate": 0.33613445378151263,
+   "accuracy_solution": 80,
+   "errors": 0,
+   "median_seconds": 10.93,
+   "n": 238,
+   "symbolic": 62,
+   "symbolic_interval_95": [
+    0.20594116406870666,
+    0.32113947305429547
+   ],
+   "symbolic_rate": 0.2605042016806723,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|strogatz|0.0": {
+   "accuracy_rate": 0.35714285714285715,
+   "accuracy_solution": 5,
+   "errors": 0,
+   "median_seconds": 3.205,
+   "n": 14,
+   "symbolic": 3,
+   "symbolic_interval_95": [
+    0.046579287889867274,
+    0.5079756770484718
+   ],
+   "symbolic_rate": 0.21428571428571427,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|strogatz|0.01": {
+   "accuracy_rate": 0.35714285714285715,
+   "accuracy_solution": 5,
+   "errors": 0,
+   "median_seconds": 3.225,
+   "n": 14,
+   "symbolic": 3,
+   "symbolic_interval_95": [
+    0.046579287889867274,
+    0.5079756770484718
+   ],
+   "symbolic_rate": 0.21428571428571427,
+   "timeouts": 0
+  },
+  "exhaustive_mdl|strogatz|all": {
+   "accuracy_rate": 0.35714285714285715,
+   "accuracy_solution": 10,
+   "errors": 0,
+   "median_seconds": 3.215,
+   "n": 28,
+   "symbolic": 6,
+   "symbolic_interval_95": [
+    0.0829606123876385,
+    0.4095310265058281
+   ],
+   "symbolic_rate": 0.21428571428571427,
+   "timeouts": 0
+  },
+  "physo|all|0.0": {
+   "accuracy_rate": 0.3684210526315789,
+   "accuracy_solution": 49,
+   "errors": 2,
+   "median_seconds": 244.28,
+   "n": 133,
+   "symbolic": 42,
+   "symbolic_interval_95": [
+    0.23797599514832934,
+    0.40201853251376557
+   ],
+   "symbolic_rate": 0.3157894736842105,
+   "timeouts": 0
+  },
+  "physo|all|0.01": {
+   "accuracy_rate": 0.40601503759398494,
+   "accuracy_solution": 54,
+   "errors": 1,
+   "median_seconds": 245.13,
+   "n": 133,
+   "symbolic": 42,
+   "symbolic_interval_95": [
+    0.23797599514832934,
+    0.40201853251376557
+   ],
+   "symbolic_rate": 0.3157894736842105,
+   "timeouts": 0
+  },
+  "physo|all|all": {
+   "accuracy_rate": 0.38721804511278196,
+   "accuracy_solution": 103,
+   "errors": 3,
+   "median_seconds": 244.595,
+   "n": 266,
+   "symbolic": 84,
+   "symbolic_interval_95": [
+    0.26038298600877746,
+    0.37535728031590254
+   ],
+   "symbolic_rate": 0.3157894736842105,
+   "timeouts": 0
+  },
+  "physo|feynman|0.0": {
+   "accuracy_rate": 0.40336134453781514,
+   "accuracy_solution": 48,
+   "errors": 2,
+   "median_seconds": 243.62,
+   "n": 119,
+   "symbolic": 41,
+   "symbolic_interval_95": [
+    0.25984003273298867,
+    0.43717811446820604
+   ],
+   "symbolic_rate": 0.3445378151260504,
+   "timeouts": 0
+  },
+  "physo|feynman|0.01": {
+   "accuracy_rate": 0.44537815126050423,
+   "accuracy_solution": 53,
+   "errors": 1,
+   "median_seconds": 244.41,
+   "n": 119,
+   "symbolic": 40,
+   "symbolic_interval_95": [
+    0.2521506626058176,
+    0.4284929381668835
+   ],
+   "symbolic_rate": 0.33613445378151263,
+   "timeouts": 0
+  },
+  "physo|feynman|all": {
+   "accuracy_rate": 0.42436974789915966,
+   "accuracy_solution": 101,
+   "errors": 3,
+   "median_seconds": 244.125,
+   "n": 238,
+   "symbolic": 81,
+   "symbolic_interval_95": [
+    0.2803676692564572,
+    0.4043392603061419
+   ],
+   "symbolic_rate": 0.3403361344537815,
+   "timeouts": 0
+  },
+  "physo|strogatz|0.0": {
+   "accuracy_rate": 0.07142857142857142,
+   "accuracy_solution": 1,
+   "errors": 0,
+   "median_seconds": 259.58,
+   "n": 14,
+   "symbolic": 1,
+   "symbolic_interval_95": [
+    0.0018067806591253865,
+    0.3386844899318212
+   ],
+   "symbolic_rate": 0.07142857142857142,
+   "timeouts": 0
+  },
+  "physo|strogatz|0.01": {
+   "accuracy_rate": 0.07142857142857142,
+   "accuracy_solution": 1,
+   "errors": 0,
+   "median_seconds": 259.875,
+   "n": 14,
+   "symbolic": 2,
+   "symbolic_interval_95": [
+    0.017794515483191515,
+    0.428129160909699
+   ],
+   "symbolic_rate": 0.14285714285714285,
+   "timeouts": 0
+  },
+  "physo|strogatz|all": {
+   "accuracy_rate": 0.07142857142857142,
+   "accuracy_solution": 2,
+   "errors": 0,
+   "median_seconds": 259.58,
+   "n": 28,
+   "symbolic": 3,
+   "symbolic_interval_95": [
+    0.022665090639058937,
+    0.2822643957153244
+   ],
+   "symbolic_rate": 0.10714285714285714,
+   "timeouts": 0
+  },
+  "pysr|all|0.0": {
+   "accuracy_rate": 0.9022556390977443,
+   "accuracy_solution": 120,
+   "errors": 0,
+   "median_seconds": 250.49,
+   "n": 133,
+   "symbolic": 83,
+   "symbolic_interval_95": [
+    0.5359549905188727,
+    0.7065103273433984
+   ],
+   "symbolic_rate": 0.6240601503759399,
+   "timeouts": 0
+  },
+  "pysr|all|0.01": {
+   "accuracy_rate": 0.8872180451127819,
+   "accuracy_solution": 118,
+   "errors": 0,
+   "median_seconds": 250.46,
+   "n": 133,
+   "symbolic": 77,
+   "symbolic_interval_95": [
+    0.4903108958781656,
+    0.6639888584594755
+   ],
+   "symbolic_rate": 0.5789473684210527,
+   "timeouts": 0
+  },
+  "pysr|all|all": {
+   "accuracy_rate": 0.8947368421052632,
+   "accuracy_solution": 238,
+   "errors": 0,
+   "median_seconds": 250.49,
+   "n": 266,
+   "symbolic": 160,
+   "symbolic_interval_95": [
+    0.5399257117180305,
+    0.6607935726215817
+   ],
+   "symbolic_rate": 0.6015037593984962,
+   "timeouts": 0
+  },
+  "pysr|feynman|0.0": {
+   "accuracy_rate": 0.8907563025210085,
+   "accuracy_solution": 106,
+   "errors": 0,
+   "median_seconds": 250.49,
+   "n": 119,
+   "symbolic": 73,
+   "symbolic_interval_95": [
+    0.5198173190689468,
+    0.70128549772934
+   ],
+   "symbolic_rate": 0.6134453781512605,
+   "timeouts": 0
+  },
+  "pysr|feynman|0.01": {
+   "accuracy_rate": 0.8823529411764706,
+   "accuracy_solution": 105,
+   "errors": 0,
+   "median_seconds": 250.46,
+   "n": 119,
+   "symbolic": 68,
+   "symbolic_interval_95": [
+    0.4774823535265398,
+    0.6617337762288846
+   ],
+   "symbolic_rate": 0.5714285714285714,
+   "timeouts": 0
+  },
+  "pysr|feynman|all": {
+   "accuracy_rate": 0.8865546218487395,
+   "accuracy_solution": 211,
+   "errors": 0,
+   "median_seconds": 250.47500000000002,
+   "n": 238,
+   "symbolic": 141,
+   "symbolic_interval_95": [
+    0.527078017363537,
+    0.6554635978832147
+   ],
+   "symbolic_rate": 0.592436974789916,
+   "timeouts": 0
+  },
+  "pysr|strogatz|0.0": {
+   "accuracy_rate": 1.0,
+   "accuracy_solution": 14,
+   "errors": 0,
+   "median_seconds": 250.895,
+   "n": 14,
+   "symbolic": 10,
+   "symbolic_interval_95": [
+    0.4189647428163391,
+    0.9161106816928725
+   ],
+   "symbolic_rate": 0.7142857142857143,
+   "timeouts": 0
+  },
+  "pysr|strogatz|0.01": {
+   "accuracy_rate": 0.9285714285714286,
+   "accuracy_solution": 13,
+   "errors": 0,
+   "median_seconds": 250.755,
+   "n": 14,
+   "symbolic": 9,
+   "symbolic_interval_95": [
+    0.3513801106159917,
+    0.8724015701408404
+   ],
+   "symbolic_rate": 0.6428571428571429,
+   "timeouts": 0
+  },
+  "pysr|strogatz|all": {
+   "accuracy_rate": 0.9642857142857143,
+   "accuracy_solution": 27,
+   "errors": 0,
+   "median_seconds": 250.85500000000002,
+   "n": 28,
+   "symbolic": 19,
+   "symbolic_interval_95": [
+    0.4764835932903815,
+    0.8412239621138461
+   ],
+   "symbolic_rate": 0.6785714285714286,
+   "timeouts": 0
+  }
+ }
+}
