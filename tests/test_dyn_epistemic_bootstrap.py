@@ -200,7 +200,7 @@ class TestAdjudicateV2:
             SOLE_SURVIVOR_GAMMA,
         )
 
-        assert DYNAMIC_EPISTEMIC_VERSION == "bootstrap-v3+solefid-v5"
+        assert DYNAMIC_EPISTEMIC_VERSION == "bootstrap-v3+solefid-v6"
 
         assert SOLE_SURVIVOR_GAMMA == 3.0
         assert RESID_RHO_FLAG == 0.5

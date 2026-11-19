@@ -93,6 +93,6 @@ of the same laws passed because rounding left the residuals nonzero.
 - The benchmark's comparison function raises on a promoted law that is not a sum of monomials
   (such as `1/(x + y)**3`). No such law was promoted in this run, so no result is affected; a
   successor must count it as a false discovery instead of crashing.
-- The exact-fit refusal is recorded as an audit finding (`docs/SYSTEM_FLAWS_AUDIT.md`, M-01). It is
-  not changed here: `adjudicate.py` is pinned by `APEDPX_FROZEN_v1_18.json`, and the change is a
-  referee decision for the repository owner.
+- The exact-fit refusal is recorded as an audit finding (`docs/SYSTEM_FLAWS_AUDIT.md`, M-01) and was
+  fixed on 2026-11-19 at the owner's request (adjudication contract `solefid-v6`). The numbers above
+  were measured under `solefid-v5` and stand as run.

@@ -15,8 +15,8 @@ variable at 0/1/5/10 % noise. Wrong-law promotions: 7 of 288, none on a
 textbook law. Recovery: 82 % on known laws, 58 % on invented ones; two of the
 three preregistered expectations missed.
 
-- **M-01 the referee refuses a perfect fit as unassessed — OPEN, referee
-  decision.** All nine known-law misses at zero noise (and two invented-law
+- **M-01 the referee refuses a perfect fit as unassessed — FIXED 2026-11-19
+  at the owner's request.** All nine known-law misses at zero noise (and two invented-law
   runs) are the right law fitted
   with RMSE 0 and refused because "residual series is constant: |rho1|
   undefined, whiteness unassessable" (`epistemic/adjudicate.py`, and the same
@@ -26,9 +26,13 @@ three preregistered expectations missed.
   noise-free simulation benchmark, and makes noise-free verdicts depend on
   the platform: whether the residuals come out exactly zero or carry
   rounding noise decides it (the benchmark's own toy test passed locally and
-  failed on CI 3.11 until it was given 1 % noise). Not changed: `adjudicate.py` is pinned by
-  `APEDPX_FROZEN_v1_18.json`, and what an exact fit should earn is for the
-  owner to decide.
+  failed on CI 3.11 until it was given 1 % noise). Fixed: a holdout residual of exact zeros now passes both whiteness
+  checks as an exact fit; a constant nonzero offset is still refused, and
+  any nonzero residual takes the ordinary test. `adjudicate.py` is re-minted
+  (`remint_log`, `frozen_spec.py`), `DYNAMIC_EPISTEMIC_VERSION` is
+  `solefid-v6`, and `tests/test_exact_fit_is_not_refused.py` pins it. The
+  preregistered benchmark's numbers stand as run; they were measured under
+  solefid-v5.
 - **M-02 a term carrying less than 5 % of the signal cannot be confirmed —
   RECORDED, by design.** Of 64 two-term runs, 7 recovered, 7 promoted the
   dominant term, 50 abstained. Diagnosed after the run: the true law is in the

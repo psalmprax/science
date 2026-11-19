@@ -454,6 +454,10 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **The referee accepts an exact fit (M-01, `solefid-v6`).** A holdout residual of exact zeros
+  passed neither whiteness check, so the right law on noise-free data was refused as
+  unassessable (all 11 zero-noise refusals in PREREG-BLIND-L2-2026-11). It now passes as an exact
+  fit; a constant nonzero offset is still refused. No threshold changed; `adjudicate.py` re-minted.
 - **A RIME result had been published as RIME-AD's (M-05).** The population extrapolation
   benchmark ran `RimeProposer` under RIME-AD's name. Each engine now runs under its own; RIME-AD
   does not recover the lagged law (A-test R² −0.28). The GA arms are renamed to term selection.
