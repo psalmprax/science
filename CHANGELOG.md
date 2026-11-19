@@ -454,6 +454,10 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Outside engines frozen: PREREG-SRBENCH-EXTERNAL-2026-11 (2026-11-19).** PySR, PhySO and the
+  exhaustive search on the baseline's protocol, 798 runs, frozen before any baseline result was seen.
+  Expectations: an outside engine, and the exhaustive search, each beat every baseline engine on
+  Feynman symbolic recovery.
 - **Two proposers (experimental): PCMCI+ parent sets (`proposers/pcmci_proposer.py`, Tigramite optional)
   and an LLM equation proposer interface with memorisation guards (`proposers/llm_proposer.py`: anonymous
   variables, a recitation probe before data, whitelist-only parsing).** The LLM interface has been run

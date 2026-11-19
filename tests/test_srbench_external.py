@@ -45,6 +45,7 @@ def test_the_smoke_law_is_scored_through_the_shared_scorer(monkeypatch):
     monkeypatch.setitem(ext.RUNNERS, "pysr", finds_it)
     monkeypatch.setitem(ext.RUNNERS, "physo", misses_it)
     rows = {r["engine"]: r for r in ext.smoke(budget=1.0)}
+    assert rows["exhaustive_mdl"]["symbolic"], "the in-house engine runs for real here and must find x0*x1 + x0"
     assert rows["pysr"]["symbolic"] and rows["pysr"]["accuracy_solution"]
     assert not rows["physo"]["symbolic"] and not rows["physo"]["accuracy_solution"]
 
@@ -59,3 +60,9 @@ def test_the_summary_counts_timeouts_and_errors():
              "accuracy_solution": acc} for s, sym, acc in (("ok", True, True), ("timeout", None, False), ("error", None, False))]
     cell = ext.summarise(rows)["pysr|feynman|0.0"]
     assert (cell["n"], cell["symbolic"], cell["timeouts"], cell["errors"]) == (3, 1, 1, 1)
+
+
+def test_the_frozen_files_match_the_recorded_digest():
+    import json
+
+    assert json.loads(ext.DIGEST.read_text())["sha256"] == ext.frozen_digests()

@@ -17,9 +17,11 @@ Engines:
 - **PhySO** (unit-constrained reinforcement search). Receives the units, as L2
   does. It has no time stop of its own, so its logger ends the search at the
   budget and the best program so far is returned.
+- **exhaustive_mdl**: the repository's own ``discovery_l2/exhaustive_search.py``,
+  added after the baseline was frozen and so measured here.
 
-Neither is a dependency of the package: they are installed only by the workflow
-that runs this script.
+PySR and PhySO are not dependencies of the package: they are installed only by
+the workflow that runs this script.
 """
 from __future__ import annotations
 
@@ -47,7 +49,7 @@ FROZEN = ("preregistration/PREREG-SRBENCH-EXTERNAL-2026-11.md", "scripts/run_srb
           "scripts/run_srbench_baseline.py", "scripts/fetch_srbench_ground_truth.py",
           "benchmarks/srbench/manifest.json")
 
-ENGINES = ("pysr", "physo")
+ENGINES = ("pysr", "physo", "exhaustive_mdl")
 NOISE_LEVELS = (0.0, 0.01)
 SEARCH_BUDGET_S = 240.0   # what each engine is told it may search for
 TIME_LIMIT_S = 330.0      # when its process is killed
@@ -120,7 +122,17 @@ def run_physo(split: dict[str, Any], entry: dict[str, Any], budget: float = SEAR
     return {"model": expr, "pred": _predict(expr, split["names"], split["X_test"]), "formula": str(expr)}
 
 
-RUNNERS = {"pysr": run_pysr, "physo": run_physo}
+def run_exhaustive_mdl(split: dict[str, Any], entry: dict[str, Any], budget: float = SEARCH_BUDGET_S) -> dict[str, Any]:
+    """The repository's exhaustive search: 6 nodes up to five variables, 5 beyond (it needs no time budget)."""
+    from apedp_dyn.discovery_l2 import exhaustive_search
+
+    names = split["names"]
+    best = exhaustive_search.search(split["X_train"], split["y_train"], names, 6 if len(names) <= 5 else 5)[0]
+    expr = sp.sympify(exhaustive_search.model_string(best))
+    return {"model": expr, "pred": _predict(expr, names, split["X_test"]), "formula": best.expression}
+
+
+RUNNERS = {"pysr": run_pysr, "physo": run_physo, "exhaustive_mdl": run_exhaustive_mdl}
 base.RUNNERS.update(RUNNERS)  # base.run_one isolates, times and scores any registered engine
 
 
