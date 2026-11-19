@@ -63,7 +63,9 @@ def run_route(world: dict[str, Any], budget: float = SEARCH_BUDGET_S) -> dict[st
     row: dict[str, Any] = {"action": result.action, "ungated_action": result.ungated_action, "law": result.law,
                            "ungated_law": result.ungated_law, "forecast_test": result.forecast_test,
                            "found_by": result.path.found_by, "first_pass": result.path.first_pass, "search": result.path.search,
-                           "candidates": len(result.path.candidates), "rows_read": result.path.rows_read}
+                           "candidates": len(result.path.candidates), "rows_read": result.path.rows_read,
+                           "contrast_verdict": result.path.contrast.verdict if result.path.contrast else None,
+                           "adequacy": result.path.adequacy, "rejected_law": result.path.rejected_law}
     if result.ungated_law is None:
         return row
     model = sp.sympify(result.ungated_law, locals={n: sp.Symbol(n) for n in names})
@@ -94,7 +96,8 @@ def _child(conn: Any, world: dict[str, Any], budget: float) -> None:
 
 
 def run_one(job: dict[str, Any], budget: float = SEARCH_BUDGET_S, time_limit: float = TIME_LIMIT_S, tag: str | None = None) -> dict[str, Any]:
-    world = worlds.world(job["law"], job["share"], job["seed"], tag) if tag else worlds.world(job["law"], job["share"], job["seed"])
+    planted = job["planted"]
+    world = worlds.world(planted, job["share"], job["seed"], tag) if tag else worlds.world(planted, job["share"], job["seed"])
     ctx = mp.get_context("fork")
     parent, child = ctx.Pipe(duplex=False)
     started = time.perf_counter()
@@ -111,13 +114,13 @@ def run_one(job: dict[str, Any], budget: float = SEARCH_BUDGET_S, time_limit: fl
     if proc.is_alive():
         proc.kill()
         proc.join()
-    return {**job, "truth": worlds.LAWS.get(job["law"]) if job["law"] else None, "status": outcome[0],
+    return {**job, "truth": worlds.LAWS.get(planted) if planted else None, "status": outcome[0],
             "seconds": round(time.perf_counter() - started, 2), **outcome[1]}
 
 
 def all_jobs() -> list[dict[str, Any]]:
-    jobs: list[dict[str, Any]] = [{"law": None, "share": 0.0, "seed": seed} for seed in range(NULL_WORLDS)]
-    jobs += [{"law": law, "share": share, "seed": seed} for law in worlds.LAWS for share in worlds.SHARES for seed in range(SEEDS_PER_CELL)]
+    jobs: list[dict[str, Any]] = [{"planted": None, "share": 0.0, "seed": seed} for seed in range(NULL_WORLDS)]
+    jobs += [{"planted": law, "share": share, "seed": seed} for law in worlds.LAWS for share in worlds.SHARES for seed in range(SEEDS_PER_CELL)]
     return jobs
 
 
@@ -134,12 +137,12 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
                             "worse_than_no_law_on_test": sum((r.get("test_r2_vs_no_law") or 0.0) < 0.0 for r in reported)}
         return out
 
-    summary = {"null": cell([r for r in rows if r["law"] is None])}
+    summary = {"null": cell([r for r in rows if r["planted"] is None])}
     for share in worlds.SHARES:
-        summary[f"share_{share}"] = cell([r for r in rows if r["law"] is not None and r["share"] == share])
+        summary[f"share_{share}"] = cell([r for r in rows if r["planted"] is not None and r["share"] == share])
     for law in worlds.LAWS:
-        summary[f"law_{law}"] = cell([r for r in rows if r["law"] == law])
-    summary["planted"] = cell([r for r in rows if r["law"] is not None])
+        summary[f"law_{law}"] = cell([r for r in rows if r["planted"] == law])
+    summary["planted"] = cell([r for r in rows if r["planted"] is not None])
     return summary
 
 
@@ -154,7 +157,7 @@ def check_frozen() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
-    parser.add_argument("command", choices=("run", "collect", "smoke"))
+    parser.add_argument("command", choices=("run", "collect", "smoke", "develop"))
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--shard", default="0/1", help="k/N: this shard's runs")
     args = parser.parse_args(argv)
@@ -162,14 +165,24 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "smoke":
         budget = float(os.environ.get("SMOKE_BUDGET_SECONDS", "30"))
         failed = 0
-        for job in ({"law": None, "share": 0.0, "seed": 0}, {"law": "trend_with_flow", "share": 0.05, "seed": 0},
-                    {"law": "trend_fading_in_volatility", "share": 0.2, "seed": 1}):
+        for job in ({"planted": None, "share": 0.0, "seed": 0}, {"planted": "trend_with_flow", "share": 0.05, "seed": 0},
+                    {"planted": "trend_fading_in_volatility", "share": 0.2, "seed": 1}):
             row = run_one(job, budget, tag="smoke")
             print(json.dumps({k: v for k, v in row.items() if k not in ("trace", "first_pass")}, default=str), flush=True)
             if row["status"] != "ok":
                 print(row.get("trace", ""), flush=True)
                 failed += 1
         return 1 if failed else 0
+    if args.command == "develop":  # development worlds (other seeds than the run's), for looking at behaviour before freezing
+        budget = float(os.environ.get("SMOKE_BUDGET_SECONDS", "60"))
+        k, n = (int(v) for v in args.shard.split("/"))
+        jobs = [{"planted": None, "share": 0.0, "seed": seed} for seed in range(4)]
+        jobs += [{"planted": law, "share": share, "seed": seed} for law in worlds.LAWS for share in (0.05, 0.2) for seed in range(2)]
+        for index, job in enumerate(jobs):
+            if index % n == k:
+                row = run_one(job, budget, tag="dev")
+                print("DEVELOP " + json.dumps({key: v for key, v in row.items() if key not in ("trace", "first_pass")}, default=str), flush=True)
+        return 0
     check_frozen()
     if args.command == "run":
         k, n = (int(v) for v in args.shard.split("/"))
