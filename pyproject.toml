@@ -47,6 +47,10 @@ test = [
     "cryptography>=41.0",
     "pytest-xdist>=3.6",
 ]
+# The main symbolic search (apedp_dyn.proposers.pysr_proposer). PySR installs Julia on first use.
+search = [
+    "pysr>=2.7",
+]
 bayesian = [
     "jax>=0.4",
 ]

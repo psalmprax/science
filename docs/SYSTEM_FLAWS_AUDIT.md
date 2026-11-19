@@ -151,6 +151,13 @@ three preregistered expectations missed.
   on laws the search can express and does not transfer. No referee change has
   been made: it needs its own preregistered test. Result:
   `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
+  **Fix under test (2026-11-19):** the main search path
+  (`apedp_dyn/discovery_l2/main_search.py`) does not use the sole-survivor
+  rule. It reports a law only after contrast confirmation and an adequacy
+  check (no structure in the residuals, and at least as good as a
+  nearest-neighbour smoother). PREREG-MAIN-SEARCH-2026-11 sets the criterion:
+  at most 5 % of the laws it reports may be inaccurate on the test rows. The
+  referee's own rule is unchanged and still used by the template engine.
 - **M-11 the in-house search is dominated by an outside engine — DECIDED
   2026-11-19; PARTLY IMPLEMENTED.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
   both expectations held): on the 119 Feynman problems PySR recovers 73 at zero
@@ -164,13 +171,15 @@ three preregistered expectations missed.
   confirmed stop, then PySR, then contrast confirmation and a residual
   adequacy check); RIME-AD and the extended hierarchical search are
   `deprecated` and RIME-AD no longer runs in the engine competition; RIME is
-  documented as not for tabular law discovery. **Open:** (1) the path as a
-  whole has no preregistered result, only its stages; (2) the L2 template
-  engine is still what the UI, the physics endpoint and the refusal-memory
-  ladder call (the UI server is freeze-pinned, so moving it needs a re-mint);
-  (3) RIME stays in the time-series repair path and the QED arms, which the
-  benchmark did not cover; (4) the in-house GA/GP was not in the benchmark, so
-  there is no number to retire it on.
+  documented as not for tabular law discovery. **Open, each now in hand:** (1) the path as a whole and (4) GA/GP are
+  being measured by PREREG-MAIN-SEARCH-2026-11 (frozen 2026-11-19, one run on
+  GitHub Actions; result pending); (2) `apedp_dyn/discovery_l2/route.py` is the
+  switch between the routes, and the template ladder now hands over to the main
+  search when its rungs are exhausted, but the default route stays `l2` and the
+  UI still calls the template engine until that preregistration's expectations
+  1 to 3 hold (the UI server is freeze-pinned, so moving it needs a re-mint);
+  (3) RIME stays in the time-series repair path and the QED arms, which no
+  benchmark here covers.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

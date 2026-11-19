@@ -15,6 +15,16 @@ inferred releases.
 
 ### Changed
 
+- **The open gaps of the main search are in hand (2026-11-19).** PREREG-MAIN-SEARCH-2026-11 is frozen
+  and running: the whole path on SRBench with the M-10 criterion (at most 5 % of reported laws
+  inaccurate), and the in-house GA/GP, measured for the first time. The path gained an exact-fit
+  confirmation for noise-free data, refitting of constants in searched expressions, and a second
+  adequacy condition (the law must predict at least as well as a nearest-neighbour smoother).
+  `apedp_dyn/discovery_l2/route.py` switches between the main search and the template ladder, and the
+  ladder now hands over to the main search when its rungs are exhausted. The default route stays `l2`
+  and the UI unchanged until the preregistration reports. `pysr` is an optional dependency
+  (`pip install -e ".[search]"`).
+
 - **PySR is the main search; the engines it beat are retired (2026-11-19, owner's decision).**
   `apedp_dyn/proposers/pysr_proposer.py` wraps PySR as a proposer (optional dependency; an explicit
   error without it, never a silent fallback). `apedp_dyn/discovery_l2/main_search.py` is the path for
