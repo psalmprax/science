@@ -15,6 +15,19 @@ inferred releases.
 
 ### Changed
 
+- **MMLM rebuilt as two measured models, generic and scientific (2026-11-19).** *MMLM-CM*
+  (`apedp_mmlm/context_mixing.py`, `neural_expert.py`): a byte-level language model of counting, match
+  and read-so-far experts plus one small LSTM trained on CPU, mixed with fitted weights.
+  PREREG-MMLM-CM-2026-11, run once, all four expectations held: 1.455 bits per byte on the WikiText-2
+  test split against 1.513 for the best primed classical compressor (PPMd order 16); the network alone
+  1.772. *MMLM-L* (`apedp_mmlm/law_language.py`, `law_corpora.py`, `law_ledger.py`): a law language
+  model with canonical tokens, tree-view experts, per-domain back-off and fitted mixing.
+  PREREG-MMLM-L-2026-11, run once, all six held: 22.61 bits per fresh law against 27.94 for the earlier
+  model. `apedp_dyn/discovery_l2/confirmed_stop.py` makes the guided search confirm an early stop:
+  96 of 100 laws with 4 wrong stops in 4.3 % of the plain search's time. Recorded limits: the new
+  prior does not order the search better than the old one, and it needs laws from a field before it
+  beats a unigram there. Audit entry M-09 updated.
+
 - **SRBench outside-engine result recorded: PySR recovers three times what L2 does (2026-11-19).**
   PREREG-SRBENCH-EXTERNAL-2026-11 ran once (798 runs); both expectations held. Feynman symbolic
   recovery of 119 at noise 0 and 1 %: PySR 73 and 68, PhySO 41 and 40, exhaustive search with MDL 31

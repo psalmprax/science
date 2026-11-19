@@ -117,23 +117,29 @@ three preregistered expectations missed.
   Opt-in in `PdeProposer`, 1-D grids only; its library is the divergence-form
   one, so `|grad u|^2` and `u*laplacian(u)` are not available in it; 2-D and
   a preregistered test are not done.
-- **M-09 MMLM had no measured result — ADDRESSED FOR ONE TRACK.** Tracks A-C
-  (text) still have no evaluation on real text. Track S
-  (`apedp_mmlm/equation_language.py`) models equations and is used as a
-  search prior; its self-adjusting form passed all three expectations of
-  PREREG-MMLM-S-2026-11 (law's median search position 6,111.5 to 303.5 on 24
-  other-field laws; adaptive copy at 53 % of a frozen copy's cost on a
-  stream). Follow-up PREREG-MMLM-S2-2026-11 (three of five held): the
-  early-stop search does 3.5 % of the plain search's work for 2 fewer laws in
-  128, but stops on a near-miss law in 5.5 % of runs (limit 5 %); ledger-fed
-  per-domain learning does not hurt; and the model does NOT transfer to the
-  longer Strogatz laws (no better than a unigram). The tensor-train engine is
-  repaired to unigram level. First real-text numbers for tracks A-C: all
-  three (4.25, 4.21, 4.20 bits per byte) lose to their own automaton alone
-  (3.87) and to gzip (2.78); self-adjusting weights recover the automaton's
-  level and no more. Still open: data with no law-like style (no corpus of
-  confirmed market laws exists), and the tokeniser orders a sum's terms by
-  variable name.
+- **M-09 MMLM had no measured result — ADDRESSED; TWO LIMITS OPEN.** MMLM now
+  has two measured models, each tested once on data it had not seen.
+  *Generic (text):* MMLM-CM (`apedp_mmlm/context_mixing.py`), counting, match
+  and read-so-far experts plus one 806k-weight LSTM trained on CPU, mixed with
+  fitted weights. PREREG-MMLM-CM-2026-11, all four expectations held: 1.455
+  bits per byte on the WikiText-2 test split against 1.513 for the best
+  classical compressor primed with the same training text; every expert group
+  earns 0.020 to 0.025. The old tracks A-C (4.20 to 4.25 bits per byte on other
+  text, behind gzip) are superseded. *Scientific (laws):* MMLM-L
+  (`apedp_mmlm/law_language.py`) with canonical tokens, tree-view experts,
+  domain back-off and fitted mixing. PREREG-MMLM-L-2026-11, all six held: 22.61
+  bits per fresh ODEBench law against 27.94 for the earlier model; the
+  confirmed early stop (`confirmed_stop.py`) recovers 96 of 100 laws with 4
+  wrong stops in 4.3 % of the plain search's time, which closes the miss of
+  PREREG-MMLM-S2. Earlier results (PREREG-MMLM-S, -S2) stand as recorded.
+  **Open:** (1) the better law model does not order the search better than the
+  earlier one (median position 20 against 24.5, p = 0.75): the search gain
+  came from the stop rule; (2) with no laws from a field, MMLM-L is not better
+  than a unigram (31.51 against 29.97 bits) until it has learned some. Also
+  not done: a comparison with large neural language models (they are well
+  ahead on text), the prior inside PySR, and data with no law-like style (no
+  corpus of confirmed market laws exists). One law in 133 still reads
+  differently under renaming (a sign convention of the algebra system).
 - **M-10 the referee promotes a sole survivor that does not fit — OPEN.** On
   SRBench (PREREG-SRBENCH-BASELINE-2026-11, run once) 168 of L2's 268 promotions
   were of something other than the recovered law (62.7 %; the expectation was at
