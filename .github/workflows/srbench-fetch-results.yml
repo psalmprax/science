@@ -1,0 +1,30 @@
+# Prints a finished benchmark run's results artifact to the job log as
+# gzip+base64, with SHA-256 of every file, so the unedited files can be
+# committed from an environment that cannot reach artifact storage.
+name: SRBench fetch results
+
+on:
+  push:
+    branches: ['srbench-fetch-results-*']
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: srbench-baseline-results
+          run-id: 44475539331
+          github-token: ${{ github.token }}
+          path: out
+      - name: Print
+        run: |
+          cd out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="
