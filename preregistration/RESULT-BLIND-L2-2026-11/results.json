@@ -1,0 +1,604 @@
+{
+ "frozen": {
+  "preregistration/PREREG-BLIND-L2-2026-11.md": "e210afce4c10c36f6736710f8bce4afe290fecfd3fabec7b65beacf7566a8910",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627"
+ },
+ "laws": [
+  {
+   "dimensions": {
+    "accel": "L T^-2",
+    "mass": "M"
+   },
+   "expression": "mass*accel",
+   "family": "known",
+   "law_id": "newton_second",
+   "target_dimension": "M L T^-2"
+  },
+  {
+   "dimensions": {
+    "mass": "M",
+    "vel": "L T^-1"
+   },
+   "expression": "mass*vel",
+   "family": "known",
+   "law_id": "momentum",
+   "target_dimension": "M L T^-1"
+  },
+  {
+   "dimensions": {
+    "mass": "M",
+    "vel": "L T^-1"
+   },
+   "expression": "0.5*mass*vel**2",
+   "family": "known",
+   "law_id": "kinetic_energy",
+   "target_dimension": "M L^2 T^-2"
+  },
+  {
+   "dimensions": {
+    "force": "M L T^-2",
+    "vel": "L T^-1"
+   },
+   "expression": "force*vel",
+   "family": "known",
+   "law_id": "power",
+   "target_dimension": "M L^2 T^-3"
+  },
+  {
+   "dimensions": {
+    "dist": "L",
+    "force": "M L T^-2"
+   },
+   "expression": "force*dist",
+   "family": "known",
+   "law_id": "work",
+   "target_dimension": "M L^2 T^-2"
+  },
+  {
+   "dimensions": {
+    "mass": "M",
+    "vol": "L^3"
+   },
+   "expression": "mass/vol",
+   "family": "known",
+   "law_id": "density",
+   "target_dimension": "M L^-3"
+  },
+  {
+   "dimensions": {
+    "area": "L^2",
+    "force": "M L T^-2"
+   },
+   "expression": "force/area",
+   "family": "known",
+   "law_id": "pressure",
+   "target_dimension": "M L^-1 T^-2"
+  },
+  {
+   "dimensions": {
+    "current": "I",
+    "resist": "M L^2 T^-3 I^-2"
+   },
+   "expression": "current*resist",
+   "family": "known",
+   "law_id": "ohm",
+   "target_dimension": "M L^2 T^-3 I^-1"
+  },
+  {
+   "dimensions": {
+    "radius": "L",
+    "vel": "L T^-1"
+   },
+   "expression": "vel/radius",
+   "family": "known",
+   "law_id": "angular_rate",
+   "target_dimension": "T^-1"
+  },
+  {
+   "dimensions": {
+    "radius": "L",
+    "vel": "L T^-1"
+   },
+   "expression": "vel**2/radius",
+   "family": "known",
+   "law_id": "centripetal",
+   "target_dimension": "L T^-2"
+  },
+  {
+   "dimensions": {
+    "grav": "L T^-2",
+    "height": "L",
+    "mass": "M"
+   },
+   "expression": "mass*grav*height",
+   "family": "known",
+   "law_id": "potential_energy",
+   "target_dimension": "M L^2 T^-2"
+  },
+  {
+   "dimensions": {
+    "grav": "L T^-2",
+    "length": "L"
+   },
+   "expression": "6.283185307*(length/grav)**(1/2)",
+   "family": "known",
+   "law_id": "pendulum_period",
+   "target_dimension": "T"
+  },
+  {
+   "dimensions": {
+    "f1": "M^-1 T^-1"
+   },
+   "expression": "1.777*f1**(-1/1)",
+   "family": "invented",
+   "law_id": "invented_00",
+   "target_dimension": "M T"
+  },
+  {
+   "dimensions": {
+    "g8": "M^-1 L^2 T^2",
+    "r1": "L^-2 T"
+   },
+   "expression": "1.403*g8**(2/1)*r1**(-2/1)",
+   "family": "invented",
+   "law_id": "invented_01",
+   "target_dimension": "M^-2 L^8 T^2"
+  },
+  {
+   "dimensions": {
+    "s1": "M^-2 L T^-2",
+    "v6": "M^-8 L^4 T^-8"
+   },
+   "expression": "0.854*s1**(2/1) + 1.1*v6**(1/2)",
+   "family": "invented",
+   "law_id": "invented_02",
+   "target_dimension": "M^-4 L^2 T^-4"
+  },
+  {
+   "dimensions": {
+    "z7": "L^2 T^-2"
+   },
+   "expression": "0.623*z7**(2/1)",
+   "family": "invented",
+   "law_id": "invented_03",
+   "target_dimension": "L^4 T^-4"
+  },
+  {
+   "dimensions": {
+    "b1": "L T^-1",
+    "v5": "M^-2 L T"
+   },
+   "expression": "2.674*b1**(-1/2)*v5**(1/2)",
+   "family": "invented",
+   "law_id": "invented_04",
+   "target_dimension": "M^-1 T"
+  },
+  {
+   "dimensions": {
+    "f4": "M^-1/2 L T^-1/2",
+    "p9": "M^-1 L^2 T^-1"
+   },
+   "expression": "0.576*p9**(1/2) + 2.56*f4",
+   "family": "invented",
+   "law_id": "invented_05",
+   "target_dimension": "M^-1/2 L T^-1/2"
+  },
+  {
+   "dimensions": {
+    "r6": "M^-1 T^-2"
+   },
+   "expression": "2.958*r6",
+   "family": "invented",
+   "law_id": "invented_06",
+   "target_dimension": "M^-1 T^-2"
+  },
+  {
+   "dimensions": {
+    "b6": "M L^-2 T",
+    "x9": "M^2 L^2 T^-1"
+   },
+   "expression": "1.609*b6*x9**(-2/1)",
+   "family": "invented",
+   "law_id": "invented_07",
+   "target_dimension": "M^-3 L^-6 T^3"
+  },
+  {
+   "dimensions": {
+    "b7": "M^-2 L^-1 T",
+    "j3": "M L^1/2 T^-1/2"
+   },
+   "expression": "1.136*b7**(-1/2) + 0.616*j3",
+   "family": "invented",
+   "law_id": "invented_08",
+   "target_dimension": "M L^1/2 T^-1/2"
+  },
+  {
+   "dimensions": {
+    "r5": "M^-1 L^-1 T^-2"
+   },
+   "expression": "1.266*r5**(-2/1)",
+   "family": "invented",
+   "law_id": "invented_09",
+   "target_dimension": "M^2 L^2 T^4"
+  },
+  {
+   "dimensions": {
+    "c9": "M L^-1 T^-2",
+    "s9": "L^2 T"
+   },
+   "expression": "1.907*c9*s9**(3/1)",
+   "family": "invented",
+   "law_id": "invented_10",
+   "target_dimension": "M L^5 T"
+  },
+  {
+   "dimensions": {
+    "f9": "M^-1 L T^-1",
+    "k3": "M^1/4 L^-1/4 T^1/4"
+   },
+   "expression": "2.374*f9**(1/2) + 2.493*k3**(-2/1)",
+   "family": "invented",
+   "law_id": "invented_11",
+   "target_dimension": "M^-1/2 L^1/2 T^-1/2"
+  },
+  {
+   "dimensions": {
+    "w9": "M^-1 L T^-1"
+   },
+   "expression": "2.863*w9**(2/1)",
+   "family": "invented",
+   "law_id": "invented_12",
+   "target_dimension": "M^-2 L^2 T^-2"
+  },
+  {
+   "dimensions": {
+    "j6": "M^2 L^-2 T",
+    "z1": "M^-1 L^2 T^-1"
+   },
+   "expression": "0.67*z1**(2/1)*j6**(-1/2)",
+   "family": "invented",
+   "law_id": "invented_13",
+   "target_dimension": "M^-3 L^5 T^-5/2"
+  },
+  {
+   "dimensions": {
+    "p1": "M^2 T",
+    "q5": "M^-1/3 T^-1/6"
+   },
+   "expression": "0.945*p1**(-1/2) + 1.331*q5**(3/1)",
+   "family": "invented",
+   "law_id": "invented_14",
+   "target_dimension": "M^-1 T^-1/2"
+  },
+  {
+   "dimensions": {
+    "z4": "M L^2 T^2"
+   },
+   "expression": "2.09*z4**(1/2)",
+   "family": "invented",
+   "law_id": "invented_15",
+   "target_dimension": "M^1/2 L T"
+  },
+  {
+   "dimensions": {
+    "c9": "M^2 L^-1 T^2",
+    "v8": "M^2 L T"
+   },
+   "expression": "2.022*c9**(3/1)*v8**(-1/1)",
+   "family": "invented",
+   "law_id": "invented_16",
+   "target_dimension": "M^4 L^-4 T^5"
+  },
+  {
+   "dimensions": {
+    "j3": "L^-1 T",
+    "r6": "L^2 T^-2"
+   },
+   "expression": "1.718*j3 + 2.113*r6**(-1/2)",
+   "family": "invented",
+   "law_id": "invented_17",
+   "target_dimension": "L^-1 T"
+  },
+  {
+   "dimensions": {
+    "b2": "L^-1"
+   },
+   "expression": "0.767*b2**(3/1)",
+   "family": "invented",
+   "law_id": "invented_18",
+   "target_dimension": "L^-3"
+  },
+  {
+   "dimensions": {
+    "b9": "M^-1",
+    "p4": "M^2 L^-2 T^-2"
+   },
+   "expression": "1.254*b9**(-1/1)*p4**(3/1)",
+   "family": "invented",
+   "law_id": "invented_19",
+   "target_dimension": "M^7 L^-6 T^-6"
+  },
+  {
+   "dimensions": {
+    "f6": "M L",
+    "v6": "M^-3/2 L^-3/2"
+   },
+   "expression": "2.71*f6**(3/1) + 2.91*v6**(-2/1)",
+   "family": "invented",
+   "law_id": "invented_20",
+   "target_dimension": "M^3 L^3"
+  },
+  {
+   "dimensions": {
+    "f3": "T^-2"
+   },
+   "expression": "1.579*f3",
+   "family": "invented",
+   "law_id": "invented_21",
+   "target_dimension": "T^-2"
+  },
+  {
+   "dimensions": {
+    "b8": "M^2 L^2 T^-2",
+    "w6": "M^2 L T^-2"
+   },
+   "expression": "1.814*w6**(-1/2)*b8**(-1/2)",
+   "family": "invented",
+   "law_id": "invented_22",
+   "target_dimension": "M^-2 L^-3/2 T^2"
+  },
+  {
+   "dimensions": {
+    "k1": "M^-1 T^-1",
+    "p5": "M^1/4 T^1/4"
+   },
+   "expression": "0.944*k1**(1/2) + 0.592*p5**(-2/1)",
+   "family": "invented",
+   "law_id": "invented_23",
+   "target_dimension": "M^-1/2 T^-1/2"
+  }
+ ],
+ "preregistration": "PREREG-BLIND-L2-2026-11",
+ "summary": {
+  "all|0.0": {
+   "abstention": 25,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.049944083705854674
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 72,
+   "recovered": 47,
+   "recovery_interval_95": [
+    0.5313671687187012,
+    0.761187230594636
+   ],
+   "recovery_rate": 0.6527777777777778
+  },
+  "all|0.01": {
+   "abstention": 18,
+   "false_discovery": 3,
+   "false_discovery_interval_95": [
+    0.008676497316343767,
+    0.11697481982594136
+   ],
+   "false_discovery_rate": 0.041666666666666664,
+   "n": 72,
+   "recovered": 51,
+   "recovery_interval_95": [
+    0.5893328452455984,
+    0.8095467017599333
+   ],
+   "recovery_rate": 0.7083333333333334
+  },
+  "all|0.05": {
+   "abstention": 25,
+   "false_discovery": 1,
+   "false_discovery_interval_95": [
+    0.0003515744052335979,
+    0.07497131085391912
+   ],
+   "false_discovery_rate": 0.013888888888888888,
+   "n": 72,
+   "recovered": 46,
+   "recovery_interval_95": [
+    0.5171286480970214,
+    0.7488371482214387
+   ],
+   "recovery_rate": 0.6388888888888888
+  },
+  "all|0.1": {
+   "abstention": 22,
+   "false_discovery": 3,
+   "false_discovery_interval_95": [
+    0.008676497316343767,
+    0.11697481982594136
+   ],
+   "false_discovery_rate": 0.041666666666666664,
+   "n": 72,
+   "recovered": 47,
+   "recovery_interval_95": [
+    0.5313671687187012,
+    0.761187230594636
+   ],
+   "recovery_rate": 0.6527777777777778
+  },
+  "all|all": {
+   "abstention": 90,
+   "false_discovery": 7,
+   "false_discovery_interval_95": [
+    0.009826686255395555,
+    0.04943534389800979
+   ],
+   "false_discovery_rate": 0.024305555555555556,
+   "n": 288,
+   "recovered": 191,
+   "recovery_interval_95": [
+    0.6054069838070301,
+    0.7175831667147776
+   ],
+   "recovery_rate": 0.6631944444444444
+  },
+  "invented|0.0": {
+   "abstention": 16,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.07397278534728022
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 48,
+   "recovered": 32,
+   "recovery_interval_95": [
+    0.515891679553828,
+    0.7960402644190006
+   ],
+   "recovery_rate": 0.6666666666666666
+  },
+  "invented|0.01": {
+   "abstention": 15,
+   "false_discovery": 3,
+   "false_discovery_interval_95": [
+    0.013079244409552649,
+    0.17195993079057043
+   ],
+   "false_discovery_rate": 0.0625,
+   "n": 48,
+   "recovered": 30,
+   "recovery_interval_95": [
+    0.473505760646776,
+    0.7604775965434142
+   ],
+   "recovery_rate": 0.625
+  },
+  "invented|0.05": {
+   "abstention": 22,
+   "false_discovery": 1,
+   "false_discovery_interval_95": [
+    0.0005273152534231204,
+    0.11069616059315221
+   ],
+   "false_discovery_rate": 0.020833333333333332,
+   "n": 48,
+   "recovered": 25,
+   "recovery_interval_95": [
+    0.3718701677416545,
+    0.6671336637863312
+   ],
+   "recovery_rate": 0.5208333333333334
+  },
+  "invented|0.1": {
+   "abstention": 20,
+   "false_discovery": 3,
+   "false_discovery_interval_95": [
+    0.013079244409552649,
+    0.17195993079057043
+   ],
+   "false_discovery_rate": 0.0625,
+   "n": 48,
+   "recovered": 25,
+   "recovery_interval_95": [
+    0.3718701677416545,
+    0.6671336637863312
+   ],
+   "recovery_rate": 0.5208333333333334
+  },
+  "invented|all": {
+   "abstention": 73,
+   "false_discovery": 7,
+   "false_discovery_interval_95": [
+    0.014781600487806927,
+    0.07367263592618675
+   ],
+   "false_discovery_rate": 0.036458333333333336,
+   "n": 192,
+   "recovered": 112,
+   "recovery_interval_95": [
+    0.5101572565229615,
+    0.6538951988637054
+   ],
+   "recovery_rate": 0.5833333333333334
+  },
+  "known|0.0": {
+   "abstention": 9,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.14247359772252563
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 24,
+   "recovered": 15,
+   "recovery_interval_95": [
+    0.405936384007944,
+    0.8120070718039977
+   ],
+   "recovery_rate": 0.625
+  },
+  "known|0.01": {
+   "abstention": 3,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.14247359772252563
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 24,
+   "recovered": 21,
+   "recovery_interval_95": [
+    0.6763886418111671,
+    0.973440685013751
+   ],
+   "recovery_rate": 0.875
+  },
+  "known|0.05": {
+   "abstention": 3,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.14247359772252563
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 24,
+   "recovered": 21,
+   "recovery_interval_95": [
+    0.6763886418111671,
+    0.973440685013751
+   ],
+   "recovery_rate": 0.875
+  },
+  "known|0.1": {
+   "abstention": 2,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.14247359772252563
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 24,
+   "recovered": 22,
+   "recovery_interval_95": [
+    0.7300271984423965,
+    0.9897436587187498
+   ],
+   "recovery_rate": 0.9166666666666666
+  },
+  "known|all": {
+   "abstention": 17,
+   "false_discovery": 0,
+   "false_discovery_interval_95": [
+    0.0,
+    0.03769692162358756
+   ],
+   "false_discovery_rate": 0.0,
+   "n": 96,
+   "recovered": 79,
+   "recovery_interval_95": [
+    0.7316814537399345,
+    0.8933229640980846
+   ],
+   "recovery_rate": 0.8229166666666666
+  }
+ }
+}

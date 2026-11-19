@@ -6,6 +6,42 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-19 round — the discoverer measured blind
+
+Basis: the preregistered run `PREREG-BLIND-L2-2026-11` (frozen at `e2a37cb`;
+report `preregistration/RESULT-BLIND-L2-2026-11.md`): 288 runs of
+`L2DiscoveryEngine` on 12 textbook and 24 invented laws with a distractor
+variable at 0/1/5/10 % noise. Wrong-law promotions: 7 of 288, none on a
+textbook law. Recovery: 82 % on known laws, 58 % on invented ones; two of the
+three preregistered expectations missed.
+
+- **M-01 the referee refuses a perfect fit as unassessed — OPEN, referee
+  decision.** All nine known-law misses at zero noise are the right law fitted
+  with RMSE 0 and refused because "residual series is constant: |rho1|
+  undefined, whiteness unassessable" (`epistemic/adjudicate.py`, and the same
+  rule in `whiteness_calibration.py`). A residual of zeros has nothing to test,
+  so the verdict should say "exact fit", not "structured residuals". Costs
+  nothing on real data, which always carry noise; it does distort every
+  noise-free simulation benchmark. Not changed: `adjudicate.py` is pinned by
+  `APEDPX_FROZEN_v1_18.json`, and what an exact fit should earn is for the
+  owner to decide.
+- **M-02 two-term laws with unequal coefficients are outside the default
+  search — OPEN, by design until measured.** With `coefficient_synthesis=False`
+  each candidate gets one fitted scale, so c₁·x^p + c₂·y^q cannot be expressed:
+  of 64 such runs, 7 recovered, 7 promoted the dominant term, 50 abstained.
+  On one-term laws the invented family recovers 75–94 %, close to the known
+  family; the preregistered familiarity gap is mostly this. The next
+  preregistration should measure `coefficient_synthesis=True` on two-term laws
+  whose terms are both identifiable at the stated noise.
+- **M-03 the benchmark generator did not check identifiability — RECORDED.**
+  Six of the seven false discoveries come from laws whose second term varies by
+  at most 3 against a first term reaching thousands, below the noise at 1 %.
+  They stay counted as false discoveries, as preregistered; a successor
+  generator should reject draws whose terms differ in spread by more than the
+  noise.
+
+---
+
 ## 2026-11-17 round — the three subsystems outside the referee
 
 Basis: `stage` after the referee package merged (PR #64). The question asked
