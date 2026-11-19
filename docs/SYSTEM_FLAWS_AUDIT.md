@@ -90,6 +90,15 @@ three preregistered expectations missed.
   a known noise model, and laws linear in their coefficients. Next: a
   preregistered run on fresh laws with a random-rows control arm at the same
   row count.
+- **M-07 the ODE path differentiates noisy data — PARTLY ADDRESSED.**
+  `ode/weak_form.py` integrates instead. On the Lorenz world (20 seeds,
+  development study) its coefficients are much better up to 5 % noise, but
+  with the twenty-term cubic library and a 10 s trajectory it finds the exact
+  terms no more often than the derivative route from 2 % noise, and PySINDy's
+  weak form does no better. Term selection, not the derivative, is what limits
+  ODE discovery there; the expectation that the weak form alone would lift the
+  ODE engine was wrong. Candidates for selection: contrast confirmation on a
+  second trajectory, or longer data. Not yet wired into the proposer.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

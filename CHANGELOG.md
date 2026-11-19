@@ -454,6 +454,11 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Weak-form ODE identification (`apedp_dyn/ode/weak_form.py`, experimental) and outside-engine adapters
+  (`scripts/run_srbench_external.py`: PySR, PhySO).** On the preregistered Lorenz world the weak form's
+  coefficients are far more accurate up to 5 % noise (1.8 % against 100 % worst error at 1 %), but it
+  does not select the exact terms more often from 2 % up; it is a better estimator, not a fix for
+  term selection. Development study, 20 seeds.
 - **Owner's decisions, 2026-11-19.** The referee's 5 %-of-signal resolution floor stays as calibrated;
   small terms are to be addressed by contrast confirmation, and the floor is revisited only if its
   preregistered test fails. `apedp_mmlm` becomes a research track with no performance claims. The
