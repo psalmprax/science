@@ -22,9 +22,14 @@ and the decision is made differently:
    taken; its own verdict is recorded as the ``ungated`` reading and not used.
 2. **One candidate is chosen on the development rows alone.** Each candidate is
    refitted on the first two thirds of the development period (one coefficient
-   per additive term) and scored on the last third. The lowest error wins, the
-   simpler formula on a tie. If none beats the mean of the first two thirds,
-   the outcome is ``no_predictive_law`` and the later period is not read.
+   per additive term) and scored on the last third. Candidates that do not beat
+   the mean of the first two thirds are dropped; if none is left the outcome is
+   ``no_predictive_law`` and the later period is not read. Of the rest, the
+   simplest one whose error is within one standard error of the best one's is
+   chosen (row by row, the difference of squared errors). A search run for
+   minutes returns elaborate formulas that score a little better by chance; in
+   development the lowest error alone chose the planted law's own form in 1 of
+   16 worlds, and the elaborate choices failed the later test more often.
 3. **One test on the later period.** The chosen candidate is refitted on all
    development rows and its forecasts for the period after them are compared
    with the development mean by the referee's Diebold-Mariano test
@@ -85,23 +90,36 @@ def predict(law: sp.Expr, names: list[str], X: np.ndarray) -> np.ndarray:
 
 
 def select_on_development(formulas: list[str], names: list[str], dev_X: np.ndarray, dev_y: np.ndarray) -> dict[str, Any]:
-    """Score every candidate on the last third of the development period; the best one, if it beats the mean."""
+    """Score every candidate on the last third of the development period and choose one, or none.
+
+    Chosen: among the candidates that beat the mean there, the simplest whose
+    squared errors are within one standard error of the best candidate's.
+    """
     cut = round(FIT_SHARE * len(dev_y))
     fit_X, fit_y, val_X, val_y = dev_X[:cut], dev_y[:cut], dev_X[cut:], dev_y[cut:]
     baseline = float(np.mean((val_y - fit_y.mean()) ** 2))
     scores: list[dict[str, Any]] = []
+    losses: dict[str, np.ndarray] = {}
     for formula in formulas:
         try:
             law = refitted(formula, names, fit_X, fit_y)
             forecast = predict(law, names, val_X)
         except (ValueError, TypeError, ZeroDivisionError, FloatingPointError, np.linalg.LinAlgError, sp.SympifyError):
             continue
-        if not law.free_symbols or not np.all(np.isfinite(forecast)):
+        if not law.free_symbols or not np.all(np.isfinite(forecast)) or formula in losses:
             continue
-        scores.append({"formula": formula, "validation_mse": float(np.mean((val_y - forecast) ** 2)),
+        losses[formula] = (val_y - forecast) ** 2
+        scores.append({"formula": formula, "validation_mse": float(losses[formula].mean()),
                        "size": int(sp.count_ops(law)) + len(law.atoms(sp.Float))})
     scores.sort(key=lambda s: (s["validation_mse"], s["size"]))
-    chosen = scores[0]["formula"] if scores and scores[0]["validation_mse"] < baseline else None
+    eligible = [s for s in scores if s["validation_mse"] < baseline]
+    chosen = None
+    if eligible:
+        best = losses[eligible[0]["formula"]]
+        for entry in eligible:
+            gap = losses[entry["formula"]] - best
+            entry["within_one_se_of_best"] = bool(gap.mean() <= gap.std(ddof=1) / np.sqrt(len(gap))) if len(gap) > 1 else True
+        chosen = min((e for e in eligible if e["within_one_se_of_best"]), key=lambda e: (e["size"], e["validation_mse"]))["formula"]
     return {"chosen": chosen, "no_law_validation_mse": baseline, "candidates": scores, "fit_rows": cut, "validation_rows": len(val_y)}
 
 

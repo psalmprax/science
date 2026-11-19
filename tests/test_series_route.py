@@ -63,7 +63,11 @@ def test_the_choice_is_made_inside_the_development_period_and_prefers_what_predi
     X, y = world["X"][world["dev"]], world["y"][world["dev"]]
     chosen = series_route.select_on_development(["x1", "x0*x2", "exp(x3)", "x0*x2 + x1"], names, X, y)
     scores = {c["formula"]: c["validation_mse"] for c in chosen["candidates"]}
-    assert chosen["chosen"] in ("x0*x2", "x0*x2 + x1") and scores["x0*x2"] < chosen["no_law_validation_mse"] < scores["exp(x3)"] * 1.5
+    assert chosen["chosen"] == "x0*x2" and scores["x0*x2"] < chosen["no_law_validation_mse"]
+    # an elaborate variant that scores no better than the planted form does not displace it
+    elaborate = series_route.select_on_development(["x0*x2", "x0*x2 + sin(x3)*x1 + x2**2"], names, X, y)
+    assert elaborate["chosen"] == "x0*x2"
+    assert all("within_one_se_of_best" in c for c in elaborate["candidates"] if c["validation_mse"] < elaborate["no_law_validation_mse"])
     null = worlds.world(None, 0.0, 3, tag="test")
     nothing = series_route.select_on_development([], names, null["X"][null["dev"]], null["y"][null["dev"]])
     assert nothing["chosen"] is None and nothing["candidates"] == []
