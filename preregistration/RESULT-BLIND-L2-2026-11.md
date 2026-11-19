@@ -76,7 +76,10 @@ noise 0 are `INSUFFICIENT_EVIDENCE` with the reason "residual series is constant
 whiteness unassessable" — the right law fitted with RMSE 0, and a residual of zeros has no
 autocorrelation to test, so `adjudicate.py` treats it as unassessed and abstains. Real data are never
 noise-free, so this costs nothing outside simulation, but it is a mislabel: a perfect fit is reported
-as structured residuals.
+as structured residuals. Re-running every zero-noise `INSUFFICIENT_EVIDENCE` run confirms it: all
+11 (the 9 known-law misses and 2 invented-law runs, `invented_18` and `invented_21`) ranked the true
+law first with holdout RMSE exactly 0 and were refused for this reason. The other zero-noise runs
+of the same laws passed because rounding left the residuals nonzero.
 
 ## What follows
 

@@ -16,7 +16,8 @@ textbook law. Recovery: 82 % on known laws, 58 % on invented ones; two of the
 three preregistered expectations missed.
 
 - **M-01 the referee refuses a perfect fit as unassessed — OPEN, referee
-  decision.** All nine known-law misses at zero noise are the right law fitted
+  decision.** All nine known-law misses at zero noise (and two invented-law
+  runs) are the right law fitted
   with RMSE 0 and refused because "residual series is constant: |rho1|
   undefined, whiteness unassessable" (`epistemic/adjudicate.py`, and the same
   rule in `whiteness_calibration.py`). A residual of zeros has nothing to test,
