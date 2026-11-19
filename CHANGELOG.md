@@ -15,6 +15,14 @@ inferred releases.
 
 ### Changed
 
+- **The language-model proposer can now be run with a real model (2026-11-19).**
+  `apedp_dyn/proposers/llm_clients.py` is a client for NVIDIA's hosted API; the key comes from the
+  environment and is never written anywhere. `scripts/run_llm_proposer_benchmark.py` and
+  `.github/workflows/llm-proposer.yml` put the model in PySR's place in the main search path, with
+  variables anonymised and no problem description, so it cannot answer by recalling a named law. No
+  result yet: the workflow needs the repository secret `NVIDIA_API_KEY`, and the preregistration is
+  written once a smoke run shows which model answers.
+
 - **Two engines measured for the first time, both with every expectation held (2026-11-19).**
   *PDE in two dimensions* (`apedp_dyn/pde/weak_form_2d.py`, PREREG-PDE-2D-2026-11): the exact equation
   in 117 of 120 runs on six simulated equations, 90 of 90 at noise up to 5 %, coefficients to about
