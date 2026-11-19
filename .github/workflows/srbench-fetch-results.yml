@@ -17,8 +17,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: srbench-baseline-results
-          run-id: 44475539331
+          name: srbench-external-results
+          run-id: 44482717272
           github-token: ${{ github.token }}
           path: out
       - name: Print
