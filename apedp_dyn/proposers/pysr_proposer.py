@@ -104,10 +104,21 @@ class PySRProposer(ProposerBase):
         internal = [f"x{i}" for i in range(len(features))]
         to_internal = {sp.Symbol(f): sp.Symbol(x) for f, x in zip(features, internal, strict=True)}
         to_feature = {sp.Symbol(x): sp.Symbol(f) for f, x in zip(features, internal, strict=True)}
-        seeds = [str(sp.sympify(g, locals={f: sp.Symbol(f) for f in features}).xreplace(to_internal)) for g in guesses or ()]
+        # PySR parses a seed as Julia, where a power is written ^
+        seeds = [str(sp.sympify(g, locals={f: sp.Symbol(f) for f in features}).xreplace(to_internal)).replace("**", "^")
+                 for g in guesses or ()]
         model = self._factory(budget_seconds=self._budget, binary=self._binary, unary=self._unary, seed=self._seed,
                               guesses=seeds or None)
-        model.fit(X, y, variable_names=internal)
+        seed_rejected = ""
+        try:
+            model.fit(X, y, variable_names=internal)
+        except Exception as exc:  # noqa: BLE001 - a seed PySR cannot use must not cost the search; anything else is re-raised below
+            if not seeds:
+                raise
+            seed_rejected = f"{type(exc).__name__}: {exc}"[:200]
+            model = self._factory(budget_seconds=self._budget, binary=self._binary, unary=self._unary, seed=self._seed,
+                                  guesses=None)
+            model.fit(X, y, variable_names=internal)
         hall = hall_of_fame(model)
         proposals, seen = [], set()
         for rank, row in enumerate(hall):
@@ -130,7 +141,8 @@ class PySRProposer(ProposerBase):
                 compute_score=compute_score,
                 parameters={"dev_loss": row["loss"], "complexity": row["complexity"], "score": row["score"]},
                 metadata={"engine": "PySR", "hall_of_fame_rank": rank, "selection_pool_size": max(1, len(hall)),
-                          "budget_seconds": self._budget, "seeded_with": len(seeds), "seed": self._seed},
+                          "budget_seconds": self._budget, "seeded_with": 0 if seed_rejected else len(seeds),
+                          "seed_rejected": seed_rejected, "seed": self._seed},
             ))
             if len(proposals) >= self._max_proposals:
                 break

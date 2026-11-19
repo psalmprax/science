@@ -78,6 +78,24 @@ does not, it is kept and the decision goes back to the owner.
   fails, nothing preregistered has run; the fault is fixed, the digest re-frozen with the reason
   recorded here, and a new run branch started.
 
+## Re-frozen once before any run (2026-11-19)
+
+The first run branch (`srbench-main-search-run-1`, commit `7cf474c`) stopped at the smoke job; no
+shard started and no preregistered number exists from it. The smoke found two faults in the harness
+side, both fixed before this freeze:
+
+- PySR reads a seed expression as Julia, where a power is `^`; the first pass's `**` made it fail to
+  parse on `feynman_I_12_2`. Seeds are now written with `^`, and if PySR still rejects a seed the
+  search runs without it and says so in its metadata.
+- GA/GP's pick can contain `erf`, a Bessel function or `sign`, which the scoring could not evaluate
+  on arrays (`feynman_I_12_1`). They are now evaluated through SciPy.
+
+What the smoke showed on its three problems, for the record (30 s budgets, not part of the result):
+the path reported the exact law on `feynman_I_12_1` from the first pass; on `strogatz_bacres1` it
+reported an accurate law that was not the symbolic one, as `equivalent_class`; GA/GP recovered
+`feynman_I_12_2` at noise 0 and was neither accurate nor symbolic on `strogatz_bacres1`. Nothing in
+the protocol or the expectations was changed after seeing these.
+
 ## Deviation rule
 
 The run is not repeated. If a shard fails for a reason of infrastructure (a runner lost, a download

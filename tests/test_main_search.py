@@ -60,6 +60,29 @@ def test_proposer_emits_candidates_in_the_callers_feature_names_and_decides_noth
     assert not hasattr(best, "accepted")
 
 
+def test_seeds_are_written_as_julia_and_a_seed_pysr_rejects_does_not_cost_the_search():
+    made: list[FakeRegressor] = []
+    frame = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [2.0, 1.0, 4.0], "target": [1.0, 2.0, 3.0]})
+    PySRProposer(regressor_factory=_factory([("x0", 1, 1.0, 0.0)], made)).fit_and_propose(frame, guesses=["0.5*a/b**2 - 0.1"])
+    assert "^" in made[0].settings["guesses"][0] and "**" not in made[0].settings["guesses"][0]
+
+    class Picky(FakeRegressor):
+        def fit(self, X, y, variable_names=None):
+            if self.settings.get("guesses"):
+                raise RuntimeError("ParseError: cannot read the seed")
+            return super().fit(X, y, variable_names)
+
+    built: list[Picky] = []
+
+    def factory(**settings):
+        built.append(Picky([("x0*x1", 3, 0.1, 1.0)], **settings))
+        return built[-1]
+
+    proposals = PySRProposer(regressor_factory=factory).fit_and_propose(frame, guesses=["a/b"])
+    assert len(built) == 2 and built[1].settings["guesses"] is None
+    assert proposals[0].metadata["seeded_with"] == 0 and "ParseError" in proposals[0].metadata["seed_rejected"]
+
+
 def test_missing_pysr_is_an_explicit_error_not_a_silent_fallback(monkeypatch):
     monkeypatch.setitem(sys.modules, "pysr", None)
     with pytest.raises(PySRUnavailableError):

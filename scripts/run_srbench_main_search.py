@@ -56,11 +56,14 @@ TIME_LIMIT_S = 480.0     # when a run's process is killed
 DEV_SHARE = 0.7
 GA_GENERATIONS, GA_ISLANDS = 1500, 8
 REPORTED = ("confirmed", "equivalent_class", "unchallenged")
-_GA_NAMES = {"min": sp.Min, "max": sp.Max, "abs": sp.Abs, "cbrt": sp.cbrt, "pi": sp.pi, **base.FUNCTIONS}
+# Every function name the native kernel prints that SymPy does not already read as written.
+_GA_NAMES = {"min": sp.Min, "max": sp.Max, "abs": sp.Abs, "cbrt": sp.cbrt, "pi": sp.pi, "sign": sp.sign,
+             "besselj": lambda x: sp.besselj(0, x), **base.FUNCTIONS}
 
 
 def _predict(model: sp.Expr, names: list[str], X: np.ndarray) -> np.ndarray:
-    fn = sp.lambdify([sp.Symbol(n) for n in names], model, "numpy", dummify=True)
+    # scipy first: erf and the Bessel function have no NumPy version, and the math module's take no arrays
+    fn = sp.lambdify([sp.Symbol(n) for n in names], model, ["scipy", "numpy"], dummify=True)
     with np.errstate(all="ignore"):
         out: np.ndarray = np.asarray(fn(*X.T), dtype=float) * np.ones(len(X))
     return out
