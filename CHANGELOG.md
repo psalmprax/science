@@ -15,6 +15,14 @@ inferred releases.
 
 ### Changed
 
+- **SRBench baseline result recorded: the referee's promotions are mostly wrong on it (2026-11-19).**
+  PREREG-SRBENCH-BASELINE-2026-11 ran once (2,128 runs). Symbolic recovery over four noise levels:
+  L2 108 of 532 (20.3 %), extended hierarchical 36, RIME 24, RIME-AD 11. The one expectation was
+  missed: 168 of L2's 268 promotions (62.7 %) were not the recovered law, against a limit of 5 %.
+  Recorded as audit entry M-10 (open); no referee code changed. Outputs unedited in
+  `preregistration/RESULT-SRBENCH-BASELINE-2026-11/`; report in
+  `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
+
 - **Running the tests no longer rewrites committed evidence (2026-11-17).**
   The five-gate programme's two report files and the two Rust profile records
   were replaced on every run with the running machine's timings and workspace

@@ -134,6 +134,17 @@ three preregistered expectations missed.
   level and no more. Still open: data with no law-like style (no corpus of
   confirmed market laws exists), and the tokeniser orders a sum's terms by
   variable name.
+- **M-10 the referee promotes a sole survivor that does not fit — OPEN.** On
+  SRBench (PREREG-SRBENCH-BASELINE-2026-11, run once) 168 of L2's 268 promotions
+  were of something other than the recovered law (62.7 %; the expectation was at
+  most 5 %). In 116 the reason given is that no structurally distinct rival
+  survived; the median test R² of the wrongly promoted laws is 0.81 and 36 are
+  below 0.5. `UNIQUE_SUPPORT` is relative to the candidates the search built and
+  carries no absolute-fit condition, so on laws outside the search space it
+  certifies the least bad candidate. The blind benchmark's 7 in 288 was measured
+  on laws the search can express and does not transfer. No referee change has
+  been made: it needs its own preregistered test. Result:
+  `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
