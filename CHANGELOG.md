@@ -15,6 +15,18 @@ inferred releases.
 
 ### Changed
 
+- **PySR is the main search; the engines it beat are retired (2026-11-19, owner's decision).**
+  `apedp_dyn/proposers/pysr_proposer.py` wraps PySR as a proposer (optional dependency; an explicit
+  error without it, never a silent fallback). `apedp_dyn/discovery_l2/main_search.py` is the path for
+  discovering a law from tabular data: exhaustive first pass with the confirmed stop, PySR seeded by
+  it, contrast confirmation, and a residual adequacy check that turns a confirmation into a refusal
+  when the survivor's residuals still have structure. RIME-AD (2.1 % on SRBench) and the extended
+  hierarchical search (6.8 %) are `deprecated`; the engine competition gains a `pysr` entry and no
+  longer runs `rime_ad` by default (`RETIRED_ENGINES`, `include_retired=True` to run it). Not changed:
+  the L2 template engine is still wired into the UI and the refusal-memory ladder, RIME into the
+  time-series repair path, and GA/GP has no benchmark number. The path as a whole is not yet measured
+  (audit M-11).
+
 - **MMLM rebuilt as two measured models, generic and scientific (2026-11-19).** *MMLM-CM*
   (`apedp_mmlm/context_mixing.py`, `neural_expert.py`): a byte-level language model of counting, match
   and read-so-far experts plus one small LSTM trained on CPU, mixed with fitted weights.

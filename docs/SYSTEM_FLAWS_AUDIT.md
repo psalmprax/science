@@ -151,13 +151,26 @@ three preregistered expectations missed.
   on laws the search can express and does not transfer. No referee change has
   been made: it needs its own preregistered test. Result:
   `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
-- **M-11 the in-house search is dominated by an outside engine — OPEN, OWNER'S
-  DECISION.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once, both expectations held):
-  on the 119 Feynman problems PySR recovers 73 at zero noise and 68 at 1 %, PhySO
-  41 and 40, the in-house exhaustive search 31 and 31, L2 24 and 24. PySR recovers
-  every problem L2 does. The outside engines had 240 s per run against 120 s.
-  Which in-house engines to retire or reposition has not been decided. Result:
-  `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11.md`.
+- **M-11 the in-house search is dominated by an outside engine — DECIDED
+  2026-11-19; PARTLY IMPLEMENTED.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
+  both expectations held): on the 119 Feynman problems PySR recovers 73 at zero
+  noise and 68 at 1 %, PhySO 41 and 40, the in-house exhaustive search 31 and
+  31, L2 24 and 24. PySR recovers every problem L2 does. The outside engines
+  had 240 s per run against 120 s. Result:
+  `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11.md`. **Owner's decision:**
+  PySR is the main search and the engines it beat are retired. **Done:**
+  `apedp_dyn/proposers/pysr_proposer.py` (PySR as a proposer) and
+  `apedp_dyn/discovery_l2/main_search.py` (exhaustive first pass with the
+  confirmed stop, then PySR, then contrast confirmation and a residual
+  adequacy check); RIME-AD and the extended hierarchical search are
+  `deprecated` and RIME-AD no longer runs in the engine competition; RIME is
+  documented as not for tabular law discovery. **Open:** (1) the path as a
+  whole has no preregistered result, only its stages; (2) the L2 template
+  engine is still what the UI, the physics endpoint and the refusal-memory
+  ladder call (the UI server is freeze-pinned, so moving it needs a re-mint);
+  (3) RIME stays in the time-series repair path and the QED arms, which the
+  benchmark did not cover; (4) the in-house GA/GP was not in the benchmark, so
+  there is no number to retire it on.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
