@@ -454,6 +454,10 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Two proposers (experimental): PCMCI+ parent sets (`proposers/pcmci_proposer.py`, Tigramite optional)
+  and an LLM equation proposer interface with memorisation guards (`proposers/llm_proposer.py`: anonymous
+  variables, a recitation probe before data, whitelist-only parsing).** The LLM interface has been run
+  only with a scripted stand-in.
 - **Exhaustive search with description-length scoring (`apedp_dyn/discovery_l2/exhaustive_search.py`,
   experimental).** Every expression up to a node limit, deduplicated numerically, scored by description
   length, sliceable across `work_queue.py` workers with an identical result. In the spirit of ESR, with
