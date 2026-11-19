@@ -84,7 +84,8 @@ def llm_path(X: dict[str, np.ndarray], y: np.ndarray, pool_X: np.ndarray, measur
     record = {"model": model, "calls": client.calls, "proposals": len(proposer.proposals),  # type: ignore[attr-defined]
               "recited_before_data": sum(bool(p.metadata.get("recited_before_data")) for p in proposer.proposals),
               "skeletons_tried": seen.get("skeletons_tried", 0), "replies_rejected": seen.get("replies_rejected", 0),
-              "first_reply": seen.get("first_reply", ""), "formulas": [p.formula for p in proposer.proposals]}
+              "last_reply": seen.get("last_reply", ""), "last_answer": seen.get("last_answer", {}),
+              "formulas": [p.formula for p in proposer.proposals]}
     return result, record
 
 

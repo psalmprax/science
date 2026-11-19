@@ -28,16 +28,43 @@ from typing import Any
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 KEY_VARIABLE = "NVIDIA_API_KEY"
-#: tried in order; the first that answers is used (the chat models the catalogue listed on 2026-11-19)
+#: tried in order; the first that answers is used. These five answered within the time limit in the survey
+#: of 2026-11-19; four others the catalogue lists timed out (kimi-k3.1-pro, gemma-4-31b-it, glm-5.3-flash,
+#: muse-glimmer-30b).
 PREFERRED_MODELS = (
-    "nvidia/nemotron-3-ultra-550b-a55b", "mistralai/mistral-large-4-1t-a52b", "moonshotai/kimi-k3.1-pro",
-    "google/gemma-4-31b-it", "stepfun-ai/step-5-preview", "z-ai/glm-5.3-flash", "minimaxai/minimax-m3.1-flash",
-    "nvidia/nemotron-3.5-lightning-30b-a3b", "meta/muse-glimmer-30b",
+    "nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-3-ultra-550b-a55b", "minimaxai/minimax-m3.1-flash",
+    "stepfun-ai/step-5-preview", "mistralai/mistral-large-4-1t-a52b",
 )
 #: listed models whose names say they are not general chat models; never tried as a fallback
 _NOT_CHAT = ("embed", "rerank", "guard", "safety", "detect", "vision", "-vl", "whisper", "parakeet", "tts", "ocr", "clip",
              "retriev", "reward", "translate", "asr", "audio", "image", "video", "diffusion", "pii", "topic-control")
 _THINKING = re.compile(r"<think>.*?</think>", re.DOTALL)
+_REASONING_FIELDS = ("reasoning_content", "reasoning")
+
+
+def reply_text(message: dict[str, Any]) -> tuple[str, str]:
+    """The answer in a chat message and where it was found (``content``, a reasoning field, or ``nothing``).
+
+    Hosted reasoning models put their working in a separate field and the
+    answer in ``content``. When the token budget runs out while they are still
+    working, ``content`` comes back empty and the only text is the working;
+    that text is returned then (its end is where proposals would be), marked
+    as such, because an empty reply teaches nothing. ``content`` may also be a
+    list of parts, and working may be wrapped in ``<think>`` tags, closed or not.
+    """
+    content = message.get("content")
+    if isinstance(content, list):
+        content = "".join(str(part.get("text", "")) if isinstance(part, dict) else str(part) for part in content)
+    text = _THINKING.sub("", str(content or ""))
+    if "<think>" in text:  # an unclosed tag: the budget ran out inside the working
+        text = text.split("<think>", 1)[0] or text.split("<think>", 1)[1]
+    if text.strip():
+        return text.strip(), "content"
+    for field in _REASONING_FIELDS:
+        working = message.get(field)
+        if isinstance(working, str) and working.strip():
+            return working.strip()[-4000:], field
+    return "", "nothing"
 
 
 class LlmUnavailableError(RuntimeError):
@@ -73,13 +100,15 @@ def available_models(api_key: str | None = None, base_url: str = NVIDIA_BASE_URL
 
 
 def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVIDIA_BASE_URL, temperature: float = 0.0,
-                  max_tokens: int = 1500, min_interval: float = 1.6, retries: int = 4, timeout: float = 90.0,
+                  max_tokens: int = 4096, min_interval: float = 1.6, retries: int = 4, timeout: float = 120.0,
                   sleep: Callable[[float], None] = time.sleep) -> Callable[[str], str]:
     """A ``prompt -> reply`` callable for one model. ``client.calls`` counts requests; ``client.model`` names the model.
 
     Requests are spaced ``min_interval`` seconds apart (the free tier is rate
     limited) and retried with a growing wait on HTTP 429 and 5xx. Reasoning that
-    a model wraps in ``<think>`` tags is removed from the reply.
+    a model wraps in ``<think>`` tags is removed from the reply (:func:`reply_text`).
+    ``client.last`` describes the latest answer (where the text was found, why
+    the model stopped, token counts) and never contains the key or the prompt.
     """
     state = {"last": 0.0}
 
@@ -94,8 +123,12 @@ def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVI
             try:
                 reply = _request("/chat/completions", {"model": model, "messages": [{"role": "user", "content": prompt}],
                                                        "temperature": temperature, "max_tokens": max_tokens}, api_key, base_url, timeout)
-                message = reply["choices"][0]["message"]
-                return _THINKING.sub("", str(message.get("content") or "")).strip()
+                choice = reply["choices"][0]
+                text, source = reply_text(choice["message"])
+                client.last = {"source": source, "finish_reason": choice.get("finish_reason"), "characters": len(text),  # type: ignore[attr-defined]
+                               "fields": sorted(k for k, v in choice["message"].items() if v),
+                               "usage": {k: v for k, v in (reply.get("usage") or {}).items() if isinstance(v, int)}}
+                return text
             except urllib.error.HTTPError as exc:
                 detail = exc.read().decode("utf-8", "replace")[:200] if exc.fp else ""
                 if exc.code not in (429, 500, 502, 503, 504) or attempt == retries:
@@ -108,6 +141,7 @@ def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVI
         raise LlmUnavailableError(f"{model}: no reply")  # pragma: no cover - the loop returns or raises
 
     client.calls = 0  # type: ignore[attr-defined]
+    client.last = {}  # type: ignore[attr-defined]
     client.model = model  # type: ignore[attr-defined]
     return client
 

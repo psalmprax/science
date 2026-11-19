@@ -197,7 +197,8 @@ class LlmEquationProposer(ProposerBase):
                 tried[key] = {"skeleton": str(expr), "expr": expr, "constants": constants, "error": error, "key": key}
 
         self.last_run = {"skeletons_tried": len(tried), "replies_rejected": rejected, "recited_before_data": len(recited),
-                         "first_reply": reply[:300] if self._rounds > 0 else ""}
+                         "last_reply": reply[-300:] if self._rounds > 0 else "",
+                         "last_answer": dict(getattr(self._client, "last", {}) or {})}
         proposals = []
         for item in sorted(tried.values(), key=lambda t: t["error"])[: self._max_proposals]:
             fitted = item["expr"].xreplace({sp.Symbol(k): sp.Float(v) for k, v in item["constants"].items()})

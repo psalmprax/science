@@ -107,3 +107,13 @@ def test_fallback_skips_models_that_are_not_chat_models(monkeypatch):
 
     _serve(monkeypatch, handler)
     assert llm_clients.pick_model((), sleep=lambda s: None) == "x/chat-1" and asked == ["x/chat-1"]
+
+
+def test_reply_text_finds_the_answer_wherever_a_model_puts_it():
+    assert llm_clients.reply_text({"content": "<think>working</think>\nx0*x1"}) == ("x0*x1", "content")
+    assert llm_clients.reply_text({"content": [{"type": "text", "text": "x0 + c0"}]}) == ("x0 + c0", "content")
+    # the budget ran out while the model was still working: the working is all there is, and is marked as such
+    text, source = llm_clients.reply_text({"content": None, "reasoning_content": "Maybe c0*x0*exp(-c1*x1)\nc0*x0*exp(-c1*x1)"})
+    assert source == "reasoning_content" and text.endswith("c0*x0*exp(-c1*x1)")
+    assert llm_clients.reply_text({"content": "<think>never closed c0*x0"}) == ("never closed c0*x0", "content")
+    assert llm_clients.reply_text({"content": ""}) == ("", "nothing")

@@ -113,4 +113,4 @@ def test_replies_are_read_through_the_decoration_models_add():
 def test_what_the_last_call_saw_is_kept_even_when_nothing_parses():
     proposer = lp.LlmEquationProposer(Scripted(probe="", rounds=["I cannot see a pattern in these numbers at all."]), rounds=1)
     assert proposer.fit_and_propose(FRAME) == ()
-    assert proposer.last_run["skeletons_tried"] == 0 and "cannot see" in proposer.last_run["first_reply"]
+    assert proposer.last_run["skeletons_tried"] == 0 and "at all" in proposer.last_run["last_reply"]
