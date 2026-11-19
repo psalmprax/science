@@ -12,11 +12,11 @@ def test_native_scan_placeholders_fail_explicitly():
     volume = np.zeros((1, 2, 3), dtype=np.float64)
     matrix = np.zeros((1, 3), dtype=np.float64)
     vector = np.zeros(3, dtype=np.float64)
-    with pytest.raises(NotImplementedError, match="no implemented native recurrence"):
+    with pytest.raises(NotImplementedError, match="is not implemented"):
         apedp_kernel.ssm_scan(
             x=volume, a_log=matrix, dt=matrix, b=volume, c=volume, d=matrix
         )
-    with pytest.raises(NotImplementedError, match="no implemented native recurrence"):
+    with pytest.raises(NotImplementedError, match="is not implemented"):
         apedp_kernel.mamba2_selective_scan(
             u=volume, delta=volume, a=vector, b=volume, c=volume, d=matrix
         )
