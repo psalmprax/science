@@ -11,13 +11,21 @@ Two routes exist:
   main search instead of a refusal, so the ladder no longer ends inside the
   template engine.
 
-``DEFAULT_ROUTE`` is ``l2`` on purpose. The main search path was built on
-evidence about its parts; whether what it reports can be relied on is what
-PREREG-MAIN-SEARCH-2026-11 measures. The default changes to ``main_search``
-only if that preregistration's expectations 1 to 3 hold, and the change is a
-recorded edit here, not a setting someone can forget. Until then a caller
-chooses the route explicitly, or a deployment sets
-``APEDP_LAW_DISCOVERY_ROUTE``.
+``DEFAULT_ROUTE`` is ``main_search`` since 2026-11-19. It was ``l2`` until
+PREREG-MAIN-SEARCH-2026-11 had been run, and that preregistration fixed the
+condition for the change: its expectations 1 to 3. They held (SRBench, 266
+runs: 4 of the 186 laws the path reported were not accurate, 2.2 %; 152 were
+the law; 69 and 70 of 119 Feynman laws recovered against 73 and 68 for PySR
+alone; ``preregistration/RESULT-MAIN-SEARCH-2026-11.md``). A deployment can
+still set ``APEDP_LAW_DISCOVERY_ROUTE=l2``.
+
+``law`` in the returned record is the text the search produced.
+``law_as_confirmed`` is the same law with one coefficient per additive term
+refitted on the development rows, which is the form contrast confirmation and
+the adequacy check were applied to. They are usually the same; in the benchmark
+they differed materially in 2 of 186 reported laws (a search returned
+``x0*(x2 + x3*x4/x1)**2``, and what was confirmed exact was its cross term
+alone). Use ``law_as_confirmed`` for prediction.
 """
 from __future__ import annotations
 
@@ -26,12 +34,13 @@ from collections.abc import Callable, Mapping
 from typing import Any
 
 import numpy as np
+import sympy as sp
 
 from apedp_dyn.discovery_l2 import contrast_resolution, main_search
 from apedp_dyn.grammar.proposer_interface import ProposerBase
 
 ROUTES = ("main_search", "l2")
-DEFAULT_ROUTE = "l2"
+DEFAULT_ROUTE = "main_search"
 ENVIRONMENT_VARIABLE = "APEDP_LAW_DISCOVERY_ROUTE"
 
 
@@ -41,6 +50,16 @@ def default_route() -> str:
     if chosen not in ROUTES:
         raise ValueError(f"{ENVIRONMENT_VARIABLE} must be one of {ROUTES}, not {chosen!r}")
     return chosen
+
+
+def as_confirmed(law: str, X: Mapping[str, np.ndarray], Y: np.ndarray, noise: str = "relative") -> str:
+    """``law`` with one coefficient per additive term, fitted on the development rows: the form that was confirmed."""
+    names = list(X)
+    dev_X = np.column_stack([np.asarray(X[n], dtype=float) for n in names])
+    expr = sp.sympify(law, locals={n: sp.Symbol(n) for n in names})
+    terms = [term.as_coeff_Mul()[1] for term in sp.Add.make_args(sp.expand(expr))]
+    fitted = contrast_resolution.fitted_candidate(expr, names, dev_X, np.asarray(Y, dtype=float), noise)
+    return str(sp.Add(*[sp.Float(float(c)) * term for c, term in zip(fitted.coef, terms, strict=True)]))
 
 
 def discover_law(
@@ -71,4 +90,5 @@ def discover_law(
     result = main_search.discover(X, Y, pool_X, measure, proposer=proposer, noise=noise, seed=seed, ledger=ledger,
                                   search_id=search_id, domain=domain)
     return {"route": "main_search" if route == "main_search" else "l2+main_search", "action": result.action,
-            "law": result.law, "rounds": rounds, "main_search": result}
+            "law": result.law, "law_as_confirmed": as_confirmed(result.law, X, Y, noise) if result.law else None,
+            "rounds": rounds, "main_search": result}

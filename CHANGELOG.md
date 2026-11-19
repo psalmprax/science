@@ -15,6 +15,19 @@ inferred releases.
 
 ### Changed
 
+- **The main search path is now the default route for discovering a law, and GA/GP is retired
+  (2026-11-19).** PREREG-MAIN-SEARCH-2026-11 was run once on SRBench (133 problems, noise 0 and 1 %)
+  and all four expectations held. The path reported a law in 186 of 266 runs; 4 were not accurate
+  (2.2 %; the referee's sole-survivor rule: 62.7 % on the same benchmark) and 152 were the law. On
+  the Feynman problems it recovered 69 and 70 of 119 (PySR alone: 73 and 68); GA/GP recovered 53
+  and 7. As preregistered, `DEFAULT_ROUTE` in `apedp_dyn/discovery_l2/route.py` changes from `l2` to
+  `main_search`, and GA/GP is retired as a law-discovery engine (kept importable; a deployment can
+  still set `APEDP_LAW_DISCOVERY_ROUTE=l2`). Found after the run and recorded as such: the path
+  reports the search's text and not the refit it confirmed, which made 2 of the 4 inaccurate reports
+  (audit M-13; `route.discover_law` now also returns `law_as_confirmed`), and the adequacy check
+  passed a poor law on one trajectory problem at both noise levels (audit M-14, open).
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`.
+
 - **The language-model proposer can now be run with a real model (2026-11-19).**
   `apedp_dyn/proposers/llm_clients.py` is a client for NVIDIA's hosted API; the key comes from the
   environment and is never written anywhere. `scripts/run_llm_proposer_benchmark.py` and

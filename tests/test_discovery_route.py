@@ -36,9 +36,10 @@ def _problem(fn, seed=0, noise=0.01):
 
 def test_default_route_is_the_recorded_one_and_the_environment_can_choose(monkeypatch):
     monkeypatch.delenv(route.ENVIRONMENT_VARIABLE, raising=False)
-    assert route.default_route() == route.DEFAULT_ROUTE and route.DEFAULT_ROUTE in route.ROUTES
-    monkeypatch.setenv(route.ENVIRONMENT_VARIABLE, "main_search")
-    assert route.default_route() == "main_search"
+    # main_search since PREREG-MAIN-SEARCH-2026-11's expectations 1 to 3 held; the change is a recorded edit
+    assert route.default_route() == route.DEFAULT_ROUTE == "main_search"
+    monkeypatch.setenv(route.ENVIRONMENT_VARIABLE, "l2")
+    assert route.default_route() == "l2"
     monkeypatch.setenv(route.ENVIRONMENT_VARIABLE, "something_else")
     with pytest.raises(ValueError):
         route.default_route()
@@ -49,6 +50,7 @@ def test_main_search_route_finds_a_simple_law_and_records_one_trial(tmp_path):
     ledger = CandidateTrialLedger(tmp_path / "ledger.jsonl")
     out = route.discover_law(X, y, pool, measure, ledger=ledger, search_id="r1", route="main_search", domain="demo")
     assert out["route"] == "main_search" and out["action"] in ("confirmed", "unchallenged") and out["law"]
+    assert out["law_as_confirmed"] and "a" in out["law_as_confirmed"] and "b" in out["law_as_confirmed"]
     records = ledger.get_records()
     assert len(records) == 1 and records[0].metadata["resolved_by"] == "contrast" and records[0].metadata["domain"] == "demo"
 
@@ -74,3 +76,23 @@ def test_l2_route_needs_dimensions():
     X, y, pool, measure = _problem(lambda a, b: a / b)
     with pytest.raises(ValueError):
         route.discover_law(X, y, pool, measure, ledger=None, search_id="r4", route="l2")
+
+
+def test_the_confirmed_form_frees_every_additive_term():
+    """A search can return a tied form whose refit is a different law; the refit is what was confirmed."""
+    rng = np.random.default_rng(3)
+    X = {"a": rng.uniform(1.0, 3.0, 200), "b": rng.uniform(1.0, 3.0, 200)}
+    y = 2.0 * X["a"] * X["b"]                      # the cross term of (a + b)**2 alone
+    refit = route.as_confirmed("(a + b)**2", X, y, noise="absolute")
+    import sympy as sp
+    a, b = sp.symbols("a b")
+    coefficients = sp.Poly(sp.sympify(refit), a, b).as_dict()
+    assert coefficients[(1, 1)] == pytest.approx(2.0, abs=1e-9)
+    assert abs(coefficients.get((2, 0), 0.0)) < 1e-9 and abs(coefficients.get((0, 2), 0.0)) < 1e-9
+
+
+def test_the_default_route_is_taken_when_none_is_named(tmp_path, monkeypatch):
+    monkeypatch.delenv(route.ENVIRONMENT_VARIABLE, raising=False)
+    X, y, pool, measure = _problem(lambda a, b: a / b)
+    out = route.discover_law(X, y, pool, measure, ledger=CandidateTrialLedger(tmp_path / "ledger.jsonl"), search_id="r9")
+    assert out["route"] == "main_search"

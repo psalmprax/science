@@ -158,7 +158,8 @@ three preregistered expectations missed.
   ahead on text), the prior inside PySR, and data with no law-like style (no
   corpus of confirmed market laws exists). One law in 133 still reads
   differently under renaming (a sign convention of the algebra system).
-- **M-10 the referee promotes a sole survivor that does not fit — OPEN.** On
+- **M-10 the referee promotes a sole survivor that does not fit — ADDRESSED
+  FOR THE DEFAULT ROUTE 2026-11-19; the rule itself is unchanged.** On
   SRBench (PREREG-SRBENCH-BASELINE-2026-11, run once) 168 of L2's 268 promotions
   were of something other than the recovered law (62.7 %; the expectation was at
   most 5 %). In 116 the reason given is that no structurally distinct rival
@@ -176,8 +177,32 @@ three preregistered expectations missed.
   nearest-neighbour smoother). PREREG-MAIN-SEARCH-2026-11 sets the criterion:
   at most 5 % of the laws it reports may be inaccurate on the test rows. The
   referee's own rule is unchanged and still used by the template engine.
+  **Result (run once, all four expectations held):** on the same benchmark the
+  path reported a law in 186 of 266 runs; 4 were not accurate (2.2 %, interval
+  0.6 to 5.4 %) and 152 were the law (81.7 %). It refused 78 runs. The default
+  route is now the main search (`discovery_l2/route.py`).
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`. **Still open:** the
+  sole-survivor rule is still in the referee and the template engine; the UI
+  server still calls the template engine (freeze-pinned, needs a re-mint).
+- **M-13 the main search path reports the search's text, not the fit it
+  confirmed — WORKED AROUND 2026-11-19.** Found after PREREG-MAIN-SEARCH's
+  run. Confirmation and the adequacy check are applied to a candidate refitted
+  with one coefficient per additive term; `MainSearchResult.law` is the text
+  before the refit. In 2 of 186 reported laws the two differ materially (the
+  text `x0*(x2 + x3*x4/x1)**2` was reported, and what was confirmed exact is
+  its cross term alone; test R² 0.80 for the text, 1.0 for the fit). The frozen
+  path is unchanged. `route.discover_law` returns `law_as_confirmed`, and the
+  ODE and series routes report the confirmed form.
+- **M-14 the adequacy check is weak on trajectory rows — OPEN.** In the same
+  run it passed `sin(exp(x0*x1))` on `strogatz_lv1` (test R² 0.35) at both
+  noise levels: unchallenged by any rival, no structure found in the residuals,
+  and an error 83 % of a nearest-neighbour smoother's, which on clustered
+  trajectory rows is itself a poor predictor. 2 of the 24 `unchallenged`
+  reports were wrong against none of the 162 confirmed against a rival (in the
+  confirmed form). One problem at two noise levels: a suspicion, not a rate.
+  An `unchallenged` law should be read as weaker than a confirmed one.
 - **M-11 the in-house search is dominated by an outside engine — DECIDED
-  2026-11-19; PARTLY IMPLEMENTED.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
+  AND IMPLEMENTED 2026-11-19; the UI is not moved yet.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
   both expectations held): on the 119 Feynman problems PySR recovers 73 at zero
   noise and 68 at 1 %, PhySO 41 and 40, the in-house exhaustive search 31 and
   31, L2 24 and 24. PySR recovers every problem L2 does. The outside engines
@@ -189,15 +214,17 @@ three preregistered expectations missed.
   confirmed stop, then PySR, then contrast confirmation and a residual
   adequacy check); RIME-AD and the extended hierarchical search are
   `deprecated` and RIME-AD no longer runs in the engine competition; RIME is
-  documented as not for tabular law discovery. **Open, each now in hand:** (1) the path as a whole and (4) GA/GP are
-  being measured by PREREG-MAIN-SEARCH-2026-11 (frozen 2026-11-19, one run on
-  GitHub Actions; result pending); (2) `apedp_dyn/discovery_l2/route.py` is the
-  switch between the routes, and the template ladder now hands over to the main
-  search when its rungs are exhausted, but the default route stays `l2` and the
-  UI still calls the template engine until that preregistration's expectations
-  1 to 3 hold (the UI server is freeze-pinned, so moving it needs a re-mint);
-  (3) RIME stays in the time-series repair path and the QED arms, which no
-  benchmark here covers.
+  documented as not for tabular law discovery. **Measured 2026-11-19 (PREREG-MAIN-SEARCH-2026-11, run once, all four
+  expectations held):** the path as a whole recovers 69 and 70 of the 119
+  Feynman laws (PySR alone: 73 and 68) and 2.2 % of what it reports is not
+  accurate; GA/GP recovers 53 and 7, so it is retired as a law-discovery
+  engine (kept importable; its module is in that preregistration's digest and
+  is not edited). `DEFAULT_ROUTE` is now `main_search`.
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`. **Open:** (1) the UI still
+  calls the template engine (the UI server is freeze-pinned, so moving it needs
+  a re-mint); (2) RIME stays in the time-series repair path and the QED arms,
+  which no benchmark here covers; (3) at noise 0 the path refuses 50 of 133
+  problems, mostly laws PySR does not reach in 240 s.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
