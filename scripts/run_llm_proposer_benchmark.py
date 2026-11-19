@@ -49,9 +49,9 @@ FROZEN = ("preregistration/PREREG-LLM-PROPOSER-2026-11.md", "scripts/run_llm_pro
           "apedp_dyn/discovery_l2/main_search.py", "apedp_dyn/discovery_l2/route.py",
           "apedp_dyn/discovery_l2/contrast_confirmation.py", "apedp_dyn/discovery_l2/contrast_resolution.py")
 #: fixed before the preregistered run, from what ``models`` and ``smoke`` show; ``None`` until then
-MODEL: str | None = None
-THINKING: bool | None = False        # chat_template_kwargs.enable_thinking for the preregistered run
-REASONING_BUDGET: int | None = None  # used only when THINKING is on
+MODEL: str | None = "nvidia/nemotron-3-ultra-550b-a55b"
+THINKING: bool | None = True         # chat_template_kwargs.enable_thinking for the preregistered run
+REASONING_BUDGET: int | None = 2000  # used only when THINKING is on
 SURVEY_SETTINGS: tuple[tuple[bool, int | None], ...] = ((False, None), (True, 2000))
 NOISE_LEVELS = (0.0, 0.01)
 ROUNDS, PER_ROUND, MAX_PROPOSALS = 3, 5, 8
