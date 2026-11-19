@@ -50,6 +50,7 @@ def test_real_pysr_through_the_main_search_path():
                                   lambda rows: fn(*pool[rows].T) * (1 + 0.01 * noise.standard_normal(len(rows))),
                                   proposer=PySRProposer(budget_seconds=BUDGET), always_search=True)
     print("MAIN_SEARCH", result.action, result.law, result.found_by, result.search, result.adequacy)
+    print("MAIN_SEARCH_CANDIDATES", [c["formula"][:60] for c in result.candidates])
     assert result.search["ran"] and result.search["proposals"] >= 1
     assert result.action in ("confirmed", "equivalent_class", "unchallenged")
     assert result.law is not None and _same_shape(result.law, truth)

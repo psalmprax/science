@@ -169,3 +169,13 @@ def test_competition_runs_the_main_search_and_no_longer_runs_the_retired_engine(
     assert results["pysr"].status == competition.NOT_APPLICABLE and "PySR could not be loaded" in results["pysr"].reason
     assert results["rime_ad"].status == competition.NOT_APPLICABLE and "retired" in results["rime_ad"].reason
     assert "PREREG-SRBENCH" in competition.RETIRED_ENGINES["rime_ad"]
+
+
+def test_among_laws_that_cannot_be_told_apart_the_simplest_is_reported():
+    """A long search returns accurate approximations beside the law; on the domain they are equal."""
+    X, y, pool, measure, _read = _problem("a*exp(-0.37*b)", noise=0.02)
+    padded = "a*exp(-0.37*b)*(1 + 0.00001*sin(a))"  # the same predictions to five decimals, more operations
+    result = main_search.discover(X, y, pool, measure, proposer=_Scripted([padded, "a*exp(-0.37*b)"]), always_search=True)
+    assert result.action == "equivalent_class"
+    assert "sin" not in result.law and _same_shape(result.law, "a*exp(-0.37*b)")
+    assert result.adequacy["passed"]

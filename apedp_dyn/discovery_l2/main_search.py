@@ -16,6 +16,9 @@ Order of work, chosen from the benchmark results (PREREG-SRBENCH-BASELINE,
    pool where candidates disagree, each target is read once through ``measure``,
    and the survivor has to match its own development error. The outcome is one
    of ``confirmed``, ``equivalent_class``, ``unchallenged`` or ``widen_search``.
+   When several candidates cannot be told apart on the domain, the simplest of
+   them is the one reported: a search run for minutes returns accurate
+   approximations beside the law, and on the rows available they are equal.
 4. **Adequacy.** Confirmation is relative to the candidates it was given: with
    the true law missing it named a wrong one alone in 19 of 80 runs of
    PREREG-CONTRAST-2026-11. So the survivor also has to leave no structure in
@@ -101,6 +104,7 @@ def discover(
         sources = [*sources, *searched] if first.stopped_early else [*searched, *sources]
     usable: list[cc.FittedCandidate] = []
     origin: dict[str, str] = {}
+    size: dict[str, int] = {}  # operations plus fitted constants: what "simplest" means below
     for source, expr in sources:
         if len(usable) >= limit or not expr.free_symbols:
             continue
@@ -108,6 +112,7 @@ def discover(
         if cand.candidate_id in origin or not (np.all(np.isfinite(cand.coef)) and np.all(np.isfinite(cand.dev_pred))):
             continue
         origin[cand.candidate_id] = source
+        size[cand.candidate_id] = int(sp.count_ops(expr)) + len(expr.atoms(sp.Float))
         usable.append(cand)
     first_report = {"expression": str(first_expr), "evaluated": first.evaluated, "candidates": first.candidates,
                     "stopped_early": bool(first.stopped_early)}
@@ -116,10 +121,13 @@ def discover(
         result = MainSearchResult("widen_search", None, None, listed, first_report, report, None)
     else:
         outcome = cc.contrast_confirm(usable, np.asarray(pool_X, dtype=float), measure, noise=noise, budget=budget, seed=seed)
-        result = MainSearchResult(cr.ACTIONS[outcome.verdict], outcome.survivor,
-                                  origin.get(outcome.survivor) if outcome.survivor else None,
+        law = outcome.survivor
+        if law is not None and outcome.verdict == cc.EQUIVALENT_CLASS:
+            members = [m for m in dict.fromkeys([law, *outcome.equivalent]) if m in size]
+            law = min(members, key=lambda m: (size[m], members.index(m)))
+        result = MainSearchResult(cr.ACTIONS[outcome.verdict], law, origin.get(law) if law else None,
                                   listed, first_report, report, outcome)
-        survivor = next((c for c in usable if c.candidate_id == outcome.survivor), None)
+        survivor = next((c for c in usable if c.candidate_id == law), None)
         if survivor is not None:
             rows = (np.arange(len(dev_y)) if len(dev_y) <= ADEQUACY_ROWS
                     else np.sort(np.random.default_rng(seed).choice(len(dev_y), ADEQUACY_ROWS, replace=False)))
