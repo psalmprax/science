@@ -454,6 +454,10 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Exhaustive search with description-length scoring (`apedp_dyn/discovery_l2/exhaustive_search.py`,
+  experimental).** Every expression up to a node limit, deduplicated numerically, scored by description
+  length, sliceable across `work_queue.py` workers with an identical result. In the spirit of ESR, with
+  the differences stated in the module.
 - **Weak-form ODE identification (`apedp_dyn/ode/weak_form.py`, experimental) and outside-engine adapters
   (`scripts/run_srbench_external.py`: PySR, PhySO).** On the preregistered Lorenz world the weak form's
   coefficients are far more accurate up to 5 % noise (1.8 % against 100 % worst error at 1 %), but it
