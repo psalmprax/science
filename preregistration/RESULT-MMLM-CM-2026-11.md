@@ -67,3 +67,14 @@ All four held.
 - **Cost.** The network: 806,144 weights, 40 minutes of training on two CPU cores. Everything else:
   under two minutes to fit on 10.8 MB, plus about a minute and a half for the mixer. Scoring is
   dominated by the network (200,000 bytes took 2.4 s on two cores when timed in development).
+
+## Correction (2026-11-19, after the run)
+
+The preregistration, this result and the corpus loader call the text "WikiText-2, raw". It is not the
+raw version. The files (from the PyTorch examples repository, pinned by SHA-256, unchanged) are the
+standard tokenised WikiText-2, in which rare words are written `<unk>` (14,334 training lines contain
+it) and punctuation is spaced. No number changes, and the comparison holds, because the model and
+every compressor were scored on the same bytes. What changes is how the absolute level reads:
+tokenised text with `<unk>` is easier to predict than raw text, so 1.455 bits per byte must not be
+compared with byte-level results published on raw text. The frozen files keep the wrong word, since
+editing them would break the digest; this note and the documentation carry the correction.

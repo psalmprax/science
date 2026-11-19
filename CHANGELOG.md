@@ -15,6 +15,15 @@ inferred releases.
 
 ### Changed
 
+- **A GPU-scale network expert for MMLM, and a correction (2026-11-19).**
+  `apedp_mmlm/transformer_expert.py` is a byte-level transformer that enters the mixture as the LSTM
+  does; `scripts/train_mmlm_gpu_expert.py` trains it and measures the mixture on the development
+  half; `notebooks/mmlm_gpu_expert_colab.ipynb` runs that in Colab on WikiText-103. No GPU result
+  exists yet. **Correction:** the MMLM-CM text was described as "WikiText-2, raw"; it is the tokenised
+  version with `<unk>`. No number changes and comparisons within the run hold, but the absolute bits
+  per byte are not comparable with results on raw text. Recorded in
+  `preregistration/RESULT-MMLM-CM-2026-11.md`.
+
 - **The open gaps of the main search are in hand (2026-11-19).** PREREG-MAIN-SEARCH-2026-11 is frozen
   and running: the whole path on SRBench with the M-10 criterion (at most 5 % of reported laws
   inaccurate), and the in-house GA/GP, measured for the first time. The path gained an exact-fit

@@ -122,7 +122,9 @@ three preregistered expectations missed.
   *Generic (text):* MMLM-CM (`apedp_mmlm/context_mixing.py`), counting, match
   and read-so-far experts plus one 806k-weight LSTM trained on CPU, mixed with
   fitted weights. PREREG-MMLM-CM-2026-11, all four expectations held: 1.455
-  bits per byte on the WikiText-2 test split against 1.513 for the best
+  bits per byte on the WikiText-2 test split (the tokenised version with
+  `<unk>`, wrongly called "raw" in the preregistration; corrected in the
+  result) against 1.513 for the best
   classical compressor primed with the same training text; every expert group
   earns 0.020 to 0.025. The old tracks A-C (4.20 to 4.25 bits per byte on other
   text, behind gzip) are superseded. *Scientific (laws):* MMLM-L
