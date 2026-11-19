@@ -4,12 +4,13 @@
 # refuses to run if it, the manifest or the preregistration changed since freezing.
 name: SRBench baseline
 
-# A tag starts it because workflow_dispatch only reaches workflows on the default
-# branch; the preregistered run is the tag srbench-baseline-run-1.
+# A push to a branch named srbench-baseline-run-* starts it, because
+# workflow_dispatch only reaches workflows on the default branch. The
+# preregistered run is the branch srbench-baseline-run-1, created once.
 on:
   workflow_dispatch:
   push:
-    tags: ['srbench-baseline-*']
+    branches: ['srbench-baseline-run-*']
 
 permissions:
   contents: read
