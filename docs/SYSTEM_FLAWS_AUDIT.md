@@ -22,7 +22,10 @@ three preregistered expectations missed.
   rule in `whiteness_calibration.py`). A residual of zeros has nothing to test,
   so the verdict should say "exact fit", not "structured residuals". Costs
   nothing on real data, which always carry noise; it does distort every
-  noise-free simulation benchmark. Not changed: `adjudicate.py` is pinned by
+  noise-free simulation benchmark, and makes noise-free verdicts depend on
+  the platform: whether the residuals come out exactly zero or carry
+  rounding noise decides it (the benchmark's own toy test passed locally and
+  failed on CI 3.11 until it was given 1 % noise). Not changed: `adjudicate.py` is pinned by
   `APEDPX_FROZEN_v1_18.json`, and what an exact fit should earn is for the
   owner to decide.
 - **M-02 a term carrying less than 5 % of the signal cannot be confirmed —

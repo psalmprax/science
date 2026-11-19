@@ -69,12 +69,15 @@ def test_recovery_is_judged_up_to_coefficients_and_not_beyond():
 def test_end_to_end_on_a_toy_law_outside_both_families(tmp_path):
     toy = bench.Law("toy", "known", {"alpha": Dimension(l=1), "beta": Dimension(t=-1)},
                     Dimension(l=1, t=-1), "alpha*beta")
-    results = bench.run(tmp_path / "out", laws=[toy], noise_levels=(0.0,), seeds=(0,), check=False)
+    # 1 % noise, not 0: on noise-free data the referee refuses an exact fit
+    # whenever the residuals come out exactly zero, which depends on the
+    # platform's floating point (M-01 in docs/SYSTEM_FLAWS_AUDIT.md).
+    results = bench.run(tmp_path / "out", laws=[toy], noise_levels=(0.01,), seeds=(0,), check=False)
     rows = [json.loads(line) for line in (tmp_path / "out" / "runs.jsonl").read_text().splitlines()]
     assert len(rows) == 1
     assert rows[0]["outcome"] == "recovered", rows[0]
     assert rows[0]["distractor"] == "z_other"
-    cell = results["summary"]["known|0.0"]
+    cell = results["summary"]["known|0.01"]
     assert cell["n"] == 1 and cell["recovered"] == 1 and cell["recovery_rate"] == 1.0
 
 
