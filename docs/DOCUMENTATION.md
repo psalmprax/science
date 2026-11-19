@@ -2131,7 +2131,7 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`apedp_dyn/problems/two_body_gravity.py`](../apedp_dyn/problems/two_body_gravity.py) | PS-GRAV2: two-body gravitational system in 1D radial form. | `production` |
 | [`apedp_dyn/problems/van_der_pol.py`](../apedp_dyn/problems/van_der_pol.py) | PS-VDPOL: Van der Pol oscillator with self-sustained oscillations. | `production` |
 
-| [`apedp_dyn/sandbox/agnostic_domain_sandbox.py`](../apedp_dyn/sandbox/agnostic_domain_sandbox.py) | APEDP-X Agnostic Domain Adapter & 3-Arm Ablation Benchmark Suite. | `experimental` |
+| [`apedp_dyn/sandbox/agnostic_domain_sandbox.py`](../apedp_dyn/sandbox/agnostic_domain_sandbox.py) | Agnostic domain adapter and a three-arm comparison on 8 synthetic cases. Arms A (domain rules) and B (naive core) are handed their evidence by the sandbox and are fixed reference points; only arm C, the adapter, computes its verdicts from the data. Its rates are counts out of 4 traps and 4 valid cases, not a false-promotion rate on any population (relabelled 2026-11-19; the report's `evidence_basis` says which arm is which). | `experimental` |
 | [`apedp_dyn/sandbox/airgap_evaluator.py`](../apedp_dyn/sandbox/airgap_evaluator.py) | Air-Gapped External Evaluator CLI for APEDP-X. | `audit-only` |
 | [`apedp_dyn/sandbox/apedp_discovery.py`](../apedp_dyn/sandbox/apedp_discovery.py) | APEDP Research Sandbox: Tokamak Plasma Parameter Space Exploration. | `audit-only` |
 | [`apedp_dyn/sandbox/apedp_x_meta_sandbox.py`](../apedp_dyn/sandbox/apedp_x_meta_sandbox.py) | APEDP-X: Unified Cross-Domain Epistemic Claim-Evidence Adjudication Meta-Sandbox. | `production` |

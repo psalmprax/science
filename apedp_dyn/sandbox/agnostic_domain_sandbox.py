@@ -1,12 +1,28 @@
-"""APEDP-X Agnostic Domain Adapter & 3-Arm Ablation Benchmark Suite.
+"""APEDP-X Agnostic Domain Adapter and a three-arm comparison on eight synthetic cases.
 
-Executes the decisive comparative ablation experiment:
-  Arm A: Full APEDP (Core + Domain-Specific Validation Rules)
-  Arm B: Core Only (Naive Empirical Holdout Fit, Zero Invariant Checkers)
-  Arm C: Agnostic Adapter (Core + Generic Declared-Invariant Interface)
+Status: experimental.
 
-Evaluates 8 heterogeneous scientific cases across physics, geometry,
-population biology, causal inference, and nonlinear dynamics.
+What it compares, and what each arm's numbers are:
+
+  Arm A: Core + domain-specific rules. **Declared evidence.** The sandbox
+         writes the evidence bundle itself: for a trap it appends the
+         failure it knows the case contains, for a valid case it adds every
+         requirement the claim tier names. Nothing is computed from the data.
+  Arm B: Core only, the "naive" reference. **Declared evidence.** The bundle
+         credits every requirement of the requested tier, by construction;
+         that it promotes every trap is how it was written, not a finding.
+  Arm C: Agnostic adapter. **Computed.** ``AgnosticAdapter.adjudicate`` runs
+         on the case's data and declared invariants; this is the only arm
+         whose verdicts the code derives.
+
+So arms A and B are fixed reference points of the decision table, and the
+comparison is arm C against them. Its "FPR" and "VRR" are counts out of four
+traps and four valid cases, all synthetic, chosen by the author of the
+corpus: they show the adapter refuses these traps and keeps these valid
+cases, and say nothing about a false-promotion rate on any population. Until
+2026-11-19 this docstring called the run "the decisive comparative ablation
+experiment"; ``evidence_basis`` in the returned report now says which arm is
+which.
 """
 from __future__ import annotations
 
@@ -507,7 +523,8 @@ def run_arm_c_agnostic_adapter(case: AblationTestCase) -> dict[str, Any]:
 def run_ablation_experiment() -> dict[str, Any]:
     """Execute the full 3-Arm Ablation Experiment across the 8-case corpus."""
     print("\n" + "=" * 122)
-    print("APEDP-X ABLATION EXPERIMENT: EVALUATING DOMAIN-INDEPENDENCE VS DOMAIN-AGNOSTICISM")
+    print("APEDP-X THREE-ARM COMPARISON ON 8 SYNTHETIC CASES")
+    print("Arms A and B: evidence declared by the sandbox (reference points). Arm C: computed by the adapter.")
     print(format_frozen_spec_banner())
     print("=" * 122)
 
@@ -575,6 +592,14 @@ def run_ablation_experiment() -> dict[str, Any]:
         "total_cases": len(corpus),
         "valid_count": valid_count,
         "trap_count": trap_count,
+        #: Which arms' verdicts are derived from the data and which are written
+        #: by the sandbox. Only a "computed" arm's rates measure anything.
+        "evidence_basis": {
+            "arm_a_specialized": "declared",
+            "arm_b_core_naive": "declared",
+            "arm_c_agnostic": "computed",
+        },
+        "corpus": "8 synthetic cases (4 valid, 4 traps) built by generate_ablation_corpus",
         "arm_a_specialized": sum_a,
         "arm_b_core_naive": sum_b,
         "arm_c_agnostic": sum_c,
