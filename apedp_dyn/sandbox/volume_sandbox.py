@@ -67,9 +67,16 @@ def load_crypto_volume(asset: str, path: Path | None = None) -> VolumeFrame:
     raise FileNotFoundError(f"Neither sidecar {target_path} nor repo data {repo_csv} found.")
 
 
+_EQUITY_SIDECARS = {"SPX": "SPX", "NDX": "NDX"}
+
+
 def load_equity_volume(asset: str, path: Path | None = None) -> VolumeFrame:
     """Load sidecar Yahoo daily closes+volume (SPX or NDX)."""
-    tag = asset.upper()
+    # The file name is taken from this table, never from the caller's string,
+    # so an asset name cannot steer the read outside the sidecar directory.
+    tag = _EQUITY_SIDECARS.get(asset.upper())
+    if tag is None:
+        raise ValueError(f"no equity volume sidecar for {asset!r}; known: {sorted(_EQUITY_SIDECARS)}")
     data = json.loads(Path(path or SIDECAR_DIR / f"vol_daily_{tag}.json").read_text())
     rows = data[tag]
     dates = np.array([r[0] for r in rows])

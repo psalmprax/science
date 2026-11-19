@@ -47,6 +47,18 @@ three preregistered expectations missed.
   generator should reject draws whose terms differ in spread by more than the
   noise. Separately, the benchmark's comparison raises on a promoted law that
   is not a sum of monomials; none was promoted, so the run is unaffected.
+- **M-04 three user strings reached file paths — FIXED.** CodeQL on PR #62
+  (`py/path-injection`, `py/stack-trace-exposure`), all in code `stage`
+  already had: the volume sandbox built a sidecar file name from the request's
+  asset (`../../x` read any `.json`); the external-60 runner wrote scratch
+  files named by the request's block strings (validated, but the request's
+  string, not the manifest's, was used); the pipeline route resolved a
+  user path on disk before checking it; and a failed upload competition sent
+  its exception message to the client. The loader now takes the file name
+  from a two-entry table, blocks are the manifest's own strings, the route
+  normalises with `realpath` and admits by prefix (a `/tmp-lookalike` sibling
+  is refused), and the client gets the exception class only.
+  `tests/test_user_paths_stay_inside_their_roots.py`.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

@@ -2,11 +2,11 @@
   "schema": "apedp.untested-module-register/v1",
   "module_root": "apedp_dyn",
   "basis": "A module counts as referenced when a tests/ source names its dotted path, imports it, or imports its name from its package -- including a from-import that continues across lines inside parentheses. A bare word match does not count: prose and unrelated identifiers are not coverage. Import coverage from test_smoke_imports.py is separate and is not counted here, because importing a module is not testing it.",
-  "pinned_ceiling": 67,
+  "pinned_ceiling": 66,
   "totals": {
     "modules": 397,
-    "referenced": 330,
-    "unreferenced": 67
+    "referenced": 331,
+    "unreferenced": 66
   },
   "unreferenced": [
     "apedp_dyn/discovery_l2/discovery_stability_harness.py",
@@ -69,7 +69,6 @@
     "apedp_dyn/sandbox/nano_crossover_m4.py",
     "apedp_dyn/sandbox/pendulum_drag.py",
     "apedp_dyn/sandbox/routed_multiasset.py",
-    "apedp_dyn/sandbox/volume_sandbox.py",
     "apedp_dyn/sandbox/walkforward_tournament.py",
     "apedp_dyn/ui/__main__.py",
     "apedp_dyn/ui/physics_endpoint.py",

@@ -243,7 +243,7 @@ def ext60_run(req: Ext60RunRequest) -> dict[str, Any]:
     # context manager removed it on the way out, so `scratch_dir` named a path
     # that no longer existed and `apedp_<block>.json` could never be read.
     scratch = Path(tempfile.mkdtemp(prefix="ext60_"))
-    for block in req.blocks:
+    for block in [valid[valid.index(b)] for b in req.blocks]:  # manifest strings, not the request's
         pids = [p["problem_id"] for p in manifest["problems"] if p["block"] == block]
         results = []
         for pid in pids:
@@ -722,8 +722,8 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
                 csv_data, target_col=req.target_column
             )
         except Exception as exc:  # noqa: BLE001 - competition is additive
-            resp["competition"] = [{"engine": "competition", "status": "FAILED",
-                                    "reason": f"{type(exc).__name__}: {exc}"}]
+            logging.getLogger(__name__).warning("upload competition failed", exc_info=True)  # message stays here
+            resp["competition"] = [{"engine": "competition", "status": "FAILED", "reason": type(exc).__name__}]
     elif req.sandbox_id == "volume_market":
         from apedp_dyn.sandbox.volume_sandbox import run_volume_adjudication
         requested_sym = (req.asset or "BTC").upper()
