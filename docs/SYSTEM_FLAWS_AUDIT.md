@@ -77,6 +77,19 @@ three preregistered expectations missed.
   is lagged. The "GA" arms are a genetic search over columns of a hand-built
   library that contains the true interaction, now named as such. Tests pin
   that each row's `engine_class` is the engine the script constructed.
+- **M-06 the holdout spends its rows where rivals agree — ADDRESSED BY A NEW
+  PROCEDURE, UNPROVEN.** M-02's abstentions come from comparing rivals on a
+  random holdout, where a small term barely moves the error.
+  `discovery_l2/contrast_confirmation.py` compares them on rows chosen (from
+  inputs alone) where they disagree. Development study on already-seen laws,
+  tuned three times while looking at them: true law uniquely confirmed 46/48
+  (referee promoted in 8 of the same runs); one true law refuted; one equivalence
+  class headed by a wrong law that also contains the true one; truth removed from the candidates gave `no_survivor`
+  16/16. It reads extra designed rows the referee did not have, so the
+  comparison is not at equal data. It needs a pool or the ability to measure,
+  a known noise model, and laws linear in their coefficients. Next: a
+  preregistered run on fresh laws with a random-rows control arm at the same
+  row count.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

@@ -454,6 +454,13 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Contrast confirmation (`apedp_dyn/discovery_l2/contrast_confirmation.py`, experimental).** Rival
+  laws are decided on rows chosen where they disagree, with power computed before any target is
+  read, certified equivalence in place of a bare abstention, and a refutation test that reports a
+  law missing from the candidates. Development study on the eight two-term laws the blind benchmark
+  had already used (so not a result): the true law uniquely confirmed in 46 of 48 runs where the
+  referee promoted in 8, and `no_survivor` in 16 of 16 runs with the truth removed. Not at equal
+  data: it reads a median of 60 designed rows on top of the referee's 120.
 - **A shared external benchmark, frozen: PREREG-SRBENCH-BASELINE-2026-11 (2026-11-19).** SRBench's
   ground-truth track (119 Feynman, 14 Strogatz) from PMLB, checksum-pinned, with one protocol and one
   scoring for every engine. The baseline covers L2, RIME, RIME-AD and the extended hierarchical
