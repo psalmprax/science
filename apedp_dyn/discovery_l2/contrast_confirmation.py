@@ -159,12 +159,17 @@ def contrast_confirm(
     budget: int = 30,
     alpha: float = DIEBOLD_MARIANO_P_VALUE_THRESHOLD,
     seed: int = 0,
+    rows_by: str = "contrast",
 ) -> ContrastResult:
     """Run the procedure in the module docstring.
 
     ``candidates`` are in the caller's order of preference; the first is the
     initial champion. ``measure(rows)`` returns the targets of those pool rows
     and is called only for rows the design selected, each row once.
+
+    ``rows_by="random"`` is the control arm for experiments: the same procedure
+    and row counts, with each comparison's rows drawn at random instead of where
+    the pair disagrees.
     """
     if not candidates:
         raise ValueError("at least one candidate is required")
@@ -193,6 +198,9 @@ def contrast_confirm(
         got: np.ndarray = np.array([read[int(r)] for r in rows], dtype=float)
         return got
 
+    if rows_by not in ("contrast", "random"):
+        raise ValueError(f"rows_by must be 'contrast' or 'random', not {rows_by!r}")
+    control_rng = np.random.default_rng(seed)
     champion, queue = usable[0], list(usable[1:])
     equivalent: list[int] = []
     eliminated: list[dict[str, Any]] = []
@@ -201,7 +209,8 @@ def contrast_confirm(
         s2 = min(scales[champion], scales[rival]) ** 2
         var = s2 * (_weights(0.5 * (preds[champion] + preds[rival]), noise) ** 2 + cvar[champion] + cvar[rival])
         d2 = (preds[champion] - preds[rival]) ** 2 / var
-        rows = np.argsort(-d2, kind="stable")[:budget]
+        rows = (np.argsort(-d2, kind="stable")[:budget] if rows_by == "contrast"
+                else control_rng.choice(len(pool_X), size=min(budget, len(pool_X)), replace=False))
         power = float(np.sqrt(d2[rows].sum()))
         if power < 2.0 * z:
             equivalent.append(rival)
