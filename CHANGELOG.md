@@ -454,6 +454,14 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **MMLM follow-up: PREREG-MMLM-S2-2026-11 (2026-11-19), three of five expectations held.** The prior-ordered
+  search with an early stop (`discovery_l2/guided_search.py`) recovered 121 of 128 laws against 123 for the
+  plain search in 3.5 % of its time; it stopped on a near-miss law 7 times, one over the limit. Learning from
+  the ledger by domain (`apedp_mmlm/ledger_learning.py`) was not worse than pooled. Missed: a model trained on
+  Feynman formulas prices the Strogatz laws no better than a unigram. Also: the tensor-train engine's readout
+  is now fitted (375.6 to 40.8 bits; level with a unigram), and the first real-text measurement of tracks A-C
+  (bits per byte: A0 4.25, B0 4.21, C0 4.20; automaton alone 3.87; gzip 2.78; bz2 2.26),
+  where a self-weighting A0 (`apedp_mmlm/adaptive_mixture.py`) reaches 3.86.
 - **MMLM Track S made self-adjusting and tested: PREREG-MMLM-S-2026-11 (2026-11-19), all three expectations
   held.** `SelfAdjustingEquationModel` re-weights four engines by how well each predicted every confirmed law,
   learns the law, and can retract one. Frozen, then run once: on 24 laws from other fields the law's median

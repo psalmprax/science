@@ -45,6 +45,9 @@
     "apedp_dyn/cuda/batch_physics_steppers.py": [
       "_TRITON_KERNELS"
     ],
+    "apedp_dyn/discovery_l2/contrast_resolution.py": [
+      "ACTIONS"
+    ],
     "apedp_dyn/epistemic/frozen_spec.py": [
       "FROZEN_SPEC"
     ],
@@ -57,6 +60,9 @@
     "apedp_dyn/orchestration/modality_sieve.py": [
       "DYNAMIC_ENGINES",
       "STATIC_ENGINES"
+    ],
+    "apedp_dyn/pde/weak_form.py": [
+      "LIBRARY"
     ],
     "apedp_dyn/problems/__init__.py": [
       "ALL_PROBLEMS"

@@ -14,6 +14,9 @@ end-of-line token included; a token outside the vocabulary costs the unknown
 token plus 8 bits per byte to spell it. Compressors (gzip, bz2, lzma at their
 strongest settings) are charged conditionally: bytes to compress train + test
 minus bytes to compress train. An order-0 byte entropy is the trivial reference.
+``SelfWeightingA0`` is track A's own engines with weights that adjust after every
+token (``apedp_mmlm/adaptive_mixture.py``), added after the fixed-weight tracks were
+seen to cost more than the automaton alone.
 """
 from __future__ import annotations
 
@@ -32,6 +35,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from apedp_mmlm.adaptive_mixture import SelfWeightingA0  # noqa: E402
 from apedp_mmlm.engines import MMLMTokenizer, WeightedAutomatonEngine  # noqa: E402
 from apedp_mmlm.models import (  # noqa: E402
     AttentionFreeMMLM_C0,
@@ -104,6 +108,16 @@ def main() -> int:
         results[cls.__name__] = {"bits_per_byte": bits / test_bytes, "fit_seconds": round(fitted, 1),
                                  "eval_seconds": round(time.perf_counter() - started - fitted, 1)}
         print(cls.__name__, results[cls.__name__], flush=True)
+    started = time.perf_counter()
+    mixer = SelfWeightingA0(NonNeuralMMLM_A0(tokenizer).fit(train))
+    unk = tokenizer.token_to_id.get("<unk>", -1)
+    bits = 0.0
+    for line in test:
+        ids = tokenizer.encode(line)
+        bits += sum(mixer.line_bits(ids))
+        bits += sum(8.0 * len(word.encode()) for word, i in zip(line.split(" "), ids[1:], strict=False) if i == unk)
+    results["SelfWeightingA0"] = {"bits_per_byte": bits / test_bytes, "final_weights": mixer.state(),
+                                  "eval_seconds": round(time.perf_counter() - started, 1)}
     summary = {"status": "development study, not preregistered", "source": str(SOURCE.relative_to(ROOT)),
                "licence": "MIT (this repository)", "train_lines": len(train), "test_lines": len(test),
                "test_bytes": test_bytes, "vocabulary": tokenizer.vocab_size, "results": results}

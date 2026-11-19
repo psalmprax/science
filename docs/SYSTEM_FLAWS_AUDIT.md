@@ -123,10 +123,17 @@ three preregistered expectations missed.
   search prior; its self-adjusting form passed all three expectations of
   PREREG-MMLM-S-2026-11 (law's median search position 6,111.5 to 303.5 on 24
   other-field laws; adaptive copy at 53 % of a frozen copy's cost on a
-  stream). Open: the order is not yet turned into saved work (no early-stop
-  rule), the selection test hit a ceiling, the tensor-train engine does worse
-  than a uniform code on equations, and nothing is tested on data without a
-  physical-law style.
+  stream). Follow-up PREREG-MMLM-S2-2026-11 (three of five held): the
+  early-stop search does 3.5 % of the plain search's work for 2 fewer laws in
+  128, but stops on a near-miss law in 5.5 % of runs (limit 5 %); ledger-fed
+  per-domain learning does not hurt; and the model does NOT transfer to the
+  longer Strogatz laws (no better than a unigram). The tensor-train engine is
+  repaired to unigram level. First real-text numbers for tracks A-C: all
+  three (4.25, 4.21, 4.20 bits per byte) lose to their own automaton alone
+  (3.87) and to gzip (2.78); self-adjusting weights recover the automaton's
+  level and no more. Still open: data with no law-like style (no corpus of
+  confirmed market laws exists), and the tokeniser orders a sum's terms by
+  variable name.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

@@ -1030,7 +1030,9 @@ def test_every_census_module_in_apedp_dyn_is_named_in_the_inventory():
 
     text = (REPO_ROOT / "docs/SCAFFOLD_INVENTORY.md").read_text(encoding="utf-8")
     recorded = _recorded_tables("apedp_dyn")
-    assert len(recorded) == 18
+    # 20 since 2026-11-19: `discovery_l2/contrast_resolution.py::ACTIONS` (verdict -> next action) and
+    # `pde/weak_form.py::LIBRARY` (the weak form's seven terms) were added and recorded with their rows.
+    assert len(recorded) == 20
 
     for module_path in recorded:
         # The census table writes paths relative to the package root.
