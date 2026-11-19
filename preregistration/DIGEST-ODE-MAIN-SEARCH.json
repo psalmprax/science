@@ -1,0 +1,18 @@
+{
+ "preregistration": "PREREG-ODE-MAIN-SEARCH-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/confirmed_stop.py": "ce13a721d801c6db81d9bd2618b1aa252fba30ef5353100aadac145366148e66",
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/contrast_resolution.py": "6c6001b7285295c8f1121bd48743b69fe6ff96b4f86a8cd37e3a17366562ee2b",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/ode/main_search_ode.py": "6a50e3ae89dd0bd43322c403515d21b4d43fba8344524585f46ecb4780f7aea6",
+  "apedp_dyn/ode/window_rows.py": "ff6aef3959151218f30bf740dd70fcb9d13fc7106dc53012aa9d5ed45b0eba2e",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "apedp_mmlm/law_corpora.py": "c389632c0d9140f592721c476ef4fec4e40acc7dd7c4f641fb441f78df847e95",
+  "preregistration/PREREG-ODE-MAIN-SEARCH-2026-11.md": "d99e4a32bb8b634fabada654242f63f7c118da8f3cdf6221ae5e1b8d644e3e36",
+  "scripts/odebench_worlds.py": "8e3282e86481d199e29a2459515d01cce41590cb2738468d0be86ca91e4fa79a",
+  "scripts/run_odebench_main_search.py": "ab735145f02c4916f747cd6000239744b0ceb741ae66fa52faec95b03d4c1ce5"
+ }
+}
