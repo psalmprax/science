@@ -245,3 +245,98 @@ def search_prior(model: EquationLanguageModel) -> Any:
         return model.bits(from_search_node(node))
 
     return structure_bits
+
+
+class SelfAdjustingEquationModel:
+    """A mixture of engines that re-weights and re-trains itself on every confirmed law.
+
+    For each law the caller reports as confirmed (:meth:`observe`):
+
+    1. **Weight adjustment.** Each engine's weight is multiplied by the
+       probability it gave that law, ``2 ** -bits``, and the weights are
+       renormalised. This is Bayesian model averaging; an engine that keeps
+       predicting confirmed laws badly loses its say. A small share
+       (``share``) is then spread evenly, so an engine that was wrong early can
+       recover if the laws change character (fixed-share, Herbster & Warmuth).
+    2. **Learning.** The law joins the corpus and every engine is refitted.
+
+    :meth:`retract` removes a law that was later refuted and refits (the weight
+    history is replayed without it), so a mistake fed in can be taken out.
+
+    Discipline: it learns only from what it is told was confirmed. Feeding it
+    its own proposals would let it grow confident in whatever it already
+    believed; the caller must pass referee- or contrast-confirmed laws only.
+    Every update is deterministic, and :meth:`state` returns the weights, the
+    corpus size and a SHA-256 of both for the audit trail.
+    """
+
+    def __init__(self, engines: Sequence[str] = ("unigram", "tree", "automaton", "bayesian"),
+                 share: float = 0.05) -> None:
+        if not engines or any(e not in ENGINES for e in engines):
+            raise ValueError(f"engines must be drawn from {ENGINES}")
+        if not 0.0 <= share < 1.0:
+            raise ValueError("share must be in [0, 1)")
+        self.engines = tuple(engines)
+        self.share = float(share)
+        self._seed: list[Tree] = []
+        self._observed: list[Tree] = []
+        self._models: dict[str, EquationLanguageModel] = {}
+        self.weights = np.full(len(self.engines), 1.0 / len(self.engines))
+        self._refit()
+
+    def _refit(self) -> None:
+        corpus = [*self._seed, *self._observed]
+        self._models = {e: EquationLanguageModel(e).fit(corpus) for e in self.engines}
+
+    def fit(self, trees: Sequence[Tree]) -> SelfAdjustingEquationModel:
+        """Start from a corpus (no weight adjustment: these laws were not predicted, only read)."""
+        self._seed = list(trees)
+        self._observed = []
+        self.weights = np.full(len(self.engines), 1.0 / len(self.engines))
+        self._refit()
+        return self
+
+    def engine_bits(self, tree: Tree) -> np.ndarray:
+        out: np.ndarray = np.array([self._models[e].bits(tree) for e in self.engines])
+        return out
+
+    def bits(self, tree: Tree) -> float:
+        """Code length under the weighted mixture."""
+        per_engine = self.engine_bits(tree)
+        floor = float(per_engine.min())
+        return floor - float(np.log2(np.sum(self.weights * 2.0 ** (floor - per_engine))))
+
+    def _adjust(self, tree: Tree) -> None:
+        per_engine = self.engine_bits(tree)
+        posterior = self.weights * 2.0 ** (float(per_engine.min()) - per_engine)
+        posterior /= posterior.sum()
+        self.weights = (1.0 - self.share) * posterior + self.share / len(self.engines)
+
+    def observe(self, tree: Tree) -> float:
+        """Adjust the weights for a confirmed law, then learn it. Returns the bits it cost before learning."""
+        cost = self.bits(tree)
+        self._adjust(tree)
+        self._observed.append(tree)
+        self._refit()
+        return cost
+
+    def retract(self, tree: Tree) -> bool:
+        """Unlearn a law that was observed and later refuted; replays the weight history without it."""
+        if tree not in self._observed:
+            return False
+        remaining = list(self._observed)
+        remaining.remove(tree)
+        self._observed = []
+        self.weights = np.full(len(self.engines), 1.0 / len(self.engines))
+        self._refit()
+        for kept in remaining:
+            self.observe(kept)
+        return True
+
+    def state(self) -> dict[str, Any]:
+        import hashlib
+
+        weights = {e: float(w) for e, w in zip(self.engines, self.weights, strict=True)}
+        payload = repr((sorted(weights.items()), [tokens(t) for t in (*self._seed, *self._observed)]))
+        return {"weights": weights, "seed_laws": len(self._seed), "observed_laws": len(self._observed),
+                "sha256": hashlib.sha256(payload.encode()).hexdigest()}

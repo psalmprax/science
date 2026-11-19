@@ -65,3 +65,50 @@ def test_the_model_can_price_structure_for_the_exhaustive_search():
     assert best.expression == "((x0) * (((x1)**2)))"
     plain = es.search(X, y, ["x0", "x1"], 5)[0]
     assert plain.expression == best.expression  # the prior does not change a clear answer
+
+
+def _stream():
+    a, b, c = sp.symbols("a b c")
+    return [el.to_tree(e) for e in (a * b, a * b**2, a / b, a * b / c, sp.sqrt(a / b), a * b * c, a / b**2, a**2 * b)]
+
+
+def test_the_self_adjusting_model_gets_cheaper_on_a_stream_and_shifts_its_weights():
+    model = el.SelfAdjustingEquationModel()
+    costs = [model.observe(tree) for tree in _stream()]
+    assert np.mean(costs[-3:]) < np.mean(costs[:3])
+    weights = model.state()["weights"]
+    assert abs(sum(weights.values()) - 1.0) < 1e-9
+    assert max(weights.values()) > 0.5  # one engine has earned most of the say
+    assert min(weights.values()) >= model.share / len(model.engines) - 1e-12  # none is shut out for good
+
+
+def test_the_mixture_never_costs_much_more_than_its_best_engine():
+    model = el.SelfAdjustingEquationModel().fit([el.to_tree(e) for e in PHYSICS])
+    tree = el.to_tree(m * v / r)
+    assert model.bits(tree) <= model.engine_bits(tree).min() + np.log2(len(model.engines)) + 1e-9
+
+
+def test_a_refuted_law_can_be_unlearned_exactly():
+    model = el.SelfAdjustingEquationModel().fit([el.to_tree(e) for e in PHYSICS])
+    for tree in _stream()[:4]:
+        model.observe(tree)
+    before = model.state()
+    wrong = el.to_tree(sp.sin(sp.cos(m)) - sp.exp(v))
+    model.observe(wrong)
+    assert model.state() != before
+    assert model.retract(wrong) and model.state() == before
+    assert model.retract(wrong) is False  # it is no longer there
+
+
+def test_reading_a_corpus_does_not_move_the_weights_and_updates_are_deterministic():
+    one = el.SelfAdjustingEquationModel().fit([el.to_tree(e) for e in PHYSICS])
+    assert set(one.state()["weights"].values()) == {0.25}
+    two = el.SelfAdjustingEquationModel().fit([el.to_tree(e) for e in PHYSICS])
+    for tree in _stream():
+        one.observe(tree)
+        two.observe(tree)
+    assert one.state() == two.state()
+    with pytest.raises(ValueError):
+        el.SelfAdjustingEquationModel(engines=("transformer",))
+    with pytest.raises(ValueError):
+        el.SelfAdjustingEquationModel(share=1.5)
