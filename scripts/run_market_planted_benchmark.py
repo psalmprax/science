@@ -4,8 +4,9 @@
 One run is one world from ``scripts/market_planted_worlds.py`` through
 ``apedp_dyn.discovery_l2.series_route`` with PySR as the search stage. Each run
 gives two readings: what the main search path reports on its own ("ungated"),
-and what is left after the referee's forecast test on the later period
-("gated"). Laws are scored on the last fifth of the series, which no stage reads.
+and what the series route reports ("gated"): one candidate chosen on the
+development rows, then the referee's forecast test on the later period. Laws
+are scored on the last fifth of the series, which no stage reads.
 
     python scripts/run_market_planted_benchmark.py smoke   --out DIR   # development worlds, short budget
     python scripts/run_market_planted_benchmark.py run     --out DIR --shard k/N
@@ -60,29 +61,35 @@ def run_route(world: dict[str, Any], budget: float = SEARCH_BUDGET_S) -> dict[st
     result = series_route.discover_predictive_law(
         {n: X[world["dev"], i] for i, n in enumerate(names)}, y[world["dev"]], X[world["pool"]], y[world["pool"]],
         proposer=PySRProposer(budget_seconds=budget, seed=SEED), seed=SEED)
+    selected = result.selected
     row: dict[str, Any] = {"action": result.action, "ungated_action": result.ungated_action, "law": result.law,
                            "ungated_law": result.ungated_law, "forecast_test": result.forecast_test,
+                           "chosen": selected["chosen"], "no_law_validation_mse": selected["no_law_validation_mse"],
+                           "validation": selected["candidates"],
                            "found_by": result.path.found_by, "first_pass": result.path.first_pass, "search": result.path.search,
                            "candidates": len(result.path.candidates), "rows_read": result.path.rows_read,
                            "contrast_verdict": result.path.contrast.verdict if result.path.contrast else None,
                            "adequacy": result.path.adequacy, "rejected_law": result.path.rejected_law}
-    if result.ungated_law is None:
-        return row
-    model = sp.sympify(result.ungated_law, locals={n: sp.Symbol(n) for n in names})
     test_X, test_y, signal = X[world["test"]], y[world["test"]], world["signal"][world["test"]]
-    pred = series_route.predict(model, names, test_X)
-    finite = bool(np.all(np.isfinite(pred)))
     dev_mean = float(y[world["dev"]].mean())
-    row["test_r2_vs_no_law"] = float(1.0 - np.sum((test_y - pred) ** 2) / np.sum((test_y - dev_mean) ** 2)) if finite else None
-    if world["truth"] is not None:
-        centred = signal - signal.mean()
-        row["signal_r2"] = float(1.0 - np.sum((pred - pred.mean() - centred) ** 2) / np.sum(centred ** 2)) if finite else None
-        row["captures_signal"] = bool(row["signal_r2"] is not None and row["signal_r2"] >= SIGNAL_CAPTURED)
-        try:
-            sym = base.symbolic_recovery(model, world["truth"], names, test_X)
-        except Exception as exc:  # noqa: BLE001 - a model the scorer cannot handle is scored as not recovered, with the reason
-            sym = {"recovered": False, "reason": f"scoring failed: {type(exc).__name__}"}
-        row["symbolic"], row["symbolic_note"] = bool(sym["recovered"]), sym["reason"]
+    for reading, text in (("ungated", result.ungated_law), ("gated", result.law)):
+        if text is None:
+            continue
+        model = sp.sympify(text, locals={n: sp.Symbol(n) for n in names})
+        pred = series_route.predict(model, names, test_X)
+        finite = bool(np.all(np.isfinite(pred)))
+        scored: dict[str, Any] = {
+            "test_r2_vs_no_law": float(1.0 - np.sum((test_y - pred) ** 2) / np.sum((test_y - dev_mean) ** 2)) if finite else None}
+        if world["truth"] is not None:
+            centred = signal - signal.mean()
+            scored["signal_r2"] = float(1.0 - np.sum((pred - pred.mean() - centred) ** 2) / np.sum(centred ** 2)) if finite else None
+            scored["captures_signal"] = bool(scored["signal_r2"] is not None and scored["signal_r2"] >= SIGNAL_CAPTURED)
+            try:
+                sym = base.symbolic_recovery(model, world["truth"], names, test_X)
+            except Exception as exc:  # noqa: BLE001 - a model the scorer cannot handle is scored as not recovered, with the reason
+                sym = {"recovered": False, "reason": f"scoring failed: {type(exc).__name__}"}
+            scored["symbolic"], scored["symbolic_note"] = bool(sym["recovered"]), sym["reason"]
+        row[reading] = scored
     return row
 
 
@@ -132,9 +139,10 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
         for reading, key in (("ungated", "ungated_law"), ("gated", "law")):
             reported = [r for r in ok if r.get(key)]
             out[reading] = {"reported": len(reported),
-                            "captures_signal": sum(bool(r.get("captures_signal")) for r in reported),
-                            "symbolic": sum(bool(r.get("symbolic")) for r in reported),
-                            "worse_than_no_law_on_test": sum((r.get("test_r2_vs_no_law") or 0.0) < 0.0 for r in reported)}
+                            "captures_signal": sum(bool(r[reading].get("captures_signal")) for r in reported),
+                            "symbolic": sum(bool(r[reading].get("symbolic")) for r in reported),
+                            "worse_than_no_law_on_test": sum((r[reading].get("test_r2_vs_no_law") or 0.0) < 0.0 for r in reported)}
+        out["earned_a_test"] = sum(bool(r.get("chosen")) for r in ok)
         return out
 
     summary = {"null": cell([r for r in rows if r["planted"] is None])}

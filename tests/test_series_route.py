@@ -40,15 +40,30 @@ def test_the_forecast_test_removes_laws_found_in_pure_noise():
     results = [_run(None, 0.0, seed)[0] for seed in range(6)]
     assert sum(r.ungated_law is not None for r in results) >= 3   # the path alone reports laws where there are none
     assert sum(r.law is not None for r in results) == 0
-    assert all(r.action == series_route.NO_PREDICTIVE_LAW for r in results if r.ungated_law is not None)
+    assert all(r.action == series_route.NO_PREDICTIVE_LAW for r in results)
     assert all(r.forecast_test["alpha"] == DIEBOLD_MARIANO_P_VALUE_THRESHOLD for r in results if r.forecast_test)
+    # a candidate that does not beat the mean inside the development period never reaches the later period
+    assert all(bool(r.forecast_test) == (r.selected["chosen"] is not None) for r in results)
 
 
 def test_a_law_that_forecasts_is_kept_and_reported_as_tested():
     result, world = _run("trend", 0.2, 0)
-    assert result.law is not None and result.law == result.ungated_law and result.forecast_test["passed"]
+    assert result.action == series_route.PREDICTIVE_LAW and result.law is not None and result.forecast_test["passed"]
+    assert result.selected["chosen"] is not None and result.selected["fit_rows"] == 2000 and result.selected["validation_rows"] == 1000
     assert result.forecast_test["rows"] == world["pool"].stop - world["pool"].start
     model = sp.sympify(result.law)
     prediction = series_route.predict(model, list(worlds.NAMES), world["X"][world["test"]])
     signal = world["signal"][world["test"]]
     assert np.corrcoef(prediction, signal)[0, 1] > 0.9
+
+
+def test_the_choice_is_made_inside_the_development_period_and_prefers_what_predicts():
+    world = worlds.world("trend_with_flow", 0.2, 1, tag="test")
+    names = list(worlds.NAMES)
+    X, y = world["X"][world["dev"]], world["y"][world["dev"]]
+    chosen = series_route.select_on_development(["x1", "x0*x2", "exp(x3)", "x0*x2 + x1"], names, X, y)
+    scores = {c["formula"]: c["validation_mse"] for c in chosen["candidates"]}
+    assert chosen["chosen"] in ("x0*x2", "x0*x2 + x1") and scores["x0*x2"] < chosen["no_law_validation_mse"] < scores["exp(x3)"] * 1.5
+    null = worlds.world(None, 0.0, 3, tag="test")
+    nothing = series_route.select_on_development([], names, null["X"][null["dev"]], null["y"][null["dev"]])
+    assert nothing["chosen"] is None and nothing["candidates"] == []
