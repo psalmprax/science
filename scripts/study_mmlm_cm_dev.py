@@ -24,7 +24,7 @@ from apedp_mmlm.context_mixing import ALL_EXPERTS, MATCH_EXPERTS, RECENT_EXPERTS
 from apedp_mmlm.text_corpus import split_bytes  # noqa: E402
 
 OUT = ROOT / "benchmarks" / "mmlm_cm_dev_study.json"
-WEIGHTS = ROOT / "data" / "mmlm" / "neural_expert.pt"
+WEIGHTS = ROOT / "benchmarks" / "mmlm" / "neural_expert_wikitext2.pt"
 
 
 def compressors() -> dict[str, Callable[[bytes], bytes]]:

@@ -21,8 +21,9 @@ combined:
 - **The mixture is learned, and it depends on the situation.** The experts'
   log-odds are added with weights fitted by gradient descent on the log loss.
   Separate weight sets are kept for the bit position, for the longest context
-  that was ever seen, for the length of the current match and for the kind of
-  byte just read, so the model learns when to trust which expert.
+  that was ever seen, for the length of the current match, for the kind of byte
+  just read, for how recently the context occurred and for how sure the network
+  is, so the model learns when to trust which expert.
 - **Every expert can be left out** (``experts=`` in ``fit_mixer``), so what each
   one contributes in bits per byte is a measured number.
 
@@ -67,7 +68,10 @@ ORDERS = (1, 2, 3, 4, 5, 6, 8)
 RECENT_EXPERTS = {"d2": "o2", "d3": "o3", "d4": "o4", "d5": "o5", "d6": "o6", "dw1": "w1", "dw2": "w2"}
 MATCH_EXPERTS = ("m8", "m4")
 ALL_EXPERTS = (*COUNT_EXPERTS, *RECENT_EXPERTS, *MATCH_EXPERTS, "nn")
-SELECTORS = {"order": 8 * 8, "match": 8 * 17, "class": 8 * 8, "recent": 8 * 6}
+SELECTORS = {"order": 8 * 8, "match": 8 * 17, "class": 8 * 8, "recent": 8 * 6, "previous": 8 * 256, "nn": 8 * 12}
+# "previous" (one weight set per preceding byte) fitted the tuning text better and the held-out half
+# worse in development (1.4827 against 1.4813 bits per byte), so it is available and not used.
+DEFAULT_SELECTORS = ("order", "match", "class", "recent", "nn")
 
 
 def _context_hash(x: np.ndarray, order: int) -> np.ndarray:
@@ -175,6 +179,7 @@ class ContextMixingLM:
         self.state_maps: dict[str, np.ndarray] = {}
         self.match_maps: dict[str, np.ndarray] = {}
         self.experts: tuple[str, ...] = ()
+        self.selectors: tuple[str, ...] = DEFAULT_SELECTORS
         self.mixer: dict[str, torch.Tensor] = {}
 
     # -- contexts ---------------------------------------------------------------------------
@@ -227,10 +232,10 @@ class ContextMixingLM:
         n = len(x)
         contexts = self._contexts(x)
         bits: np.ndarray = np.empty((n, 8), dtype=np.int64)
-        states: dict[str, np.ndarray] = {name: np.empty((n, 8), dtype=np.int64) for name in COUNT_EXPERTS}
+        states: dict[str, np.ndarray] = {name: np.empty((n, 8), dtype=np.int16) for name in COUNT_EXPERTS}
         seen: dict[str, np.ndarray] = {name: np.empty((n, 8), dtype=bool) for name in COUNT_EXPERTS}
         nodes: np.ndarray = np.empty((n, 8), dtype=np.int64)
-        recent: dict[str, np.ndarray] = {name: np.empty((n, 8), dtype=np.int64) for name in RECENT_EXPERTS}
+        recent: dict[str, np.ndarray] = {name: np.empty((n, 8), dtype=np.int16) for name in RECENT_EXPERTS}
         recent_seen: dict[str, np.ndarray] = {name: np.empty((n, 8), dtype=bool) for name in RECENT_EXPERTS}
         for j in range(8):
             node = ((1 << j) | (x >> (8 - j))).astype(np.int64) if j else np.ones(n, dtype=np.int64)
@@ -254,7 +259,7 @@ class ContextMixingLM:
         for name in MATCH_EXPERTS:
             predicted, length = _matches(self.history, x, int(name[1:]))
             bucket = _MATCH_BUCKET[length]
-            state: np.ndarray = np.zeros((n, 8), dtype=np.int64)
+            state: np.ndarray = np.zeros((n, 8), dtype=np.int16)
             for j in range(8):
                 agrees = (predicted >= 0) & ((predicted >> (8 - j)) == (x.astype(np.int64) >> (8 - j)))
                 expected = (predicted >> (7 - j)) & 1
@@ -272,6 +277,7 @@ class ContextMixingLM:
             "match": np.arange(8)[None, :] * 17 + (match_states[MATCH_EXPERTS[0]] % 17),
             "class": np.arange(8)[None, :] * 8 + _byte_class(previous)[:, None],
             "recent": np.arange(8)[None, :] * 6 + fresh,
+            "previous": np.arange(8)[None, :] * 256 + previous.astype(np.int64)[:, None],
         }
         return {"bits": bits, "states": {**states, **recent}, "match_states": match_states, "selectors": selectors, "n": n}
 
@@ -303,32 +309,44 @@ class ContextMixingLM:
             columns[name] = _stretch(self.state_maps[name][raw["states"][name].ravel()])
         for name in MATCH_EXPERTS:
             columns[name] = _stretch(self.match_maps[name][raw["match_states"][name].ravel()])
+        selectors = {k: v.ravel().astype(np.int16) for k, v in raw["selectors"].items()}
+        position = np.tile(np.arange(8), raw["n"])
+        selectors["nn"] = (position * 12).astype(np.int16)
         if neural is not None:
             columns["nn"] = _stretch(np.asarray(neural, dtype=np.float64).ravel())
-        return {"columns": columns, "bits": raw["bits"].ravel(), "n": raw["n"],
-                "selectors": {k: v.ravel() for k, v in raw["selectors"].items()}}
+            # how sure the network is, in twelve steps: the mixer learns how far to follow it at each
+            selectors["nn"] = (position * 12 + np.minimum((np.abs(columns["nn"]) * 1.5).astype(np.int64), 11)).astype(np.int16)
+        return {"columns": columns, "bits": raw["bits"].ravel().astype(np.int8), "n": raw["n"], "selectors": selectors}
+
+    def release_counts(self) -> None:
+        """Drop the count tables (over a gigabyte) once every feature that needs them has been computed."""
+        self.counts.clear()
 
     # -- mixer ------------------------------------------------------------------------------
-    @staticmethod
-    def _tensors(feats: dict[str, Any], experts: Sequence[str]) -> tuple[torch.Tensor, list[torch.Tensor], torch.Tensor, torch.Tensor]:
-        x = torch.from_numpy(np.stack([feats["columns"][name] for name in experts], axis=1))
-        selectors = [torch.from_numpy(feats["selectors"][k]) for k in SELECTORS]
-        position = torch.arange(8).repeat(feats["n"])
-        return x, selectors, position, torch.from_numpy(feats["bits"].astype(np.float32))
+    def _tensors(self, feats: dict[str, Any], rows: slice) -> tuple[torch.Tensor, list[torch.Tensor], torch.Tensor]:
+        first, last = rows.start * 8, rows.stop * 8
+        x = torch.from_numpy(np.stack([feats["columns"][name][first:last] for name in self.experts], axis=1))
+        sets = [torch.from_numpy(feats["selectors"][k][first:last]) for k in self.selectors]
+        return x, sets, torch.from_numpy(feats["bits"][first:last])
 
-    def _logit(self, x: torch.Tensor, selectors: list[torch.Tensor], position: torch.Tensor) -> torch.Tensor:
-        first = torch.stack([(self.mixer[f"w{k}"][s] * x).sum(1) for k, s in enumerate(selectors)], dim=1)
+    def _logit(self, x: torch.Tensor, sets: list[torch.Tensor], position: torch.Tensor) -> torch.Tensor:
+        first = torch.stack([(self.mixer[f"w{k}"][s.long()] * x).sum(1) for k, s in enumerate(sets)], dim=1)
         return (self.mixer["v"][position] * first).sum(1)
 
     def fit_mixer(self, feats: dict[str, Any], experts: Sequence[str] | None = None, *, epochs: int = 8,
-                  batch: int = 32768, lr: float = 0.01, seed: int = 0) -> ContextMixingLM:
+                  batch: int = 32768, lr: float = 0.01, seed: int = 0, selectors: Sequence[str] | None = None) -> ContextMixingLM:
+        """Fit the mixing weights on ``feats``. Without the network its confidence is not used to select weights either."""
         self.experts = tuple(experts) if experts is not None else tuple(n for n in ALL_EXPERTS if n in feats["columns"])
-        x, selectors, position, y = self._tensors(feats, self.experts)
+        chosen = tuple(selectors) if selectors is not None else DEFAULT_SELECTORS
+        self.selectors = tuple(k for k in chosen if k != "nn" or "nn" in self.experts)
+        x, sets, bits = self._tensors(feats, slice(0, feats["n"]))
+        y = bits.float()
+        position = torch.arange(len(y)) % 8
         width = len(self.experts)
         torch.manual_seed(seed)
-        self.mixer = {f"w{k}": torch.full((size, width), 1.0 / max(1, width) ** 0.5, requires_grad=True)
-                      for k, size in enumerate(SELECTORS.values())}
-        self.mixer["v"] = torch.full((8, len(SELECTORS)), 1.0 / len(SELECTORS), requires_grad=True)
+        self.mixer = {f"w{k}": torch.full((SELECTORS[name], width), 1.0 / max(1, width) ** 0.5, requires_grad=True)
+                      for k, name in enumerate(self.selectors)}
+        self.mixer["v"] = torch.full((8, len(self.selectors)), 1.0 / len(self.selectors), requires_grad=True)
         optimiser = torch.optim.Adam(list(self.mixer.values()), lr=lr)
         steps = epochs * math.ceil(len(y) / batch)
         schedule = torch.optim.lr_scheduler.OneCycleLR(optimiser, max_lr=lr, total_steps=steps)
@@ -338,7 +356,7 @@ class ContextMixingLM:
             order = torch.randperm(len(y), generator=generator)
             for begin in range(0, len(y), batch):
                 rows = order[begin : begin + batch]
-                loss = loss_fn(self._logit(x[rows], [s[rows] for s in selectors], position[rows]), y[rows])
+                loss = loss_fn(self._logit(x[rows], [s[rows] for s in sets], position[rows]), y[rows])
                 optimiser.zero_grad()
                 loss.backward()
                 optimiser.step()
@@ -347,12 +365,15 @@ class ContextMixingLM:
         return self
 
     @torch.no_grad()
-    def byte_bits(self, feats: dict[str, Any]) -> np.ndarray:
+    def byte_bits(self, feats: dict[str, Any], chunk: int = 1 << 17) -> np.ndarray:
         """Code length of every byte, in bits."""
-        x, selectors, position, y = self._tensors(feats, self.experts)
-        logit = self._logit(x, selectors, position).double()
-        nats = torch.nn.functional.binary_cross_entropy_with_logits(logit, y.double(), reduction="none")
-        out: np.ndarray = (nats.view(-1, 8).sum(1) / math.log(2)).numpy()
+        out: np.ndarray = np.empty(feats["n"], dtype=np.float64)
+        for begin in range(0, feats["n"], chunk):
+            rows = slice(begin, min(begin + chunk, feats["n"]))
+            x, sets, bits = self._tensors(feats, rows)
+            logit = self._logit(x, sets, torch.arange(len(bits)) % 8).double()
+            nats = torch.nn.functional.binary_cross_entropy_with_logits(logit, bits.double(), reduction="none")
+            out[rows] = (nats.view(-1, 8).sum(1) / math.log(2)).numpy()
         return out
 
     @staticmethod
