@@ -113,3 +113,4 @@ apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtra
 
 # Lake build output of the machine-checked Lean core
 /lean_checked/.lake/
+data/srbench/

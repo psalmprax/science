@@ -454,6 +454,11 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **A shared external benchmark, frozen: PREREG-SRBENCH-BASELINE-2026-11 (2026-11-19).** SRBench's
+  ground-truth track (119 Feynman, 14 Strogatz) from PMLB, checksum-pinned, with one protocol and one
+  scoring for every engine. The baseline covers L2, RIME, RIME-AD and the extended hierarchical
+  search; it runs once on GitHub Actions. Expectation fixed now: L2's referee promotes a wrong law in
+  at most 5 % of its promotions.
 - **The referee accepts an exact fit (M-01, `solefid-v6`).** A holdout residual of exact zeros
   passed neither whiteness check, so the right law on noise-free data was refused as
   unassessable (all 11 zero-noise refusals in PREREG-BLIND-L2-2026-11). It now passes as an exact
