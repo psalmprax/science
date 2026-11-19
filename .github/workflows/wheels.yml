@@ -142,12 +142,6 @@ jobs:
       fail-fast: true
       matrix:
         package:
-          - apedp-continuum
-          - apedp-quantum
-          - apedp-robotics
-          - apedp-molecular
-          - apedp-audio
-          - apedp-distributed
           - jetflow-video
     steps:
       - uses: actions/checkout@v7
@@ -162,25 +156,21 @@ jobs:
           python -m pip install --upgrade build
           python -m build
 
-      - name: Verify packaging contract (apedp core dependency)
+      - name: Verify jetflow-video stays standalone
         working-directory: packages/${{ matrix.package }}
         run: |
           python - <<'PY'
           import glob
-          import os
           import zipfile
 
           wheel = sorted(glob.glob("dist/*.whl"))[0]
           with zipfile.ZipFile(wheel) as zf:
               meta_name = next(n for n in zf.namelist() if n.endswith("METADATA"))
               text = zf.read(meta_name).decode("utf-8")
-          pkg = os.path.basename(os.getcwd())
-          requires_apedp = "Requires-Dist: apedp" in text
-          if pkg == "jetflow-video":
-              assert not requires_apedp, "jetflow-video must stay fully standalone"
-          else:
-              assert requires_apedp, f"{pkg} must declare the apedp core dependency"
-          print(f"OK: {wheel} metadata satisfies the packaging contract")
+          assert "Requires-Dist: apedp" not in text, (
+              "jetflow-video is standalone by contract: it must not depend on apedp"
+          )
+          print(f"OK: {wheel} is standalone as contracted")
           PY
 
       - name: Upload wheel artifact

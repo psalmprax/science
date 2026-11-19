@@ -41,7 +41,7 @@ def fit_floor_rule(
     Returns (q0, w, off, b, dev_r2), or None when fewer than two thresholds
     exist to phase the rule. All grid sizes are explicit caller arguments.
     """
-    thr = np.asarray(sorted(float(t) for t in thresholds), dtype=float)
+    thr: np.ndarray = np.asarray(sorted(float(t) for t in thresholds), dtype=float)
     if thr.size < 2:
         return None
     dx = np.diff(np.sort(np.asarray(x_dev, dtype=float).ravel()))
@@ -114,7 +114,8 @@ def floor_rule_candidate(
 
     def _scorer(df: pd.DataFrame) -> np.ndarray:
         xv = np.asarray(df[feature_name], dtype=float).ravel()
-        return q0 * np.floor((xv - off) / w) + b
+        _out: np.ndarray = q0 * np.floor((xv - off) / w) + b
+        return _out
 
     formula = f"{q0:.6g} * floor(({feature_name} - {off:.6g}) / {w:.6g}) + {b:.6g}"
     return CandidateProposal(

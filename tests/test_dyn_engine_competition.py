@@ -51,10 +51,10 @@ def test_named_column_proposer_runs_when_columns_present():
     rng = np.random.default_rng(1)
     n = 80
     S = 1000.0 - np.cumsum(rng.uniform(0, 5, n))
-    I = np.full(n, 10.0)
-    R = 1000.0 - S - I
-    X = {"S": S, "I": I, "R": R}
-    results = run_competition(X, I, train_ratio=0.6)
+    infected = np.full(n, 10.0)
+    recovered = 1000.0 - S - infected
+    X = {"S": S, "I": infected, "R": recovered}
+    results = run_competition(X, infected, train_ratio=0.6)
     by_engine = {r.engine: r for r in results}
     assert by_engine["compartmental_sir"].status == COMPETED
     assert by_engine["sindy"].status in {COMPETED, FAILED}

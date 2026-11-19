@@ -1,0 +1,6 @@
+name = "ApedpChecked"
+version = "0.1.0"
+defaultTargets = ["ApedpChecked"]
+
+[[lean_lib]]
+name = "ApedpChecked"

@@ -109,12 +109,12 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--circuit-terms", type=int, default=256)
     args = parser.parse_args()
-    if any(not 1 <= count <= 1 << ADDRESS_BITS for count in args.terms + [args.circuit_terms]):
+    if any(not 1 <= count <= 1 << ADDRESS_BITS for count in [*args.terms, args.circuit_terms]):
         parser.error("term counts must lie in [1, 2**22]")
     reference = benchmark_phases()
     coefficients = walsh_transform(reference) / reference.size
     results = []
-    for count in sorted(set(args.terms + [args.circuit_terms])):
+    for count in sorted(set([*args.terms, args.circuit_terms])):
         indices, weights = sparse_terms(coefficients, count)
         result = audit_terms(indices, weights, reference, FULL_MAX_X)
         results.append(result)

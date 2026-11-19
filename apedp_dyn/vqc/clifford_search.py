@@ -32,6 +32,7 @@ import dataclasses
 import itertools
 import random
 from collections.abc import Iterator, Mapping, Sequence
+from typing import Any
 
 from apedp_dyn.vqc.circuit import Circuit, Gate
 from apedp_dyn.vqc.discovery import (
@@ -215,10 +216,10 @@ class RewriteStep:
     score: tuple[int, int]
     verdict: str
     mismatched: int
-    first_mismatch: Mapping | None
+    first_mismatch: Mapping[str, Any] | None
     accepted: bool
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "rule": self.rule,
             "score": list(self.score),
@@ -246,7 +247,7 @@ class SearchOutcome:
     def accepted(self) -> tuple[RewriteStep, ...]:
         return tuple(step for step in self.steps if step.accepted)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "reference": self.reference.resources(),
             "best": self.best.resources(),
@@ -300,10 +301,10 @@ def search(reference: Circuit, *, max_steps: int = 64, mutations: int = 4,
     steps: list[RewriteStep] = []
     for _ in range(max_steps):
         best: tuple[tuple[int, int], str, Circuit] | None = None
-        for rule, candidate in propose_rewrites(current):
-            score = resource_score(candidate)
+        for rule, proposal in propose_rewrites(current):
+            score = resource_score(proposal)
             if best is None or score < best[0]:
-                best = (score, rule, candidate)
+                best = (score, rule, proposal)
         if best is None:
             break
         _report, step = _certify(reference, best[2], best[1])
@@ -315,8 +316,8 @@ def search(reference: Circuit, *, max_steps: int = 64, mutations: int = 4,
         current = step.circuit
 
     mutation_steps: list[RewriteStep] = []
-    for rule, candidate in propose_mutations(current, seed=seed, count=mutations):
-        _report, step = _certify(reference, candidate, rule)
+    for rule, mutant in propose_mutations(current, seed=seed, count=mutations):
+        _report, step = _certify(reference, mutant, rule)
         # A mutation that happens to be semantics-preserving is a rewrite in disguise;
         # it is recorded as such and not counted as a refusal.
         mutation_steps.append(step)

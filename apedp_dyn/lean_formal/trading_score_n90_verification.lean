@@ -63,7 +63,7 @@ theorem trading_score_n90_exponential_damping_bound (v s : R) (hpos : (0 : R) �
   by exact mul_le_self_of_le_one (|v|) (inv_damp s) (inv_damp_le_one s) hpos
 
 /-- Declared Invariant: dispersion_norm_positivity (bound_positivity) - Dispersion norm metric non-negativity 0 <= disp_norm --/
-theorem trading_score_n90_dispersion_norm_positivity (x : Nat) : 0 ≤ x :=
-  Nat.zero_le x
+theorem trading_score_n90_dispersion_norm_positivity (u : R) : (0 : R) ≤ u * u :=
+  by exact norm_sq_nonneg u
 
 end APEDP_trading_score_n90

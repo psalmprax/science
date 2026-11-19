@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -38,8 +39,8 @@ VAX_CUT = 0.7
 T_VAX = 60.0
 
 
-def simulate_sir(beta=BETA, gamma=GAMMA, t_vax=T_VAX, vax_cut=VAX_CUT,
-                 t_end=160.0, dt=1.0, noise=0.0, seed=0):
+def simulate_sir(beta: float=BETA, gamma: float=GAMMA, t_vax: float=T_VAX, vax_cut: float=VAX_CUT,
+                 t_end: float=160.0, dt: float=1.0, noise: float=0.0, seed: int=0) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
     n = int(t_end / dt) + 1
     S = np.empty(n)
@@ -57,7 +58,7 @@ def simulate_sir(beta=BETA, gamma=GAMMA, t_vax=T_VAX, vax_cut=VAX_CUT,
     return np.arange(n) * dt, S, Inf, inc
 
 
-def _mk(cid, terms, X_tr, y_tr, X_ho, y_ho, obs_rms, ns):
+def _mk(cid: str, terms: tuple[str, ...], X_tr: np.ndarray, y_tr: np.ndarray, X_ho: np.ndarray, y_ho: np.ndarray, obs_rms: float, ns: float) -> ScoredCandidate:
     w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
     rh = y_ho - X_ho @ w
     rm = float(np.sqrt(np.mean(rh ** 2)))
@@ -72,7 +73,7 @@ def _mk(cid, terms, X_tr, y_tr, X_ho, y_ho, obs_rms, ns):
                            holdout_rmse=rm)
 
 
-def run_sir_forms(noise=0.02, seed=42):
+def run_sir_forms(noise: float=0.02, seed: int=42) -> tuple[Any, list[ScoredCandidate]]:
     """A: incidence-form recovery across the vaccination break."""
     t, S, Inf, inc = simulate_sir(noise=noise, seed=seed)
     ntr = int(T_VAX)  # train strictly pre-intervention
@@ -92,7 +93,7 @@ def run_sir_forms(noise=0.02, seed=42):
         X_tr = np.column_stack([o(Str), ftr]) if ftr is not None else o(Str)[:, None]
         X_ho = np.column_stack([o(Sho), fho]) if fho is not None else o(Sho)[:, None]
         scored.append(_mk(cid, terms, X_tr, ytr, X_ho, yho, obs_rms, ns))
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -102,7 +103,7 @@ def run_sir_forms(noise=0.02, seed=42):
     return adj, scored
 
 
-def run_r0_threshold(noise=0.02, seed=42):
+def run_r0_threshold(noise: float=0.02, seed: int=42) -> dict[str, Any]:
     """B: windowed R0 estimates vs observed growth sign -- threshold support."""
     t, S, Inf, _inc = simulate_sir(noise=noise, seed=seed)
     wlen = 14
@@ -122,12 +123,12 @@ def run_r0_threshold(noise=0.02, seed=42):
             "est_range": (float(ests.min()), float(ests.max()))}
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("SIR SANDBOX: R0=2.5 outbreak, vaccination cuts beta 70% at t=60")
     print("=" * 64)
     adj, scored = run_sir_forms()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:14s} holdout RMSE={s.holdout_rmse:.6f}")
     print(f"  A forms: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")

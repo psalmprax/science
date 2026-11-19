@@ -1,0 +1,78 @@
+{
+  "script": "scripts/emit_uncompute_pass.py",
+  "module": "apedp_dyn/quantum_compilation/inplace_bm.py",
+  "class": "measured gate stream for one iteration and for its adjoint; the loops are projections",
+  "why_the_adjoint_costs_the_same": "every gate in the loop is an ixor_gf2_mul, which is its own inverse and never touches its own operands, so the adjoint is the same multiset in reverse order; the two counts are compared, not assumed",
+  "rows": [
+    {
+      "degree": 4,
+      "t": 5,
+      "iterations": 10,
+      "forward_toffolis_per_iteration": 99,
+      "adjoint_toffolis_per_iteration": 99,
+      "adjoint_equals_forward": true,
+      "key_equation_toffolis": 990,
+      "uncompute_toffolis": 990,
+      "forney_per_position": 18.0,
+      "forney_sweep_toffolis": 73710.0,
+      "coefficient_sweep_toffolis": 0,
+      "four_stage_total": 75690.0
+    },
+    {
+      "degree": 8,
+      "t": 10,
+      "iterations": 20,
+      "forward_toffolis_per_iteration": 567,
+      "adjoint_toffolis_per_iteration": 567,
+      "adjoint_equals_forward": true,
+      "key_equation_toffolis": 11340,
+      "uncompute_toffolis": 11340,
+      "forney_per_position": 108.0,
+      "forney_sweep_toffolis": 442260.0,
+      "coefficient_sweep_toffolis": 0,
+      "four_stage_total": 464940.0
+    },
+    {
+      "degree": 12,
+      "t": 35,
+      "iterations": 70,
+      "forward_toffolis_per_iteration": 4473,
+      "adjoint_toffolis_per_iteration": 4473,
+      "adjoint_equals_forward": true,
+      "key_equation_toffolis": 313110,
+      "uncompute_toffolis": 313110,
+      "forney_per_position": 315.0,
+      "forney_sweep_toffolis": 1289925.0,
+      "coefficient_sweep_toffolis": 0,
+      "four_stage_total": 1916145.0
+    }
+  ],
+  "measure_based_uncompute": {
+    "degree": 12,
+    "t": 35,
+    "cells": 73,
+    "cleared_qubits": 876,
+    "toffolis": 0,
+    "ops": {
+      "R": 876
+    },
+    "instruction": "reset per qubit (this build has no mr and no h)",
+    "phase_caveat": "reset clears but does not preserve the tracked phase; a phase-safe clear needs `mr` from scripts/kickmix_mr_opcode.patch, which emits zero ANDs as well, so the Toffoli count is unchanged"
+  },
+  "accounting": {
+    "archive_toffolis": 396919.33,
+    "stages": {
+      "key_equation": 313110,
+      "coefficient_sweep": 0,
+      "forney_block": 1289925.0,
+      "uncompute": 313110,
+      "uncompute_measured": 0
+    },
+    "four_stage_total": 1916145.0,
+    "ratio_vs_archive": 4.827542664651782,
+    "excess_over_archive": 1519225.67,
+    "archive_share_of_total": 0.20714472547745605,
+    "conclusion": "the complete packed decoder totals 1,916,145.0 Toffolis, 4.83x the archive's 396,919 -- the archive is 20.7% of the measured construction. The uncompute pass is not cheaper than the forward one (313,110 against 313,110), and the Forney sweep is the dominant term at 67.3%"
+  },
+  "mr_availability": "the shipped extension exposes reset, hmr and del_and -- and no mr, and no Hadamard -- so the clear is measured with reset; `kickmix_mr_opcode.patch` adds a phase-preserving mr to the source. reset, hmr and mr all emit zero ANDs, so the count below is the count for all three, and only phase safety differs"
+}

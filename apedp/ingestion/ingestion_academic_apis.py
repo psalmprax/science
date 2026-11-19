@@ -9,6 +9,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+#: The institutional endpoint strings below are configuration, not clients: no
+#: client, credential or request exists for any of them. The single implemented
+#: route is the Crossref metadata lookup, which needs no authentication.
+CONNECTS_TO_SERVICES = False
+AUTHENTICATION = "none"
+
 INSTITUTIONAL_TARGETS: dict[str, str] = {
     "Crossref": "https://api.crossref.org/works",
     "arXiv": "http://export.arxiv.org/api/query",
@@ -141,14 +147,16 @@ def search_crossref(
     if mailto:
         params["mailto"] = mailto
     request_url = f"{CROSSREF_API_URL}?{urlencode(params)}"
-    # The scheme and authority are fixed by CROSSREF_API_URL; all parameters
-    # are encoded as query data, so caller input cannot select a URL scheme.
-    request = Request(  # noqa: S310  # nosec B310
+    # urlopen() also accepts file: and custom schemes; a metadata query must
+    # never be able to read the filesystem through a rewritten endpoint.
+    if not request_url.startswith("https://"):
+        raise ValueError(f"refusing non-https Crossref endpoint: {request_url}")
+    request = Request(  # noqa: S310 - scheme checked immediately above
         request_url,
         headers={"User-Agent": "APEDP literature metadata search/1.0"},
     )
     try:
-        with urlopen(request, timeout=timeout) as response:  # noqa: S310  # nosec B310
+        with urlopen(request, timeout=timeout) as response:  # nosec B310  # noqa: S310 - https scheme checked immediately above
             payload = json.load(response)
     except (HTTPError, URLError, TimeoutError) as exc:
         raise RuntimeError(f"Crossref literature search failed: {exc}") from exc
@@ -179,11 +187,36 @@ def list_targets() -> dict[str, str]:
     return dict(INSTITUTIONAL_TARGETS)
 
 
+def describe() -> dict[str, object]:
+    """What this module does and does not do, without reading the source.
+
+    The endpoint table is configuration only. Crossref is the one implemented
+    source, called anonymously, and its results are metadata rather than a
+    literature corpus or a novelty determination.
+    """
+    return {
+        "connects_to_services": CONNECTS_TO_SERVICES,
+        "authentication": AUTHENTICATION,
+        "n_targets": len(INSTITUTIONAL_TARGETS),
+        "configured_targets": sorted(INSTITUTIONAL_TARGETS),
+        "implemented_sources": ["Crossref"],
+        "scope_note": (
+            "The institutional targets are endpoint configuration only; no client, "
+            "credential or request exists for them. Crossref is the one implemented "
+            "source: a public metadata search with no authentication, not a "
+            "literature corpus or a novelty determination."
+        ),
+    }
+
+
 __all__ = [
+    "AUTHENTICATION",
+    "CONNECTS_TO_SERVICES",
     "CROSSREF_API_URL",
     "INSTITUTIONAL_TARGETS",
     "LiteratureRecord",
     "LiteratureSearchResult",
+    "describe",
     "list_targets",
     "search_crossref",
 ]

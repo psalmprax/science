@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -37,7 +38,7 @@ from apedp_dyn.grammar.candidate_ir import (
 )
 
 
-def order_param(K, N=40, T=40.0, dt=0.05, seed=0):
+def order_param(K: float, N: int=40, T: float=40.0, dt: float=0.05, seed: int=0) -> float:
     rng = np.random.default_rng(seed)
     w = rng.normal(0.0, 1.0, N)
     th = rng.uniform(-np.pi, np.pi, N)
@@ -48,7 +49,7 @@ def order_param(K, N=40, T=40.0, dt=0.05, seed=0):
     return r
 
 
-def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
+def run_kuramoto(K_tr: np.ndarray | None=None, K_ho: np.ndarray | None=None, N: int=40, seed: int=42) -> tuple[Any, list[ScoredCandidate], tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
     K_tr = np.linspace(0.5, 2.5, 9) if K_tr is None else np.asarray(K_tr)
     K_ho = np.linspace(3.0, 5.0, 6) if K_ho is None else np.asarray(K_ho)
     r_tr = np.array([order_param(K, N=N, seed=seed) for K in K_tr])
@@ -57,7 +58,7 @@ def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
     ns = float(0.02 * obs_rms + 1e-9)
     o = np.ones_like
 
-    def mk(cid, terms, ftr, fho):
+    def mk(cid: str, terms: tuple[str, ...], ftr: np.ndarray, fho: np.ndarray) -> ScoredCandidate:
         X_tr = np.column_stack([o(K_tr), ftr])
         X_ho = np.column_stack([o(K_ho), fho])
         w, *_ = np.linalg.lstsq(X_tr, r_tr, rcond=None)
@@ -90,7 +91,7 @@ def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
     scored.append(ScoredCandidate(cc, {"gate4_status": g4c, "data_origin": DataOrigin.SIMULATION},
                                   train_loss=float(np.mean((r_tr - Xc_tr @ wc) ** 2)),
                                   holdout_rmse=float(np.sqrt(np.mean(rhc ** 2)))))
-    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
+    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse if s.holdout_rmse is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -100,12 +101,12 @@ def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
     return adj, scored, (K_tr, r_tr, K_ho, r_ho)
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("KURAMOTO SANDBOX: sync transition r(K), train K<=2.5, holdout K>=3")
     print("=" * 64)
     adj, scored, _ = run_kuramoto()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:10s} holdout RMSE={s.holdout_rmse:.4f}")
     print(f"  verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")

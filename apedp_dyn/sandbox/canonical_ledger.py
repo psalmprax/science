@@ -44,7 +44,7 @@ def raw_features(d: pd.DataFrame) -> tuple[dict[str, np.ndarray], np.ndarray]:
     p = d["price"].to_numpy(float)
     v = d["V"].to_numpy(float)
     tb = d["taker_buy"].to_numpy(float) if "taker_buy" in d else v / 2.0
-    r = np.append(0.0, np.diff(np.log(np.maximum(p, 1e-12))))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(np.maximum(p, 1e-12))))
     sma20 = pd.Series(p).rolling(20, min_periods=20).mean().to_numpy()
     std20 = pd.Series(p).rolling(20, min_periods=20).std().to_numpy()
     out = {
@@ -65,7 +65,7 @@ def raw_features(d: pd.DataFrame) -> tuple[dict[str, np.ndarray], np.ndarray]:
         sub = r[t - 30:t]
         if not np.all(np.isfinite(sub)):
             continue
-        cd = np.cumsum(sub - np.mean(sub))
+        cd: np.ndarray = np.cumsum(sub - np.mean(sub))
         rr = np.max(cd) - np.min(cd)
         s = np.std(sub)
         if s > 1e-9 and rr > 1e-9:
@@ -97,13 +97,13 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
                ablate_feature_rank: bool = False,
                check_binding: bool = True,
                strategy_archetype: str = "tactical",
-               min_tail_events: int = 30) -> tuple[list[dict], dict]:
+               min_tail_events: int = 30) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Execute one policy over assets; return (ledger rows, summary).
 
     rule: 'base' (short iff S<0) or 'hyst' (enter iff S<-th_in,
     hold while S<-th_out). Invalid scores force flat with reason.
     """
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for s in syms:
         raw, r = raw_features(data[s])
         z, valid = zscore_features(raw)
@@ -124,7 +124,7 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
         comp = {"H-BB": z["H-BB"], "H-OBV_MOM": z["H-OBV_MOM"],
                 "NL_TAKER_MOM": tm, "NL_MASTER_SNR": snr,
                 "H-MOM": z["H-MOM"], "H-RV": rv, "NL_HURST_ADAPT": had}
-        ok = np.ones(len(r), bool)
+        ok: np.ndarray = np.ones(len(r), bool)
         for t in ("H-BB", "H-OBV_MOM"):
             ok &= valid[t]
         # Every consumed raw input must be finite; imputed zeros never
@@ -160,8 +160,8 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
     assert_mask_first_compliance(rows)
 
     # second pass: position changes need per-asset previous position
-    out: list[dict] = []
-    by_asset: dict[str, list[dict]] = {}
+    out: list[dict[str, Any]] = []
+    by_asset: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
         by_asset.setdefault(row["asset"], []).append(row)
     for _s, rs in by_asset.items():
@@ -227,7 +227,7 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
 
 
 def assert_mask_first_compliance(
-    rows: list[dict],
+    rows: list[dict[str, Any]],
     raise_on_violation: bool = True,
 ) -> bool:
     """Assert that invalid/missing data strictly forces flat positions with reason.
@@ -249,7 +249,7 @@ def assert_mask_first_compliance(
 
 
 def assert_threshold_binding(
-    rows: list[dict],
+    rows: list[dict[str, Any]],
     min_active: float = TACTICAL_ACTIVE_MIN,
     max_active: float = TACTICAL_ACTIVE_MAX,
 ) -> tuple[bool, float, str]:
@@ -270,7 +270,7 @@ def assert_threshold_binding(
 
 
 def assert_strategy_class_compliance(
-    rows: list[dict],
+    rows: list[dict[str, Any]],
     strategy_archetype: str = "tactical",
     min_events: int = TAIL_RISK_MIN_EVENTS,
     min_active_tactical: float = TACTICAL_ACTIVE_MIN,
@@ -464,7 +464,7 @@ def run_feature_rank_ablation(
     }
 
 
-def ledger_hash(rows: list[dict]) -> str:
+def ledger_hash(rows: list[dict[str, Any]]) -> str:
     h = hashlib.sha256()
     for x in rows:
         h.update(repr(sorted(x.items())).encode())
@@ -479,11 +479,11 @@ def ledger_hash(rows: list[dict]) -> str:
 # apedp_dyn/epistemic/caller_registry.py for the census and discipline.
 # --------------------------------------------------------------------------
 def publish_caller_compliance_record(
-    ledger=None,
+    ledger: Any=None,
     candidate_id: str = "",
     dataset_id: str | None = None,
     nominal_variants: int | None = None,
-):
+) -> Any:
     "Publish this caller's REG-F14b mode-(b) compliance record."
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
 

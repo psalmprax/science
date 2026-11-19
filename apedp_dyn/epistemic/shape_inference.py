@@ -137,7 +137,7 @@ def _seg_sse(s: np.ndarray, s2: np.ndarray, i: int, j: int) -> float:
     return float(float(float(max(tot2 - tot * tot / m, 0.0))))
 
 
-def _segments_to_reach(cost, n, tss, target, cap):
+def _segments_to_reach(cost: Any, n: Any, tss: Any, target: Any, cap: Any) -> Any:
     """Smallest k with 1 - SSE(k)/tss >= target, or None if unreachable.
 
     This is the parsimony statistic: a staircase is cheap to describe in
@@ -177,7 +177,7 @@ def _within_segment_sse(x: np.ndarray, y: np.ndarray, cuts: list[int]) -> tuple[
     return sc, sl
 
 
-def _reach_k(cost, n, tss, target_r2, cap):
+def _reach_k(cost: Any, n: Any, tss: Any, target_r2: Any, cap: Any) -> Any:
     """Smallest k whose fit reaches target R2, or None if unreachable within cap.
 
     This is the parsimony statistic the family decision rests on: how many
@@ -196,7 +196,7 @@ def _reach_k(cost, n, tss, target_r2, cap):
     return None
 
 
-def _dp_segment_linear(x, y, max_k, min_len):
+def _dp_segment_linear(x: Any, y: Any, max_k: Any, min_len: Any) -> Any:
     """Exact piecewise-LINEAR DP (prefix-sum normal equations, O(1) per span).
 
     Answers: how many segments does the data need if each may carry a slope,
@@ -212,7 +212,7 @@ def _dp_segment_linear(x, y, max_k, min_len):
     Sxy = np.concatenate([[0.0], np.cumsum(x * y)])
     Syy = np.concatenate([[0.0], np.cumsum(y * y)])
 
-    def sse(j, i):
+    def sse(j: Any, i: Any) -> Any:
         m = S1[i] - S1[j]
         if m <= 0:
             return 0.0
@@ -328,8 +328,7 @@ def infer_shape_prior(
 
     # Piecewise-constant DP.
     cap = int(min(max_segments, max(1, len(xs) // max(min_segment_len, 1))))
-    _prefix_sums(ys)[1]
-    cost = _dp_segment(ys, cap, min_segment_len)[0]
+    cost, _, boundaries = _dp_segment(ys, cap, min_segment_len)
     best_k, best_bic = 1, float("inf")
     for k in range(1, cap + 1):
         sse = cost[k][len(ys)]
@@ -360,8 +359,6 @@ def infer_shape_prior(
                                 if np.isfinite(cost[k][len(ys)]))) / tss
     target = max(achievable * (1.0 - sse_target), 1e-12)
     k_target = _segments_to_reach(cost, len(ys), tss, target, cap)
-
-    _flat_run_stats(ys, flat_tol)
 
     # Recorded, measured failures of four earlier discriminators (see
     # CHANGELOG): (a) "piecewise-constant beats a line" flags noise and a
@@ -420,7 +417,6 @@ def infer_shape_prior(
 
     cps: list[float] = []
     if family == FAMILY_PIECEWISE_CONSTANT:
-        boundaries = _dp_segment(ys, cap, min_segment_len)[2]
         for j in boundaries.get(best_k, []):
             if 0 < j < len(xs):
                 cps.append(float((xs[j - 1] + xs[j]) / 2.0))
@@ -487,7 +483,7 @@ def step_family_basis(
     from signs. The returned matrix is for OLS; the names say what each column
     is so a candidate form can be written symbolically.
     """
-    xs = np.asarray(x, dtype=float).ravel()
+    xs: np.ndarray = np.asarray(x, dtype=float).ravel()
     cols = [np.ones_like(xs)]
     names = ["1"]
     for t in thresholds:
@@ -513,8 +509,8 @@ def fit_step_family(
     arguments (AGENTS.md 1.3). Fitting is on the rows the caller hands over;
     holdout separation is the caller's responsibility, not this function's.
     """
-    xs = np.asarray(x, dtype=float).ravel()
-    ys = np.asarray(y, dtype=float).ravel()
+    xs: np.ndarray = np.asarray(x, dtype=float).ravel()
+    ys: np.ndarray = np.asarray(y, dtype=float).ravel()
     n = min(xs.size, ys.size)
     xs, ys = xs[:n], ys[:n]
     mask = np.isfinite(xs) & np.isfinite(ys)

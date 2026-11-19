@@ -83,8 +83,8 @@ def profile_dataset(
 
     All diagnostic cutoffs are caller-supplied arguments (preserving AGENTS.md §1.3).
     """
-    x_arr = np.asarray(x, dtype=float).ravel()
-    y_arr = np.asarray(y, dtype=float).ravel()
+    x_arr: np.ndarray = np.asarray(x, dtype=float).ravel()
+    y_arr: np.ndarray = np.asarray(y, dtype=float).ravel()
 
     finite_mask = np.isfinite(x_arr) & np.isfinite(y_arr)
     x_arr, y_arr = x_arr[finite_mask], y_arr[finite_mask]

@@ -42,7 +42,8 @@ class Term:
             )
         if not np.all(np.isfinite(values)):
             raise LibraryRefusal(f"term {self.name!r} produced a non-finite column")
-        return values
+        _out: np.ndarray = values
+        return _out
 
 
 @dataclass(frozen=True)
@@ -88,7 +89,8 @@ class TermLibrary:
         if states.ndim != 2:
             raise LibraryRefusal(f"states must be 2-D, got shape {states.shape}")
         columns = [term.evaluate(states) for term in self.terms]
-        return np.column_stack(columns)
+        _out: np.ndarray = np.column_stack(columns)
+        return _out
 
     def select(self, design: np.ndarray, support: Sequence[int]) -> np.ndarray:
         support = tuple(sorted(int(index) for index in support))
@@ -112,10 +114,13 @@ class TermLibrary:
             )
         if not support:
             return f"{lhs} = 0"
+        from apedp_dyn.grammar.term_format import atom
+
         parts = []
         for index, coefficient in zip(support, coefficients, strict=True):
             name = self.terms[index].name
-            body = f"{float(coefficient):+.6g}" if name == "1" else f"{float(coefficient):+.6g}*{name}"
+            body = (f"{float(coefficient):+.6g}" if name == "1"
+                    else f"{float(coefficient):+.6g}*{atom(name)}")
             parts.append(body)
         return f"{lhs} = " + " ".join(parts)
 

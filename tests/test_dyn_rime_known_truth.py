@@ -38,8 +38,11 @@ pytestmark = pytest.mark.scientific_regression
 
 
 @pytest.fixture(scope="module")
-def artifact() -> dict:
-    return run_challenge("benchmarks/known_truth_results.json")
+def artifact(tmp_path_factory) -> dict:
+    # Written to a scratch file: running the tests must not replace the
+    # committed results artifact (and, on a machine without the native kernel,
+    # used to replace it with a sweep in which RIME had not run at all).
+    return run_challenge(str(tmp_path_factory.mktemp("known_truth") / "known_truth_results.json"))
 
 
 def test_positive_controls_recover_structure_for_both_methods(artifact) -> None:

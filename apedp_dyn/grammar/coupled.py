@@ -19,8 +19,10 @@ from apedp_dyn.grammar.candidate_ir import (
     Term,
 )
 from apedp_dyn.grammar.mechanical_grammar import (
+    _SCALED_TERMS,
     _TERM_BUILDERS,
     DEFAULT_BOUNDS,
+    SATURATION_SCALE_BOUNDS,
     problem_symbol_units,
 )
 from apedp_dyn.model import DynamicalEquation, Parameter, PhysicalModel
@@ -152,8 +154,15 @@ def enumerate_coupled(required: tuple[str, ...] = ("u",),
                     else:
                         pname = f"q{counter}"
                         counter += 1
-                    terms.append(Term(name, pname))
+                    # A saturation law's reference level is its own fitted
+                    # parameter, named per DOF: a shared scale would force both
+                    # masses to the same knee, which the plant contradicts.
+                    scale = (f"s{dof}_{name.removesuffix('_bind')}"
+                             if name in _SCALED_TERMS else None)
+                    terms.append(Term(name, pname, scale_parameter=scale))
                     bounds[pname] = DEFAULT_BOUNDS
+                    if scale is not None:
+                        bounds[scale] = SATURATION_SCALE_BOUNDS
                 meta: dict[str, Any] = {
                     "family": "mechanical_2nd_order_2dof",
                     "order": 2,
@@ -211,7 +220,7 @@ def canonical_system(candidate: SystemCandidate) -> str:
     return "sys[" + "|".join(parts) + "]"
 
 
-def materialize_system(problem, candidate: SystemCandidate) -> PhysicalModel:
+def materialize_system(problem: Any, candidate: SystemCandidate) -> PhysicalModel:
     """System IR -> executable PhysicalModel.
 
     Handles three DAE modes:
@@ -240,7 +249,7 @@ def materialize_system(problem, candidate: SystemCandidate) -> PhysicalModel:
     raise ValueError(f"unknown dae_mode {dae_mode!r}")
 
 
-def _materialize_ode(problem, candidate: SystemCandidate) -> PhysicalModel:
+def _materialize_ode(problem: Any, candidate: SystemCandidate) -> PhysicalModel:
     """Pure ODE materialization: D2b behavior, 4-state first-order system."""
     if len(problem.states) != 4:
         raise ValueError("ODE materialization requires 4 states")
@@ -259,9 +268,18 @@ def _materialize_ode(problem, candidate: SystemCandidate) -> PhysicalModel:
         equations.append(DynamicalEquation(pos[i].name, vel[i].name))
         parts: list[str] = []
         for t in candidate.equations[i].terms:
+            # Bind the scale symbol before building. Passing the generic `gL{i}`
+            # and never substituting it emitted a name the lambdified model did
+            # not have, so the failure surfaced as an unknown symbol at fit time
+            # instead of a refusal at build time.
+            if t.scale_parameter is not None:
+                real[t.scale_parameter] = real[pos[i].name]
+                scale = sp.Symbol(t.scale_parameter)
+            else:
+                scale = sp.Symbol(f"gL{i}")
             built = _TERM_BUILDERS[t.name](
                 sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
+                sp.Symbol(inp[i].name), sp.Symbol(remote.name), scale)
             term_unit = _unit_of(built, real)
             punit = str(target_unit / term_unit)
             bounds = candidate.equations[i].parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
@@ -273,14 +291,24 @@ def _materialize_ode(problem, candidate: SystemCandidate) -> PhysicalModel:
             else:
                 seen_units[t.parameter] = punit
                 parameters.append(Parameter(t.parameter, punit, None, bounds))
-            parts.append(f"({t.parameter}*{sp.sstr(built)})")
+            if t.scale_parameter is not None and t.scale_parameter not in seen_units:
+                sbounds = candidate.equations[i].parameter_bounds.get(
+                    t.scale_parameter, SATURATION_SCALE_BOUNDS)
+                seen_units[t.scale_parameter] = real[pos[i].name]
+                parameters.append(Parameter(t.scale_parameter, real[pos[i].name],
+                                            None, sbounds, role="scale"))
+            # Build the product as a sympy object. `f"{q}*{sstr(built)}"` splits
+            # whenever the operand is a sum: `q2*-x1 + x2` puts the coefficient
+            # on the first addend only, a different function from the one the
+            # unit check just certified.
+            parts.append(sp.sstr(sp.Mul(sp.Symbol(t.parameter), built)))
         equations.append(DynamicalEquation(
             vel[i].name, " + ".join(parts) if parts else "0"))
     return PhysicalModel(problem.states, problem.inputs,
                          tuple(parameters), tuple(equations))
 
 
-def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalModel:
+def _materialize_constrained(problem: Any, candidate: SystemCandidate) -> PhysicalModel:
     """Constrained DAE materialization.
 
     Algebraic constraint terms (named "c1", "c2") enforce relationships
@@ -380,7 +408,7 @@ def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalMod
                          dae_constraint_params=tuple(sorted(constraint_params)))
 
 
-def _materialize_multiscale(problem, candidate: SystemCandidate,
+def _materialize_multiscale(problem: Any, candidate: SystemCandidate,
                             timescales: tuple[str, ...]) -> PhysicalModel:
     """Multi-timescale materialization.
 

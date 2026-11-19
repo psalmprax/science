@@ -1,0 +1,46 @@
+{
+  "what": "Exact deflation and k -> k-1 rewrite search on the GF(2^12) multiplication tensor.",
+  "target_rank": 50,
+  "target_met": false,
+  "time_limit_sec": 120.0,
+  "rows": [
+    {
+      "seed": "Schoolbook-144",
+      "start_rank": 144,
+      "rank_after_search": 144,
+      "deflations": 0,
+      "rewrites": 0,
+      "moves_tried": 497640,
+      "max_rewrite_k": 3,
+      "residual_dimension": 0,
+      "reconstruction_exact": true,
+      "elapsed_sec": 44.96
+    },
+    {
+      "seed": "Karatsuba-63",
+      "start_rank": 63,
+      "rank_after_search": 54,
+      "deflations": 9,
+      "rewrites": 0,
+      "moves_tried": 26235,
+      "max_rewrite_k": 3,
+      "residual_dimension": 0,
+      "reconstruction_exact": true,
+      "elapsed_sec": 1.85
+    },
+    {
+      "seed": "Karatsuba-54-BaseComposed",
+      "start_rank": 54,
+      "rank_after_search": 54,
+      "deflations": 0,
+      "rewrites": 0,
+      "moves_tried": 26235,
+      "max_rewrite_k": 3,
+      "residual_dimension": 0,
+      "reconstruction_exact": true,
+      "elapsed_sec": 2.0
+    }
+  ],
+  "reading": "Every rank here is an exactly reconstructed decomposition, never a screen margin: rank_after_search is only set when all 1,728 coefficients match. target_met false means the <51 objective is still open, not that nothing ran -- see moves_tried.",
+  "published_51": "not a seed: the published 51-incumbent ships all-zero factors, so it has no atoms to shorten and cannot be deflated by any search"
+}

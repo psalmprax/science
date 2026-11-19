@@ -26,9 +26,9 @@ __all__ = [
     "EvidenceIncompleteError",
     "VerifierReceipt",
     "candidate_id_for",
+    "compute_provenance_fingerprint",
     "compute_spec_fingerprint",
     "compute_structural_fingerprint",
-    "compute_provenance_fingerprint",
     "evidence_from_receipt",
     "missing_correctness_checks",
     "normalise_correctness_evidence",
@@ -46,6 +46,9 @@ class CandidateStatus(str, Enum):
     PROPOSED = "PROPOSED"
     SCREEN_REJECTED = "SCREEN_REJECTED"
     VERIFIER_REJECTED = "VERIFIER_REJECTED"
+    #: The verifier produced no measured verdict (timeout, crash, unparseable
+    #: summary). A capability gap, not evidence against the circuit.
+    UNVERIFIABLE = "UNVERIFIABLE"
     VERIFIED_NONIMPROVING = "VERIFIED_NONIMPROVING"
     VERIFIED_IMPROVEMENT = "VERIFIED_IMPROVEMENT"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
@@ -58,7 +61,7 @@ class CandidateStatus(str, Enum):
 CORRECTNESS_CHECKS: tuple[str, ...] = ("value", "junk", "phase")
 
 #: Statuses that assert the circuit is *correct*, not merely built or priced.
-CORRECTNESS_CLAIMING_STATUSES: frozenset = frozenset({
+CORRECTNESS_CLAIMING_STATUSES: frozenset[Any] = frozenset({
     CandidateStatus.VERIFIED_NONIMPROVING,
     CandidateStatus.VERIFIED_IMPROVEMENT,
 })
@@ -71,7 +74,7 @@ class EvidenceIncompleteError(RuntimeError):
 #: What each benchmark's verifier can actually establish about correctness. A verifier
 #: that simulates the circuit per shot can supply value/phase evidence; one that only
 #: prices it cannot, and says so rather than leaving the checks silently absent.
-BENCHMARK_EVIDENCE_MODEL: dict[str, str] = {
+BENCHMARK_EVIDENCE_MODEL: dict[str, str | None] = {
     "dqi": "per-shot",
     "invsqrt": "cost-model-only",
     "dfthcsos": "cost-model-only",
@@ -94,7 +97,7 @@ def _benchmark_family(benchmark: str) -> str:
 
 
 def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
-                                   benchmark: str = "") -> dict[str, dict]:
+                                   benchmark: str = "") -> dict[str, dict[str, Any]]:
     """Validate a declared evidence mapping against what the verifier can establish.
 
     Each of :data:`CORRECTNESS_CHECKS` must be accounted for exactly once, as one of:
@@ -119,7 +122,7 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
         raise EvidenceIncompleteError(
             f"unknown correctness check(s) {unknown}; expected {list(CORRECTNESS_CHECKS)}"
         )
-    normalised: dict[str, dict] = {}
+    normalised: dict[str, dict[str, Any]] = {}
     for check in CORRECTNESS_CHECKS:
         entry = evidence.get(check)
         if not isinstance(entry, dict):
@@ -155,14 +158,14 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
                 f"{check!r} evidence must be measured, covered_by or not_applicable"
             )
     for check, entry in normalised.items():
-        covering = entry.get("covered_by")
-        if covering is None:
+        covered_by_id = str(entry.get("covered_by") or "") or None
+        if covered_by_id is None:
             continue
-        target = normalised[covering]
+        target = normalised[covered_by_id]
         if not target.get("measured") or not target.get("passed"):
             raise EvidenceIncompleteError(
-                f"{check!r} is covered by {covering!r}, which is not a passed measurement "
-                f"({target})"
+                f"{check!r} is covered by {covered_by_id!r}, which is not a passed "
+                f"measurement ({target})"
             )
         if not entry["reason"]:
             raise EvidenceIncompleteError(f"{check!r}: covering needs a reason")
@@ -192,7 +195,7 @@ def missing_correctness_checks(evidence: dict[str, Any] | None, *,
     return []
 
 
-def evidence_from_receipt(receipt: "VerifierReceipt", benchmark: str = "") -> dict[str, dict]:
+def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict[str, dict[str, Any]]:
     """The correctness evidence a verifier receipt actually carries.
 
     For a per-shot verifier (DQI) the receipt's own error counts are the evidence, and
@@ -203,7 +206,7 @@ def evidence_from_receipt(receipt: "VerifierReceipt", benchmark: str = "") -> di
     """
     metrics = dict(receipt.metrics or {})
     family = _benchmark_family(benchmark)
-    evidence: dict[str, dict] = {}
+    evidence: dict[str, dict[str, Any]] = {}
     if "value_errors" in metrics:
         evidence["value"] = {"measured": True,
                              "passed": metrics["value_errors"] == 0,
@@ -270,6 +273,7 @@ def compute_structural_fingerprint(
 
     Encodes normalized gate distributions, qubit layout, rotation count, and uncomputation schedule.
     """
+    payload: dict[str, Any]
     if isinstance(metrics_or_dag, str):
         payload = {"circuit_raw_repr": metrics_or_dag}
     else:

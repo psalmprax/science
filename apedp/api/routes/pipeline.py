@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import tempfile
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -9,6 +11,27 @@ from pydantic import BaseModel, Field
 from apedp.orchestration import PipelineJobManager, RedisPipelineJobManager
 
 router = APIRouter()
+
+
+def _validate_safe_pipeline_path(raw_path: str, field_name: str) -> str:
+    """Validate that csv_path / output_dir stay within allowed workspace/temp roots."""
+    if not raw_path or "\x00" in raw_path:
+        raise HTTPException(status_code=400, detail=f"Invalid {field_name}: empty or contains null byte")
+    p = Path(raw_path)
+    if ".." in p.parts:
+        raise HTTPException(status_code=400, detail=f"Invalid {field_name}: path traversal ('..') is forbidden")
+    resolved = p.resolve()
+    allowed_roots = [
+        Path(os.environ.get("APEDP_ALLOWED_DATA_DIR", str(Path.cwd()))).resolve(),
+        Path.cwd().resolve(),
+        Path(tempfile.gettempdir()).resolve(),
+    ]
+    if not any(resolved == root or resolved.is_relative_to(root) for root in allowed_roots):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid {field_name}: path '{raw_path}' resolves outside allowed data roots",
+        )
+    return str(resolved)
 
 # Both backends expose the same submit/status/result surface. Annotate the union
 # so the variable is not pinned to whichever branch the reader (or mypy) sees first.
@@ -59,6 +82,8 @@ class PipelineJobResponse(BaseModel):
 
 @router.post("/pipeline/jobs", response_model=PipelineJobResponse, status_code=202)
 async def submit_pipeline(req: PipelineSubmitRequest) -> dict:
+    _validate_safe_pipeline_path(req.csv_path, "csv_path")
+    _validate_safe_pipeline_path(req.output_dir, "output_dir")
     parameters = req.model_dump(exclude={"max_attempts"})
     try:
         return _JOB_MANAGER.submit(parameters, max_attempts=req.max_attempts)

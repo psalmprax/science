@@ -145,7 +145,8 @@ def energy_gradient(coords: np.ndarray, force_field: MolecularForceField) -> np.
         contribution = -coefficient * deltas[i, j] / r_eff ** (power + 2)
         gradient[i] += contribution
         gradient[j] -= contribution
-    return gradient
+    _out: np.ndarray = gradient
+    return _out
 
 
 def velocity_field(coords: np.ndarray, force_field: MolecularForceField) -> np.ndarray:
@@ -153,12 +154,33 @@ def velocity_field(coords: np.ndarray, force_field: MolecularForceField) -> np.n
     return -energy_gradient(coords, force_field)
 
 
+def signed_volume(
+    coords: np.ndarray, i: int, j: int, k: int, m: int
+) -> float:
+    """Signed triple product of the vectors from atom ``i`` to ``j``, ``k``, ``m``.
+
+    ``det([x_j - x_i, x_k - x_i, x_m - x_i])`` is **six times** the tetrahedron volume,
+    which is the unnormalised form the gradient needs: its sign is the handedness of the
+    quartet, and it flips under an improper transform, which is why a distance-only
+    energy cannot see chirality.  The gradient of ``0.5 * w * (v - target)**2`` is
+    ``w * (v - target) * [b x c, c x a, a x b, -(sum)]`` in this same convention, so
+    :mod:`apedp_dyn.molecular.equivariant_pocket_flow` must use the determinant and not
+    the volume.
+    """
+    points = np.asarray(coords, dtype=np.float64)
+    a = points[j] - points[i]
+    b = points[k] - points[i]
+    c = points[m] - points[i]
+    return float(np.dot(np.cross(b, c), a))
+
+
 def rigid_transform(coords: np.ndarray, rotation: np.ndarray, translation: np.ndarray) -> np.ndarray:
     """Apply ``x -> R x + t`` to every atom."""
     coords = np.asarray(coords, dtype=np.float64)
     rotation = np.asarray(rotation, dtype=np.float64)
     translation = np.asarray(translation, dtype=np.float64)
-    return coords @ rotation.T + translation
+    _out: np.ndarray = coords @ rotation.T + translation
+    return _out
 
 
 def random_rotation(rng: np.random.Generator) -> np.ndarray:
@@ -167,7 +189,8 @@ def random_rotation(rng: np.random.Generator) -> np.ndarray:
     q = q @ np.diag(np.sign(np.diag(r)))
     if np.linalg.det(q) < 0:
         q[:, 0] = -q[:, 0]
-    return q
+    _out: np.ndarray = q
+    return _out
 
 
 def reflection_matrix() -> np.ndarray:
@@ -176,12 +199,14 @@ def reflection_matrix() -> np.ndarray:
 
 
 def center_of_mass(coords: np.ndarray) -> np.ndarray:
-    return np.asarray(coords, dtype=np.float64).mean(axis=0)
+    _out: np.ndarray = np.asarray(coords, dtype=np.float64).mean(axis=0)
+    return _out
 
 
 def bond_lengths(coords: np.ndarray, bonds: tuple[tuple[int, int], ...]) -> np.ndarray:
     coords = np.asarray(coords, dtype=np.float64)
-    return np.array([np.linalg.norm(coords[i] - coords[j]) for i, j in bonds])
+    _out: np.ndarray = np.array([np.linalg.norm(coords[i] - coords[j]) for i, j in bonds])
+    return _out
 
 
 def relax(
@@ -191,7 +216,7 @@ def relax(
     n_steps: int = 400,
     order: int = 1,
 ) -> RelaxationResult:
-    """Relax a configuration by integrating ``dx/dt = -grad E`` with JetFlowStepper."""
+    """Relax a configuration by integrating ``dx/dt = -grad E`` with backtracking safeguard."""
     from apedp_dyn.video.jet_flow_stepper import JetFlowConfig, JetFlowStepper
 
     stepper = JetFlowStepper(JetFlowConfig(num_steps=1, order=order))
@@ -199,11 +224,28 @@ def relax(
     trajectory = [current.copy()]
     energies = [energy(current, force_field)]
     for _ in range(n_steps):
-        current, _, _ = stepper.step(
+        current_e = energies[-1]
+        trial, _, _ = stepper.step(
             lambda z, _t: velocity_field(z, force_field), current, 0.0, step_size
         )
+        trial_e = energy(trial, force_field)
+        if not math.isfinite(trial_e) or trial_e > current_e:
+            grad = energy_gradient(current, force_field)
+            alpha = 0.5 * step_size
+            accepted = current
+            accepted_e = current_e
+            for _ in range(12):
+                cand = current - alpha * grad
+                cand_e = energy(cand, force_field)
+                if math.isfinite(cand_e) and cand_e < current_e:
+                    accepted = cand
+                    accepted_e = cand_e
+                    break
+                alpha *= 0.5
+            trial, trial_e = accepted, accepted_e
+        current = trial
         trajectory.append(current.copy())
-        energies.append(energy(current, force_field))
+        energies.append(trial_e)
     return RelaxationResult(coordinates=current, trajectory=trajectory, energies=energies)
 
 

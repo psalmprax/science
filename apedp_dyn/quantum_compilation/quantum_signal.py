@@ -43,6 +43,7 @@ import hashlib
 import json
 import math
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -56,26 +57,26 @@ from apedp_dyn.sandbox.canonical_ledger import FEE
 
 __all__ = [
     "ANSATZ_DEPTHS",
+    "CONTINUOUS_PASSES",
+    "CONTINUOUS_START",
+    "CONTINUOUS_STEPS",
     "FIT_ALPHAS",
     "FIT_BIASES",
     "RULES",
     "FitResult",
     "ParameterisedQuantumMap",
     "QuantumFeatureMap",
+    "continuous_evaluations",
     "deflate_sharpe",
     "deflated_summary",
     "execute_signal",
-    "CONTINUOUS_PASSES",
-    "CONTINUOUS_START",
-    "CONTINUOUS_STEPS",
-    "continuous_evaluations",
     "fit_continuous_map",
     "fit_grid",
     "fit_parameterised_map",
     "holdout_decision",
-    "walk_forward_windows",
     "ledger_summary",
     "parameter_grid",
+    "walk_forward_windows",
 ]
 
 #: The position rules the executor implements. `short_below_zero` is the canonical
@@ -85,14 +86,15 @@ RULES = ("symmetric", "long_only", "short_below_zero")
 
 def _ry(angle: float) -> np.ndarray:
     half = angle / 2.0
-    return np.array([[math.cos(half), -math.sin(half)],
+    _out: np.ndarray = np.array([[math.cos(half), -math.sin(half)],
                      [math.sin(half), math.cos(half)]], dtype=np.complex128)
+    return _out
 
 
 def _embed(op: np.ndarray, qubit: int, num_qubits: int) -> np.ndarray:
     """Kronecker embedding with qubit 0 as the least significant bit, as the simulator."""
     dim = 1 << num_qubits
-    matrix = np.zeros((dim, dim), dtype=np.complex128)
+    matrix: np.ndarray = np.zeros((dim, dim), dtype=np.complex128)
     step = 1 << qubit
     clear = dim - 1 - step  # mask that zeroes this wire's bit
     for index in range(dim):
@@ -106,7 +108,7 @@ def _embed(op: np.ndarray, qubit: int, num_qubits: int) -> np.ndarray:
 def _cnot_matrix(control: int, target: int, num_qubits: int) -> np.ndarray:
     """`CX(control, target)` as a permutation matrix, independent of the simulator."""
     dim = 1 << num_qubits
-    matrix = np.zeros((dim, dim), dtype=np.complex128)
+    matrix: np.ndarray = np.zeros((dim, dim), dtype=np.complex128)
     index = np.arange(dim)
     flip = ((index >> control) & 1) << target
     matrix[index ^ flip, index] = 1.0
@@ -230,9 +232,9 @@ def execute_signal(score: Sequence[float], returns: Sequence[float], *,
     return rows
 
 
-def ledger_summary(rows: Sequence[dict[str, float]], *,
+def ledger_summary(rows: Sequence[dict[str, Any]], *,
                    annualization: float = 365.0,
-                   risk_free: float = 0.0) -> dict[str, float]:
+                   risk_free: float = 0.0) -> dict[str, Any]:
     """The aggregates the ledger reports, over the executed rows."""
     net = np.array([row["net"] for row in rows], dtype=float)
     count = len(net)
@@ -263,7 +265,7 @@ def ledger_summary(rows: Sequence[dict[str, float]], *,
 
 def deflate_sharpe(sharpe: float, *, n_bars: int, skewness: float, kurtosis: float,
                    n_trials: int, var_trials: float,
-                   annualization: float = 365.0) -> dict:
+                   annualization: float = 365.0) -> dict[str, Any]:
     """The Deflated Sharpe Ratio from one trial's statistics.
 
     Kept separate from the measurement so the record's DSR can be recomputed from the
@@ -277,8 +279,8 @@ def deflate_sharpe(sharpe: float, *, n_bars: int, skewness: float, kurtosis: flo
         annualization_factor=annualization)
 
 
-def deflated_summary(rows: Sequence[dict[str, float]], *, n_trials: int,
-                     var_trials: float, annualization: float = 365.0) -> dict:
+def deflated_summary(rows: Sequence[dict[str, Any]], *, n_trials: int,
+                     var_trials: float, annualization: float = 365.0) -> dict[str, Any]:
     """The ledger summary plus the Deflated Sharpe Ratio for the disclosed trials."""
     summary = ledger_summary(rows, annualization=annualization)
     summary["dsr"] = deflate_sharpe(
@@ -419,7 +421,7 @@ class ParameterisedQuantumMap:
         disagree with the simulator.
         """
         dim = 1 << self.num_qubits
-        unitary = np.eye(dim, dtype=np.complex128)
+        unitary: np.ndarray = np.eye(dim, dtype=np.complex128)
         for _layer in range(self.layers):
             for qubit, angle in enumerate(self.angles(values)):
                 unitary = _embed(_ry(angle), qubit, self.num_qubits) @ unitary
@@ -442,7 +444,7 @@ class FitResult:
     candidates: tuple[tuple[float, float, int, float], ...]
     optimiser: str = "grid"
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """The fit as the record stores it, with every grid point's Sharpe."""
         return {
             "features": list(self.feature_map.features),
@@ -466,7 +468,7 @@ class FitResult:
         }
 
 
-def fit_parameterised_map(values, returns: Sequence[float], *,
+def fit_parameterised_map(values: Any, returns: Sequence[float], *,
                           features: Sequence[str], valid: Sequence[bool] | None = None,
                           ledger: CandidateTrialLedger | None = None,
                           search_id: str = "fit",
@@ -556,7 +558,7 @@ def continuous_evaluations() -> int:
     return 1 + len(CONTINUOUS_STEPS) * CONTINUOUS_PASSES * 4
 
 
-def fit_continuous_map(values, returns: Sequence[float], *,
+def fit_continuous_map(values: Any, returns: Sequence[float], *,
                        features: Sequence[str], valid: Sequence[bool] | None = None,
                        ledger: CandidateTrialLedger | None = None,
                        search_id: str = "fit",
@@ -585,7 +587,7 @@ def fit_continuous_map(values, returns: Sequence[float], *,
     per_group = continuous_evaluations()
     width = len(feature_names)
 
-    def evaluate(alpha: float, beta: float, depth: int) -> tuple[ParameterisedQuantumMap, dict]:
+    def evaluate(alpha: float, beta: float, depth: int) -> tuple[ParameterisedQuantumMap, dict[str, Any]]:
         feature_map = ParameterisedQuantumMap(feature_names, (alpha,) * width,
                                               (beta,) * width, layers=depth)
         scores = [feature_map.signal(row) for row in rows]
@@ -707,7 +709,7 @@ def walk_forward_windows(n_bars: int, folds: int, warmup: int) -> list[tuple[int
 
 
 def holdout_decision(net: float, turnover: float, sharpe: float, *,
-                     searched_trials: int, var_trials: float) -> dict:
+                     searched_trials: int, var_trials: float) -> dict[str, Any]:
     """The cost-aware rule that decides a confirmation slice -- and burns it on failure.
 
     A candidate may claim the slice only if it trades in the window, makes money after

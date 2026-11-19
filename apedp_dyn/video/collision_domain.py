@@ -27,6 +27,8 @@ Physics discipline (same honesty contract as the fluid domain):
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 
@@ -50,6 +52,8 @@ def _render_objects(
     collisions. Returns frames and per-frame occlusion flags (T, n_obj).
     """
     t_tot, n_obj = positions.shape[0], positions.shape[1]
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
     frames = np.zeros((t_tot, 3, h, w), dtype=np.float64)
     occl = np.zeros((t_tot, n_obj), dtype=bool)
@@ -68,7 +72,7 @@ def _render_objects(
             discs.append(intensities[k] * np.exp(-4.0 * d2 / max(1e-9, radii[k] ** 2)))
             bodies.append(discs[k] > 0.1 * intensities[k])
         for k in range(n_obj):
-            hi_mask = np.zeros((h, w), dtype=bool)
+            hi_mask: np.ndarray = np.zeros((h, w), dtype=bool)
             for j in range(n_obj):
                 if j != k and occludes(j, k):
                     hi_mask |= bodies[j]
@@ -86,7 +90,7 @@ def make_collision_clip(
     n_obj: int = 2,
     canvas_margin: float = 0.15,
     return_state: bool = False,
-) -> np.ndarray | tuple[np.ndarray, dict]:
+) -> np.ndarray | tuple[np.ndarray, dict[str, Any]]:
     """Generate one deterministic 2D rigid-body collision/occlusion clip.
 
     Output in [0, 1], float64, (T, 3, H, W). Byte-reproducible (RandomState).
@@ -110,11 +114,11 @@ def make_collision_clip(
     # collisions; cross-layer clips (~50%) produce genuine pass-through
     # occlusion. Both worlds are exercised across the manifest family.
     cross_layer = bool(rng.uniform() < 0.5)
-    layers = np.arange(n_obj, dtype=np.int64) if cross_layer else np.zeros(n_obj, dtype=np.int64)
+    layers: np.ndarray = np.arange(n_obj, dtype=np.int64) if cross_layer else np.zeros(n_obj, dtype=np.int64)
 
     # Spawn non-overlapping, inboard.
     margin = float(canvas_margin * min(h, w))
-    positions0 = np.zeros((n_obj, 2), dtype=np.float64)
+    positions0: np.ndarray = np.zeros((n_obj, 2), dtype=np.float64)
     for k in range(n_obj):
         pad = radii[k] + margin
         for _ in range(200):
@@ -139,8 +143,8 @@ def make_collision_clip(
             s1 = float(np.hypot(*velocities[1]))
             velocities[1] = s1 * (rot @ (dirv / dist))
 
-    positions = np.zeros((t, n_obj, 2), dtype=np.float64)
-    velocities_t = np.zeros((t, n_obj, 2), dtype=np.float64)
+    positions: np.ndarray = np.zeros((t, n_obj, 2), dtype=np.float64)
+    velocities_t: np.ndarray = np.zeros((t, n_obj, 2), dtype=np.float64)
     collisions: list[tuple[int, int, int]] = []
     dt = 1.0
     positions[0], velocities_t[0] = positions0.copy(), velocities.copy()
@@ -179,6 +183,8 @@ def make_collision_clip(
 
     frames, occl_flags = _render_objects(positions, radii, intensities, layers, h, w)
     for ci in range(3):
+        lo: float
+        hi: float
         lo, hi = frames[:, ci].min(), frames[:, ci].max()
         frames[:, ci] = (frames[:, ci] - lo) / max(1e-9, hi - lo)
     if return_state:
@@ -191,9 +197,9 @@ def make_collision_clip(
 def make_domain_set(
     train_ids: tuple[str, ...], holdout_ids: tuple[str, ...], t: int = 16, h: int = 64,
     w: int = 64,
-) -> dict[str, np.ndarray]:
+) -> dict[str, np.ndarray | tuple[np.ndarray, dict[str, Any]]]:
     """Deterministic domain clips keyed by the manifest ids (holdout exclusive)."""
-    clips: dict[str, np.ndarray] = {}
+    clips: dict[str, np.ndarray | tuple[np.ndarray, dict[str, Any]]] = {}
     for cid in tuple(train_ids) + tuple(holdout_ids):
         seed = int(cid.replace("collision_clip_", ""), 10)
         clips[cid] = make_collision_clip(seed, t=t, h=h, w=w)

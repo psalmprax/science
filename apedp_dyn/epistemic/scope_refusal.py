@@ -296,6 +296,7 @@ def adjudicate_scope(emitted: ScoredCandidate, probes: list[ScoredCandidate],
 __all__ = [
     "PROBE_IDS",
     "ScopeRefusal",
+    "ScoredCandidate",
     "adjudicate_scope",
     "build_family_probes",
     "scored_from_predict",

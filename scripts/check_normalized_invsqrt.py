@@ -3,7 +3,6 @@
 import unittest
 
 import numpy as np
-
 from audit_normalized_invsqrt import FULL_MAX_X, evaluate, fit_segments
 
 

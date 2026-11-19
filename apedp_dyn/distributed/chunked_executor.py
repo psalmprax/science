@@ -104,7 +104,8 @@ class DistributedChunkedExecutor:
             return None
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
-            return data.get("results")
+            _out: list[Any] | None = data.get("results")
+            return _out
         except Exception as exc:  # noqa: BLE001 — corrupt checkpoint means recompute; bound and logged
             _logger.debug("chunk checkpoint %s unreadable (%r); recomputing chunk", chunk_idx, exc)
             return None
@@ -160,7 +161,8 @@ class DistributedChunkedExecutor:
                 ray.init(ignore_reinit_error=True)
             remote_fn = ray.remote(func)
             futures = [remote_fn.remote(item) for item in chunk]
-            return ray.get(futures)
+            _out: list[R] = ray.get(futures)
+            return _out
         except (ImportError, TypeError):
             # Fall back cleanly to multiprocessing pool if Ray is not installed
             import multiprocessing

@@ -212,7 +212,8 @@ def sign_spec_sha256(private_key_hex: str, spec_sha256: str) -> str:
     private_key = ed25519.Ed25519PrivateKey.from_private_bytes(private_bytes)
     message = spec_sha256.strip().encode("utf-8")
     signature = private_key.sign(message)
-    return signature.hex()
+    _out: str = signature.hex()
+    return _out
 
 
 def verify_ed25519_signature(public_key_hex: str, spec_sha256: str, signature_hex: str) -> bool:

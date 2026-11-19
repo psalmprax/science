@@ -76,7 +76,9 @@ def test_power_is_monotone_and_bounded(record):
         for resolution, cell in per_resolution.items():
             curve = cell["power_curve"]
             assert len(curve) == len(record["reference_true_sharpes"])
-            for low, high in zip(curve, curve[1:]):
+            from itertools import pairwise
+
+            for low, high in pairwise(curve):
                 assert low["true_sharpe"] < high["true_sharpe"]
                 assert low["power"] <= high["power"] + 1e-12, (name, resolution)
             for point in curve:
@@ -145,7 +147,7 @@ def test_the_programme_still_finds_nothing_significant(record):
 
 def test_the_record_reproduces_the_tranche_dsr_it_reads(record, tranches):
     """A power record that disagreed with the records it read would be worthless."""
-    for name, entry in tranches.items():
+    for entry in tranches.values():
         for row in [*entry["rows"], *entry["baselines"]][:5]:
             recomputed = compute_deflated_sharpe_ratio(
                 observed_sharpe=float(row["sharpe"]),

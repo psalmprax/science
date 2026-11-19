@@ -11,13 +11,14 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
 try:  # pragma: no cover - exercised only on kernel-less installs
     import apedp_kernel as ak
 except ImportError:  # kernel-only engine: fails at call time with an actionable error
-    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
+    from apedp_dyn.kernel_shim import missing_kernel as ak
 
 
 @dataclass(frozen=True)
@@ -50,7 +51,7 @@ def _fornberg_centered_weights(x_sub: Sequence[float], z: float, m_max: int) -> 
     """
     x = [float(v) for v in x_sub]
     n = len(x) - 1
-    c = np.zeros((m_max + 1, n + 1, n + 1), dtype=float)
+    c: np.ndarray = np.zeros((m_max + 1, n + 1, n + 1), dtype=float)
     c[0, 0, 0] = 1.0
     c1 = 1.0
 
@@ -69,7 +70,7 @@ def _fornberg_centered_weights(x_sub: Sequence[float], z: float, m_max: int) -> 
             c[m, i, i] = (c1 / c2) * (term2 - term1)
         c1 = c2
 
-    res = np.zeros((m_max + 1, n + 1), dtype=float)
+    res: np.ndarray = np.zeros((m_max + 1, n + 1), dtype=float)
     for m in range(m_max + 1):
         for j in range(n + 1):
             res[m, j] = c[m, n, j]
@@ -131,11 +132,11 @@ def _eval_frozen_1d_library(
     for i in range(1, m - 1):
         for j in range(2, n - 2):
             ut_a.append((u_grid[i + 1][j] - u_grid[i - 1][j]) / (2.0 * dt))
-            u_vals.append(u_grid[i][j])
+            u_vals.append(float(u_grid[i][j]))
             ux.append((-u_grid[i][j + 2] + 8.0 * u_grid[i][j + 1] - 8.0 * u_grid[i][j - 1] + u_grid[i][j - 2]) / (12.0 * dx))
             uxx.append((-u_grid[i][j + 2] + 16.0 * u_grid[i][j + 1] - 30.0 * u_grid[i][j]
                         + 16.0 * u_grid[i][j - 1] - u_grid[i][j - 2]) / (12.0 * dx * dx))
-    ut = np.asarray(ut_a, dtype=float)
+    ut: np.ndarray = np.asarray(ut_a, dtype=float)
     columns: dict[str, np.ndarray] = {}
     columns["u"] = np.asarray(u_vals, dtype=float)
     if max_polynomial_degree >= 2:
@@ -181,14 +182,14 @@ def _eval_frozen_2d_library(
         for x in range(2, nx - 2):
             for y in range(2, ny - 2):
                 ut_a.append((u_arr[t + 1][x][y] - u_arr[t - 1][x][y]) / (2.0 * dt))
-                u_vals.append(u_arr[t][x][y])
+                u_vals.append(float(u_arr[t][x][y]))
                 ux_a.append((-u_arr[t][x + 2][y] + 8.0 * u_arr[t][x + 1][y] - 8.0 * u_arr[t][x - 1][y] + u_arr[t][x - 2][y]) / (12.0 * dx))
                 uy_a.append((-u_arr[t][x][y + 2] + 8.0 * u_arr[t][x][y + 1] - 8.0 * u_arr[t][x][y - 1] + u_arr[t][x][y - 2]) / (12.0 * dy))
                 uxx_a.append((-u_arr[t][x + 2][y] + 16.0 * u_arr[t][x + 1][y] - 30.0 * u_arr[t][x][y]
                               + 16.0 * u_arr[t][x - 1][y] - u_arr[t][x - 2][y]) / (12.0 * dx * dx))
                 uyy_a.append((-u_arr[t][x][y + 2] + 16.0 * u_arr[t][x][y + 1] - 30.0 * u_arr[t][x][y]
                               + 16.0 * u_arr[t][x][y - 1] - u_arr[t][x][y - 2]) / (12.0 * dy * dy))
-    ut = np.asarray(ut_a, dtype=float)
+    ut: np.ndarray = np.asarray(ut_a, dtype=float)
     columns: dict[str, np.ndarray] = {}
     columns["u"] = np.asarray(u_vals, dtype=float)
     if max_polynomial_degree >= 2:
@@ -197,8 +198,8 @@ def _eval_frozen_2d_library(
         columns["u^3"] = columns["u"] ** 3
     columns["u_x"] = np.asarray(ux_a, dtype=float)
     columns["u_y"] = np.asarray(uy_a, dtype=float)
-    u_xx = np.asarray(uxx_a, dtype=float)
-    u_yy = np.asarray(uyy_a, dtype=float)
+    u_xx: np.ndarray = np.asarray(uxx_a, dtype=float)
+    u_yy: np.ndarray = np.asarray(uyy_a, dtype=float)
     columns["laplacian(u)"] = u_xx + u_yy
     columns["u_xx"] = u_xx
     columns["u_yy"] = u_yy
@@ -432,7 +433,7 @@ def discover_pde_nonuniform(
             col_uxx.append(w_x[2] @ u_hold[i][j - 2: j + 3])
             if max_spatial_order >= 3:
                 col_uxxx.append(w_x[3] @ u_hold[i][j - 2: j + 3])
-    columns_by_name = {
+    columns_by_name: dict[str, Any] = {
         "u": np.asarray(col_u, dtype=float),
         "u_x": np.asarray(col_ux, dtype=float),
     }

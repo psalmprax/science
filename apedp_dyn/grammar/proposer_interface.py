@@ -46,7 +46,7 @@ class CandidateProposal:
     proposer_id: str
     candidate_id: str
     formula: str
-    strategy_archetype: StrategyArchetype
+    strategy_archetype: StrategyArchetype | None
     declared_scale_invariant: bool
     declared_nominal_dependencies: tuple[str, ...] = ()
     compute_score: Callable[[pd.DataFrame], np.ndarray] = field(default=lambda df: np.zeros(len(df)), repr=False)

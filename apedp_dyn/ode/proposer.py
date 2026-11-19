@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -91,7 +92,7 @@ class CoupledOdeProposer(ProposerBase):
                     return row[term[:-2]] ** 3
                 return row[term]
 
-            def make_score_fn(eq_info=eq, active_terms=active):
+            def make_score_fn(eq_info:Any=eq, active_terms:Any=active) -> Any:
                 def _scorer(eval_df: pd.DataFrame) -> np.ndarray:
                     if eq_info.state_variable not in eval_df.columns:
                         return np.zeros(len(eval_df))
@@ -106,7 +107,7 @@ class CoupledOdeProposer(ProposerBase):
                             f"{sorted(set(missing))} absent from eval frame"
                         )
                     rows = eval_df.to_dict(orient="records")
-                    out = np.zeros(len(eval_df), dtype=float)
+                    out: np.ndarray = np.zeros(len(eval_df), dtype=float)
                     for k, row in enumerate(rows):
                         acc = 0.0
                         for term, coeff in active_terms:
@@ -119,7 +120,8 @@ class CoupledOdeProposer(ProposerBase):
                         out[k] = acc
                     # Predict state derivative / forward step (the discovered
                     # d{x_i}/dt = sum(coeff * basis(x)), not x_i itself).
-                    return np.asarray(out)
+                    _out: np.ndarray = np.asarray(out)
+                    return _out
                 return _scorer
 
             proposal = CandidateProposal(

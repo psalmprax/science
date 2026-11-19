@@ -69,6 +69,13 @@ def validate_qd_table(rows: list[dict]) -> dict:
     return {"n": len(rows), "materials": sorted(mats), "errors": errors}
 
 
+# Provenance vocabularies for the sizing-curve rows. A value derived from a
+# published polynomial is not an independent measurement of that material, and
+# the distinction decides which verdicts the rows can support.
+DERIVED_FROM_POLYNOMIAL = "derived_from_published_polynomial"
+MEASURED_TEM_PROVENANCE = "independent_tem_measurement"
+
+
 def yu_cdse_rows() -> list[dict]:
     """Yu et al. 2003 CdSe sizing curve, densely sampled (derived, labeled).
 
@@ -79,7 +86,34 @@ def yu_cdse_rows() -> list[dict]:
     D = 1.6122e-9 * lam**4 - 2.6575e-6 * lam**3 + 1.6242e-3 * lam**2 - 0.4277 * lam + 41.57
     return [{"material": "CdSe", "D_nm": float(d), "lambda_peak_nm": float(lam_nm),
              "source": "Yu2003-sizing-curve(derived)", "ligand": "TOPO",
-             "solvent": "toluene", "T_K": 298.0} for d, lam_nm in zip(D, lam, strict=False)]
+             "solvent": "toluene", "T_K": 298.0,
+             "provenance": DERIVED_FROM_POLYNOMIAL,
+             "independent_measurement": False}
+            for d, lam_nm in zip(D, lam, strict=False)]
+
+
+GENERATION_VERDICTS = frozenset({"GENERATION"})
+
+
+def adjudicate_verdict(verdict: dict, provenance: str) -> dict:
+    """Withhold a verdict that the rows' own provenance cannot support.
+
+    A GENERATION claim says the synthesis produced crystals of a given size;
+    the sizing curve is a polynomial fitted to published points, so agreeing
+    with it is consistency, not evidence of generation. The claim stays on the
+    record as `withheld_verdict` instead of being deleted, so a reader sees
+    what was asked and why it was not granted.
+    """
+    requested = str(verdict.get("verdict", ""))
+    if provenance != DERIVED_FROM_POLYNOMIAL or requested not in GENERATION_VERDICTS:
+        return dict(verdict)
+    out = dict(verdict)
+    out["verdict"] = "INCONCLUSIVE"
+    out["withheld_verdict"] = requested
+    out["reason"] = (
+        "the rows are derived from a published sizing polynomial, not an "
+        "independent measurement, so they cannot support a GENERATION verdict")
+    return out
 
 
 def to_arrays(rows: list[dict], with_anchor: bool = True):

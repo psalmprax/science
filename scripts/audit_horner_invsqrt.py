@@ -7,9 +7,8 @@ import json
 from pathlib import Path
 
 import numpy as np
-from numpy.polynomial import chebyshev as cheb
-
 from audit_normalized_invsqrt import FULL_MAX_X, fit_segments
+from numpy.polynomial import chebyshev as cheb
 
 
 def round_shift(values: np.ndarray, bits: int) -> np.ndarray:

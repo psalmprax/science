@@ -150,7 +150,9 @@ def test_small_instance_cost_pin_catches_gate_regressions(tmp_path):
         assert entry["mean_toffoli_like"] == pytest.approx(pinned, rel=0.01), name
     # Every gate must still remove work, stage over stage.
     rows = [(name, data["cumulative"][name]["mean_toffoli_like"]) for name in SMALL_INSTANCE_T]
-    for (prev_name, prev), (name, count) in zip(rows, rows[1:]):
+    from itertools import pairwise
+
+    for (prev_name, prev), (name, count) in pairwise(rows):
         assert count < prev * 0.999, f"{name} does not improve on {prev_name}"
     # Reading a predicate must not cost qubits: the reads share one ancilla, so the
     # gated stacks pay at most one id over the reference instead of one per read.
@@ -326,7 +328,7 @@ def test_gf54_multiply_is_correct_as_a_circuit():
     """Correct on basis states, operands restored, workspace clean, phase untouched."""
     import numpy as np
 
-    km, mul, _shim, builder_cls = _gf54_stack()
+    km, _mul, _shim, builder_cls = _gf54_stack()
     field = km.GF2Field(12)
     shots = 16
     rng = np.random.default_rng(11)

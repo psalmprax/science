@@ -1,10 +1,1167 @@
 # APEDP System Flaws Audit
 
-Date: 2026-10-21 (external adversarial audit, round 3 — 19 findings)
+Date: 2026-11-08 (deep architectural & code remediation round — Categories 1–5)
 Basis: independent adversarial audit over the epistemic referee layers,
 proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
-verification bridges, ledgers, and physics/robotics modules, verified by
-execution. Remediation performed the same day, also execution-verified.
+verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
+and physics/robotics modules, verified by execution.
+
+## 2026-11-17 round — the three subsystems outside the referee
+
+Basis: `stage` after the referee package merged (PR #64). The question asked
+was whether the quantum, biopharma and video subsystems are good, and if not
+whether they can be made good. Each was taken on its own terms: run its tests,
+check its claims against something outside itself, repair what was wrong.
+Every defect below is pinned by a test that fails on the code as it stood.
+
+- **K-01 the video package substituted silently, in three places — FIXED.**
+  `VideoDataset(hf_repo=...)`: a hub dataset that could not be listed printed
+  one line and left the dataset holding a single generated vortex clip, so a
+  run told to train on 15,614 real latents trained on synthetic data and said
+  nothing; a file that failed to download three times became a synthetic clip
+  mixed into a batch of real ones. `VideoVAEBridge(use_diffusers=True)`: a
+  failed load printed a line and substituted a randomly initialised VAE, so a
+  caller who asked for pretrained weights got untrained ones. All three now
+  raise, naming what failed and what to pass instead.
+- **K-02 the video package's README claimed what nobody had measured —
+  FIXED.** It compared JetFlow with Sora, CogVideoX and Hunyuan, claimed 75x
+  to 186x memory savings, "guaranteed" incompressibility and photorealism in
+  two to four steps. The repository's own matched benchmark is ten synthetic
+  clips of 16x16 pixels: two steps match a 48-step diffusion sampler of the
+  same size on fluid clips (SSIM 0.51 against 0.49) and lose clearly on
+  collision clips (0.017 against 0.066), which is what the preregistered v0.3
+  confirmation already recorded as a *non-transfer*. Tensor-train storage is
+  lossy: on this repository's 64x64 vortex clips, rank 16 stores 5.5x less and
+  leaves 64 % of the variance unexplained, and it shrinks the latent clip, not
+  the network, so it was never a VRAM figure. The README now states those
+  numbers and what has not been compared.
+- **K-03 the solenoidal projector was not exact in double precision — FIXED.**
+  It built float32 wavenumbers whatever the input dtype, leaving a residual
+  divergence of ~6e-8 on a float64 field against the ~1e-16 the README's
+  "exact incompressibility" implies. Now ~2e-16, pinned with idempotence at
+  both precisions. What the fix does not buy: in the model the projector acts
+  on *latent* channel pairs, which are not physical velocities, so it still
+  implies nothing about mass or shape in decoded pixels; the README says so.
+- **K-04 a dead native branch cost a copy per forward pass — FIXED.**
+  `MambaTemporalBlock` called `apedp_kernel.mamba2_selective_scan` whenever
+  the kernel was installed. That call could never succeed (wrong argument
+  shapes, and the native function refuses with `NotImplementedError` by
+  design), a catch-all swallowed it, and the price was a device-to-host copy
+  and a float64 conversion on every forward pass. The block always computed
+  the gated causal convolution; it now says that is what it is.
+- **K-05 the chemistry bridge had never been compared with anything — FIXED,
+  three defects.** `docs/DOCUMENTATION.md` called its descriptors exact and
+  the module was labelled `production`. Measured against RDKit on 18 drugs and
+  simple molecules (`tests/test_dyn_chemistry_bridge_reference.py`): (a)
+  aromatic bond orders were summed as 1.5 each, so a fused aromatic carbon
+  read 4.5 and the valence check rejected naphthalene, caffeine, naproxen,
+  sildenafil and warfarin as impossible structures — five of eighteen; (b) the
+  molecular weight counted implicit hydrogens only, leaving out every bracket
+  atom's hydrogen (cholesterol 380.62 g/mol against 386.66); (c) an aromatic
+  nitrogen could take nitrogen's 5-valent target and gain a phantom hydrogen
+  (sildenafil 476.60 against 474.59). After the fixes the molecular weight and
+  heavy-atom count match exactly on all eighteen. The valence bound is now the
+  smallest valence any Kekule structure could give the atom, which is the
+  right direction for a necessary condition; this module does not kekulize and
+  now says so.
+  What the measurement also established, and what no fix changes: `logP`,
+  `TPSA`, `SAScore` and `QED` are this module's own expressions, not Crippen's,
+  Ertl's or Bickerton's, and they differ from them by about 2.1 log units,
+  12 A^2 and 0.20 on that set. `retrosynthesis_gate`'s `sa_score < 3.5` and
+  the ADMET models' logP terms decide on numbers with that much systematic
+  error. The deviations are pinned as ceilings and the status label is now
+  `experimental`.
+- **K-06 "95 % distribution-free" intervals had no calibration data — FIXED.**
+  `ConformalADMETReferee` built its intervals from three residual arrays
+  written into the source by hand, with no dataset, model or coverage behind
+  them, and labelled the result 95 % conformal. The construction is the
+  standard one, so it now takes `calibration_residuals` and reports the usual
+  marginal guarantee over that distribution; without them it reports
+  `calibrated=False` and a coverage claim of none. Both ADMET and FEP gates
+  now state that nothing promoted through them is safe to dose.
+- **K-07 the FEP gateway's docstring described a calculation it does not do —
+  FIXED.** It said "stratified lambda-window Langevin sampling". It perturbs
+  one docked pose with independent isotropic Gaussian displacements (0.045 A),
+  so the configurations are not drawn from either end state's Boltzmann
+  distribution, and its "windows" scale one intermolecular energy by d_lambda
+  rather than interpolating two Hamiltonians. The Zwanzig and BAR estimators
+  themselves are implemented and tested; what the gateway returns is a
+  reproducible score, not a binding free energy, and it says so.
+- **K-08 the module that decides whether a quantum claim stands was untested,
+  and had a hole — FIXED.** `apedp_dyn/vqc/receipts.py` was on
+  `benchmarks/untested_modules_register.json`: no test named it. Its
+  consistency check scored only outcomes with a declared probability above
+  zero, so a circuit emitting *forbidden* strings passed whenever the declared
+  outcomes stayed in tolerance. Pinned by a case where four declared outcomes
+  sit 1.2 standard errors from expectation while a fifth, declared impossible,
+  appears on 2 % of shots: VALID before, INVALID now. Nine tests cover the
+  three verdicts, a dirty ancilla and an invalid circuit.
+  Also now reported rather than left to the reader: the check is per-outcome,
+  so its family-wise false-alarm rate is about 0.4 over 8,192 outcomes at the
+  default four sigma. That is in the receipt, with the per-outcome rate.
+
+- **L-01 running the tests rewrote four tracked evidence files — FIXED.**
+  F-05's remaining half. `benchmarks/run_five_gate_validation.py`'s
+  `run_all_gates()` wrote `benchmarks/five_gate_validation_results.json` and
+  `docs/five_gate_validation_results.md` on every call, and
+  `tests/test_dyn_five_gate_validation.py` calls it; the two Rust profile tests
+  (`rime_profile.rs`, `sre_tree_vs_arena_profile.rs`) wrote their records on
+  every `cargo test`. So any full run replaced committed measurements with this
+  machine's timings and its own workspace path, left the tree dirty, and made
+  the recorded measurement indistinguishable from an incidental rerun. Writing
+  is now opt-in (`run_all_gates(write=True)`,
+  `APEDP_WRITE_BENCHMARK_ARTIFACTS=1`), the numbers are still printed, and the
+  gates still assert on them. Pinned by
+  `tests/test_committed_evidence_is_not_rewritten.py`, which also fails when
+  the committed mutation report stops covering the mutant register.
+- **L-02 a handler's own comment promised a provenance field that did not
+  exist — FIXED.** In `quantum_compilation/faros_isq.py`, when the second
+  interpreter that reads the emitted circuit fails, four resource figures (90
+  qubits, 1,448 Toffolis, 1 T-like, 44 rotations) are substituted. The
+  handler's `noqa` comment said `circuit_stats_source` records whether the
+  figures are measured or nominal; no such field existed anywhere in the
+  repository, so nominal numbers reached `evaluate_cost` and the returned
+  metadata indistinguishably from measured ones. This is the defect class that
+  retracted three modules on 2026-11-03. The field exists now, with
+  `circuit_stats_error` beside it.
+- **L-03 a proposer emitted textbook constants as if fitted — FIXED.**
+  `proposers/resiliency_proposer.py` falls back to beta = 0.35, gamma = 0.45
+  when fewer than ten shocks are in the window or `curve_fit` raises, and
+  emitted a `CandidateProposal` whose formula string, candidate id and
+  `parameters` looked exactly like a fit. `n_shocks_calibrated` was the only
+  hint, and it does not distinguish a failed fit from a successful one.
+  `parameters_source` now says which, and why.
+
+What was checked and found sound: the quantum subsystem's tests pass whole
+(1,150 passed, 26 skipped, nothing failing), including the stabilizer/dense
+agreement corpus and the Lean-checked promotion models; the five
+`quantum_compilation` modules the register lists as untested all import and
+expose the API their rows claim; the video suite passes (284 tests) and its
+preregistered v0.3 confirmation already disclosed its negative result, which
+is why K-02 could be written from the repository's own records.
+
+Not done, and not code: the quantum compilation claims rest on circuit
+emission audited inside this repository, with no external replication; the
+biopharma funnel has no wet-lab confirmation and, after K-05 and K-06, no
+calibrated property model either; the video benchmarks remain at 16x16.
+
+Open after this round, and each a judgement rather than a defect: 67 of 394
+`apedp_dyn` modules are named by no test (`benchmarks/untested_modules_register.json`,
+ceiling pinned); `scripts/` and `benchmarks/` carry 603 and 202 lint findings
+and the legacy `apedp` package 882 type findings, all ratcheted downward only;
+`apedp_dyn/harness/manifest.py` falls back between three deterministic hashing
+routes on an exception, so a fingerprint can differ by which route ran without
+the record saying which; and the benchmark records written by scripts that call
+the parameter fitter still describe the pre-2026-11-16 fitter until each is
+re-run (J-18).
+
+---
+
+## 2026-11-16 follow-up — the first full run's failures, each traced to a cause
+
+Basis: `stage` from `96c4e60` to the commit that carries this section. F-05
+below reported the first full local run: 53 failed and 6 errors. F-03, F-04 and
+F-07 accounted for 15 of those 59 test ids. This round takes the other 44 one
+at a time. 43 now pass for a stated reason and one needs the trustees (FLAW-01).
+F-05's sentence that the thirteen unexplained failures "may be real
+regressions, or differences between this environment and the one their pins
+were recorded in" is superseded: each is now one or the other, below.
+
+Two facts shaped the work and outlast it.
+
+- **J-01 there is no passing version to compare against.** `6a92eaa`
+  (2026-10-24) is a root commit: the repository's history starts there, and
+  ten of the thirteen unexplained tests already fail at it. `git bisect` found
+  the cause of one of the other three (the 225/64 count, J-03); the rest were
+  diagnosed from the code and the records.
+- **J-02 the changelog describes work the tree does not contain — OPEN.**
+  Commit `a32bfa5` (2026-11-03, "Publish the accumulated CHANGELOG entries")
+  added 1,870 lines to `CHANGELOG.md` and touched no other file. Three of the
+  failures were fixes described in those lines, or in
+  `docs/SCAFFOLD_INVENTORY.md`, and absent from the repository:
+  `drop_collinear_columns` (J-03), the corrected H-A coupling pin with its new
+  test and the corrected §76 (J-04), and the 225-of-225 count (J-03). They are
+  now implemented as described. *Not checked:* the rest of those 1,870 lines.
+  Some of what they describe is present (`apedp/model_synthesis_helpers.py`,
+  the renamed creep test); whether all of it is has not been audited, and until
+  it is, a changelog entry from that commit is not evidence that the change
+  exists.
+
+Each entry: cause, what changed, the pin for it.
+
+- **J-03 grammar scope, two tests — FIXED (code missing; one stale count).**
+  `LibraryProposer` selected `{one, abs_x, log_abs_x, sqrt_abs_x}` on the
+  Duffing trajectory instead of `{u, x, x3, v}`: `sin_x` and `tanh_x`
+  correlate with `x` at 0.99999 there and `cos_x` with `x2` at −1.00000, and
+  the documented filter for that did not exist. `drop_collinear_columns` and
+  `COLLINEARITY_LIMIT = 0.999` are now in `apedp_dyn/grammar/proposer.py` as
+  the changelog specifies, and `last_skipped` reports each dropped column.
+  Recovery is exact (1, −4, −2, −0.2). `test_coup_restricted_counts` pinned 64
+  survivors of 225; commit `99f15f2` fixed the operand formatting that had
+  rejected every candidate carrying a coupling term, and the inventory records
+  225 of 225. The assertion had not been updated.
+- **J-04 H-A coupling rank sequence — FIXED (stale pin, corrected against an
+  independent record).** The pin `H-RV,H-RV,H-A,H-P×8` predates FLAW-A01. The
+  corrected sequence, `H-RV,H-RV,H-A,H-A,H-A,H-RV×6`, is not a snapshot of
+  today's output: the re-derivation table in
+  `docs/TRADING_EQUATION_FORENSICS.md` already carried the post-fix H-A counts
+  3/3/5 for BTC/ETH/SOL, and a new parametrised test reproduces all three.
+  §76 carries a correction note; its "persistence absorbs the rotation"
+  reading described the leaked sequence and is withdrawn (H-P is never rank-1
+  on BTC once the leak is removed).
+- **J-05 the DQI patch record — FIXED (this audit's tooling had altered
+  evidence).** Ten files under
+  `sandbox/google-verifiable-quantum-circuit-compilation/verifiers` were
+  reformatted by a repository-wide lint pass. They are a third party's
+  verifier, and the record pins the exact patch applied to them. Restored from
+  `6a92eaa`; the directory is excluded from ruff and mypy by provenance so a
+  later pass cannot rewrite it. This was the test the CI matrix stopped on in
+  F-08.
+- **J-06 the synthesizer, three tests — FIXED (two defects, one test that
+  could not fail).**
+  (a) *Scale invariance at 1e9.* An amplitude that starts at `median(|y|)`
+  shares a parameter vector with rates of order 1. Measured on the test's own
+  law with the 24 `rational_transition` templates: identical to unit scale
+  through `max|y| = 2.8e4`, 4 of 24 degraded at 2.8e5, all 24 failed from
+  2.8e6 (best validation error 0.58 of the variance against 1.6e-5), and the
+  family left the ranking. Fits now run on `y / max|y|` above 1e4, as they
+  already did below 1e-2; inside the band nothing changes.
+  (b) *Planck, `TIER_B_01`.* Stage D refined on `x / max|x|` only. There the
+  in-bounds envelope optimum needs `A = 1731`, `B = 1481` against caps of 126;
+  every start railed, the refinement was rejected, and the synthesizer
+  abstained at R² 0.940 on a problem
+  `docs/APEDP_V4_SYNTHESIS_BENCHMARK_REPORT.md` records above 0.999. Stage D
+  now also refines on `x / geometric-mean|x|` and keeps the better accepted
+  result (`_stage_d_x_scales`). Planck returns R² 0.9991 in three x units.
+  Checked on the 60 EXT-BENCH and four Tier B/C problems: no validation R²
+  fell; three selections changed (C42 to its true family, R24's label to its
+  true family, `TIER_B_01` from abstention). The scan costs 26 % more time.
+  (c) *Near-OOD veto.* The only behavioural test ran the whole synthesizer on
+  P05 and required the bare veto to pick the wrong family there. A
+  two-parameter logarithmic candidate now leads P05, the bare veto no longer
+  fires on it or on any of the 60 problems, and the test failed on its own
+  guard. The rule moved unchanged into `_parsimony_tiebreak` and is tested on
+  the recorded pair of candidates, in both directions.
+  Pins: `tests/test_stage_d_scales.py` (17), the rewritten
+  `TestNearOodVetoIsNoiseFloored`, `tests/test_scale_invariance.py`,
+  `tests/test_tier_bc_benchmark.py`.
+- **J-07 FLAW-07 was never carried into the sandboxes — FIXED, and the
+  "verified" solver was not.** FLAW-07 made the apex tier require rival
+  rejection and interventional invariance; the ladder's own fixture was
+  updated and the two sandboxes that submit C6 claims were not, so their valid
+  cases were downgraded (three tests; the meta scorecard read 50 % retention).
+  Granting the evidence by case number would have been a fiat, so it is
+  measured. In the PDE sandbox, `audit_interventional_invariance` re-runs the
+  simulator under eight single-argument changes. By that measure the verified
+  scheme failed: its time step came from the advective term alone, the default
+  run sat at a stability number of 0.995 by coincidence, and doubling `nu`,
+  refining to 200 cells or asking for `cfl = 0.8` grew its energy by a factor
+  of thousands. The step now respects advection and diffusion together and the
+  scheme holds under all eight. In the meta-sandbox, the clean Kepler case
+  measures invariance of the FCC density over nine size and radius changes and
+  that no feasible rival lattice exceeds it. Withholding either measurement
+  downgrades the claim.
+- **J-08 the tournament trace is not portable — pin narrowed, with the
+  evidence; one finding withdrawn.** `tests/test_dyn_tournament.py` pinned one
+  machine's whole trace. Same code and seeds under scipy 1.14.1, 1.15.3,
+  1.17.1 and 1.18.1 give three different traces for C1, C4 and C8, and the
+  recorded pin reproduces under none of them (table in the test's docstring).
+  Those candidates sit at the gate-4 tolerance, where the layer they end at
+  follows the optimizer through an unconverged fit: the fitted truth's holdout
+  error on rep 0 ranges from 0.085 to 0.344 of the observed RMS. Pinned now is
+  what all five traces share (C5 at gate 1, C6 at gate 3, C2/C3/C7 at gate 4;
+  no adversary promoted; status implied by the survivor count). This is a
+  narrower pin, not a fix: exact attribution of the three boundary candidates
+  is no longer asserted anywhere. The earlier docstring's finding D1, that gate
+  4 rejects the fitted truth at 3 % noise, describes where one optimizer
+  stopped and should not be cited. `test_dyn_pointer` read a git-ignored
+  artefact nothing writes; it now writes one from a live run.
+- **J-09 one "flaky" test was a 2.7 GB allocation in the kernel — FIXED.**
+  `test_fan_out_emits_candidates_on_signal_feature` failed only in the
+  parallel run because its worker was killed. `rime_rational_search_json`
+  pairs each numerator with each denominator; the evaluation cache kept every
+  quotient's n-vector for the life of the search, and one call on a 200-row,
+  one-feature problem took the process from 262 MB to 2,992 MB. In this round's
+  full run the same allocation took four other workers' tests with it. The
+  quotient is now evicted once scored: one call peaks at 377 MB, the test file
+  at 604 MB instead of 3,247, in 22 s instead of 30. The 201 kernel unit tests
+  pass; `tests/test_kernel_rational_search_memory.py` measures the call in a
+  child process against a 1,200 MB limit.
+- **J-10 two ratchets and the CI command.** `test_D_collinear_pair_tied`
+  required a tie class in a fixed order; the two fits differ by 1.4e-17 and
+  the order belongs to the LAPACK build. It asserts the class, and a second
+  test keeps a distinct rival out. The exception-hygiene size budget was
+  re-recorded with its own tool: commit `531f8e5` grew
+  `epistemic/adjudicate.py` from 1,026 to 1,127 lines for the null-model guard
+  and re-minted the freeze, but left the budget, so the ratchet had failed
+  since. The re-record admits that growth, tightens three ceilings and budgets
+  `promotion_lifecycle.py` for the first time. *This is a raised ceiling.* The
+  alternative, splitting a freeze-pinned module and moving mutation anchors, is
+  the owner's decision. The CI test job now installs the pinned Lean release
+  (it sets `APEDP_REQUIRE_NATIVE`, under which a missing toolchain fails) and
+  deselects the governance test, whose verdict the governance-manifest job
+  already reports and enforces; three contract tests hold that list at one
+  entry and fail once the manifest is signed again.
+- **J-11 dependency-bound tests, 27 — FIXED (skip policy), and two real
+  defects among them.** A test that needs an absent optional dependency now
+  skips with the reason, and fails instead where `APEDP_REQUIRE_NATIVE` says
+  the environment must provide it (`tests/toolchain_availability.py`,
+  `tests/kickmix_availability.py`). Two groups were defects in the tests. The
+  notebook-adapter tests created `/kaggle` and `/content` on the host, after
+  which platform detection reported Kaggle to every later run and six tests
+  failed permanently; the adapter's platform roots are now module constants
+  the tests redirect. Two peak-memory tests assumed freshly allocated pages
+  were new to the resident set, which depended on what had run earlier in the
+  same worker; they allocate with an anonymous mapping and touch each page.
+
+- **J-12 two of this round's fixes edited freeze-pinned files, and the guard
+  caught it — re-minted, with outcomes changed.**
+  `pde_verification_sandbox.py` and `apedp_x_meta_sandbox.py` are among the
+  fifteen files `APEDPX_FROZEN_v1_18.json` hashes. The guard list was not
+  checked before J-07 edited them; the full run then failed four tests with
+  "REFEREE OR FROZEN RECORD CHANGED", which was the guard working. The record
+  carries the two new digests and a `remint_log` entry each. Unlike the
+  2026-11-14 re-mint these change B_internal outcomes, and the entries say so:
+  PDE trap 6 and the clean Kepler case, both downgraded since FLAW-07, are
+  promoted, and the PDE time step changes every trap's trajectory numbers. No
+  claim-ladder rule, evidence requirement, threshold or adjudication call
+  changed. Whether a sandbox change that moves internal benchmark outcomes
+  should be re-minted in place or as a new record version is the owner's
+  convention to set; this followed the in-place precedent of `531f8e5`.
+- **J-13 the second full local run** (Python 3.13, numpy 2.5.3, scipy 1.18.1,
+  kernel built with Rust 1.97.0, Lean on `PATH`, two workers, 23 minutes):
+  5,868 passed, 123 skipped, 1 xfailed, 10 failed. The ten: four freeze-guard
+  tests (J-12, now passing); five whose worker was killed for memory (J-09),
+  each of which passes when run alone; and `test_dyn_governance` (FLAW-01).
+  The run was not repeated after J-09 and J-12; the affected tests were re-run
+  on their own, and the AGENTS.md regression suite gives 283 passed, 1
+  skipped. Today's fixed tests also pass under the two library sets the CI
+  matrix installs (numpy 2.2.6 with scipy 1.15.3, numpy 2.4.6 with scipy
+  1.17.1), checked for nine test files. The hosted runner's verdict is in
+  J-15.
+- **J-14 the owner's commit of the same morning, merged — three stale tests
+  and the size budget again.** `101b9c3` ("Harden Rust referee bindings,
+  numerical solvers, Lean bridge, …") reached `stage` while this round was in
+  progress. It merges cleanly. Two things in it fail where a Lean toolchain is
+  present, which the CI test job now has. (a) It rewrote
+  `epistemic/lean_universal_bridge.py` so that a conservation claim is proved
+  from the candidate's own expression or refused, and removed the canned
+  Pythagorean theorem that used to be attached to any such claim; its new
+  `tests/test_lean_universal_bridge_soundness.py` pins that. Three older tests
+  in `tests/test_dyn_lean_universal_bridge.py` still relied on the canned
+  theorem and failed on that commit alone. They now use a candidate the bridge
+  really proves (a sum of squares) for the "synthesized but not kernel-checked
+  is P1" contract, a new test pins the refusal of the old oscillator case, and
+  one message assertion follows the new wording. No bridge code was changed.
+  (b) The same rewrite grew the module from 1,498 to 1,970 lines, past the
+  size budget re-recorded in J-10 an hour earlier. It is re-recorded again.
+  That is the second owner commit in six days to outgrow this budget
+  (`adjudicate.py` +101, this +472). A ceiling that is raised each time it is
+  reached constrains nothing: either these modules are split or the size
+  budget should be dropped. That is the owner's decision.
+
+- **J-16 the fitter's verdict on the true model depends on the scipy release
+  — test fixed; the fitter itself OPEN.** After the merge, CI's 3.11 leg ran
+  1,007 tests and stopped at
+  `test_dyn_adjudicate_regression.py::TestProvenanceFallbackFiresEndToEnd::test_fallback_abstains_without_any_explicit_series`,
+  which passes here. Reproduced under scipy 1.17.1. The fixture fits the true
+  Duffing model at 5 % noise from the fitter's default start. The cubic term
+  is barely exercised at the training amplitude, the cost is flat along its
+  coefficient, and `least_squares` stops with status 3 and optimality ~1e7:
+  the coefficient comes out at −2.62 (scipy 1.18.1) or −2.70 (1.17.1) against
+  a generating −2.0, with the same training cost to three figures. The holdout
+  verdict on the *true model* follows the stopping point: gate 4 passes on
+  1.18 (margin 0.94) and fails on 1.17 (1.03), and the residuals left by the
+  wrong coefficient are structured (|rho1| 0.71–0.75), so the referee refuses
+  the truth either way. Started from the generating parameters, the same
+  fitter returns −2.0007 under scipy 1.15.3, 1.17.1 and 1.18.1 alike, gate-4
+  margin 0.40, |rho1| 0.058, and the referee promotes it at the production
+  flag. The test now fits from the generating parameters, sets the flag just
+  below and just above the recorded series' |rho1|, and requires the reason
+  to quote that value; that is a sharper test of the provenance fallback than
+  the one it replaces, and it passes under all three releases. The companion
+  test compared the fallback with an explicit `holdout_sq_error` series, the
+  squared-error series `_residual_series` stopped using; it compares signed
+  residuals at three flags.
+  *Resolved by J-18:* the default-start fit, which production uses, stopped 30 %
+  off on a well-posed problem, and the referee's verdict on the true model at
+  5 % noise is decided by that stopping point. It is the same mechanism as
+  J-08's tournament boundary. `fit_candidate_multistart` exists and is not
+  used by these paths; whether to use it, rescale the problem, or tighten the
+  fit-time integrator tolerance (`simulate` defaults to `rtol=1e-3`, chosen
+  "for fitter throughput") changes every recorded fit and is the owner's
+  decision.
+- **J-17 four more, from the hosted runner and a full run under its
+  libraries — FIXED.** With J-16 pushed, CI's 3.10 leg ran 2,155 tests and
+  stopped at `test_dyn_notebook_adapter.py::test_detect_platform_cluster`: a
+  GitHub runner sets `GITHUB_ACTIONS=true`, `detect_platform()` checks CI
+  before Slurm, and the test blanked `CI` but not `GITHUB_ACTIONS`. The
+  adapter tests now start with every variable the adapter reads unset (a test
+  enforces that the list covers the source), and reproduce the runner's
+  environment explicitly. A full local run under numpy 2.4.6 and scipy 1.17.1,
+  CI's 3.11/3.12 libraries, then gave 5,843 passed and 2 failed. (a)
+  `test_kernel_rational_search_memory` (J-09) read `ru_maxrss` in a child
+  process; on Linux that survives fork and exec, so the child of a 3.2 GB
+  pytest worker reported 3.2 GB for a search that peaks at 376 MB. It reads
+  the child's `VmHWM`. (b)
+  `test_vqc_stabilizer::test_an_exact_distribution_is_refused_past_the_enumerated_width`
+  asserted the Rust tier's refusal message unconditionally; the CI test job
+  does not build `apedp_vqc`, so there is no Rust tier there to refuse. That
+  half is now conditional on the extension, as
+  `tests/test_vqc_native_parity.py` already is, and the other branch checks
+  the call was answered by Python. (c) The rustup step failed twice on
+  2026-11-16 (`detected conflict: 'bin/cargo-clippy'`) after finding a
+  half-installed 1.99.0, with `rust-docs` among its components, in a home that
+  had been isolated a minute earlier and that the minimal profile never fills
+  that way. What wrote it is not established from the logs. The toolchain is
+  now installed in the step right after the isolation, into a home that is
+  emptied first; if it is ever found non-empty, a warning lists what was there.
+  (d) CI's 3.11 leg then ran 3,207 tests and stopped at
+  `test_dyn_tournament.py::TestRmseRel::test_present_iff_holdout_reached`: there,
+  C1 on rep 2 was fitted to parameters whose holdout run overflowed, so it
+  stopped at gate 4 with no RMSE ("holdout simulation invalid"). The tournament
+  already records that case as `None`; the test assumed it could not happen. It
+  now requires such a row to stop at gate 4 and say why. Same cause as J-16, a
+  third library- and interpreter-dependent stopping point.
+- **J-18 the fitter converges — FIXED, and a recorded referee failure was the
+  fitter's.** J-16's open half. The fit simulated at `simulate()`'s default
+  `rtol=1e-3` and differentiated with `least_squares`' default step (~1.5e-8
+  relative), so its Jacobian was the integrator's step selection, not the
+  model: on the true Duffing model at 5 % noise it stopped with status 3 and
+  first-order optimality up to 1e10, at a cubic coefficient of −2.60 (scipy
+  1.18.1) or −2.73 (1.17.1), short of the minimum at −1.63. It now integrates
+  at `FIT_RTOL = 1e-7`, `FIT_ATOL = 1e-9` and differentiates with
+  `FIT_DIFF_STEP = 1e-5` and `x_scale="jac"`
+  (`apedp_dyn/fitting/parameter_fit.py`). Measured on four noise seeds under
+  scipy 1.15.3, 1.17.1 and 1.18.1: training losses agree to seven figures, the
+  lowest-loss structure is the truth in all twelve fits (the old fitter chose
+  the linear rival on seed 22 under one release), and the gate-4 verdict
+  agrees across releases on every seed. A fit costs about twice as long; the
+  full local suite went from 23 to 32 minutes, and the CI test job's limit is
+  75 minutes, with the measurement in the workflow.
+  What it moved. A full run gave 7 failures; each is explained and none is
+  re-pinned to a new snapshot.
+  (a) *STAB/10/rep2, the "frozen failure" in
+  `outputs/dyn_epistemic_freeze.json`:* the cubic truth "blew up on holdout"
+  and the linear rival was promoted unopposed. The blow-up was the fitter's
+  stopping point. Converged, the truth passes gate 4 (0.0416 against 0.0863)
+  and is promoted over the rival by 0.0339 against a tie band of 0.0154. Three
+  guard tests used the cell as their sole-survivor case; they now take the
+  rival alone, which is the case the guards are about, and a test pins that
+  the frozen failure no longer happens. The flag-sensitivity sweep on the same
+  residual series is judged on the rival alone for the same reason.
+  (b) *Bootstrap parameter bands* (`epistemic/bootstrap.py`) centred the
+  resampled problems on a trajectory integrated at 1e-3 and refitted them at
+  the new tolerance; the band no longer contained the estimate it was built
+  around. The centre is integrated at the fitter's tolerances.
+  (c) *Noiseless two-DOF saturation test:* both models now reach a training
+  loss of ~2e-14 and holdout errors of 3e-7 to 7e-7; its 5 % and 1 %
+  comparisons were integrator noise there (CI's 3.10 leg had already failed it
+  under the old fitter: 5.65e-7 against 6.37e-7). Both comparisons hold above a
+  stated floor.
+  (d) *The provenance-fallback tests* (J-16) return to the production route
+  (default start, lowest training loss); the generating-parameter start is
+  gone. The converged truth carries |rho1| 0.548 raw and 0.447 on
+  standardized innovations here, so at the production flag of 0.5 the
+  innovation fallback admits it.
+  *Addendum (2026-11-17):* that statistic is not reproducible, and the tests
+  no longer pin it. CI's 3.10 leg on `c43c972` measured the same recorded
+  series at raw 0.304 (1 failed, 1011 passed); a local Python 3.10.20 with
+  CI's numpy 2.2.6 and scipy 1.15.3 measured 0.548 again. The training loss
+  agrees to seven figures; the residual structure does not, because the cubic
+  coefficient sits on a flat direction of the training loss and where along it
+  the fit stops moves the holdout residuals. The tests now pin the guard's
+  behaviour on whatever series gate 4 recorded: refusal at a flag just below
+  its |rho1| (quoted in the reason), admission just above it, and promotion of
+  the truth at the production flag. The flag sweep on the rival alone keeps its
+  fixed pins: the rival's |rho1| is 0.5934 under both local environments, and
+  the truth's moves in the fourth figure (0.2268 against 0.2261) on the same
+  cell. What this leaves open: on this cell the guard's verdict is stable, but
+  the margin it is decided by is a property of the machine as well as the
+  data.
+- **J-19 a memory test asserted an ordering the kernel does not keep — FIXED
+  in the test.** CI's 3.11 leg on `6d20a3f` ran 5,626 tests and failed one:
+  `tests/test_vqc_memory.py`, window peak 158,822,400 bytes against a floor of
+  158,826,496, one 4 KiB page apart. The floor is VmRSS read just after
+  resetting the peak counter; the peak is VmHWM, which Linux raises lazily
+  (before an unmap, not on every fault), so a page faulted in after the reset
+  and released without an unmap leaves the peak a page under the floor. The
+  three orderings the tests asserted (peak ≥ floor, whole-life peak ≥ floor,
+  growth ≥ 0) now allow four pages. The measuring code is unchanged: it is
+  pinned by `benchmarks/` through the external-comparison record, its
+  reported growth is window peak minus floor as documented, and a one-page
+  negative growth is within the resolution of what it measures.
+  The scientific drift guardrail and the known-truth recovery gate pass
+  unchanged. Not re-derived: benchmark records written by scripts that call the
+  fitter; no test flags them, and they describe the old fitter until re-run.
+**CI, 2026-11-17.** On `d07c3a5` (run 43998024449) the test matrix passed on
+Python 3.10, 3.11 and 3.12 (5,886 passed, 173 skipped, 1 expected failure on
+each), the first time all three legs have been green; every other job passed
+except the governance manifest, which waits on the trustees (FLAW-01). The
+3.11 leg took 46 minutes of its 75. `test_market_discovery_covid_promotes`
+passed there; it is the local machine that cannot run it.
+
+Still open after this round: the governance signature (FLAW-01); J-02;
+`test_market_discovery_covid_promotes`, which kills the interpreter on
+this machine and has no verdict; the committed mutation report, still the
+2026-10-23 file; the four tracked result files that test runs rewrite (F-05);
+and the subject line of commit `f67e019`, which says "after its first week of
+running" of a workflow that had run for hours.
+
+---
+
+## 2026-11-16 round — the first time the workflow ran, and what it had been hiding
+
+Basis: `stage` at `87d89b6`, GitHub Actions run 43805790159 — the first run of
+`.github/workflows/test.yml` on this branch to start a job (E-07 below explains
+why none had). Its verdict: audit-artefact drift, the Lean core and the kernel
+wheel build passed; Python quality, Rust quality and the mutation battery
+failed; the governance job failed as designed (FLAW-01); the test matrix was
+skipped because its prerequisites were red. None of the three unexpected
+failures was introduced by the commit that made the workflow valid. Each was a
+standing defect that a running CI would have reported weeks earlier.
+
+A second fact changed what this audit can check. The native kernel builds here
+with the locally available Rust 1.97.0 (the pin is 1.99.0, which this
+environment cannot download), and torch, jax and the rest of the CI
+dependencies install. Every statement in earlier rounds of the form "could not
+be observed here without the kernel" is superseded by F-05.
+
+- **F-01 the type-check baseline was pinned in an environment CI does not
+  have — FIXED, and re-pinned from CI's own count.** CI counted 32 mypy errors under
+  `apedp_dyn/` against a pin of 29. Reproduced with the same tool and torch
+  2.9.1 present: 31 at the commit that pinned 29 (`49fed02`), so the pin was
+  two lower than the gate's own environment could ever measure, and one error
+  entered afterwards (`sandbox/eseds_dynamical.py:548`, 2026-11-10). None of
+  the 32 is in a file this audit changed. Seven are removed by two
+  annotation-only edits (`quantum_compilation/candidates.py`,
+  `local_mr_sim.py`), leaving 25 here with and without torch. The next run
+  (43813711672) measured the same 25 on the hosted runner, and every other
+  count matched the local one as well, so the limits are lowered to what CI
+  measured (`apedp_dyn/` mypy 29→25, `apedp/` mypy 938→897, `scripts/` ruff
+  604→603, `benchmarks/` ruff 217→202) and `quality_baseline.json` now
+  records the environment they were measured in.
+  `scripts/check_quality_baseline.py` now prints the findings when a path
+  regresses. It printed "+3" and nothing else, which is why this took a
+  reproduction to diagnose.
+- **F-02 the mutation battery could not run, in two independent ways — FIXED;
+  34 of 37 mutants not re-verified here.** (a) The CI job called
+  `maturin develop` with no virtualenv, which maturin refuses; the job now
+  creates one. (b) Had it got further it would still have stopped: the anchors
+  of MUT-C1 (Hawkes standardisation leak) and MUT-H2 (native-failure re-raise)
+  stopped matching the source on 2026-11-08 and 2026-10-25 respectively, and
+  the battery rightly raises on an anchor that does not apply exactly once. The committed
+  `benchmarks/mutation_battery_report.json` says 37 of 37 killed and is dated
+  2026-10-23; it describes a tree that no longer exists. Both anchors are
+  repaired, and MUT-E6's is updated for the formatting in F-03. Verified here:
+  all nine pristine pin groups pass, and the three repaired mutants are each
+  killed with byte-identical restoration. The other 34 were not re-run here
+  and the committed report is left as it was; the CI job is the full run.
+  `tests/test_mutation_battery_anchors.py` now checks, in the ordinary suite
+  and in under a second, that every registered anchor still applies exactly
+  once, so the next drift is caught at the commit that causes it.
+- **F-03 the Rust gates had never passed — FIXED for the kernel crate, one
+  crate excluded for a stated reason.** `cargo fmt --all --check` reported 119
+  differences in 22 files, and the Clippy gate (`-D warnings`) stopped on six
+  compiler warnings: five unused imports and one needless `mut`. The kernel
+  crate is now formatted (15 files) and the six warnings fixed with the
+  compiler's own suggestions. `rust/apedp-vqc` is **not** formatted: its seven
+  source files are pinned byte-for-byte by the machine-and-timing record that
+  `tests/test_vqc_native_parity_record.py` checks, so reformatting them would
+  make that record claim it measured bytes it did not. `make lint-rust`
+  therefore checks format for the kernel crate only and says why; the crate's
+  43 differences wait for a re-measurement. Clippy and the tests cover the
+  whole workspace: 201 kernel unit tests, 19 kernel integration tests and 31
+  VQC tests pass here, on Rust 1.97.0.
+- **F-04 two defects introduced by this audit, found by its first full run —
+  FIXED.** (a) `87d89b6` removed eighteen `# noqa: BLE001 - reason` comments
+  because the pinned ruff reports them unused. They are not only suppressions:
+  `scripts/audit_exception_hygiene.py` reads that exact marker as the record
+  that a blanket handler is deliberate, and
+  `tests/test_dyn_exception_hygiene.py` ratchets on it, so the removal turned
+  eighteen annotated handlers into "silent" ones under the repository's own
+  gate. The commit message said the files were AST-identical, which was true
+  and beside the point. Restored; `BLE001` is declared in
+  `[tool.ruff.lint] external`, which keeps the marker valid for ruff's
+  unused-suppression check while the rule itself still fires on an unannotated
+  blind `except`. (b) The parser pre-check added in `9c9c8bf` (H-09) caught
+  `Exception` without the marker, in `apedp/safety.py` and
+  `apedp_dyn/safety.py`. Annotated. Both went unseen for the reason E-07
+  gives, and because the hygiene test was not in the subset re-run after
+  those commits.
+- **F-05 first full-suite run with the kernel and torch present — 5,639
+  passed, 53 failed, 6 errors, 154 skipped (5,858 collected, 24 minutes, two
+  workers).** Each failing test was then re-run alone on this tree and on
+  `3d556eb`, the commit before this audit's first change. The verdicts are
+  identical except for the tests F-03 and F-04 explain, so the remaining
+  failures predate this audit. They are not all the same kind:
+  - *A dependency the test needs is absent* (about two thirds), each cause
+    checked where it could be: no `lean` on the test's `PATH` (three
+    universal-bridge tests; all ten pass once Lean 4.24.0 is on it); the
+    native VQC extension not built (`test_vqc_stabilizer`; passes once
+    `rust/apedp-vqc` is built and installed); the pinned Rust toolchain not
+    downloadable here (the Goldbach and Riemann sandbox tests; both pass with a
+    usable toolchain); no `onnx` (JetFlow CPU export, three, and a Hugging
+    Face streaming test that needs the network); no built `kickmix` extension
+    (the DQI, DFTHC-SOS and FAROS-ISQ tests and the kickmix build pin,
+    nineteen — ten of which skip when run alone and fail in the full run with
+    `module 'kickmix' has no attribute 'CircuitBuilder'`, an order dependence
+    between tests); no `stim` (`test_vqc_memory`, with one peak-RSS assertion
+    that also fails on this machine); a generated `outputs/`
+    artefact that is not in the repository (`test_dyn_pointer`); and platform
+    detection that reads this container as a hosted notebook
+    (`test_dyn_notebook_adapter`, six). These tests fail rather than skip when
+    the dependency is missing. The CI test job installs neither Lean, nor the
+    VQC extension, nor `onnx`, `stim` or `kickmix`, so most of this group
+    should be expected to fail there as well.
+  - *Expected*: `test_dyn_governance` (FLAW-01), and
+    `test_dyn_exception_hygiene`, which after F-04 fails only on
+    `epistemic/adjudicate.py` being 1,127 lines against a ceiling of 1,026 —
+    already true at `3d556eb`, and a freeze-pinned file this audit has not
+    edited.
+  - *Unexplained, and the owner's to triage* (thirteen tests in ten files;
+    **each is resolved in J-03 to J-10 above, 2026-11-16**):
+    `test_dyn_grammar_scope` (an enumeration count of 225 where 64 is pinned;
+    a recovered library that is not the Duffing truth), `test_dyn_ha_coupling`,
+    `test_dyn_pde` (two), `test_dyn_term_necessity`, `test_dyn_tournament`
+    (two), `test_dyn_meta_sandbox` (scorecard 50 where 100 is pinned),
+    `test_dqi_submission_score` (a recorded patch hash that does not match),
+    `test_scale_invariance[1e9]` (classified `exponential_envelope` where
+    `rational_transition` is expected), `test_tier_bc_benchmark` (Planck R²
+    0.94) and `test_external_60_adapter_contract`. These may be real
+    regressions, or differences between this environment (Python 3.13, numpy
+    2.5, Rust 1.97.0) and the one their pins were recorded in. Nothing here
+    distinguishes the two.
+  - `tests/test_dyn_ui_studio.py::test_market_discovery_covid_promotes` kills
+    the interpreter on this 7 GB machine, alone or under xdist; no verdict.
+  - Three more failed only in the parallel run and pass alone on both trees
+    (`test_jetflow_trainer_and_dataset`, the notebook tutorial test,
+    `test_fan_out_emits_candidates_on_signal_feature`).
+  CI runs the suite with `-x`, so on a hosted runner the first of these that
+  fails there will be the only one reported per run.
+  Running the suites also rewrote four tracked result files
+  (`benchmarks/five_gate_validation_results.json`,
+  `docs/five_gate_validation_results.md`, and from the Rust tests
+  `benchmarks/kernel_profile_results.json` and
+  `benchmarks/sre_tree_vs_arena_baseline.json`). E-02 fixed three such paths;
+  these four remain and were restored by hand.
+
+- **F-06 the package could not be imported on Python 3.10, which it declares
+  and CI tests — FIXED.** Run 43813711672 was the first in which the quality
+  jobs passed and the test matrix started: Python quality and Rust quality
+  green (format, Clippy and the Rust tests on the pinned 1.99.0, so the
+  formatting done here with 1.97.0 matches the pin). The 3.10 leg then failed
+  at its second step: `apedp/ingestion/ingestion_academic_apis.py` imported
+  `datetime.UTC`, which exists from 3.11, and `apedp/__init__.py` imports that
+  module, so `import apedp` raised `ImportError` on the interpreter
+  `requires-python = ">=3.10"` promises. The matrix has `fail-fast`, so the
+  3.11 and 3.12 legs were cancelled and gave no verdict. Two scripts had the
+  same import. All three use `timezone.utc` now.
+  `tests/test_minimum_python_version.py` checks, on any interpreter, that
+  every source file parses under the declared minimum's grammar and uses no
+  standard-library name from a curated list of later additions unless it is
+  guarded; the 3.10 CI leg remains the real check, and what it finds after
+  the import is not yet known.
+
+- **F-07 six tests mistook an empty directory for the kickmix extension —
+  FIXED; this is what stopped the first test-matrix run.** Run 43815370584
+  (after F-06) is the first in which a test leg reached the suite: on 3.11 the
+  kernel import check, the drift guardrail, the known-truth gate, the smoke
+  tier and collection (5,942 tests) passed, and the regression run stopped at
+  its first failure after 849 passes,
+  `test_dqi_gluzdov_v6.py::test_circuit_builder_candidate_when_kickmix_available`
+  — one of the order-dependent failures F-05 lists. The cause is the guard,
+  not the order: these tests skip unless `import kickmix` succeeds, and the
+  extension's directory exists in every checkout whether or not the extension
+  has been built into it, so once its parent is on `sys.path` (other tests put
+  it there) the import returns an empty namespace package and the guard
+  passes. Reproduced deterministically by putting that directory on the path:
+  six failures and four errors before, none after. The six guards now ask
+  `tests/kickmix_availability.py` whether kickmix can build circuits, not
+  whether a name imports.
+  Not addressed: `test_faros_isq` (five) and `test_dyn_kickmix_build_pin`
+  (four) require the built extension outright and fail in any checkout
+  without it, CI included; whether those should skip or the build should be
+  provisioned in CI is the owner's decision. With `-x`, the matrix will stop
+  at whichever of the F-05 failures comes next.
+
+- **F-08 where CI stands at the end of this round (run 43817593950, `stage`
+  at `cc50e3b`).** Passing, each for the first time on this branch: Python
+  quality (lint, both baselines, the CI-contract tests), Rust quality (format,
+  Clippy and the Rust tests on the pinned 1.99.0), audit-artefact drift, the
+  Lean core, the kernel wheel build, workflow validity, and the mutation
+  battery — which answers what F-02 left open: on the hosted runner, with the
+  pinned toolchain, all 37 mutants were verified fresh and killed, none from
+  cache, in three consecutive runs. The committed
+  `benchmarks/mutation_battery_report.json` is still the stale 2026-10-23
+  file; CI uploads the current report as a workflow artefact and it has not
+  been copied into the repository.
+  Failing: the governance-manifest job, as designed, until the trustees
+  re-sign (FLAW-01); and the test matrix, whose 3.10 leg now gets through the
+  import, the kernel check, the drift guardrail, the known-truth gate, the
+  smoke tier and collection, and stops after 955 passes at
+  `tests/test_dqi_submission_score.py::test_the_recorded_patch_is_the_exact_patch_that_was_applied`
+  — a recorded patch hash that does not match the file, one of the thirteen
+  F-05 lists as unexplained, and now known to fail on the hosted runner as
+  well as here. `fail-fast` then cancels the 3.11 and 3.12 legs. That test
+  compares a research record with its source; changing either to make them
+  agree is not something this audit can do honestly. The same holds for the
+  rest of that list, which the matrix will reach one at a time.
+  *Superseded by J-05: the mismatch was this audit's own lint pass having
+  rewritten the vendored verifier. The source is restored to the recorded
+  bytes; neither the record nor the test changed.*
+  So the build job, which needs every gate, cannot go green on this branch
+  until two things happen that are outside this audit: the trustees sign, and
+  the owner triages those tests.
+- **G-01 the referee could not be loaded without what it referees — FIXED as
+  a dependency boundary; the files have not moved.** This is the first step of
+  the "repository split" earlier rounds listed as not done, and it is the part
+  that changes behaviour. Measured on `stage` in a fresh interpreter:
+  `import apedp_dyn.epistemic.promotion_lifecycle` executed 74 repository
+  modules (96 for the whole core), among them the native kernel, SymPy, pint
+  and the discovery engines, because importing a submodule runs its parent
+  packages and `apedp_dyn/__init__.py` imported everything. The module's own
+  dependencies are numpy and scipy.
+  Three changes: (a) `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market`
+  re-export lazily (`apedp_dyn/_lazy.py`, PEP 562): same names, same
+  `__all__`, each resolved on first access. (b) The evidence types stage 1
+  judges (`InvariantKind`, `LeanTheoremVerification`,
+  `LeanVerificationResult`) move to `epistemic/proof_evidence.py`, standard
+  library only, and are re-exported from their old modules as the same class
+  objects. (c) `tests/referee_core_manifest.py` declares the eight core
+  modules and what they may depend on — numpy, scipy, pandas and three named
+  optional paths — and `tests/test_referee_core_boundary.py` enforces it
+  statically, at import and under test, with a planted-leak check.
+  After: the same import executes 6 repository modules and loads numpy; the
+  whole core is 13 (8 core modules, their 4 parent packages and `_lazy.py`)
+  with numpy, scipy and pandas. In an environment with
+  only those and pytest — no torch, no SymPy, no kernel, the repository not
+  installed — the core's tests and the boundary tests pass (36 passed, 1
+  skipped: the planted leak cannot even be imported there). CI's
+  `referee-core` job repeats that on every push.
+  Two things the equivalence test (`tests/test_lazy_package_exports.py`)
+  caught while this was being written, both of which would have shipped
+  otherwise: `apedp_dyn.epistemic.adjudicate` is both an exported function
+  and a submodule, and a naive lazy package hands back the *module* once
+  anything imports the submodule (handled; pinned from four different first
+  touches); and `from apedp_dyn import ode, pde` exports subpackages, which a
+  name-to-module table sends into infinite recursion (handled).
+  A third was caught by the full suite, not by the new tests: the coverage
+  audit classifies pure re-export modules as façades
+  (`tools/coverage_audit.py`) and `tests/test_facade_contracts.py` pins
+  `apedp_dyn` among them; a lazy `__init__` is not "imports plus `__all__`",
+  so the package silently left the set whose exports that test checks. The
+  classifier now recognises the lazy shape, and only that shape — a
+  `TYPE_CHECKING` block of imports, string-literal tables, and the one
+  `lazy_exports(...)` call — with ten near-miss variants pinned as *not* a
+  façade (`tests/test_coverage_audit.py`).
+  And one in the boundary check itself, raised in review of the pull
+  request: the static rule recorded only the package a `from` import names,
+  so `from apedp_dyn.epistemic import agnostic_adapter` passed as an import
+  of the allowed parent, and inside a function no test calls neither
+  runtime check would have seen it. It now resolves each imported name to
+  the submodule or lazy re-export it loads; ten ways of writing an
+  undeclared import are pinned as detected, the first three of which the
+  earlier version let through.
+  One behaviour is not reproduced, and is stated in that test: a submodule of
+  a package that is not lazy is an attribute only once imported, as in any
+  Python package. Eager imports used to make every such chain work by
+  accident. No use of one was found in the repository.
+  What this is not: a second distribution. There is no `apedp-referee`
+  package and no file changed path, because paths are load-bearing here —
+  AGENTS.md names `apedp_dyn.conf.canonical_spec`, the governance drift script
+  loads it by file path, and fifteen files are hash-pinned by the freeze
+  records. Extracting a package is now a mechanical move behind an enforced
+  boundary, and a decision for whoever owns those pins.
+  *Addendum (2026-11-17): extracted.* The eight modules moved, with history,
+  to `apedp_referee/`, which is its own distribution (`apedp-referee` 0.1.0,
+  `apedp_referee/pyproject.toml`) as well as part of the full one. Each old
+  path is a four-line alias that installs the package's module object under
+  the old name in `sys.modules`, with a `.pyi` stub for type checkers, so
+  `apedp_dyn.conf.canonical_spec` (AGENTS.md's name), string monkeypatch
+  targets and every existing import resolve to the same objects. None of the
+  eight files was among those the freeze records pin (searched: the only
+  path-keyed record naming one was the exception-hygiene size budget, carried
+  over). The governance drift script loads `apedp_referee/canonical_spec.py`
+  by file path. The package ships a copy of the canonical specification;
+  `tests/test_referee_core_boundary.py` requires it to be byte-identical to
+  `specifications/canonical_preregistered_spec_v1.json`, which the trustees
+  sign, and both to hash to the pin. The governance manifest stays a
+  repository record: installed alone, the referee reports it absent. Two edges
+  back into `apedp_dyn` remain, both in `apedp_referee/_host.py`, both inside
+  functions, both reached only for host conveniences (default ledger location,
+  storage backend from the environment), and both raise a message saying what
+  to pass instead when `apedp_dyn` is not installed; the third, a
+  type-checking import of `BaseStorageBackend`, is replaced by a three-method
+  `LedgerStorage` protocol. One latent defect surfaced: the full distribution
+  never declared pandas, which `market/universe.py` imports; it does now.
+  Verified: in a fresh Python 3.12 environment holding numpy, scipy, pandas
+  and pytest, `pip install ./apedp_referee` builds a wheel of exactly the ten
+  modules, the specification and `py.typed`, and the package's tests pass from
+  a directory outside the checkout, including the test that asserts the
+  module came from site-packages and that `apedp_dyn`, `apedp`, the kernel,
+  torch and SymPy are not importable. CI's `referee-core` job repeats that.
+
+Limits of this round: the local kernel is built with Rust 1.97.0, not the
+pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy
+or numerics; and a full local run is one machine, once.
+
+---
+
+## 2026-11-15 round — measured error rates, and an abstention that was a missing build
+
+Basis: `stage` at `beff10d`. Pins: `tests/test_engineering_hardening_2026_11_15.py`.
+
+- **E-01 without the native kernel, RIME reported "nothing found" — FIXED.**
+  `RimeProposer.fit_and_propose` began with `if not _RIME_AVAILABLE: return []`.
+  An empty list is also what RIME returns when it searches a null world and
+  correctly abstains, so the two were indistinguishable: on a machine without
+  the build, a planted `y = 3x` came back as no mechanism, and every test that
+  pins an abstention (`tests/test_dyn_trading_universe_sweep.py` among them)
+  passed without a search having run. It now raises
+  `NativeKernelUnavailableError`. Consequence for anything written here
+  earlier: a "RIME abstains" result is evidence only where the kernel was
+  loaded. CI builds it; the review environment for these rounds did not have it.
+- **E-02 running the tests rewrote committed results — FIXED.** Three paths:
+  the API's lifecycle store (`apedp_persistence/`), the known-truth benchmark's
+  results file, and the Lorenz benchmark's registered results file and ledger,
+  which every smoke test overwrote or appended to. On a machine without the
+  kernel the known-truth file was replaced by a sweep in which RIME had not
+  run. Tests now write to scratch directories (`APEDP_PERSISTENCE_DIR`,
+  `--out-dir`).
+- **E-03 a missing build was a failure or a pass, never a skip — FIXED.**
+  `tests/conftest.py` reports a test that stops on
+  `NativeKernelUnavailableError` or on a missing `apedp_kernel` / `torch` as
+  skipped with the reason. CI sets `APEDP_REQUIRE_NATIVE=1`, under which nothing
+  is converted and such a test fails.
+- **E-04 the gates' error rates had never been measured — MEASURED.**
+  `benchmarks/run_promotion_gate_calibration.py` simulates worlds with known
+  truth and records how often each evidence-taking gate passes them
+  (`benchmarks/promotion_gate_calibration.json`, seed 20261115,
+  1000 simulations per stage-2 cell, 95% Wilson
+  intervals). The record carries the canonical-spec hash and a test fails when
+  the spec moves without a new run.
+
+  Stage 2, share of candidates passed:
+
+  | n | true IC | gate (threshold and five positive folds) | threshold `IC >= 0.02` alone |
+  |---|---|---|---|
+| 250 | 0.0 | 3.4% [2.4, 4.7] | 40.5% [37.5, 43.6] |
+| 250 | 0.05 | 9.3% [7.7, 11.3] | 67.4% [64.4, 70.2] |
+| 250 | 0.1 | 24.4% [21.8, 27.2] | 89.1% [87.0, 90.9] |
+| 600 | 0.0 | 3.7% [2.7, 5.1] | 33.2% [30.3, 36.2] |
+| 600 | 0.05 | 16.1% [14.0, 18.5] | 74.9% [72.1, 77.5] |
+| 600 | 0.1 | 45.3% [42.2, 48.4] | 95.7% [94.3, 96.8] |
+| 2000 | 0.0 | 2.4% [1.6, 3.5] | 16.9% [14.7, 19.3] |
+| 2000 | 0.05 | 38.5% [35.5, 41.6] | 88.4% [86.3, 90.2] |
+| 2000 | 0.1 | 86.8% [84.6, 88.8] | 100.0% [99.6, 100.0] |
+
+  The preregistered threshold on its own passes 17-41% of pure noise: at these
+  sample sizes an IC of 0.02 is inside the noise. The fold requirement added on
+  2026-11-14 is what makes stage 2 a test (2-4% false passes), and it is paid
+  for in power: a true IC of 0.05 passes 39% of the time at n=2000 and 16% at
+  n=600. Anyone using the numeric `verify_stage_2` with `cv_stable=True` typed
+  in gets the right-hand column.
+
+  Stage 4, a candidate with no signal that passed stage 2 by luck:
+  3.8% [2.4, 5.9] with independent targets;
+  5.2% [3.6, 7.5] with
+  21-bar overlapping targets and the horizon *not* declared;
+  2.4% [1.4, 4.1] with it
+  declared.
+
+  Stage 5, the best of K strategies searched (504 daily observations, 3 bps):
+
+  | true annual Sharpe | K = 1 | K = 20 | K = 200 |
+  |---|---|---|---|
+| 0.0 | 2.5% [1.1, 5.7] | 0.0% [0.0, 1.9] | 0.0% [0.0, 1.9] |
+| 1.0 | 37.0% [30.6, 43.9] | 18.5% [13.7, 24.5] | 18.5% [13.7, 24.5] |
+| 2.0 | 83.0% [77.2, 87.6] | 99.5% [97.2, 99.9] | 100.0% [98.1, 100.0] |
+| 3.0 | 100.0% [98.1, 100.0] | 100.0% [98.1, 100.0] | 100.0% [98.1, 100.0] |
+
+  Stages 2-5 end to end, share of candidates reaching each stage:
+
+  | world | 2 | 3 | 4 | 5 |
+  |---|---|---|---|---|
+| null (IC 0.0) | 1.8% | 0.0% | 0.0% | 0.0% |
+| planted (IC 0.1) | 68.4% | 27.8% | 22.0% | 9.6% |
+| planted_strong (IC 0.25) | 100.0% | 97.6% | 97.4% | 96.0% |
+
+  The referee is safe and not very sensitive: nothing from a null world got
+  past stage 3 in 500 runs, and a real but modest signal (IC 0.10, traded daily
+  at 3 bps) reaches stage 5 about one time in ten.
+- **E-05 stage 4 trusted a declared horizon — FIXED.** The first calibration
+  run showed that unrelated 21-bar overlapping series passed stage 4 in 33% of
+  trials when the caller left `horizon` at 1. `effective_sample_size` now
+  measures the serial dependence in the two series (Bartlett's formula on
+  ranks) and stage 4 uses the smaller of that and `n / horizon`. The table
+  above is after the fix.
+- **E-06 nothing in the Lean tree was machine-checked — PARTLY FIXED.** The
+  557-file `formal/` tree declares its own axioms or is never elaborated at
+  all; its measured machine-checked fraction is 0.0
+  (`docs/LEAN_FORMAL_STATUS.md`), and that has not changed. What is new is a
+  core that *is* checked: `lean_checked/` (Lean 4.24.0, toolchain fetched from
+  the Lean GitHub release, which the review environment's proxy does permit)
+  holds 39 theorems elaborated by the Lean kernel — dimensional-algebra
+  consistency and refutations (momentum is not an energy, force is not an
+  energy), the promotion machine's no-shortcut and failure-halts-permanently
+  properties, and the holdout budget's burn-permanence and single-use
+  properties, proved on small models of the Python referees, not on the
+  Python itself. `scripts/check_lean_checked.py` re-measures every
+  theorem's `#print axioms` against the committed `lean_checked/axiom_audit.json`
+  (only `propext`/`Quot.sound`/`Classical.choice`; 12 theorems axiom-free),
+  forbids `sorry`/`axiom`/`native_decide` statically, and runs in CI with the
+  pinned toolchain (`lean-checked` job, required by `build`). Honest scope: a
+  theorem about a model constrains the design, not the implementation. The
+  bridge is a test, not a proof: `tests/test_lean_model_conformance.py`
+  transcribes each model's transition function and runs it beside
+  `PromotionTracker` and `FullLineageExperimentLedger` on every operation
+  sequence up to a small length (1,884 promotion sequences plus every
+  single deviation from the full ladder; 1,554 holdout sequences under each
+  of three budgets), requiring identical refusals and identical state.
+  Seeded defects in the real code — stage skipping, a forgotten burn, a
+  budget off by one, a burner allowed back, a failed stage re-run — are each
+  caught; "halt not enforced" alone is not, because in the Python the
+  single-shot rule already implies it. Outside that bound, and for slice
+  identity, persistence and concurrency, nothing is claimed.
+  `Dimensions.lean` has no counterpart test.
+
+- **E-07 the test workflow had never run a job on `stage` — FIXED, and CI's
+  first real verdict is still to come.** GitHub's own record, read through the
+  API on 2026-11-15: of the 304 runs of `.github/workflows/test.yml` since
+  2026-10-17, 268 failed in 0 seconds with "workflow file issue" — 102 of them
+  on `stage`, 82 on `master` — and no run on either branch ever started a job.
+  The 36 runs that did execute were on two CI-repair branches, and none
+  finished green. Two successive causes, both a context used where GitHub does
+  not provide it: `secrets` in a job-level `if:` (already present on
+  2026-10-17, since removed), then `RUSTUP_HOME: ${{ runner.temp }}/rustup` in
+  the `test` job's `env:` (commit `1bf397b`, 2026-10-20). The `runner` context
+  exists only inside steps, so the file was rejected whole. Consequences:
+  every sentence in this repository of the form "CI enforces X" described an
+  intention for those four weeks — the governance-manifest job, the
+  audit-artifact drift job, the mutation battery ("CI-gated, 5/5 killed") and
+  the kernel-backed test matrix did not run here — and
+  `tests/test_ci_rust_toolchain.py` *required* the invalid line, so the one
+  test about it pinned the defect in place. The three commits of 2026-11-12
+  to 2026-11-15 in this audit were pushed into the same silence; their
+  "CI must confirm" notes were confirmable by nobody.
+  Fix: the variable is set in a step through `$GITHUB_ENV`; the test now pins
+  that form. Because a workflow file cannot report its own invalidity, the
+  check lives in a second file, `.github/workflows/workflow-lint.yml`, which
+  runs a checksum-pinned actionlint over every workflow on every push, and
+  `tests/test_ci_workflow_validity.py` checks context availability and
+  dangling `needs` in pure Python (including a replay of the exact line).
+  Found alongside, with the pinned `ruff==0.17.3` that CI installs: `make lint`
+  reported 43 findings on a clean checkout where `docs/QUALITY_BASELINE.md`
+  pins 0 — 21 import-order findings that depended on a symlink into one
+  developer's `.venv` (`apedp_kernel` is now declared first-party in
+  `pyproject.toml`), and 22 suppressions the pinned linter no longer needs
+  (removed; their written reasons are kept as comments).
+  What this does **not** establish: that the workflow is green. It will now
+  run for the first time. The governance-manifest job is expected to fail
+  until the trustees re-sign (FLAW-01) — that is the gate working — and the
+  kernel-backed suites have never been observed on this tree by this audit.
+
+Still not done, and why: the repository split (it moves most files and could
+not be verified here without the kernel); elaboration of the `formal/`
+transcription tree itself (E-06 adds a checked core beside it, it does not
+redeem those files); the data rebuild (needs a download that includes delisted
+assets); the trustees' signatures; and the prospective run.
+
+---
+
+## 2026-11-14 follow-up — the items the 2026-11-12 round left open
+
+Basis: `stage` at `9c9c8bf`. Pins: `tests/test_integrity_followup_2026_11_14.py`.
+The H-numbers are the ones assigned in the 2026-11-12 section below, whose
+entries are kept as written; this section is their current status.
+
+- **H-02 stages took their metrics as numbers — FIXED.** Every stage now has a
+  `verify_stage_N_from_*` entry point that computes what it judges: stage 1
+  from a `LeanVerificationResult` (kernel exit code, no self-declared axioms, no
+  `sorry`, a proven dimensional and a proven bound theorem); stage 2 from
+  predictions and targets (Spearman IC, positive in each of five contiguous
+  folds); stage 3 from forecasts and literature features (Diebold-Mariano
+  against every incumbent, the largest p-value judged; every supplied
+  literature feature must be evaluable); stage 4 from holdout predictions and
+  targets, claimed through a persistent experiment ledger before scoring;
+  stage 5 from gross returns, turnover and timestamps (net Sharpe, breakeven
+  fee and annualisation computed here, DSR from a persistent non-empty trial
+  ledger); stage 6 from returns whose timestamps fall after the stage-5 record
+  and not in the future. The numeric `verify_stage_N` entry points raise unless
+  the tracker is built with `allow_reported_metrics=True`; a stage passed that
+  way is `caller_reported` and labelled `..._ON_REPORTED_METRICS`.
+  `VerifiedModuleLibrary` now admits a module only on an evidence-backed
+  promotion and checks the tracker's flags against its records.
+  *Limit:* this moves the trust boundary from numbers to evidence objects. A
+  caller in the same process can still hand in a fabricated series or a
+  hand-built Lean result; what it can no longer do is skip the computation.
+- **H-04 slice identity was a name — FIXED, with stated limits.**
+  `fingerprint_holdout_slice(data, index=...)` gives a slice a content hash,
+  hashes of its non-constant columns, a sketch of its `(index, row)` pairs and
+  its index range. A burned or spent slice is recognised under another name
+  when the content is identical, when at least half the narrower slice's
+  columns are identical, when any indexed row is shared (a sub-window or an
+  overlapping window), or when the index ranges intersect within the same
+  dataset id. *Not caught:* data that was both rescaled and moved to a
+  different dataset id; a row-subset whose index was also relabelled; an
+  overlap of under roughly 1-2% between slices of more than 256 rows; and any
+  exposure recorded without a fingerprint, unless the ledger was built with
+  `require_holdout_fingerprint=True`.
+- **H-06 / H-07 the trading sandbox forgot its trials and never registered its
+  holdout — FIXED for callers that supply or enable persistent ledgers;
+  DISCLOSED otherwise.** `run_epistemic_trading_adjudication` takes
+  `trial_ledger` and `experiment_ledger`, or opens the deployment's when
+  `APEDP_SANDBOX_PERSISTENT_LEDGERS=1`. It claims the holdout by content before
+  scoring, writes the outcome back, and does not charge a replayed search
+  twice. Measured: a second seed on the same rows raises
+  `HoldoutContaminationError`, so does the same panel under a new dataset name,
+  and the refused seed's 80 trials are still charged. The freeze record was
+  re-minted for the file (`APEDPX_FROZEN_v1_18.json::remint_log`).
+  *Still the default:* with no ledger passed and the flag unset, both ledgers
+  are in-memory, because the sandbox's ordinary use -- one dataset, many seeds
+  -- is the pattern a persistent single-use holdout refuses. The output now says
+  so (`ledger_persistent: false`) instead of leaving it to be inferred.
+  `multi_asset_signals_sandbox.py` and the other sandboxes are unchanged.
+- **H-12 hindsight-selected universes — MEASURED AND GATED; THE DATA IS NOT
+  REBUILT.** `apedp_dyn/market/universe.py` audits a panel, and
+  `data/market/PROVENANCE.json` now records `universe_selection` for all six
+  multi-asset files (each list was fixed in October 2026 for data starting in
+  2021). `verify_stage_5_from_returns` requires a `UniverseAudit` and refuses a
+  hindsight-selected one. `tools/build_point_in_time_universe.py` ranks a
+  candidate pool using only earlier bars. None of this adds the assets a 2026
+  list left out: that needs a pool that includes the names which later died,
+  which has to be downloaded and was not available in the review environment.
+- **H-13 (new) the 90-asset panel contains bars that never traded — FOUND,
+  RECORDED, NOT REPAIRED IN PLACE.** In
+  `data/market/multi_asset_90_5yr_orderflow.csv` five crypto pairs end early and
+  their last bar is repeated to the end of the file: XMR from 2024-02-21 (468
+  bars), MATIC from 2024-09-11 (328), FTM from 2025-01-14 (243), EOS from
+  2025-05-27 (152), MKR from 2025-09-16 (75) -- 1,266 asset-days in which close,
+  high, low, volume, taker-buy and OFI are constants. The build script's
+  `ffill().bfill()` is the cause. The 30- and 60-asset panels and the top-15
+  files have no such runs. The file itself is unchanged because
+  `tests/test_dyn_trading_universe_sweep.py` and the frozen
+  `multi_asset_signals_sandbox.py` read it directly and average across assets
+  without NaN handling; `mask_stale_bars` is the loader-side fix, and a test
+  pins the five runs so the defect cannot be forgotten. Any result computed on
+  this panel past February 2024 includes those bars.
+- **H-14 (new) the two quorum signatures share one timestamp — FOR THE OWNER TO
+  CONFIRM.** In `specifications/governance_manifest.json` both signature
+  records and both transparency-log entries are stamped
+  `2026-10-18T16:31:16.664147+00:00`, identical to the microsecond. That is
+  what one process assembling both entries produces. If both private keys were
+  in that process, the 2-of-3 quorum was one party signing twice, and re-signing
+  the current digest the same way would restore a green check without restoring
+  what the check is for. FLAW-01 itself is unchanged and cannot be closed from
+  inside the repository: the re-signing request for digest `a8177b25…` is
+  current (`scripts/run_governance_remint_ceremony.py status`), and no change in
+  this round touched the canonical specification.
+- **Repository residue — PARTLY REMOVED.** Out of the index: `apedp_kernel` (a
+  symlink into one developer's `.venv/lib/python3.12`, dangling in every
+  clone), `Crash` (empty), and `apedp/discovery.py` (a three-line shim that the
+  `apedp/discovery/` package shadows, so it could never be imported). Tracked
+  binaries were inventoried and left: see `docs/REPOSITORY_RESIDUE.md`.
+
+Not run in this follow-up either: suites that need the native kernel or torch,
+and the mutation battery. CI has to confirm those.
+
+---
+
+## 2026-11-12 round — integrity safeguards trusted the caller they police
+
+Basis: external review of `stage` at `3d556eb`, each item reproduced by driving
+the public API (no monkeypatching). Pins:
+`tests/test_integrity_hardening_2026_11_12.py`.
+
+*Items marked OPEN here were revisited on 2026-11-14; the section above gives
+their current status. The entries below are left as they were written.*
+
+- **H-01 promotion gates accepted caller-supplied thresholds — FIXED.** A
+  candidate with Sharpe −5 and DSR 0 reached `REAL_MARKET_PROMOTION_GRANTED` by
+  passing `min_ic=0.0`, `dm_alpha=1.0`, `min_dsr_hurdle=0.0`, … Threshold
+  arguments may now only tighten the canonical value.
+- **H-02 tracker state was writable and forgettable — FIXED (in-process), OPEN
+  (wiring).** Assigning `is_halted = False` un-halted a candidate; a stage could be
+  re-run with new inputs; a new tracker forgot the halt. State is now checked
+  against the stage records, stages are single-shot, and `state_path` journals
+  outcomes. *Still open:* the only non-test caller
+  (`sandbox/trading_signals_sandbox.py`, freeze-pinned) hard-codes a stage-1
+  refusal, so stages 2–6 are exercised by tests only; and stages 1–4 and 6 still
+  take their metrics as numbers. Only stage 5 has a derive-it-here variant
+  (`verify_stage_5_from_ledger`).
+- **H-03 a holdout was only protected after a self-reported failure — FIXED.**
+  Fifty candidates inspected one slice with nothing burned. Confirmation slices
+  now carry an inspection budget (default one candidate).
+- **H-04 slice identity was the raw string — FIXED (spelling), OPEN (content).**
+  A trailing space or a case change produced a fresh slice. Identities are now
+  normalised. *Still open:* identity is a name, not the data: the same rows under a
+  genuinely different name, or an overlapping date range, are not detected. That
+  needs slices registered by content hash and row/date range.
+- **H-05 the ledger file could be edited without detection — FIXED (evidence).**
+  Deleting the burn line made a burned slice reusable. Entries are hash-chained
+  with a head marker; damage raises `LedgerIntegrityError`. This is tamper
+  *evidence*: someone who rewrites the ledger and its head marker together is not
+  stopped. Anchor `head_hash` outside the writer's reach for that.
+- **H-06 trial multiplicity restarts with every in-memory ledger — PARTLY FIXED.**
+  The best of 1,000 noise strategies scored DSR 0.537 on the ledger that saw the
+  search and 1.000 on a fresh one. Persistence is now disclosed and required by
+  `verify_stage_5_from_ledger`. *Still open:* every non-test
+  `CandidateTrialLedger()` construction is still in-memory (the sandboxes are
+  freeze-pinned), and `selection_pool_size` is declared by the proposer.
+- **H-07 the trading sandbox never registers its holdout — OPEN.**
+  `trading_signals_sandbox.py` scores on `X_ho` without a
+  `record_data_exposure` call, so the guard above does not see it. The file is
+  freeze-pinned; fixing it is a re-mint.
+- **H-08 formula parser hang — FIXED.** `9**9**9**9`, `zeta(10**7)`.
+- **H-09 governance gate crashed before comparing hashes; deploy did not depend on
+  it — FIXED.** FLAW-01 itself (the missing trustee signatures) is unchanged.
+- **H-10 README claimed Lean formal verification and shipped a broken example —
+  FIXED** (documentation only; the Lean layer is as `LEAN_FORMAL_STATUS.md`
+  measures it).
+- **H-11 keyless UI API reachable off-loopback when launched via uvicorn — FIXED.**
+- **H-12 hindsight-selected market universe — OPEN.** The 90 assets in
+  `scratch/fetch_and_build_90_assets_5yr.py` are names that survived 2021–2025.
+  Not a code defect; backtests on that file carry survivorship bias until the
+  universe is rebuilt point-in-time.
+
+Not run in this round: anything requiring the native kernel or torch (neither
+could be built or installed in the review environment). Kernel-dependent suites
+and the mutation battery must be confirmed by CI.
+
+---
+
+## 2026-11-08 round — status matrix (Categories 1–5)
+
+- **Category 1 (Governance & Spec Synchronization):**
+  - `ARCHITECTURE.md` stale SHA-256 reference updated from `a6d026f3…` to canonical `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343`.
+  - `specifications/governance_manifest.json` remains fail-closed pending external trustee Ed25519 signature ceremony via `scripts/run_governance_remint_ceremony.py` (never forged locally per `AGENTS.md` §1.3).
+- **Category 2 (Epistemic Referee, Holdout & Ledger Integrity):**
+  - `apedp_dyn/epistemic/adjudicate.py`: `_identity(sc)` now canonicalizes `_ProposalReference` and duck-typed proposal objects via SymPy (`_canon_expr`); holdout re-anchor selects the best distinct holdout rival (`min(_rivals_ho, key=lambda s: s.holdout_rmse)`); `equiv` in the bootstrap `MULTI_HYPOTHESIS` branch anchors on `best_rmse`; `selection_reuse_flag` is attached across all post-selection pair verdicts.
+  - `apedp_dyn/epistemic/caller_data_protocol.py`: `SealedConfirmationSlice.consume()` now derives `outcome_status` (`"PASSED"` vs `"FAILED"`) from the referee verdict so rejected confirmation slices are permanently burned.
+  - `apedp_dyn/epistemic/experiment_ledger.py`: `_persist_append` holds `fcntl.flock(LOCK_EX)` across `_refresh_burned_holdouts_locked`, holdout contamination check, JSONL write, `flush()`, and `os.fsync()`, and forces immediate `sync_to_remote()` on holdout burn; added `flush()`, `close()`, and context-manager protocol.
+  - `apedp_dyn/epistemic/trial_ledger.py`: `record_trial` uses `fcntl.flock(LOCK_EX)` + `os.fsync()`; `get_sharpe_distribution()` filters non-finite values and excludes equation-discovery dummy `0.0` Sharpe records; added `get_selection_distribution()` and guarded negative/non-finite variance in `compute_expected_max_sharpe`.
+  - `apedp_dyn/epistemic/promotion_lifecycle.py` & `apedp_dyn/conf/canonical_spec.py`: Stage 2/4/5/6 thresholds exported from `canonical_spec.py`; `verify_stage_4` enforces Stage 2 `in_sample_ic` lower bound (`PromotionViolationError` on deflation spoofing) and rejects non-positive/non-finite `in_sample_ic`; `verify_stage_6` bounds `0.0 <= max_drawdown <= max_dd_ceiling`.
+  - `apedp_dyn/epistemic/lean_universal_bridge.py`: removed top-level `sys.path.insert(0, ".")`; `_ast_detect_damping_factor` detects N-ary `sp.Mul` damping factors; `infer_invariants` uses identifier tokenization; `BOUND_POSITIVITY` numerical probe evaluates over all free variables on a multi-dimensional grid and fails closed on exception.
+- **Category 3 (API, UI Server & Security Hardening):**
+  - `apedp/api/__init__.py`: `_trust_boundary` authenticates `X-API-Key` before rate-limiting, exempts `AUTH_EXEMPT_PATHS` from rate-limiting, evicts stale IP deques in `_ClientRateLimiter`, and enforces `MAX_REQUEST_BODY_SIZE` on streaming request chunks.
+  - `apedp/api/routes/pipeline.py`: `_validate_safe_pipeline_path` blocks path traversal (`..`) and restricts `csv_path`/`output_dir` to allowed roots.
+  - `apedp/api/routes/discovery.py`: `_finite_or_none` sanitizes `NaN`/`±Inf` in `symbolic_regression` and `bayesian_comparison`.
+  - `apedp_dyn/ui/server.py`: `_require_api_key` uses `hmac.compare_digest` and supports `Authorization: Bearer`; `ext60_run` uses `tempfile.TemporaryDirectory`; `get_ladder` marks static reference rows with `"is_static_reference_fixture": True`.
+- **Category 4 (Build, Packaging, Docker & CI Parity):**
+  - `Dockerfile`: multi-stage build compiling `rust/apedp-kernel` wheel, copying `apedp/`, `apedp_dyn/`, and `specifications/`, running as non-root `appuser`.
+  - `pyproject.toml`: aligned `maturin>=1.7,<2.0`, `torch>=2.5`, and removed non-existent `optax-contrib>=0.1`.
+  - `.github/workflows/test.yml`: expanded Bandit scan to `apedp/` and `apedp_dyn/`, and added Rust toolchain `1.99.0` + `maturin develop --locked` to `mutation-battery`.
+  - `scripts/run_mutation_battery.py`: normalized `pin_argv[0]` in `_cache_key()` and added `("round3", PIN_ROUND3)` to the pristine sanity check.
+- **Category 5 (Scientific & Algorithmic Module Correctness):**
+  - `apedp/discovery/_bayes.py`: `score_candidate` counts non-trivial numeric constant atoms in SymPy expressions when `num_params is None`.
+  - `apedp/rust_bridge.py` & `apedp_dyn/rust_bridge.py`: `enforce_native_search` synchronizes `_ENFORCE_NATIVE_SEARCH` across both modules, exports `is_native_search_enforced`, and routes `score_candidates_batch` through `self._kernel_compile`.
+  - `apedp_dyn/proposers/sparse_microstructure_proposer.py`: respects `target_col` and includes unstandardized `raw_intercept` in `_score_fn`.
+  - `apedp_dyn/gates/scaling_invariance.py`: `check_with_pi_groups` validates `pi_groups` exponent dimensions against `alpha`.
+  - `apedp_dyn/epistemic/shape_inference.py`: removed dead `_prefix_sums`/`_flat_run_stats` calls and duplicate `_dp_segment` invocation.
+  - `apedp_dyn/robotics/cbf_certificate.py`: `unicycle_commands_from_certified` and `model_check_unicycle_horizon` perform heading-aware pairwise barrier braking and accept `nominal_velocities`.
+
+---
 
 ## 2026-10-21 round — status matrix
 
@@ -275,8 +1432,9 @@ Basis: code + test execution only. No documentation was used as an evaluation so
 > added.
 >
 > The CI gate has also been corrected as of 2026-09-23: `.github/workflows/test.yml`
-> now triggers on `master` (plus `main`/`develop`) instead of a branch that does
-> not exist, so the `pytest`/`ruff`/`mypy`/`bandit` steps can actually fire.
+> now triggers on every branch (`branches: ['**']`, widened again after this note
+> was written) instead of a branch that does not exist, so the
+> `pytest`/`ruff`/`mypy`/`bandit` steps can actually fire.
 > Full analysis: `docs/INDEPENDENT_REVIEW_2026-09-23.md` §2.
 - Frozen benchmark metrics are **unchanged by both passes**: 25-case suite
   detection `1.000`, refusal `0.5833`, repair success `0.9231`, false repair

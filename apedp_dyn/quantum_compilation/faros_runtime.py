@@ -28,7 +28,7 @@ def faros_python(python_executable: str | None) -> str:
 
 def run_faros_script(executable: str, script: str, operation: str) -> str:
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 - argv is the resolved interpreter and a script this package assembled
             [executable, "-c", script], capture_output=True, text=True, check=True
         )
     except subprocess.CalledProcessError as exc:

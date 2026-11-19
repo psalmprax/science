@@ -84,7 +84,7 @@ def test_fitting_is_deterministic_and_single_symbol_is_supported():
     np.testing.assert_allclose(_dense_tensor(engine), np.ones((1, 1, 1)))
     first_tensors = [core.copy() for core in engine.dmrg_tensors]
     assert report == engine.dmrg_two_site_sweep([[3, 3, 3]] * 2)
-    for first, second in zip(first_tensors, engine.dmrg_tensors):
+    for first, second in zip(first_tensors, engine.dmrg_tensors, strict=True):
         np.testing.assert_array_equal(first, second)
 
 

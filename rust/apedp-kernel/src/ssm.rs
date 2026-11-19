@@ -13,10 +13,11 @@ pub fn ssm_scan<'py>(
     c: PyReadonlyArray3<'py, f64>,
     d: PyReadonlyArray2<'py, f64>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    // Keep the Python keyword interface, but never return placeholder science.
     let _ = (py, x, a_log, dt, b, c, d);
+    // Refused, not approximated: a constant is indistinguishable from a result.
     Err(pyo3::exceptions::PyNotImplementedError::new_err(
-        "ssm_scan has no implemented native recurrence; use a validated reference implementation",
+        "ssm_scan is not implemented: the previous body returned its input \
+         unchanged, which is a copy rather than a scan",
     ))
 }
 
@@ -31,7 +32,10 @@ pub fn mamba2_selective_scan<'py>(
     d: PyReadonlyArray2<'py, f64>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
     let _ = (py, u, delta, a, b, c, d);
+    // Refused, not approximated: the previous body returned 0.9*u, which is a
+    // scale factor rather than a selective scan.
     Err(pyo3::exceptions::PyNotImplementedError::new_err(
-        "mamba2_selective_scan has no implemented native recurrence; use a validated reference implementation",
+        "mamba2_selective_scan is not implemented: the previous body returned \
+         0.9*u, a constant scale rather than a selective scan",
     ))
 }

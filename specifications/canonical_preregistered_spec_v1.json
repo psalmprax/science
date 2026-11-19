@@ -36,10 +36,22 @@
     "temporal_rate_calibration_trials": 128,
     "temporal_rate_calibration_fpr_max": 0.05,
     "temporal_rate_calibration_power_min": 0.8,
-    "temporal_rate_injection_fractional_amplitude": 1e-15
+    "temporal_rate_injection_fractional_amplitude": 1e-15,
+    "stage2_min_ic": 0.02,
+    "stage4_min_oos_ic": 0.015,
+    "stage4_oos_alpha": 0.05,
+    "stage5_min_fee_bps": 3.0,
+    "stage6_prospective_sharpe_hurdle": 0.7,
+    "stage6_max_drawdown_ceiling": 0.25
   },
   "notes": {
-    "tactical_active_fraction_max": "Harmonized and pinned to 0.90 after resolving historical documentation drift from 0.95 in audit."
+    "tactical_active_fraction_max": "Harmonized and pinned to 0.90 after resolving historical documentation drift from 0.95 in audit.",
+    "stage2_min_ic": "Promotion stage 2 (PREDICTIVE_RECOVERY) minimum in-sample information coefficient enforced by promotion_lifecycle.check_stage2.",
+    "stage4_min_oos_ic": "Promotion stage 4 (OUT_OF_SAMPLE_TRANSFER) minimum out-of-sample information coefficient.",
+    "stage4_oos_alpha": "Promotion stage 4 out-of-sample significance level.",
+    "stage5_min_fee_bps": "Promotion stage 5 (ECONOMIC_VALIDITY) minimum gross edge in basis points required to survive trading fees.",
+    "stage6_prospective_sharpe_hurdle": "Promotion stage 6 (REAL_MARKET_PROMOTION) prospective Sharpe hurdle for live promotion.",
+    "stage6_max_drawdown_ceiling": "Promotion stage 6 maximum tolerated drawdown for live promotion."
   },
   "literature_baselines": [
     "Kyle (1985) Continuous Auctions and Informed Trader",

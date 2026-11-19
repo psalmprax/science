@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -37,7 +38,7 @@ CREEP_N = 4.5
 
 def generate_creep_data(n_points: int = 40, noise_sigma: float = 0.03,
                         s_min: float = 50.0, s_max: float = 300.0,
-                        seed: int = 42):
+                        seed: int = 42) -> tuple[np.ndarray, np.ndarray]:
     """Steady-state creep rates over engineering stress range (MPa)."""
     rng = np.random.default_rng(seed)
     sigma = np.logspace(np.log10(s_min), np.log10(s_max), n_points)
@@ -51,14 +52,14 @@ def generate_creep_data(n_points: int = 40, noise_sigma: float = 0.03,
 
 
 def run_creep(noise_sigma: float = 0.03, n_train: int = 24,
-              bootstrap: bool = True, seed: int = 42):
+              bootstrap: bool = True, seed: int = 42) -> tuple[Any, list[ScoredCandidate], float]:
     sigma, obs = generate_creep_data(noise_sigma=noise_sigma, seed=seed)
     s_tr, y_tr, s_ho, y_ho = sigma[:n_train], obs[:n_train], sigma[n_train:], obs[n_train:]
     obs_rms = float(np.sqrt(np.mean(y_ho ** 2)))
     ns = float(noise_sigma * obs_rms + 1e-18)
     o = np.ones_like
 
-    def mk(cid, terms, X_tr, X_ho):
+    def mk(cid: str, terms: tuple[str, ...], X_tr: np.ndarray, X_ho: np.ndarray) -> ScoredCandidate:
         w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
         rh = y_ho - X_ho @ w
         rm = float(np.sqrt(np.mean(rh ** 2)))
@@ -100,7 +101,7 @@ def run_creep(noise_sigma: float = 0.03, n_train: int = 24,
                           candidate_id="power_law")
     scored[0] = ScoredCandidate(c, {"gate4_status": g4, "data_origin": DataOrigin.SIMULATION},
                                 train_loss=pw.train_loss, holdout_rmse=rm_rate)
-    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
+    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse if s.holdout_rmse is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -111,12 +112,12 @@ def run_creep(noise_sigma: float = 0.03, n_train: int = 24,
     return adj, scored, float(wl[1])
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("CREEP SANDBOX: Norton law eps=A*s^n (A=1e-9, n=4.5), extrapolate high-S")
     print("=" * 64)
     adj, scored, n_hat = run_creep()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:14s} holdout RMSE={s.holdout_rmse:.4g}")
     print(f"  recovered exponent n_hat={n_hat:.2f} (truth 4.5)")
     print(f"  verdict: {adj.status.value} "

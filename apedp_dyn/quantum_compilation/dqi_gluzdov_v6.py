@@ -45,6 +45,7 @@ Decoded Quantum Interferometry (DQI) Reed-Solomon MBUC syndrome decoder:
 from __future__ import annotations
 
 import dataclasses
+import importlib
 import json
 import pathlib
 from collections.abc import Mapping, Sequence
@@ -233,8 +234,8 @@ class GF2FieldModel:
             self.prim_poly = prim_poly
 
         self.primitive_element = 2
-        self.exp_table = np.zeros(self.order * 2, dtype=np.int64)
-        self.log_table = np.zeros(1 << degree, dtype=np.int64)
+        self.exp_table: np.ndarray = np.zeros(self.order * 2, dtype=np.int64)
+        self.log_table: np.ndarray = np.zeros(1 << degree, dtype=np.int64)
 
         x = 1
         for i in range(self.order):
@@ -517,9 +518,9 @@ def _load_reference_decoder() -> Any:
     accepted so the adapter works in either environment.
     """
     try:
-        from apedp_dyn.quantum_compilation import dqi_reference_circuit as DR
+        DR: Any = importlib.import_module("apedp_dyn.quantum_compilation.dqi_reference_circuit")
     except (ImportError, ModuleNotFoundError):
-        from dqi import dqi_reference_circuit as DR
+        DR = importlib.import_module("dqi.dqi_reference_circuit")
     return DR
 
 
@@ -939,7 +940,8 @@ def model_data_path_floor() -> dict[str, Any]:
 def _widest_measured_arm_qubits() -> int | None:
     """The widest circuit the verifier has scored, if the arm records are readable."""
     try:
-        return max(arm["qubits"] for arm in load_measured_dqi_arms())
+        _out: int | None = max(arm["qubits"] for arm in load_measured_dqi_arms())
+        return _out
     except (DqiRecordError, ValueError):
         return None
 
@@ -1494,6 +1496,8 @@ def _recycled_flag_decoder_class() -> Any:
     if cached is not None:
         return cached
 
+    # The reference decoder arrives from the competition bundle at runtime, so mypy
+    # sees an ``Any`` base here; the type is unknowable until that module is loaded.
     class RecycledUpdateFlagDecoder(DR.ProosAndZalkaDecoder):
         """`n_a == n_b` read as `n_A == n + 1 - n_b`, using the cursor the pass already runs.
 
@@ -1502,7 +1506,7 @@ def _recycled_flag_decoder_class() -> Any:
         already performs is what sweeps the candidate values of `n_b`.
         """
 
-        def _update_flag(self, builder, reg_b, n_A, n_B, n_a, n_b, n_q, flag, ctrl):
+        def _update_flag(self, builder: Any, reg_b: Any, n_A: Any, n_B: Any, n_a: Any, n_b: Any, n_q: Any, flag: Any, ctrl: Any) -> None:
             # `n_a` is accepted for signature compatibility and never read.
             n = self.n_syndromes
             m = len(reg_b)
@@ -1540,7 +1544,7 @@ def _recycled_flag_decoder_class() -> Any:
                 builder.free(aux)
 
         @staticmethod
-        def _flip_if_derived_equal(builder, DR, n_A, n_b, n, lim_b, flag, control) -> None:
+        def _flip_if_derived_equal(builder: Any, DR: Any, n_A: Any, n_b: Any, n: Any, lim_b: Any, flag: Any, control: Any) -> None:
             """`flag ^= control and (n_A == n + 1 - n_b)`, the derived form of `n_a == n_b`."""
             with builder.unary_iteration(n_b, control=control) as cur_b:
                 for k in range(lim_b + 1):
@@ -1663,7 +1667,7 @@ def _recycled_degree_decoder_class() -> Any:
     class RecycledDegreeDecoder(_recycled_flag_decoder_class()):
         """No `n_a` register at all; `_update_flag` is inherited from the one-body prototype."""
 
-        def build_syndrome_decoding_mbuc(self, builder, *, syndromes, error_mbuc, n_iters):
+        def build_syndrome_decoding_mbuc(self, builder: Any, *, syndromes: Any, error_mbuc: Any, n_iters: Any) -> None:
             gf = self.field
             n = self.n_syndromes
             degree = gf.degree
@@ -1714,8 +1718,8 @@ def _recycled_degree_decoder_class() -> Any:
             for reg in (halting_counter, counter, flag, n_q, n_b, n_B, n_A, *reg_a[:3], *reg_b):
                 builder.free(reg)
 
-        def _multiply_and_add_or_sub(self, builder, reg_a, reg_b, n_A, n_a, n_q, ctrl, it,
-                                     *, is_adjoint):
+        def _multiply_and_add_or_sub(self, builder: Any, reg_a: Any, reg_b: Any, n_A: Any, n_a: Any, n_q: Any, ctrl: Any, it: Any,
+                                     *, is_adjoint: Any) -> None:
             """The reference body with every `n_a` read mirrored onto `n_A`.
 
             `n_q += n_a` becomes `n_q += n + 1 - n_A`, and the `n_a` unary cursor becomes a
@@ -1732,7 +1736,7 @@ def _recycled_degree_decoder_class() -> Any:
             m = len(reg_b)
             n = self.n_syndromes
 
-            def accumulate_quotient(index: int, control) -> None:
+            def accumulate_quotient(index: int, control: Any) -> None:
                 with builder.mark("quotient_div"):
                     ratio, scaffold = builder.init_gf2_div_with_scaffold(
                         reg_b[index], reg_a[index], field=gf)
@@ -1798,7 +1802,8 @@ def _recycled_degree_decoder_class() -> Any:
                                 builder.ixor_gf2_mul(q_i, reg_a[i], target=reg_b[i], field=gf,
                                                      control=mul)
 
-                        endpoint(prev)
+                        if prev is not None:
+                            endpoint(prev)
                         builder.free(mul)
 
             with builder.mark("multiply_and_add_or_sub"):
@@ -1813,7 +1818,7 @@ def _recycled_degree_decoder_class() -> Any:
                 accumulate_quotient(trailing, c0_hc if is_adjoint else c3_hc)
                 builder.free(q_i)
 
-        def _swap_a_and_b(self, builder, reg_a, reg_b, n_A, n_B, n_a, n_b, flag, ctrl):
+        def _swap_a_and_b(self, builder: Any, reg_a: Any, reg_b: Any, n_A: Any, n_B: Any, n_a: Any, n_b: Any, flag: Any, ctrl: Any) -> None:
             """Swap the pairs, and write the new `n_b` from the invariant instead of a cswap.
 
             The reference cswaps `n_a` with `n_b`. With `n_a` gone, the new `n_b` is `old n_a`,

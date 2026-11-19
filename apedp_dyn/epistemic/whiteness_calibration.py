@@ -105,7 +105,7 @@ def calibrate_flag(
     n = y.size
     block_size = int(min(block_size, max(4, n // 4)))
     n_blocks = int(np.ceil(n / block_size))
-    rhos = np.empty(n_draws, dtype=float)
+    rhos: np.ndarray = np.empty(n_draws, dtype=float)
     for d in range(n_draws):
         starts = rng.integers(0, max(1, n - block_size), size=n_blocks)
         pieces: list[np.ndarray] = []
@@ -284,7 +284,7 @@ def _structured_null(n: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
     return x, y
 
 
-def _as_frame(x: np.ndarray, y: np.ndarray):
+def _as_frame(x: np.ndarray, y: np.ndarray) -> Any:
     import pandas as pd
 
     return pd.DataFrame({"x": x, "target": y})

@@ -9,6 +9,7 @@ import math
 from fractions import Fraction
 from pathlib import Path
 
+
 def phase_words(max_x: int, precision_bits: int) -> list[int]:
     """Round phases to fixed point; x=0 is outside the verifier's domain."""
     scale = 1 << precision_bits

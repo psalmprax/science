@@ -33,6 +33,7 @@ from apedp_dyn.sandbox.trading_signals_sandbox import (
     run_epistemic_trading_adjudication,
 )
 from apedp_dyn.ui.server import app
+from tests.toolchain_availability import require_cargo
 
 
 def test_trading_signals_pipeline_charges_ga_multiplicity_and_promotion_refuses(monkeypatch):
@@ -345,6 +346,7 @@ def test_multi_asset_90_cang_gate_and_aeh_adjudication():
 
 def test_goldbach_rust_sandbox_and_ui_endpoint():
     """Verify Goldbach Conjecture Rust Rayon engine runs and integrates with UI server."""
+    require_cargo()  # the sandbox builds rust/goldbach_verifier with cargo
     from apedp_dyn.sandbox.goldbach_sandbox import run_goldbach_adjudication
 
     res = run_goldbach_adjudication(limit=2_000_000)
@@ -375,6 +377,7 @@ def test_goldbach_rust_sandbox_and_ui_endpoint():
 
 def test_riemann_rust_sandbox_and_ui_endpoint():
     """Verify Riemann Hypothesis Rust Rayon engine runs and integrates with UI server."""
+    require_cargo()  # the sandbox builds rust/riemann_verifier with cargo
     from apedp_dyn.sandbox.riemann_sandbox import run_riemann_adjudication
 
     res = run_riemann_adjudication(max_x=100.0, sample_points=1000)

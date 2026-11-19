@@ -42,7 +42,8 @@ def evaluate(
             values[mask] = cheb.chebval(local[mask], coefficient)
         else:
             scale = 2**fractional_bits
-            rounded = lambda value: np.rint(value * scale) / scale
+            def rounded(value, scale=scale):
+                return np.rint(value * scale) / scale
             c = rounded(coefficient)
             t = rounded(local[mask])
             next_state = np.zeros_like(t)

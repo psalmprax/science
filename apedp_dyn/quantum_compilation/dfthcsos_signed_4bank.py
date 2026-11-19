@@ -45,7 +45,7 @@ import numpy as np
 
 try:
     import kickmix as km
-except (ImportError, Exception):
+except (ImportError, Exception):  # noqa: BLE001 - kickmix is an optional external compiler: ImportError, OSError from a broken wheel and AttributeError from a partial install all must leave km=None so the documented HOLD status stands instead of crashing the module
     km = None
 
 # Canonical architecture constants
@@ -131,7 +131,8 @@ def verify_cos_positive_invariant(theta_radians: float | np.ndarray) -> np.ndarr
     words = np.rint(turns * (1 << BROT)).astype(np.int64) % (1 << BROT)
     bit9 = (words >> 9) & 1
     bit8 = (words >> 8) & 1
-    return bit9 == bit8
+    _out: np.ndarray = bit9 == bit8
+    return _out
 
 
 def pack_4address_bank(
@@ -165,7 +166,7 @@ def pack_4address_bank(
     base_words = arr[:, 0::BLOCK_SIZE_B, :].copy()  # (25, 994, 3)
 
     # 3 Delta entries: for b in {1, 2, 3}, delta[b-1] = XOR difference with base
-    deltas = np.zeros(
+    deltas: np.ndarray = np.zeros(
         (K_CIRCUITS, BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, J), dtype=np.uint16
     )
     for b in range(1, BLOCK_SIZE_B):
@@ -201,7 +202,7 @@ def reconstruct_4address_bank(
     if deltas.shape != (K_CIRCUITS, BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, J):
         raise ValueError(f"Invalid delta_bank shape: {deltas.shape}")
 
-    reconstructed = np.zeros((K_CIRCUITS, ADDRESS_COUNT, J), dtype=np.uint16)
+    reconstructed: np.ndarray = np.zeros((K_CIRCUITS, ADDRESS_COUNT, J), dtype=np.uint16)
     # Row b=0 is base
     reconstructed[:, 0::BLOCK_SIZE_B, :] = base
 
@@ -247,7 +248,7 @@ def build_signed_4bank_angle_circuit(
 
     # Form base words (row b=0) and 9-bit compressed delta entries (b=1, 2, 3)
     base_words = arr[0::BLOCK_SIZE_B, :].copy()  # (994, 3)
-    deltas9 = np.zeros((BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, batch_size), dtype=np.uint16)
+    deltas9: np.ndarray = np.zeros((BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, batch_size), dtype=np.uint16)
     for b in range(1, BLOCK_SIZE_B):
         row_b = arr[b::BLOCK_SIZE_B, :]
         xor_diff = np.bitwise_xor(base_words, row_b)
@@ -345,7 +346,7 @@ def compile_all_25_angle_circuits(
             if "angle_words" in data:
                 raw_words = data["angle_words"]
                 # Form J=3 batches of 10-bit words
-                num_v, num_a = raw_words.shape
+                num_v, _num_a = raw_words.shape
                 batch_words = raw_words.reshape(num_v, K_CIRCUITS, J).transpose(1, 0, 2)
             elif "batch_words" in data:
                 batch_words = data["batch_words"]

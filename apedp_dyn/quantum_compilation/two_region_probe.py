@@ -25,6 +25,8 @@ from __future__ import annotations
 import dataclasses
 import enum
 import math
+from collections.abc import Callable
+from typing import Any
 
 CHAMPION_90Q_COST: float = 157752.008809
 CHAMPION_QUBITS: int = 90
@@ -122,8 +124,8 @@ class TwoRegionProbeResult:
 
 def evaluate_discrete_boundary_margin(
     split_point: int,
-    left_poly_eval: callable,
-    right_poly_eval: callable,
+    left_poly_eval: Callable[[float], float],
+    right_poly_eval: Callable[[float], float],
 ) -> bool:
     """Evaluate discrete integer boundary margin without C^0 continuous overconstraint.
 
@@ -161,8 +163,11 @@ def probe_two_region_partition(
     ancilla_safe = ledger.verify_all_safe()
 
     # 2. Discrete integer boundary check (mocked polynomials within tolerance)
-    left_fn = lambda x: 1.0 / math.sqrt(x)
-    right_fn = lambda x: 1.0 / math.sqrt(x)
+    def left_fn(x: Any) -> Any:
+        return 1.0 / math.sqrt(x)
+
+    def right_fn(x: Any) -> Any:
+        return 1.0 / math.sqrt(x)
     boundary_ok = evaluate_discrete_boundary_margin(split_point, left_fn, right_fn)
 
     # 3. Minimum unavoidable selector overhead:

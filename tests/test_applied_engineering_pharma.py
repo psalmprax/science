@@ -184,10 +184,20 @@ def test_superconductor_classification_by_temperature():
     assert SuperconductorDiscovery.analyze_superconductor(39)["above_liquid_nitrogen_77K"] is False
 
 
+def test_combination_trial_uses_bliss_independence_without_hash_noise():
+    a = CombinationTrialSimulator.simulate_combination_trial(["A", "B"], "oncology", n_patients=400)
+    b = CombinationTrialSimulator.simulate_combination_trial(["X", "Y"], "cardiovascular", n_patients=400)
+    assert a["results"]["combination_response_rate"] == b["results"]["combination_response_rate"]
+    # Bliss independence with p=0.45 each: 1 - (1 - 0.45)**2 = 0.6975 -> 0.698
+    assert a["results"]["combination_response_rate"] == pytest.approx(0.698, abs=1e-3)
+    assert a["results"]["planned_arr_standard_error"] > 0.0
+
+
 def test_battery_energy_computed_from_capacity_and_voltage():
     res = EnergyStorageMaterials.analyze_battery_material(cathode_capacity_mAh_g=200, mean_voltage_V=3.7)
-    # 200 mAh/g * 3.7 V = 740 mWh/g = 0.74 Wh/kg
-    assert res["cathode_energy_Wh_kg"] == pytest.approx(0.74)
+    # 1 mAh/g == 1 Ah/kg -> 200 mAh/g * 3.7 V = 740.0 Wh/kg
+    assert res["cathode_energy_Wh_kg"] == pytest.approx(740.0)
+    assert res["active_pair_energy_Wh_kg"] == pytest.approx((200.0 * 372.0 / 572.0) * 3.7, rel=1e-3)
 
 
 def test_cloak_wavelength_from_frequency():
@@ -199,3 +209,44 @@ def test_cloak_wavelength_from_frequency():
 def test_catalyst_unknown_reaction_raises():
     with pytest.raises(ValueError):
         CatalystDiscovery.design_catalyst("unknown")
+
+
+def test_tesla_coil_linear_turns_ratio_law():
+    from apedp.experimental_physics import TeslaInventionSimulator
+
+    res = TeslaInventionSimulator.tesla_coil_analysis(
+        primary_turns=10, secondary_turns=1000, coupling_k=0.2, primary_voltage_V=1000.0
+    )
+    # Ideal coupled ratio k * sqrt(L2 / L1) = 0.2 * (1000 / 10) = 20.0 (not 2000.0)
+    assert res["theoretical_voltage_gain"] == pytest.approx(20.0)
+    assert res["output_voltage_estimate_V"] == pytest.approx(20_000.0)
+    assert res["basis"] == "closed_form"
+
+
+def test_climate_rejects_unknown_keys_and_computes_dac_gibbs_limit():
+    from apedp.applied_climate import CarbonMineralization, ClimateModeling, DirectAirCapture
+
+    dac = DirectAirCapture.analyze_dac_technology("amine_based", capture_scale_tco2_yr=1000.0)
+    assert 120.0 <= dac["thermodynamic_minimum_kwh_tCO2"] <= 160.0
+    assert 0.0 < dac["second_law_efficiency"] < 1.0
+    assert dac["annual_energy_MWh"] == pytest.approx(1500.0)
+    with pytest.raises(ValueError):
+        DirectAirCapture.analyze_dac_technology("unknown_sorbent")
+    with pytest.raises(ValueError):
+        CarbonMineralization.analyze_mineralization("unknown_mineral")
+    with pytest.raises(ValueError):
+        ClimateModeling.project_temperature("ssp999")
+
+
+def test_fusion_beta_n_and_nonfinite_guards():
+    res = PlasmaPhysicsAnalyzer.beta_limit(
+        5.0, 1e5, minor_radius_m=2.0, plasma_current_MA=15.0
+    )
+    assert res["beta_N"] == pytest.approx(res["beta_percent"] * 2.0 * 5.0 / 15.0)
+    assert res["within_troyon_beta_N_limit"] is True
+    with pytest.raises(ValueError):
+        PlasmaPhysicsAnalyzer.lawson_criterion(float("nan"), 3.0, 10.0)
+    with pytest.raises(ValueError):
+        PlasmaPhysicsAnalyzer.beta_limit(5.0, -1.0)
+    reactor = FusionReactorDesigner.design_reactor(power_output_MW=500.0, heating_power_MW=50.0)
+    assert reactor["alpha_heating_MW"] == pytest.approx(500.0 * 3.52 / 17.59, rel=1e-3)

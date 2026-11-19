@@ -47,7 +47,7 @@ import importlib.metadata
 import time
 from typing import Any
 
-from apedp_dyn.vqc.circuit import Circuit
+from apedp_dyn.vqc.circuit import Circuit, Gate
 from apedp_dyn.vqc.synthesis import TargetSpecification
 
 __all__ = [
@@ -153,10 +153,10 @@ def _stim_circuit(stim: Any, circuit: Circuit) -> Any:
     """
     text = stim.Circuit()
     for op in circuit.ops:
-        if op.kind != "gate":
+        if not isinstance(op, Gate):
             raise ForeignUnavailable(
                 f"a tableau simulator decides unitary preparation only; this circuit "
-                f"contains a {op.kind} operation")
+                f"contains a {type(op).__name__.lower()} operation")
         if op.condition:
             raise ForeignUnavailable(
                 f"'{op.name}' is classically conditioned; a tableau simulator is only "

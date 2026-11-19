@@ -5,10 +5,11 @@ Uses GP uncertainty + acquisition functions to prioritize experiments/candidates
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
-from .gp_uncertainty import GaussianProcessRegressor, BayesianOptimizer
+from .gp_uncertainty import BayesianOptimizer, GaussianProcessRegressor
 
 
 @dataclass
@@ -23,23 +24,23 @@ class BayesianActiveLearner:
     def __init__(self, gp: GaussianProcessRegressor | None = None, bounds: np.ndarray | None = None):
         self.gp = gp or GaussianProcessRegressor()
         self.bounds = bounds
-        self.X_observed = []
-        self.y_observed = []
+        self.X_observed: np.ndarray | list[np.ndarray] = []
+        self.y_observed: np.ndarray | list[float] = []
 
-    def update(self, X: np.ndarray, y: np.ndarray):
+    def update(self, X: np.ndarray, y: np.ndarray) -> Any:
         X = np.atleast_2d(X)
         y = np.atleast_1d(y)
         if self.X_observed:
             self.X_observed = np.vstack([self.X_observed, X])
             self.y_observed = np.concatenate([self.y_observed, y])
         else:
-            self.X_observed = X
-            self.y_observed = y
-        self.gp.fit(self.X_observed, self.y_observed)
+            self.X_observed = np.asarray(X)
+            self.y_observed = np.asarray(y)
+        self.gp.fit(np.asarray(self.X_observed), np.asarray(self.y_observed))
         return self
 
     def suggest_next(self, n_points: int = 1, acquisition: str = "ei") -> list[ActiveLearningSuggestion]:
-        suggestions = []
+        suggestions: list[ActiveLearningSuggestion] = []
         if self.bounds is None or len(self.X_observed) == 0:
             return suggestions
         d = self.bounds.shape[0]
@@ -72,7 +73,9 @@ class BayesianActiveLearner:
             pred = self.gp.predict(candidate_features)
             # high uncertainty first for exploration
             priority = pred.std
-            return np.argsort(priority)[::-1]
+            order: np.ndarray = np.argsort(priority)[::-1]
+            return order
         if scores is not None:
-            return np.argsort(scores)[::-1]
+            ranking: np.ndarray = np.argsort(scores)[::-1]
+            return ranking
         return np.arange(len(candidate_features))

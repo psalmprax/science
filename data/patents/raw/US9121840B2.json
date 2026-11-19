@@ -1,0 +1,47 @@
+{
+  "patent_id": "US9121840B2",
+  "source": "https://patents.google.com/patent/US9121840B2/en",
+  "retrieved_utc": "2026-11-01T01:35:17+00:00",
+  "http_status": 200,
+  "bytes": 1116487,
+  "html_sha256": "408b0e41ed3d2b24ec651c63343c849ab5bc60b28b61de9a0d9ff723990cdbc4",
+  "jurisdiction": "US",
+  "title": "Logistic transport system for nutritional substances",
+  "abstract": "Abstract Disclosed herein is a preservation system for storage and logistic transport of nutritional substances. The preservation system obtains information about the nutritional substance to be preserved, senses and measures the external environment to the preservation system, senses and measures the internal environment to the preservation system, senses and measures the state of the nutritional substance, and stores such information throughout the period of preservation. Using this accumulated information, the preservation system can measure, or estimate, changes in nutritional content (usually degradation) during the period of preservation. Additionally, the preservation system can use this information to dynamically modify the preservation system to minimize detrimental changes to the nutritional content of the nutritional substance, and in some cases actually improve the nutritional substance attributes.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. The logistic transport system for preservation of nutritional substances comprising: a mobile container for preserving a perishable nutritional substance during transport, the perishable nutritional substance being associated with a unique identifier; a gas sensor and an optical sensor for directly sensing attribute information of the perishable nutritional substance itself during transport and indicating a change in value of a specific nutritional or organoleptic property of the perishable nutritional substance during transport; a temperature and humidity sensor for sensing environmental information inside the container during transport and indicating a change in value of the specific nutritional or organoleptic property; a device to dynamically provide location, date, and time information of the mobile container; information storage for storing the sensed attribute information, the environmental information, the location, date and time information, and the unique identifier; and a controller for adapting conditions inside the mobile container during transport of nutritional substances responsive to at least one of the sensed attribute information of the perishable nutritional substance and the sensed environmental information inside the container, to alter a rate of change in the value of the specific nutritional or organoleptic property of the perishable nutritional substance during transport."
+    },
+    {
+      "num": "2",
+      "text": "2. The logistic transport system for preservation of nutritional substances according to claim 1 further comprising: a transmitter to transmit to a dynamic nutritional value database the sensed attribute information, the sensed environmental information, and the dynamically provided location, date and time information, wherein said information is referenced to the unique identifier."
+    },
+    {
+      "num": "3",
+      "text": "3. The logistic transport system for preservation of nutritional substances according to claim 2 wherein: the change in value of the specific nutritional or organoleptic property of the perishable nutritional substance is accessed in the dynamic nutritional value database by reference to the unique identifier."
+    },
+    {
+      "num": "4",
+      "text": "4. The logistic transport system for preservation of nutritional substances according to claim 2 wherein: the dynamic nutritional value database is available to at least one of a creation, preservation, transformation, conditioning, and consumer module."
+    },
+    {
+      "num": "5",
+      "text": "5. The logistic transport system for preservation of nutritional substances according to claim 2 wherein: referencing the unique identifier in the dynamic nutritional value database enables at least one of an adaptive transformation, adaptive conditioning, and adaptive consumption of the nutritional substance."
+    },
+    {
+      "num": "6",
+      "text": "6. The logistic transport system for preservation of nutritional substances according to claim 1 wherein: the gas sensor comprises at least one of an ethylene sensor, CO 2 sensor, and O 2 sensor."
+    },
+    {
+      "num": "7",
+      "text": "7. The logistic transport system for preservation of nutritional substances according to claim 1 wherein: the optical sensor comprises at least one of a Raman, hyper-spectral, and near infra-red spectrometer."
+    },
+    {
+      "num": "8",
+      "text": "8. The logistic transport system for preservation of nutritional substances according to claim 1 further comprising: a user interface for communicating a current value of the changing nutritional or organoleptic property of the perishable nutritional substance."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "perishable food freshness prediction"
+}

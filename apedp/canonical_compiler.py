@@ -120,7 +120,7 @@ class CanonicalEquationCompiler:
             num, den = sp.fraction(reduced)
             if den != 1:
                 reduced = sp.cancel(num / den)
-        except Exception:
+        except Exception:  # noqa: BLE001 - sympy's rewrite surface is not enumerable; a reduction that fails leaves the expression unreduced, which is a weaker identity, not a wrong one
             logger.debug("rational fraction cancellation failed", exc_info=True)
 
         return reduced
@@ -213,7 +213,7 @@ class CanonicalEquationCompiler:
                     if np.all(np.isfinite(y_p)) and np.all(np.isfinite(y_t)):
                         max_err = float(np.max(np.abs(y_p - y_t)))
                         is_numerical = bool(max_err <= numerical_tolerance)
-            except Exception:
+            except Exception:  # noqa: BLE001 - lambdify, casting and the numeric probe raise across sympy/numpy/python types; a failure means no NUMERICAL tier, and the verdict reports the tier it did reach
                 logger.debug("numerical domain equivalence probe failed", exc_info=True)
 
         # Determine highest tier

@@ -28,7 +28,7 @@ from __future__ import annotations
 import dataclasses
 from collections import Counter
 from collections.abc import Sequence
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 
@@ -68,7 +68,7 @@ class RunResult:
     #: about it when a report labels it native.
     engine: str = "python"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "backend": self.backend,
             "engine": self.engine,
@@ -104,7 +104,7 @@ def sample_bits(circuit: Circuit, *, shots: int, seed: int | None = None,
     return (backend or StatevectorBackend()).run(circuit, shots=shots, seed=seed)
 
 
-def _condition_holds(condition, bits: dict[int, bool]) -> bool:
+def _condition_holds(condition: Any, bits: dict[int, bool]) -> bool:
     return all(bits.get(bit, False) is value for bit, value in condition)
 
 

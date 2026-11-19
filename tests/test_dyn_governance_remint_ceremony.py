@@ -214,6 +214,22 @@ def test_pin_disagreement_fail_closed(sandbox_ceremony):
         build_request(env["spec_path"], env["manifest_path"], pinned_sha=wrong_pin)
 
 
+def test_the_status_report_counts_the_signatures_that_are_actually_missing():
+    """The manifest's signatures cover the digest it SEALS, so a report that
+    subtracts its valid signers from the registered trustees describes the old
+    seal. Until 2026-11-17 `status` therefore named one trustee as outstanding
+    while nobody had signed the digest that needs sealing and the quorum owed
+    two. Both sets are now reported, each against its own digest."""
+    report = status_report()
+    assert report["desync"] is True
+    assert report["trustees_who_signed_the_disk_digest"] == []
+    assert report["signatures_still_needed_over_the_disk_digest"] == report["quorum_threshold"]
+    assert len(report["trustees_who_may_still_sign"]) == 3
+    # The old-seal set is kept, labelled for what it is.
+    assert set(report["trustees_who_signed_the_sealed_digest"]) == {"referee_lead_01", "referee_stat_02"}
+    assert report["valid_signature_count_on_current_manifest"] == 2
+
+
 def test_live_repo_cannot_be_minted_without_real_trustees():
     """Against the LIVE repository, with no ceremony state at ALL, minting
     fails closed (quorum shortfall on the current desync) — the red stays

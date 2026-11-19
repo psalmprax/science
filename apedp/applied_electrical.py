@@ -44,6 +44,7 @@ class PowerSystems:
             "voltage_drop_pu": round(voltage_drop_pu, 6),
             "voltage_regulation_ok": voltage_drop_pu <= 0.05,
             "note": "Single-bus approximation; not a load-flow solution.",
+            "basis": "closed_form",
         }
 
 
@@ -83,6 +84,7 @@ class PowerElectronics:
             "inductor_ripple_current_a": round(delta_i, 6),
             "control_method": "PWM",
             "note": "Ideal-switch CCM estimate; efficiency not modelled.",
+            "basis": "closed_form",
         }
 
 
@@ -108,6 +110,7 @@ class AnalogRF:
                 "noise_figure_db": noise_figure_db,
                 "noise_factor": round(f, 6),
                 "simulation_method": "closed-form",
+                "basis": "closed_form",
             }
         if circuit_type == "filter":
             if order < 1 or cutoff_mhz <= 0:
@@ -119,6 +122,7 @@ class AnalogRF:
                 "cutoff_mhz": cutoff_mhz,
                 "attenuation_at_2x_cutoff_db": round(atten_2x_db, 3),
                 "simulation_method": "closed-form",
+                "basis": "closed_form",
             }
         if circuit_type == "oscillator":
             return {
@@ -126,6 +130,7 @@ class AnalogRF:
                 "frequency_mhz": center_freq_mhz,
                 "simulation_method": "closed-form",
                 "note": "Phase noise not modelled.",
+                "basis": "closed_form",
             }
         raise ValueError(f"unsupported circuit_type: {circuit_type}")
 
@@ -148,6 +153,7 @@ class EmbeddedSystems:
             "ram_kb": ram_kb,
             "rtos": rtos,
             "clock_period_ns": round(1e3 / clock_mhz, 6),
+            "basis": "caller_supplied_resources",
         }
 
 
@@ -166,6 +172,7 @@ class Semiconductors:
             "rdson_mohm": rdson_mohm,
             "qg_nc": qg_nc,
             "figure_of_merit_mohm_nc": round(rdson_mohm * qg_nc, 3),
+            "basis": "closed_form",
         }
 
 
@@ -193,6 +200,7 @@ class ControlSystems:
             "kp": round(kp, 6),
             "ki": round(kp / ti, 6),
             "kd": round(kp * td, 6),
+            "basis": "closed_form",
         }
 
 

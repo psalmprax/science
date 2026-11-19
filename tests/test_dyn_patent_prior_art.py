@@ -7,8 +7,8 @@ import pytest
 
 from apedp.patent_prior_art import (
     KNOWN_IN_PATENT_CORPUS,
-    NOT_FOUND_IN_PATENT_CORPUS,
     NO_SEARCHABLE_CLAIMS,
+    NOT_FOUND_IN_PATENT_CORPUS,
     RELATED_STRUCTURE_IN_PATENT_CORPUS,
     PatentPriorArtIndex,
     PatentProvenanceError,

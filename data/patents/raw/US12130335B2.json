@@ -1,0 +1,95 @@
+{
+  "patent_id": "US12130335B2",
+  "source": "https://patents.google.com/patent/US12130335B2/en",
+  "retrieved_utc": "2026-11-01T00:23:18+00:00",
+  "http_status": 200,
+  "bytes": 376268,
+  "html_sha256": "df61b48f1157cb7b4c8973f1fa38190c05ad4a66687b63eccad770e83d89b656",
+  "jurisdiction": "US",
+  "title": "Methods and devices for determining battery state of health using incremental capacity analysis and support vector regression",
+  "abstract": "Abstract A computer-implemented method for establishing a trained state of health (SOH) estimation model, the method comprising: acquiring a voltage vs. capacity (QV) data of a training battery at a first SOH within a predetermined voltage range during a charging cycle; obtaining an incremental capacity (IC) data based on at least the acquired QV data; extracting an ICA area and an ICA peak from the IC data; inputting the extracted ICA area and the ICA peak into an ICA database; repeating the acquiring, the obtaining, the extracting, and the inputting processes on the training battery at one or more additional SOHs; and establishing the trained SOH estimation model by training and testing a base SOH estimation model based on at least the ICA database using Support Vector Regression; wherein the trained SOH estimation model is configured to be used by a battery management system to monitor the health of a battery.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A computer-implemented method for establishing a trained state of health (SOH) estimation model, the method comprising: acquiring a voltage vs. capacity (QV) data of a training battery at a first SOH within a predetermined voltage range during a charging cycle; obtaining an incremental capacity (IC) data based on at least the acquired QV data; extracting an incremental capacity analysis (ICA) area and an ICA peak from the IC data; inputting the extracted ICA area and the ICA peak into an ICA database; repeating the acquiring, the obtaining, the extracting, and the inputting processes on the training battery at one or more additional SOHs; and establishing the trained SOH estimation model by training and testing a base SOH estimation model based on at least the ICA database using Support Vector Regression; wherein the trained SOH estimation model is configured to be used by a battery management system to monitor the health of a battery."
+    },
+    {
+      "num": "2",
+      "text": "2. The computer-implemented method of claim 1 , further includes: pre-processing the IC data after the process of obtaining the IC data and before the process of extracting the ICA area and the ICA peak from the IC data."
+    },
+    {
+      "num": "3",
+      "text": "3. The computer-implemented method of claim 2 , wherein the pre-processing the IC data includes smoothening the IC data."
+    },
+    {
+      "num": "4",
+      "text": "4. The computer-implemented method of claim 1 , wherein the obtaining the incremental capacity (IC) data based on at least the acquired QV data includes differentiating the acquired capacity over the acquired voltage."
+    },
+    {
+      "num": "5",
+      "text": "5. The computer-implemented method of claim 1 , wherein the extracting an ICA area and an ICA peak from the IC data includes: extracting multiple ICA secondary areas and multiple secondary ICA secondary peaks from the IC data, wherein each of the multiple ICA secondary areas corresponds to one of the multiple secondary ICA secondary peaks."
+    },
+    {
+      "num": "6",
+      "text": "6. The computer-implemented method of claim 1 , wherein the training battery is of a first battery type, and wherein the trained SOH estimation model is established to predict a predicted SOH of a battery of the first battery type."
+    },
+    {
+      "num": "7",
+      "text": "7. The computer-implemented method of claim 6 , wherein the first battery type is one selected from a group consisting of lithium-ion battery, sodium-ion battery, supercapacitor, fuel cell, flow battery, metal-air battery, molten salt battery, nickel metal hydride battery, sodium-sulfur battery, and lead-acid battery."
+    },
+    {
+      "num": "8",
+      "text": "8. The computer-implemented method of claim 1 , further including: repeating the acquiring, the obtaining, the extracting, and the inputting processes on the on one or more additional training batteries at multiple SOHs."
+    },
+    {
+      "num": "9",
+      "text": "9. A system for establishing a trained state of health (SOH) estimation model, the system comprising: a voltage vs. capacity (QV) data acquiring module configured to obtain a QV data of a training battery at a first SOH within a predetermined voltage range during a charging cycle; an incremental capacity (IC) data obtaining module configured to obtain an IC data based on at least the acquired QV data; an extracting module configured to extract an incremental capacity analysis (ICA) area and an ICA peak from the IC data; an inputting module configured to input the extracted ICA area and the ICA peak into an ICA database; and an establishing module configured to establish the trained SOH estimation model by training and testing a base SOH estimation model based on at least the ICA database using Support Vector Regression; wherein the trained SOH estimation model is configured to be used by a battery management system to monitor the health of a battery."
+    },
+    {
+      "num": "10",
+      "text": "10. The system of claim 9 , further includes a pre-processing module configured to pre-process the IC data."
+    },
+    {
+      "num": "11",
+      "text": "11. The system of claim 10 , wherein the pre-processing module is configured to smoothen the IC data."
+    },
+    {
+      "num": "12",
+      "text": "12. The system of claim 9 , wherein the extracting module is further configured to: extract multiple ICA secondary areas and multiple secondary ICA secondary peaks from the IC data, wherein each of the multiple ICA secondary areas corresponds to one of the multiple secondary ICA secondary peaks."
+    },
+    {
+      "num": "13",
+      "text": "13. The system of claim 9 , wherein the training battery and optionally the one or more additional training batteries is of a first battery type, and wherein the establishing module is configured to establish the trained SOH estimation model to predict a predicted SOH of a battery of the first battery type."
+    },
+    {
+      "num": "14",
+      "text": "14. The system of claim 13 , wherein the first battery type is one selected from a group consisting of lithium-ion battery, sodium-ion battery, supercapacitor, fuel cell, flow battery, metal-air battery, molten salt battery, nickel metal hydride battery, sodium-sulfur battery, and lead-acid battery."
+    },
+    {
+      "num": "15",
+      "text": "15. A non-transitory computer-readable medium with instructions stored thereon, that when executed by a processor, cause the processor to perform processes including: acquiring a voltage vs. capacity (QV) data of a training battery at a first state of health (SOH) within a predetermined voltage range during a charging cycle; obtaining an incremental capacity (IC) data based on at least the acquired QV data; extracting an incremental capacity analysis (ICA) area and an ICA peak from the IC data; inputting the extracted ICA area and the ICA peak into an ICA database; repeating the acquiring, the obtaining, the extracting, and the inputting processes on the training battery at one or more additional SOHs; and establishing the trained SOH estimation model by training and testing a base SOH estimation model based on at least the ICA database using Support Vector Regression."
+    },
+    {
+      "num": "16",
+      "text": "16. The non-transitory computer-readable medium of claim 15 , when executed by the processor, further performs the process including: pre-processing the IC data after the process of obtaining the IC data and before the process of extracting the ICA area and the ICA peak from the IC data."
+    },
+    {
+      "num": "17",
+      "text": "17. The non-transitory computer-readable medium of claim 16 , wherein the pre-processing the IC data includes smoothening the IC data."
+    },
+    {
+      "num": "18",
+      "text": "18. The non-transitory computer-readable medium of claim 15 , wherein the obtaining the incremental capacity (IC) data based on at least the acquired QV data includes differentiating the acquired capacity over the acquired voltage."
+    },
+    {
+      "num": "19",
+      "text": "19. The non-transitory computer-readable medium of claim 15 , when executed by the processor, further performs the process including: extracting multiple ICA secondary areas and multiple secondary ICA secondary peaks from the IC data, wherein each of the multiple ICA secondary areas corresponds to one of the multiple secondary ICA secondary peaks."
+    },
+    {
+      "num": "20",
+      "text": "20. The non-transitory computer-readable medium of claim 15 , wherein the training battery is of a first battery type, and wherein when executed by the processor, performs the process of establishing the trained SOH estimation model including establishing the trained SOH estimation model to predict a predicted SOH of a battery of the first battery type."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery state of health estimation"
+}

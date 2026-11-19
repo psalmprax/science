@@ -2,9 +2,10 @@
 (audit-only deciding-layer infrastructure).
 
 The structural gap this closes: ``specifications/governance_manifest.json``
-still seals the GENESIS specification SHA (a6d026…) while the canonical spec
-on disk — legitimately revised post-certification and re-pinned by
-``apedp_dyn/conf/canonical_spec.py`` (PINNED_SPEC_SHA256 = 5bb42f…) — hashes
+still seals the GENESIS specification SHA while the canonical spec on disk —
+legitimately revised post-certification and re-pinned by
+``apedp_referee/canonical_spec.py`` (``PINNED_SPEC_SHA256``, also importable as
+``apedp_dyn.conf.canonical_spec``; read it, never restate it here) — hashes
 differently. The verification side is sound (``enforce_preregistration_governance``
 fails closed, the tamper check trips live); what is MISSING is the
 formalized procedure to re-close the chain. Per AGENTS.md §1.2/§1.3 this
@@ -84,6 +85,32 @@ def _utcnow_iso() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
 
+def _prior_manifest_internal_validity(
+    prior_manifest: GovernanceManifest,
+) -> tuple[int, bool]:
+    """Validate the prior manifest against the digest IT SEALS.
+
+    ``verify_governance_manifest`` compares the sealed digest with the spec on
+    disk — which is exactly the desync being repaired — so it cannot answer
+    "were the old signatures genuine?". That question is about the sealed
+    digest alone: verify every signature over ``prior_manifest.spec_sha256``
+    and return (valid count, quorum met).
+    """
+    trustee_map = {t.trustee_id: t for t in prior_manifest.trustees}
+    seen: set[str] = set()
+    valid = 0
+    for sig in prior_manifest.signatures:
+        trustee = trustee_map.get(sig.trustee_id)
+        if trustee is None or sig.trustee_id in seen:
+            continue
+        if verify_ed25519_signature(
+                trustee.public_key_hex, prior_manifest.spec_sha256,
+                sig.signature_hex):
+            valid += 1
+            seen.add(sig.trustee_id)
+    return valid, valid >= prior_manifest.quorum_threshold
+
+
 def build_request(
     spec_path: Path,
     prior_manifest_path: Path,
@@ -100,13 +127,20 @@ def build_request(
             "pins are out of sync — fix that first, no ceremony can proceed.")
     prior_manifest = GovernanceManifest.from_file(prior_manifest_path)
     prior_verification = verify_governance_manifest(prior_manifest, spec_path)
+    prior_valid_count, prior_quorum_met = _prior_manifest_internal_validity(
+        prior_manifest)
     return {
         "request_kind": "governance_remint_request",
         "spec_id": prior_manifest.spec_id,
         "spec_sha256": disk_sha,
         "prior_spec_sha256": prior_manifest.spec_sha256,
         "prior_manifest_transparency_log_intact": prior_verification.transparency_log_verified,
-        "prior_manifest_valid_for_old_spec": prior_verification.is_valid,
+        # Honest semantics: the prior signatures are checked against the digest
+        # the manifest SEALS, not against the revised spec on disk. The latter
+        # comparison is the desync under repair, so it cannot answer this.
+        "prior_manifest_valid_for_old_spec": bool(
+            prior_quorum_met and prior_verification.transparency_log_verified),
+        "prior_manifest_valid_signatures_over_sealed_digest": prior_valid_count,
         "quorum_threshold": prior_manifest.quorum_threshold,
         "trustees": [t.to_dict() for t in prior_manifest.trustees],
         # Each trustee signs EXACTLY the hex string of spec_sha256 — the same
@@ -261,7 +295,21 @@ def status_report() -> dict[str, Any]:
     manifest = GovernanceManifest.from_file(MANIFEST_PATH)
     verification = verify_governance_manifest(manifest, SPEC_PATH)
     registered = {t.trustee_id for t in manifest.trustees}
-    pending = sorted(registered - set(verification.valid_signers))
+    # Signatures in the manifest are verified against the digest the manifest
+    # SEALS, so `verification.valid_signers` are the trustees who signed the OLD
+    # digest. Until 2026-11-17 the outstanding set was `registered` minus those,
+    # which named one trustee and read as "one signature to go" -- while in fact
+    # nobody has signed the digest that needs sealing and the quorum owes two.
+    # Both sets are reported, each labelled by the digest it is about.
+    signed_sealed = sorted(set(verification.valid_signers))
+    signed_disk = sorted(
+        trustee.trustee_id
+        for trustee in manifest.trustees
+        for sig in manifest.signatures
+        if sig.trustee_id == trustee.trustee_id
+        and verify_ed25519_signature(trustee.public_key_hex, disk_sha, sig.signature_hex)
+    )
+    outstanding = manifest.quorum_threshold - len(signed_disk)
     return {
         "ceremony": "governance_remint",
         "disk_spec_sha256": disk_sha,
@@ -271,7 +319,11 @@ def status_report() -> dict[str, Any]:
         "desync": manifest.spec_sha256 != disk_sha,
         "quorum_threshold": manifest.quorum_threshold,
         "valid_signature_count_on_current_manifest": verification.valid_signature_count,
-        "trustees_awaiting_re_signature": pending,
+        "trustees_who_signed_the_sealed_digest": signed_sealed,
+        "trustees_who_signed_the_disk_digest": signed_disk,
+        "signatures_still_needed_over_the_disk_digest": max(0, outstanding),
+        "trustees_who_may_still_sign": sorted(registered - set(signed_disk)),
+        "trustees_awaiting_re_signature": sorted(registered - set(signed_disk)),
         "trustee_keys_are_held": "externally (never in this repository) — "
                                  "the ceremony can only record signatures "
                                  "that verify against the registered keys",

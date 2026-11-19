@@ -142,7 +142,8 @@ def decompress_video_latent(tt_video: TensorTrainVideo) -> np.ndarray:
 
     # 3. contract with G^(3): (T, C, H, R3) x (R3, W) -> (T, C, H, W)
     dense = np.tensordot(tch_r3, g3, axes=([3], [0]))  # (T, C, H, W)
-    return dense
+    _out: np.ndarray = dense
+    return _out
 
 
 def evaluate_continuous_temporal_frame(
@@ -185,4 +186,5 @@ def evaluate_continuous_temporal_frame(
     # (C, H, R3) x G^(3) (R3, W, 1) -> (C, H, W)
     g3 = tt_video.core_w.reshape(r3, w_dim)
     frame = np.tensordot(ch_r3, g3, axes=([2], [0]))  # (C, H, W)
-    return frame
+    _out: np.ndarray = frame
+    return _out

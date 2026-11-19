@@ -12,6 +12,14 @@ Resolution rule (D2, heuristic — recorded, not a universal theorem):
   ΔRMSE = RMSE_2 − RMSE_1 (holdout intervention evidence).
   If ΔRMSE ≤ τ_epi for a structurally distinct rival → MULTI_HYPOTHESIS.
 
+Null floor (same criterion, different rival):
+  If the pool contains a constant/null model, RMSE_null − RMSE_best > τ_epi is
+  also required. Beating the nearest rival is not enough when one fitted level
+  explains the record as well as the proposed mechanism does, and a null cannot
+  beat itself — promoting the constant would report structure that the holdout
+  never showed. The null is recognised from the IR term set, never from a
+  candidate id, so no naming convention has to be trusted.
+
 τ_epi is a RESOLUTION floor derived from the holdout record's own scale and
 noise floor — never from gate 4's ACCEPTANCE tolerance. The two answer
 different questions ("is this model good enough?" vs "can these two be told
@@ -264,7 +272,7 @@ class Adjudication:
     status: EpistemicStatus
     promoted: Any = None
     rival: Any = None
-    ranking: tuple = ()
+    ranking: tuple[Any, ...] = ()
     best_rmse: float | None = None
     second_rmse: float | None = None
     delta_rmse: float | None = None
@@ -281,7 +289,7 @@ class Adjudication:
     benchmark_level: str = "unknown"
     epistemic_attribution: str = "unknown"
     promotion_confidence: str = ""
-    diagnostic_flags: tuple = ()
+    diagnostic_flags: tuple[Any, ...] = ()
     admissible_equivalence_class: tuple[str, ...] = ()
     reason: str = ""
 
@@ -298,7 +306,24 @@ def scale_from_observations(obs: np.ndarray) -> dict[str, Any]:
     return observation_scale(obs)
 
 
-def _identity(sc) -> Any:
+def _canon_expr(formula: str) -> str:
+    """Canonicalize a free-form formula string for structural identity deduplication."""
+    raw = formula.strip()
+    if not raw:
+        return ""
+    rhs = raw.split("=", 1)[-1].strip() if "=" in raw else raw
+    try:
+        import sympy as sp
+
+        from apedp.safety import safe_parse_expr
+
+        expr = safe_parse_expr(rhs.replace("^", "**"))
+        return str(sp.expand(expr))
+    except Exception:  # noqa: BLE001 - non-sympy prose/DSL formulas fall back to whitespace-normalized text
+        return " ".join(rhs.split())
+
+
+def _identity(sc: Any) -> Any:
     """Structural identity: canonical form + parameter-binding signature.
 
     Same term sets with different sharing (reciprocal kc vs independent
@@ -319,13 +344,18 @@ def _identity(sc) -> Any:
             (i, t.name, t.parameter) for i, e in enumerate(c.equations)
             for t in e.terms))
         return (canonical_system(c), sharing)
-    if not isinstance(c, CandidateDynamics):
-        raise TypeError(f"unknown candidate IR type: {type(c).__name__}")
-    return (canonical_form(c),
-            tuple(sorted((t.name, t.parameter) for t in c.terms)))
+    if isinstance(c, CandidateDynamics):
+        return (canonical_form(c),
+                tuple(sorted((t.name, t.parameter) for t in c.terms)))
+    if hasattr(c, "formula") and hasattr(c, "candidate_id") and isinstance(getattr(c, "formula", None), str):
+        canon = _canon_expr(c.formula)
+        if canon:
+            return ("proposal_formula", canon)
+        return ("proposal_id", str(c.candidate_id))
+    raise TypeError(f"unknown candidate IR type: {type(c).__name__}")
 
 
-def _sole_survivor_fidelity(best, scale: dict[str, Any] | None,
+def _sole_survivor_fidelity(best: Any, scale: dict[str, Any] | None,
                             gamma: float) -> tuple[bool, str]:
     """Guard 1: absolute holdout-fidelity ceiling for a sole numerical survivor.
 
@@ -440,6 +470,35 @@ def _note_series(sc: Any, resid_best: Any) -> Any:
     return resid_best if resid_best is not None else _residual_series(sc)
 
 
+def _is_null_model(sc: Any) -> bool:
+    """True when ``sc`` is the constant/null hypothesis, read from the IR.
+
+    The null explains the record with one fitted level and no input dependence,
+    so it is the floor every mechanism has to clear. Identified structurally —
+    every term is the unit term ``one`` — rather than from a candidate id:
+    sandboxes name their null ``thermal_constant``, ``constant_price``,
+    ``constant``, ``constant_baseline``, and the referee should not have to
+    trust any of them. ``Term.family`` is the grammar's own vocabulary map and
+    raises for the sandboxes' problem-specific term names, so the unit term is
+    matched by name here. Free-form proposals carry no term set and are never
+    classified as the null — a guess there would manufacture refusals, and the
+    caller that owns the null can pass it as a scored candidate.
+    """
+    # Imported lazily for the same reason as _identity: the module import order
+    # in this package is deliberate.
+    from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate
+
+    c = sc.candidate
+    if isinstance(c, SystemCandidate):
+        equations = c.equations
+    elif isinstance(c, CandidateDynamics):
+        equations = (c,)
+    else:
+        return False
+    terms = [t for e in equations for t in e.terms]
+    return bool(terms) and all(t.name == "one" for t in terms)
+
+
 def _promotion_diagnostics(
     delta: float,
     tau: float | None,
@@ -519,7 +578,7 @@ def _winner_structure_note(resid: Any, threshold: float) -> str:
             "distinct rival was separated on this holdout")
 
 
-def _bootstrap_refusal_detail(tb: dict) -> str:
+def _bootstrap_refusal_detail(tb: dict[str, Any]) -> str:
     """Reason detail for a bootstrap overturn, by branch.
 
     A 'multi' CI straddles zero (no separation); a 'rival-favored' CI lies
@@ -537,7 +596,7 @@ def _bootstrap_refusal_detail(tb: dict) -> str:
             f"not separate the two structures")
 
 
-def adjudicate(fitted: list,
+def adjudicate(fitted: list[Any],
                tau_epi: float | None = None,
                holdout_noise_scale: float | None = None,
                holdout_scale: dict[str, Any] | None = None,
@@ -571,6 +630,13 @@ def adjudicate(fitted: list,
     bootstrap=True is different in kind: the caller explicitly asked for a
     stronger guarantee, so if the tiebreaker is not compiled in this raises
     :data:`CAPABILITY_ABSENT` rather than quietly returning the weaker verdict.
+
+    Null/constant floor: a promotion must beat the best constant null model in
+    the pool by more than tau. This is the same resolution criterion applied to
+    the floor hypothesis instead of the nearest rival — a mechanism that cannot
+    be told apart from a constant level has not explained the record — and it
+    also refuses the degenerate case of the null winning its own comparison,
+    where the margin is necessarily zero.
 
     data_origin labels the provenance source (e.g. "simulation", "experimental",
     "synthetic", "real_observational"). Can be passed directly or read from candidate provenance.
@@ -608,8 +674,8 @@ def adjudicate(fitted: list,
     # distinct) and keep the best-fitting instance per group. Uniqueness
     # is assessed over canonical hypotheses only; dropped duplicates can
     # neither promote nor serve as rivals.
-    canonical: list = []
-    seen: dict = {}
+    canonical: list[Any] = []
+    seen: dict[str, Any] = {}
     dropped_duplicate_ids: list[str] = []
     for s in ranked:
         try:
@@ -734,12 +800,15 @@ def adjudicate(fitted: list,
             best = ho_head
             ranked = [ho_head] + [s for s in ranked if s is not ho_head]
             _anchor_resid = _residual_series(best)
-            _runner = next((s for s in ranked[1:]
-                            if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)), None)
+            _rivals_ho = [s for s in ranked[1:]
+                          if _identity(s) != _identity(best)
+                          and s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)]
+            _runner = min(_rivals_ho, key=lambda s: s.holdout_rmse) if _rivals_ho else None
             _runner_resid = _residual_series(_runner) if _runner is not None else None
             if (_anchor_resid is not None and _runner_resid is not None
                     and len(_anchor_resid) == len(_runner_resid)
-                    and len(_anchor_resid) > 1):
+                    and len(_anchor_resid) > 1
+                    and bootstrap_available()):
                 resid_best = np.asarray(_anchor_resid, dtype=float)
                 resid_rival = np.asarray(_runner_resid, dtype=float)
                 bootstrap = True
@@ -753,6 +822,67 @@ def adjudicate(fitted: list,
     rivals = [s for s in ranked[1:]
               if _identity(s) != _identity(best) and s.holdout_rmse is not None
               and np.isfinite(s.holdout_rmse)]
+    # Disclosed on every pair-path verdict below: the winner is chosen on the
+    # holdout slice that later certifies it, so that slice is a selection set.
+    selection_reuse_flag = (
+        f"selection_reused_confirmation_holdout(n_candidates={len(ho_scoring)})"
+        if ho_scoring else "")
+
+    # Null/constant floor. Beating the nearest rival is not evidence of
+    # structure when a single fitted level explains the record as well: the
+    # constant is the hypothesis every mechanism has to improve on. The self
+    # case (the holdout-best candidate IS the null) is the same rule with a
+    # margin of zero, and it is exactly what an unguarded promotion would
+    # report as a discovery. This runs before the sole-survivor guards because
+    # when the pool's head is the constant, the honest verdict is
+    # observational non-identifiability, not "the survivor's fidelity is
+    # unproven".
+    null_sc = next((s for s in ranked if _is_null_model(s)), None)
+    if (null_sc is not None and null_sc.holdout_rmse is not None
+            and np.isfinite(null_sc.holdout_rmse)):
+        null_rmse = float(null_sc.holdout_rmse)
+        null_delta = float(null_rmse - best_rmse)
+        if not null_delta > tau:
+            self_null = null_sc is best
+            attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                    else EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY.value)
+            equiv = tuple(
+                s.candidate.candidate_id for s in ranked
+                if s.holdout_rmse is not None and (s.holdout_rmse - best_rmse) <= tau
+            )
+            if self_null:
+                null_reason = (
+                    f"the holdout-best candidate {best.candidate.candidate_id} is "
+                    f"the constant/null model itself; a promotion must beat the "
+                    f"null by more than τ={tau:.3g} [{tau_source}] and a null "
+                    f"cannot beat itself, so the holdout shows no mechanism beyond "
+                    f"a constant level; APEDP abstains from unique promotion")
+            else:
+                null_reason = (
+                    f"best candidate {best.candidate.candidate_id} does not beat "
+                    f"the constant/null baseline {null_sc.candidate.candidate_id} "
+                    f"by more than τ (Δ_null={null_delta:.3g} ≤ τ={tau:.3g} "
+                    f"[{tau_source}] on holdout RMSE); a constant level explains "
+                    f"the record as well as the proposed mechanism, so no "
+                    f"structure is established; APEDP abstains from unique promotion")
+            return Adjudication(
+                EpistemicStatus.MULTI_HYPOTHESIS,
+                rival=None if self_null else null_sc,
+                ranking=tuple(ranked),
+                best_rmse=best_rmse, second_rmse=null_rmse,
+                delta_rmse=null_delta, tau_epi=tau, tau_epi_source=tau_source,
+                holdout_noise_scale=holdout_noise_scale,
+                holdout_scale_source=scale_source,
+                epistemic_margin=float(null_delta - tau),
+                contract=contract,
+                data_origin=data_origin,
+                benchmark_level=benchmark_level,
+                epistemic_attribution=attr,
+                admissible_equivalence_class=equiv,
+                diagnostic_flags=("NULL_MODEL_NOT_BEATEN",) + dup_flags
+                + ((selection_reuse_flag,) if selection_reuse_flag else ()),
+                reason=null_reason)
+
     if not rivals:
         if sole_survivor_rule:
             # Guard 1: absolute predictive adequacy (ceiling first).
@@ -839,10 +969,6 @@ def adjudicate(fitted: list,
     # correction — see apedp_dyn/epistemic/trial_ledger.py) or obtain an
     # independent confirmation split. FULL contract claims are therefore only
     # valid when the caller's ledger separation is honored.
-    selection_reuse_flag = (
-        f"selection_reused_confirmation_holdout(n_candidates={len(ho_scoring)})"
-        if ho_scoring else "")
-
     second = min(rivals, key=lambda s: s.holdout_rmse)
     # delta is measured against the holdout-anchored head, so a genuinely
     # generalizing candidate now earns a nonnegative separation instead of a
@@ -876,6 +1002,7 @@ def adjudicate(fitted: list,
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
             admissible_equivalence_class=equiv,
+            diagnostic_flags=dup_flags + ((selection_reuse_flag,) if selection_reuse_flag else ()),
             reason=f"nearest distinct rival {second.candidate.candidate_id} within τ "
                    f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}] on holdout RMSE); "
                    "observationally indistinguishable under the prespecified APEDP "
@@ -903,10 +1030,9 @@ def adjudicate(fitted: list,
         if tb.get("branch") in ("multi", "rival-favored"):
             attr = (epistemic_attribution if epistemic_attribution != "unknown"
                     else EpistemicAttribution.BOOTSTRAP_INSTABILITY.value)
-            min_ho_rmse = min((s.holdout_rmse for s in ranked if s.holdout_rmse is not None), default=best_rmse)
             equiv = tuple(
                 s.candidate.candidate_id for s in ranked
-                if s.holdout_rmse is not None and (s.holdout_rmse - min_ho_rmse) <= tau
+                if s.holdout_rmse is not None and (s.holdout_rmse - best_rmse) <= tau
             )
             return Adjudication(
                 EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
@@ -921,6 +1047,7 @@ def adjudicate(fitted: list,
                 benchmark_level=benchmark_level,
                 epistemic_attribution=attr,
                 admissible_equivalence_class=equiv,
+                diagnostic_flags=dup_flags + ((selection_reuse_flag,) if selection_reuse_flag else ()),
                 reason=f"point margin over {second.candidate.candidate_id} "
                        f"(Δ={delta:.3g} > τ={tau:.3g}) does not survive the "
                        f"{_bootstrap_refusal_detail(tb)}")
@@ -936,6 +1063,7 @@ def adjudicate(fitted: list,
                 data_origin=data_origin,
                 benchmark_level=benchmark_level,
                 epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+                diagnostic_flags=dup_flags + ((selection_reuse_flag,) if selection_reuse_flag else ()),
                 reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
@@ -977,6 +1105,8 @@ def adjudicate(fitted: list,
             data_origin=data_origin,
             benchmark_level=benchmark_level,
             epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+            diagnostic_flags=tuple(diag_flags) + dup_flags
+            + ((selection_reuse_flag,) if selection_reuse_flag else ()),
             reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
     attr = (epistemic_attribution if epistemic_attribution != "unknown"
             else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)

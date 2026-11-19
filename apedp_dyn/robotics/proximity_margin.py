@@ -302,7 +302,7 @@ def model_check_unicycle_horizon_proximity(
     assumptions: CBFQPCertificateAssumptions,
     steps: int = 200,
     omega_max: float = 2.0,
-    arc_step_fn=None,
+    arc_step_fn: Any=None,
     seed: int = 0,
 ) -> dict[str, Any]:
     """Model-check marker evidence (measured), does not necessarily imply or
@@ -320,7 +320,7 @@ def model_check_unicycle_horizon_proximity(
             batch_unicycle_arc_step as _raw,
         )
 
-        def arc_step_fn(poses, v, om, dt):
+        def arc_step_fn(poses: Any, v: Any, om: Any, dt: Any) -> Any:
             outs = _raw(_torch.from_numpy(np.asarray(poses, dtype=float)),
                         _torch.from_numpy(np.asarray(v, dtype=float)),
                         _torch.from_numpy(np.asarray(om, dtype=float)), dt)

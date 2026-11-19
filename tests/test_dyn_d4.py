@@ -1,7 +1,8 @@
 """D4 regression tests: PDE / field discovery extension (progress version).
 
 - Grammar extended with spatial derivative terms (grad_x, laplacian_x).
-- Pure ODE mode (dae_mode="none") continues to behave as D2b: 676 kept after pruning.
+- Pure ODE mode (dae_mode="none") continues to behave as D2b: 225
+  constraint-free candidates kept after pruning.
 - New terms are recognized by the grammar and appear in enumeration.
 - Materialization succeeds for systems without these terms (ODE behavior).
 - Known: full PDE materialization with grad_x/laplacian_x requires symbolic
@@ -22,8 +23,8 @@ from apedp_dyn.problems import coupled, duffing
 
 def _count_kept(dae_mode):
     # Call enumerate_coupled with dae_mode only; uses the default optional
-    # ("x", "v", "xr", "dxr", "c1", "c2") — giving 1764 raw / 676 kept
-    # for dae_mode="none" (verified earlier).
+    # ("x", "v", "xr", "dxr", "c1", "c2") — giving 1764 raw / 225
+    # constraint-free kept for dae_mode="none" (verified 2026-11-07).
     allc = enumerate_coupled(dae_mode=dae_mode, max_terms=4)
     kept = prune_admissible(coupled.load(), allc)
     return len(kept)
@@ -31,8 +32,8 @@ def _count_kept(dae_mode):
 
 class TestD4KeptCounts:
     def test_ode_mode_kept(self):
-        """Pure ODE mode: 676 systems survive pruning (D2b behavior)."""
-        assert _count_kept(dae_mode="none") == 676
+        """Pure ODE mode: 225 constraint-free systems survive pruning."""
+        assert _count_kept(dae_mode="none") == 225
 
     def test_pde_terms_available(self):
         """PDE terms (grad_x, laplacian_x) are available in the grammar.

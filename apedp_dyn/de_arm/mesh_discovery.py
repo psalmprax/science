@@ -99,7 +99,7 @@ def _edge_boundary_mask(triangles: np.ndarray, n: int) -> np.ndarray:
         for e in ((a, b), (b, c), (c, a)):
             key = (min(e), max(e))
             counts[key] = counts.get(key, 0) + 1
-    boundary = np.zeros(n, dtype=bool)
+    boundary: np.ndarray = np.zeros(n, dtype=bool)
     for (p, q), c in counts.items():
         if c == 1:
             boundary[p] = True
@@ -260,7 +260,7 @@ def discover_mesh_pde(
 
     lap_all = np.asarray(L @ fr.T).T          # [T, N]: Δu per (frame, vertex)
     t_int = np.arange(1, T - 1)
-    rows_t = np.repeat(t_int, int(mask.sum()))
+    rows_t: np.ndarray = np.repeat(t_int, int(mask.sum()))
     rows_v = np.tile(np.nonzero(mask)[0], T - 2)
     ut = (fr[rows_t + 1, rows_v] - fr[rows_t - 1, rows_v]) / (2.0 * dt)
     u_rows = fr[rows_t, rows_v]

@@ -14,8 +14,9 @@
 //! data, single-threaded, so the numbers are per-candidate phase costs, NOT
 //! the rayon-batch wall time the production path enjoys.
 //!
-//! Writes `benchmarks/kernel_profile_results.json` next to the repo root and
-//! prints the table for CLI capture.
+//! Prints the table for CLI capture, and writes
+//! `benchmarks/kernel_profile_results.json` next to the repo root only when
+//! `APEDP_WRITE_BENCHMARK_ARTIFACTS=1` asks for a re-measurement.
 use std::time::Instant;
 
 use apedp_kernel::rime::eval::{fit_readout, residual_stats};
@@ -140,13 +141,21 @@ fn writes_kernel_phase_profile() {
         "kernel": "apedp-kernel rime, release profile",
         "rows": rows,
     });
-    let path = format!(
-        "{}/../../benchmarks/kernel_profile_results.json",
-        env!("CARGO_MANIFEST_DIR")
-    );
+    // Committed evidence: only a deliberate re-measurement replaces it
+    // (`APEDP_WRITE_BENCHMARK_ARTIFACTS=1 cargo test`). Until 2026-11-17 every
+    // `cargo test` rewrote it with this machine's timings
+    // (docs/SYSTEM_FLAWS_AUDIT.md, F-05); the rows are printed either way.
     let text = serde_json::to_string_pretty(&artifact).unwrap();
-    std::fs::write(&path, &text).unwrap_or_else(|e| panic!("write artifact {path}: {e}"));
-    println!("kernel profile artifact: {path}");
+    if std::env::var("APEDP_WRITE_BENCHMARK_ARTIFACTS").as_deref() == Ok("1") {
+        let path = format!(
+            "{}/../../benchmarks/kernel_profile_results.json",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        std::fs::write(&path, &text).unwrap_or_else(|e| panic!("write artifact {path}: {e}"));
+        println!("kernel profile artifact: {path}");
+    } else {
+        println!("kernel profile (not written; set APEDP_WRITE_BENCHMARK_ARTIFACTS=1 to re-pin):\n{text}");
+    }
     for r in &rows {
         println!("{}", serde_json::to_string(r).unwrap());
     }

@@ -444,7 +444,8 @@ def op_michaelis_menten(s: np.ndarray | float, vmax: float, km: float) -> np.nda
     """Enzyme saturation rate law: v = V_max * S / (K_m + S)."""
     s_arr = np.maximum(np.asarray(s, dtype=float), 0.0)
     km_eff = max(km, 1e-12)
-    return np.asarray(np.asarray(np.asarray(vmax * s_arr / (km_eff + s_arr))))
+    _out: np.ndarray = np.asarray(np.asarray(np.asarray(vmax * s_arr / (km_eff + s_arr))))
+    return _out
 
 
 def op_hill_activation(x: np.ndarray | float, k: float, n: float = 2.0) -> np.ndarray:
@@ -453,7 +454,8 @@ def op_hill_activation(x: np.ndarray | float, k: float, n: float = 2.0) -> np.nd
     k_eff = max(k, 1e-12)
     xn = np.power(x_arr, n)
     kn = np.power(k_eff, n)
-    return np.asarray(np.asarray(np.asarray(xn / (kn + xn))))
+    _out: np.ndarray = np.asarray(np.asarray(np.asarray(xn / (kn + xn))))
+    return _out
 
 
 def op_hill_repression(x: np.ndarray | float, k: float, n: float = 2.0) -> np.ndarray:
@@ -462,7 +464,8 @@ def op_hill_repression(x: np.ndarray | float, k: float, n: float = 2.0) -> np.nd
     k_eff = max(k, 1e-12)
     xn = np.power(x_arr, n)
     kn = np.power(k_eff, n)
-    return np.asarray(np.asarray(np.asarray(kn / (kn + xn))))
+    _out: np.ndarray = np.asarray(np.asarray(np.asarray(kn / (kn + xn))))
+    return _out
 
 
 def op_temporal_derivative(x: np.ndarray, dt: float) -> np.ndarray:
@@ -479,7 +482,7 @@ def op_temporal_derivative(x: np.ndarray, dt: float) -> np.ndarray:
 def op_temporal_integral(x: np.ndarray, dt: float, init: float = 0.0) -> np.ndarray:
     """Causal trapezoidal accumulation: int_0^t x(s) ds."""
     x_arr = np.nan_to_num(np.asarray(x, dtype=float), nan=0.0)
-    out = np.zeros(len(x_arr), dtype=float)
+    out: np.ndarray = np.zeros(len(x_arr), dtype=float)
     cur = init
     out[0] = cur
     for t in range(1, len(x_arr)):
@@ -494,12 +497,14 @@ def op_delay(x: np.ndarray, delay_steps: int) -> np.ndarray:
     out = np.full_like(x_arr, np.nan)
     if delay_steps < len(x_arr):
         out[delay_steps:] = x_arr[:-delay_steps]
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def op_threshold_activation(x: np.ndarray, theta: float) -> np.ndarray:
     """Heaviside step activation: 1(x > theta)."""
-    return np.where(np.asarray(x, dtype=float) > theta, 1.0, 0.0)
+    _out: np.ndarray = np.where(np.asarray(x, dtype=float) > theta, 1.0, 0.0)
+    return _out
 
 
 def op_lotka_volterra_step(

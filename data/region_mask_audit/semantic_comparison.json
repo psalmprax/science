@@ -1,0 +1,1223 @@
+{
+  "schema": "region_mask_semantic_comparison/v1",
+  "generated_by": "scripts/compare_region_split_to_semantics.py",
+  "model": {
+    "hub_repo": "nvidia/segformer-b0-finetuned-ade-512-512",
+    "architecture": "SegFormer-B0, ADE20K (150 classes) fine-tune",
+    "citation": "Xie et al., SegFormer (NeurIPS 2021)",
+    "output_semantics": "one ADE20K class id per pixel",
+    "num_classes": 150,
+    "torch": "2.3.1+cpu",
+    "transformers": "4.44.2",
+    "device": "cpu",
+    "python": "3.12.3",
+    "executable": "/home/psalmprax/ALL_PROJECTS/science/.venv-region-models/bin/python",
+    "id2label_sha256": "fce18d9e6928b867fabe753503fe8af3ac18131efa75d1425f8e442e74c38c1a",
+    "weights": {
+      "file": "model.safetensors",
+      "bytes": 15036944,
+      "sha256": "6ae39addd01de6b1b8bde2cf677d43a5cd733424b8d186de3f95d1c51fee23f9"
+    }
+  },
+  "method": "three bands cut at the two rows of largest total-variation change in ADE20K class composition (windows of +/-8 rows), scored against the photograph audit's hand labels and tolerance; the texture and depth verdicts are read back from their own records for a like-for-like comparison",
+  "fixed_across_arms": {
+    "analysis_size": 256,
+    "min_band_fraction": 0.15,
+    "min_cut_decisiveness": 2.0,
+    "max_half_disagreement": 0.06,
+    "tolerance_height_fraction": 0.06,
+    "two_cut_selection_rule": "maximise the sum of the two per-row scores, each band at least min_band_fraction of the height"
+  },
+  "class_arm_structural_note": {
+    "why_not_the_same_splitter": "row_texture_energy differences neighbouring pixels, and ADE20K class ids are nominal, so differencing them measures the numbering of the vocabulary rather than the picture. Handed a class map the splitter returns boundaries and its own evidence gate refuses them, so the semantic arm needs a score with meaning under a class alphabet: the total variation between the class composition just above and just below each row.",
+    "invalid_input_measurement": {
+      "label_ids_are_nominal": true,
+      "horizontal_difference_max_id_units": 0.3922,
+      "texture_split_boundaries": {
+        "upper_to_middle": 0.1836,
+        "middle_to_lower": 0.75
+      },
+      "texture_split_cut_decisiveness": 0.0,
+      "texture_split_reliable": false,
+      "texture_split_reasons": [
+        "the two cuts are 0.00x the median row step (need 2x): they sit inside the noise",
+        "the left and right halves disagree by 0.242 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+        "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+      ]
+    }
+  },
+  "photos": [
+    {
+      "file": "aerial_coastline.jpg",
+      "scene_regimes": 2,
+      "applicable": false,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.4922,
+        "middle_to_lower": 0.7383
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.5331,
+            "wall": 0.3864,
+            "windowpane": 0.0673,
+            "mountain": 0.0077
+          },
+          "reported_classes": {
+            "sky": 0.5331,
+            "wall": 0.3864
+          }
+        },
+        "middle": {
+          "dominant": {
+            "wall": 0.4,
+            "mountain": 0.3881,
+            "windowpane": 0.1993,
+            "sky": 0.0126
+          },
+          "reported_classes": {
+            "sky": 0.0126,
+            "mountain": 0.3881,
+            "wall": 0.4
+          }
+        },
+        "lower": {
+          "dominant": {
+            "wall": 0.6074,
+            "windowpane": 0.3712,
+            "curtain": 0.0186,
+            "mountain": 0.0027
+          },
+          "reported_classes": {
+            "wall": 0.6074
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": true,
+        "reasons": [],
+        "cut_decisiveness": 20.714,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.0273,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.5,
+            0.71484375
+          ],
+          "right": [
+            0.47265625,
+            0.7421875
+          ]
+        }
+      },
+      "semantic_verdict": "undefined",
+      "semantic_max_abs_error": null,
+      "semantic_comparison": {
+        "verdict": "undefined"
+      },
+      "texture_verdict": "undefined",
+      "texture_max_abs_error": null,
+      "depth_verdict": "undefined",
+      "depth_max_abs_error": null,
+      "classes_in_frame": [
+        "column",
+        "curtain",
+        "mountain",
+        "sky",
+        "wall",
+        "windowpane"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0269,
+        0.0215,
+        0.0303,
+        0.0229,
+        0.0073,
+        0.0073,
+        0.0186,
+        0.2603,
+        0.0171,
+        0.0273,
+        0.0493,
+        0.1484,
+        0.0679,
+        0.0278,
+        0.0703
+      ],
+      "seconds": 1.85
+    },
+    {
+      "file": "beach_palm_trees.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.3359,
+        "middle_to_lower": 0.5664
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "palm": 0.5277,
+            "sky": 0.427,
+            "wall": 0.0452,
+            "building": 0.0
+          },
+          "reported_classes": {
+            "sky": 0.427,
+            "wall": 0.0452
+          }
+        },
+        "middle": {
+          "dominant": {
+            "palm": 0.6694,
+            "sky": 0.2588,
+            "tree": 0.0244,
+            "sea": 0.0185
+          },
+          "reported_classes": {
+            "sky": 0.2588,
+            "sea": 0.0185,
+            "tree": 0.0244
+          }
+        },
+        "lower": {
+          "dominant": {
+            "water": 0.7921,
+            "tree": 0.069,
+            "palm": 0.0608,
+            "rock": 0.0405
+          },
+          "reported_classes": {
+            "water": 0.7921,
+            "sea": 0.0138,
+            "tree": 0.069,
+            "person": 0.0138
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.078 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 13.065,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.0781,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.328125,
+            0.578125
+          ],
+          "right": [
+            0.40625,
+            0.5546875
+          ]
+        }
+      },
+      "semantic_verdict": "close",
+      "semantic_max_abs_error": 0.0536,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": -0.0141,
+          "middle_to_lower": -0.0536
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0141,
+          "middle_to_lower": 0.0536
+        },
+        "max_abs_error": 0.0536,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": true
+        },
+        "verdict": "close"
+      },
+      "texture_verdict": "close",
+      "texture_max_abs_error": 0.0536,
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.2277,
+      "classes_in_frame": [
+        "building",
+        "palm",
+        "person",
+        "plant",
+        "rock",
+        "sand",
+        "sea",
+        "sky",
+        "tree",
+        "wall",
+        "water"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0278,
+        0.127,
+        0.0986,
+        0.02,
+        0.0767,
+        0.0371,
+        0.0347,
+        0.0703,
+        0.5244,
+        0.0923,
+        0.0415,
+        0.0366,
+        0.0513,
+        0.0459,
+        0.1484
+      ],
+      "seconds": 1.77
+    },
+    {
+      "file": "breaking_waves.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.3164,
+        "middle_to_lower": 0.8516
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.7883,
+            "wall": 0.107,
+            "rock": 0.0743,
+            "sea": 0.0304
+          },
+          "reported_classes": {
+            "sky": 0.7883,
+            "sea": 0.0304,
+            "wall": 0.107
+          }
+        },
+        "middle": {
+          "dominant": {
+            "rock": 0.3251,
+            "sea": 0.3048,
+            "water": 0.2942,
+            "lake": 0.0726
+          },
+          "reported_classes": {
+            "water": 0.2942,
+            "sea": 0.3048
+          }
+        },
+        "lower": {
+          "dominant": {
+            "rock": 0.9506,
+            "sea": 0.0393,
+            "water": 0.0102,
+            "wall": 0.0
+          },
+          "reported_classes": {
+            "water": 0.0102,
+            "sea": 0.0393
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": true,
+        "reasons": [],
+        "cut_decisiveness": 9.715,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.0078,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.31640625,
+            0.84375
+          ],
+          "right": [
+            0.3203125,
+            0.8515625
+          ]
+        }
+      },
+      "semantic_verdict": "wrong",
+      "semantic_max_abs_error": 0.1064,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": 0.1064,
+          "middle_to_lower": 0.1016
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1064,
+          "middle_to_lower": 0.1016
+        },
+        "max_abs_error": 0.1064,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.1611,
+      "depth_verdict": "wrong",
+      "depth_max_abs_error": 0.3252,
+      "classes_in_frame": [
+        "lake",
+        "rock",
+        "sea",
+        "sky",
+        "wall",
+        "water"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.041,
+        0.0322,
+        0.0396,
+        0.0986,
+        0.6709,
+        0.1943,
+        0.3184,
+        0.1836,
+        0.2026,
+        0.0723,
+        0.4102,
+        0.1436,
+        0.1758,
+        0.3174,
+        0.0
+      ],
+      "seconds": 1.92
+    },
+    {
+      "file": "city_skyline_night.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.1953,
+        "middle_to_lower": 0.7656
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.9892,
+            "building": 0.0108,
+            "wall": 0.0,
+            "floor": 0.0
+          },
+          "reported_classes": {
+            "sky": 0.9892,
+            "building": 0.0108
+          }
+        },
+        "middle": {
+          "dominant": {
+            "building": 0.9139,
+            "sky": 0.0852,
+            "road": 0.0008,
+            "wall": 0.0
+          },
+          "reported_classes": {
+            "sky": 0.0852,
+            "building": 0.9139
+          }
+        },
+        "lower": {
+          "dominant": {
+            "building": 0.6731,
+            "wall": 0.2837,
+            "road": 0.0368,
+            "car": 0.0064
+          },
+          "reported_classes": {
+            "building": 0.6731,
+            "road": 0.0368,
+            "wall": 0.2837
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.414 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 89.63,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.4141,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.19921875,
+            0.3515625
+          ],
+          "right": [
+            0.1875,
+            0.765625
+          ]
+        }
+      },
+      "semantic_verdict": "partial",
+      "semantic_max_abs_error": 0.1153,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": 0.1153,
+          "middle_to_lower": -0.0144
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1153,
+          "middle_to_lower": 0.0144
+        },
+        "max_abs_error": 0.1153,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": true
+        },
+        "verdict": "partial"
+      },
+      "texture_verdict": "partial",
+      "texture_max_abs_error": 0.1817,
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.1856,
+      "classes_in_frame": [
+        "building",
+        "car",
+        "road",
+        "sky",
+        "wall"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.2749,
+        0.248,
+        0.0347,
+        0.0352,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.1699,
+        0.0596,
+        0.0225,
+        0.0244
+      ],
+      "seconds": 1.77
+    },
+    {
+      "file": "forest_path.jpg",
+      "scene_regimes": 2,
+      "applicable": false,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.5234,
+        "middle_to_lower": 0.7109
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "tree": 0.9013,
+            "sky": 0.0864,
+            "earth": 0.0099,
+            "road": 0.0024
+          },
+          "reported_classes": {
+            "sky": 0.0864,
+            "tree": 0.9013
+          }
+        },
+        "middle": {
+          "dominant": {
+            "earth": 0.6602,
+            "road": 0.2361,
+            "tree": 0.0913,
+            "dirt track": 0.0125
+          },
+          "reported_classes": {
+            "earth": 0.6602,
+            "tree": 0.0913,
+            "road": 0.2361
+          }
+        },
+        "lower": {
+          "dominant": {
+            "earth": 0.5331,
+            "road": 0.4492,
+            "dirt track": 0.0177,
+            "sky": 0.0
+          },
+          "reported_classes": {
+            "earth": 0.5331,
+            "road": 0.4492
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.367 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 22.827,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.3672,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.15625,
+            0.51171875
+          ],
+          "right": [
+            0.5234375,
+            0.7109375
+          ]
+        }
+      },
+      "semantic_verdict": "undefined",
+      "semantic_max_abs_error": null,
+      "semantic_comparison": {
+        "verdict": "undefined"
+      },
+      "texture_verdict": "undefined",
+      "texture_max_abs_error": null,
+      "depth_verdict": "undefined",
+      "depth_max_abs_error": null,
+      "classes_in_frame": [
+        "dirt track",
+        "earth",
+        "road",
+        "sky",
+        "tree"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0098,
+        0.0444,
+        0.0132,
+        0.02,
+        0.0322,
+        0.0,
+        0.0,
+        0.3408,
+        0.0615,
+        0.103,
+        0.0557,
+        0.0503,
+        0.022,
+        0.0254,
+        0.02
+      ],
+      "seconds": 1.91
+    },
+    {
+      "file": "mountain_lake_reflection.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.3086,
+        "middle_to_lower": 0.457
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 1.0,
+            "wall": 0.0,
+            "building": 0.0,
+            "floor": 0.0
+          },
+          "reported_classes": {
+            "sky": 1.0
+          }
+        },
+        "middle": {
+          "dominant": {
+            "mountain": 0.7497,
+            "sky": 0.1685,
+            "rock": 0.0522,
+            "lake": 0.0293
+          },
+          "reported_classes": {
+            "sky": 0.1685,
+            "mountain": 0.7497
+          }
+        },
+        "lower": {
+          "dominant": {
+            "lake": 0.8412,
+            "rock": 0.1224,
+            "water": 0.016,
+            "tree": 0.0126
+          },
+          "reported_classes": {
+            "water": 0.016,
+            "tree": 0.0126
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": true,
+        "reasons": [],
+        "cut_decisiveness": 28.556,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.0117,
+        "distinct_dominant_classes": 3,
+        "half_cuts": {
+          "left": [
+            0.32421875,
+            0.47265625
+          ],
+          "right": [
+            0.3125,
+            0.4609375
+          ]
+        }
+      },
+      "semantic_verdict": "close",
+      "semantic_max_abs_error": 0.013,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": 0.0086,
+          "middle_to_lower": -0.013
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0086,
+          "middle_to_lower": 0.013
+        },
+        "max_abs_error": 0.013,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": true
+        },
+        "verdict": "close"
+      },
+      "texture_verdict": "close",
+      "texture_max_abs_error": 0.0125,
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.2878,
+      "classes_in_frame": [
+        "lake",
+        "mountain",
+        "river",
+        "rock",
+        "sky",
+        "tree",
+        "water",
+        "waterfall"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.4805,
+        0.1323,
+        0.5498,
+        0.2661,
+        0.021,
+        0.0337,
+        0.0083,
+        0.0151,
+        0.0444,
+        0.0586,
+        0.1499
+      ],
+      "seconds": 1.84
+    },
+    {
+      "file": "portrait_outdoors.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.4922,
+        "middle_to_lower": 0.7578
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.9758,
+            "earth": 0.0232,
+            "mountain": 0.0009,
+            "building": 0.0
+          },
+          "reported_classes": {
+            "sky": 0.9758,
+            "earth": 0.0232
+          }
+        },
+        "middle": {
+          "dominant": {
+            "earth": 0.9451,
+            "road": 0.0437,
+            "sky": 0.007,
+            "water": 0.0042
+          },
+          "reported_classes": {
+            "earth": 0.9451,
+            "road": 0.0437
+          }
+        },
+        "lower": {
+          "dominant": {
+            "earth": 0.5166,
+            "road": 0.2782,
+            "water": 0.2031,
+            "sidewalk": 0.0021
+          },
+          "reported_classes": {
+            "water": 0.2031,
+            "earth": 0.5166,
+            "road": 0.2782
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.105 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 141.826,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.1055,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.4921875,
+            0.75390625
+          ],
+          "right": [
+            0.48828125,
+            0.6484375
+          ]
+        }
+      },
+      "semantic_verdict": "wrong",
+      "semantic_max_abs_error": 0.2078,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": 0.1922,
+          "middle_to_lower": 0.2078
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1922,
+          "middle_to_lower": 0.2078
+        },
+        "max_abs_error": 0.2078,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.2703,
+      "depth_verdict": "wrong",
+      "depth_max_abs_error": 0.2703,
+      "classes_in_frame": [
+        "earth",
+        "mountain",
+        "road",
+        "sidewalk",
+        "sky",
+        "water"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0967,
+        0.5771,
+        0.0,
+        0.021,
+        0.0347,
+        0.1177,
+        0.022,
+        0.0718,
+        0.0903
+      ],
+      "seconds": 1.64
+    },
+    {
+      "file": "sand_dunes.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.4883,
+        "middle_to_lower": 0.6758
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.8813,
+            "mountain": 0.118,
+            "sea": 0.0006,
+            "sand": 0.0001
+          },
+          "reported_classes": {
+            "sky": 0.8813,
+            "mountain": 0.118
+          }
+        },
+        "middle": {
+          "dominant": {
+            "sand": 0.4812,
+            "sea": 0.4032,
+            "mountain": 0.1066,
+            "sky": 0.009
+          },
+          "reported_classes": {
+            "mountain": 0.1066,
+            "sea": 0.4032,
+            "sand": 0.4812
+          }
+        },
+        "lower": {
+          "dominant": {
+            "sand": 0.9968,
+            "sea": 0.0032,
+            "sky": 0.0,
+            "wall": 0.0
+          },
+          "reported_classes": {
+            "sand": 0.9968
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.258 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 24.094,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.2578,
+        "distinct_dominant_classes": 2,
+        "half_cuts": {
+          "left": [
+            0.23046875,
+            0.53125
+          ],
+          "right": [
+            0.48828125,
+            0.67578125
+          ]
+        }
+      },
+      "semantic_verdict": "wrong",
+      "semantic_max_abs_error": 0.2683,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": 0.2683,
+          "middle_to_lower": 0.1258
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.2683,
+          "middle_to_lower": 0.1258
+        },
+        "max_abs_error": 0.2683,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.28,
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.0789,
+      "classes_in_frame": [
+        "mountain",
+        "sand",
+        "sea",
+        "sky"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.0107,
+        0.0503,
+        0.0371,
+        0.0312,
+        0.0342,
+        0.439,
+        0.1196,
+        0.1284,
+        0.146,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "seconds": 1.75
+    },
+    {
+      "file": "sea_sunset_horizon.jpg",
+      "scene_regimes": 2,
+      "applicable": false,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.375,
+        "middle_to_lower": 0.5234
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.9867,
+            "airplane": 0.0073,
+            "water": 0.0017,
+            "person": 0.0015
+          },
+          "reported_classes": {
+            "sky": 0.9867
+          }
+        },
+        "middle": {
+          "dominant": {
+            "sea": 0.2983,
+            "land": 0.2888,
+            "water": 0.1735,
+            "sky": 0.14
+          },
+          "reported_classes": {
+            "sky": 0.14,
+            "mountain": 0.0371,
+            "water": 0.1735,
+            "sea": 0.2983
+          }
+        },
+        "lower": {
+          "dominant": {
+            "water": 0.3545,
+            "person": 0.2019,
+            "land": 0.1509,
+            "mountain": 0.0913
+          },
+          "reported_classes": {
+            "mountain": 0.0913,
+            "water": 0.3545,
+            "sea": 0.0201,
+            "person": 0.2019,
+            "wall": 0.0594
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.250 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 5.968,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.25,
+        "distinct_dominant_classes": 3,
+        "half_cuts": {
+          "left": [
+            0.3671875,
+            0.515625
+          ],
+          "right": [
+            0.39453125,
+            0.765625
+          ]
+        }
+      },
+      "semantic_verdict": "undefined",
+      "semantic_max_abs_error": null,
+      "semantic_comparison": {
+        "verdict": "undefined"
+      },
+      "texture_verdict": "undefined",
+      "texture_max_abs_error": null,
+      "depth_verdict": "undefined",
+      "depth_max_abs_error": null,
+      "classes_in_frame": [
+        "airplane",
+        "bannister",
+        "boat",
+        "ceiling",
+        "floor",
+        "land",
+        "mountain",
+        "person",
+        "rock",
+        "sand",
+        "sea",
+        "seat",
+        "sky",
+        "wall",
+        "water"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0083,
+        0.0298,
+        0.5195,
+        0.2456,
+        0.3853,
+        0.23,
+        0.166,
+        0.1104,
+        0.1826,
+        0.127,
+        0.3193,
+        0.4258
+      ],
+      "seconds": 1.85
+    },
+    {
+      "file": "snow_field.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "semantic_boundaries": {
+        "upper_to_middle": 0.5508,
+        "middle_to_lower": 0.7344
+      },
+      "semantic_bands": {
+        "upper": {
+          "dominant": {
+            "sky": 0.8031,
+            "mountain": 0.1969,
+            "building": 0.0,
+            "wall": 0.0
+          },
+          "reported_classes": {
+            "sky": 0.8031,
+            "mountain": 0.1969
+          }
+        },
+        "middle": {
+          "dominant": {
+            "mountain": 0.7183,
+            "house": 0.2278,
+            "earth": 0.0274,
+            "sky": 0.0264
+          },
+          "reported_classes": {
+            "sky": 0.0264,
+            "mountain": 0.7183,
+            "earth": 0.0274
+          }
+        },
+        "lower": {
+          "dominant": {
+            "earth": 0.9684,
+            "mountain": 0.0316,
+            "sky": 0.0,
+            "wall": 0.0
+          },
+          "reported_classes": {
+            "mountain": 0.0316,
+            "earth": 0.9684
+          }
+        }
+      },
+      "semantic_evidence": {
+        "reliable": true,
+        "reasons": [],
+        "cut_decisiveness": 41.586,
+        "decisiveness_basis": "median_row_change",
+        "half_disagreement": 0.0156,
+        "distinct_dominant_classes": 3,
+        "half_cuts": {
+          "left": [
+            0.55859375,
+            0.74609375
+          ],
+          "right": [
+            0.55859375,
+            0.73046875
+          ]
+        }
+      },
+      "semantic_verdict": "wrong",
+      "semantic_max_abs_error": 0.2208,
+      "semantic_comparison": {
+        "errors": {
+          "upper_to_middle": 0.2208,
+          "middle_to_lower": 0.1844
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.2208,
+          "middle_to_lower": 0.1844
+        },
+        "max_abs_error": 0.2208,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.1973,
+      "depth_verdict": "wrong",
+      "depth_max_abs_error": 0.1922,
+      "classes_in_frame": [
+        "earth",
+        "house",
+        "mountain",
+        "sky",
+        "tree"
+      ],
+      "change_profile_every_16": [
+        0.0,
+        0.0,
+        0.0298,
+        0.0493,
+        0.0322,
+        0.0186,
+        0.0176,
+        0.0298,
+        0.061,
+        0.2593,
+        0.0239,
+        0.0264,
+        0.4951,
+        0.0024,
+        0.0073,
+        0.0015
+      ],
+      "seconds": 1.67
+    }
+  ],
+  "summary": {
+    "photos": 10,
+    "labelled": 7,
+    "texture": {
+      "scored": 7,
+      "close": 2,
+      "partial": 1,
+      "wrong": 4,
+      "median_abs_error": 0.1817,
+      "max_abs_error": 0.28
+    },
+    "depth": {
+      "scored": 7,
+      "close": 0,
+      "partial": 4,
+      "wrong": 3,
+      "median_abs_error": 0.2277,
+      "max_abs_error": 0.3252
+    },
+    "semantic": {
+      "scored": 7,
+      "close": 2,
+      "partial": 1,
+      "wrong": 4,
+      "median_abs_error": 0.1153,
+      "max_abs_error": 0.2683
+    },
+    "semantic_reliable": 4,
+    "semantic_reliable_and_close": 1,
+    "verdict_changed_vs_texture": [],
+    "ranking_by_median_abs_error": [
+      "semantic",
+      "texture",
+      "depth"
+    ]
+  },
+  "limitations": "Ten photographs, one resize, one hand labeller, one 256 px analysis size. SegFormer-B0 is the smallest ADE20K variant; the 150-class vocabulary is used whole, with no per-scene class list, so a scene whose bands are not ADE20K classes cannot be split well. The composition score, not the splitter's two-cut rule, is what this arm changes, so this compares signals under a shared selection rule - it does not show that a composition-aware splitter with a different band count would score the same."
+}

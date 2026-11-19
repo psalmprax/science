@@ -72,6 +72,10 @@ def rate_limit_per_minute() -> int:
         return DEFAULT_RATE_LIMIT_PER_MINUTE
 
 
+class _BodyTooLargeError(Exception):
+    """Internal sentinel raised when streamed request body exceeds MAX_REQUEST_BODY_SIZE."""
+
+
 class _ClientRateLimiter:
     """Sliding-window limiter, keyed by client address.
 
@@ -88,9 +92,24 @@ class _ClientRateLimiter:
     def check(self, client: str, now: float) -> float | None:
         """Return ``None`` when allowed, else seconds until the next slot."""
         with self._lock:
-            window = self._hits.setdefault(client, deque())
-            while window and now - window[0] >= _RATE_WINDOW_SECONDS:
-                window.popleft()
+            if len(self._hits) > 1024:
+                stale = [
+                    k
+                    for k, q in self._hits.items()
+                    if not q or now - q[-1] >= _RATE_WINDOW_SECONDS
+                ]
+                for k in stale:
+                    del self._hits[k]
+            window = self._hits.get(client)
+            if window is not None:
+                while window and now - window[0] >= _RATE_WINDOW_SECONDS:
+                    window.popleft()
+                if not window:
+                    del self._hits[client]
+                    window = None
+            if window is None:
+                window = deque()
+                self._hits[client] = window
             if len(window) >= self.limit:
                 return max(0.0, _RATE_WINDOW_SECONDS - (now - window[0]))
             window.append(now)
@@ -161,13 +180,28 @@ def create_app() -> FastAPI:
                     {"detail": "Malformed Content-Length header"},
                     status_code=400,
                 )
+            if declared_length < 0:
+                return JSONResponse(
+                    {"detail": "Malformed Content-Length header"},
+                    status_code=400,
+                )
             if declared_length > MAX_REQUEST_BODY_SIZE:
                 return JSONResponse(
                     {"detail": f"Request body exceeds maximum size of {MAX_REQUEST_BODY_SIZE} bytes"},
                     status_code=413,
                 )
 
+        if key is not None and request.url.path not in AUTH_EXEMPT_PATHS:
+            presented = request.headers.get("X-API-Key", "")
+            # ``compare_digest`` keeps the comparison constant-time; a plain
+            # ``!=`` leaks the shared prefix length to a timing attacker.
+            if not hmac.compare_digest(presented, key):
+                return JSONResponse({"detail": "Invalid or missing API key"}, status_code=401)
+
         client = request.client.host if request.client else "unknown"
+        # The limiter covers the whole surface, liveness and docs included. Those paths
+        # are exempt from *authentication* so a probe needs no credential; an unthrottled
+        # /health is still an amplification target, and a limiter with holes is not one.
         if limiter is not None:
             retry_after = limiter.check(client, time.monotonic())
             if retry_after is not None:
@@ -176,13 +210,29 @@ def create_app() -> FastAPI:
                     status_code=429,
                     headers={"Retry-After": str(int(retry_after) + 1)},
                 )
-        if key is not None and request.url.path not in AUTH_EXEMPT_PATHS:
-            presented = request.headers.get("X-API-Key", "")
-            # ``compare_digest`` keeps the comparison constant-time; a plain
-            # ``!=`` leaks the shared prefix length to a timing attacker.
-            if not hmac.compare_digest(presented, key):
-                return JSONResponse({"detail": "Invalid or missing API key"}, status_code=401)
-        return await call_next(request)
+
+        orig_receive = request._receive
+        bytes_seen = 0
+
+        async def _bounded_receive() -> dict[str, object]:
+            nonlocal bytes_seen
+            message: dict[str, object] = await orig_receive()
+            if message.get("type") == "http.request":
+                raw_body = message.get("body", b"")
+                chunk = raw_body if isinstance(raw_body, (bytes, bytearray)) else b""
+                bytes_seen += len(chunk)
+                if bytes_seen > MAX_REQUEST_BODY_SIZE:
+                    raise _BodyTooLargeError()
+            return message
+
+        request._receive = _bounded_receive
+        try:
+            return await call_next(request)
+        except _BodyTooLargeError:
+            return JSONResponse(
+                {"detail": f"Request body exceeds maximum size of {MAX_REQUEST_BODY_SIZE} bytes"},
+                status_code=413,
+            )
 
     origins = cors_origins()
     if origins:
@@ -203,7 +253,7 @@ def create_app() -> FastAPI:
     try:
         from apedp.api.routes import visualization
         app.include_router(visualization.router, tags=["visualization"])
-    except Exception:
+    except Exception:  # noqa: BLE001 - optional route module: a missing dependency at import time must disable these routes, not the whole API; the failure is logged with exc_info
         logging.getLogger(__name__).warning("visualization router failed to load; /visualization routes are disabled", exc_info=True)
 
     return app

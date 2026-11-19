@@ -2,10 +2,22 @@
 //!
 //! Provides:
 //! 1. Continued Fraction Expansion & Farey rational approximation for exact fraction recovery.
-//! 2. Integer Relation Discovery (PSLQ/Lattice null-vector search) for physical conservation laws.
+//! 2. Integer Relation Discovery: a branch-and-bound search over the coefficient box,
+//!    for physical conservation laws. Searched, not proved.
 //! 3. Modular Lattice & Periodic Structure Discovery for quantum and discrete spatial lattices.
 
 use serde::{Deserialize, Serialize};
+
+/// The method the integer-relation search actually uses.
+///
+/// Named because the module used to advertise PSLQ: this is a branch-and-bound
+/// enumeration of the coefficient box with a gcd and sign canonicalisation, so
+/// its bound is the box width, not the arithmetic of a basis. Its answer is a
+/// search result, not a proof.
+pub const INTEGER_RELATION_METHOD: &str = "brute_force_branch_and_bound";
+
+/// The largest number of inputs the coefficient search accepts.
+pub const INTEGER_RELATION_MAX_INPUTS: usize = 8;
 
 /// Canonical irreducible rational number p/q with q > 0 and gcd(p, q) == 1.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -139,6 +151,11 @@ pub fn farey_rational(val: f64, max_denom: i64, eps: f64) -> Option<Rational> {
 /// such that |sum m_i x_i| < eps.
 ///
 /// Recovers conservation laws, stoichiometry, and harmonic ratio identities.
+///
+/// Searched, not proved: a relation found here is the best vector in the
+/// coefficient box that lands under `eps`, so another relation may exist
+/// outside it, and a small residual is not an argument that the law holds.
+/// The search refuses more than eight inputs.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IntegerRelationResult {
     pub coefficients: Vec<i64>,

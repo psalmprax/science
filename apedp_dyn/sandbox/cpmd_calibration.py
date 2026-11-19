@@ -10,6 +10,8 @@ reproducible code. History:
 """
 import hashlib
 import json
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -28,10 +30,10 @@ SEAL_MASTER_SEED = 99991
 GATES = {"fp_ceiling": 0.05, "coverage_nominal": 0.95}
 
 
-def gen(kind, nl, sd, wide=False, rho=0.0, t0=8.0, a=1.2, b=0.1):
+def gen(kind: str, nl: float, sd: int, wide: bool=False, rho: float=0.0, t0: float=8.0, a: float=1.2, b: float=0.1) -> tuple[np.ndarray, np.ndarray]:
     rng = np.random.RandomState(int(sd))
     n = 24 if wide else 12
-    lags = np.arange(2, 2 + n, dtype=float)
+    lags: np.ndarray = np.arange(2, 2 + n, dtype=float)
     if kind == "power":
         mu = 0.05 * (lags + t0) ** (-a)
     elif kind == "expo":
@@ -51,34 +53,34 @@ def gen(kind, nl, sd, wide=False, rho=0.0, t0=8.0, a=1.2, b=0.1):
     return lags, mu * np.exp(e)
 
 
-def _fit(curve, lags, ly, p0):
+def _fit(curve: Callable[..., np.ndarray], lags: np.ndarray, ly: np.ndarray, p0: tuple[float, ...]) -> tuple[np.ndarray, float]:
     pp, pc = curve_fit(curve, lags, ly, p0=p0, maxfev=50000)
     se = float(np.sqrt(np.diag(pc))[1]) if np.all(np.isfinite(pc)) else 9.0
     return pp, se
 
 
-def fit_power(lags, ly):
+def fit_power(lags: np.ndarray, ly: np.ndarray) -> tuple[np.ndarray, float]:
     return _fit(lambda t, lA, a, tt: lA - a * np.log(t + tt),
                 lags, ly, (np.log(0.05), 1.0, 8.0))
 
 
-def fit_expo(lags, ly):
+def fit_expo(lags: np.ndarray, ly: np.ndarray) -> np.ndarray:
     pp, _ = _fit(lambda t, lB, b: lB - b * t, lags, ly, (np.log(0.05), 0.1))
     return pp
 
 
-def ic(ly, pred, k, rule):
+def ic(ly: np.ndarray, pred: np.ndarray, k: int, rule: str) -> float:
     n = len(ly)
     rss = float(np.sum((ly - pred) ** 2))
     if rule == "bic":
-        return n * np.log(rss / n) + k * np.log(n)
+        return float(n * np.log(rss / n) + k * np.log(n))
     if rule == "aicc":
         aic = n * np.log(rss / n) + 2 * k
-        return aic + (2 * k * (k + 1)) / max(n - k - 1, 1)
+        return float(aic + (2 * k * (k + 1)) / max(n - k - 1, 1))
     raise ValueError(rule)
 
 
-def select(lags, ly, rule="bic", margin=0.0):
+def select(lags: np.ndarray, ly: np.ndarray, rule: str="bic", margin: float=0.0) -> tuple[str, tuple[np.ndarray, float] | None]:
     """Return (decision, info). decision in power/expo/abstain/fail."""
     try:
         pp, se = fit_power(lags, ly)
@@ -94,7 +96,7 @@ def select(lags, ly, rule="bic", margin=0.0):
     return "abstain", None
 
 
-def boot_ci(lags, ly, pp, seed, B=100):
+def boot_ci(lags: np.ndarray, ly: np.ndarray, pp: np.ndarray, seed: int, B: int=100) -> tuple[float, float]:
     rng = np.random.RandomState(int(seed))
     pred = pp[0] - pp[1] * np.log(lags + pp[2])
     resid = ly - pred
@@ -113,10 +115,10 @@ def boot_ci(lags, ly, pp, seed, B=100):
     return 9.0, -9.0
 
 
-def run_battery(rule, margin, seeds, nl=DIAG_NOISE, wide=DIAG_WIDE, rho=DIAG_RHO):
+def run_battery(rule: str, margin: float, seeds: Mapping[str, Iterable[int]], nl: float=DIAG_NOISE, wide: bool=DIAG_WIDE, rho: float=DIAG_RHO) -> dict[str, Any]:
     """Full end-to-end battery. Returns dict with selection confusion,
     recovery, coverage, FP, failures — every attempt counted."""
-    out = {"rule": rule, "margin": margin, "attempted": 0, "fail": 0,
+    out: dict[str, Any] = {"rule": rule, "margin": margin, "attempted": 0, "fail": 0,
            "abstain": 0, "select_power": 0, "select_expo": 0,
            "fp": 0, "nonpower_attempted": 0,
            "power_recalled": 0, "power_attempted": 0,
@@ -133,6 +135,8 @@ def run_battery(rule, margin, seeds, nl=DIAG_NOISE, wide=DIAG_WIDE, rho=DIAG_RHO
                 out["abstain"] += 1
                 continue
             if dec == "power":
+                # select() returns fit info exactly when it decides "power".
+                assert info is not None
                 out["select_power"] += 1
                 if kind != "power":
                     out["fp"] += 1
@@ -152,7 +156,7 @@ def run_battery(rule, margin, seeds, nl=DIAG_NOISE, wide=DIAG_WIDE, rho=DIAG_RHO
     return out
 
 
-def sha256_of(obj):
+def sha256_of(obj: object) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True,
                                      default=str).encode()).hexdigest()
 

@@ -19,25 +19,26 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import pytest
+
 import numpy as np
+import pytest
 
 from apedp_dyn.quantum_compilation.contracts import load_contract
 from apedp_dyn.quantum_compilation.faros_isq import (
+    ALL_FAROS_PORTFOLIO_CONFIGS,
+    R1_NONUNIFORM_CONFIGS,
+    R2_PREFIX_RESIDUAL_CONFIGS,
+    R3_DIRECT_PHASE_CONFIGS,
+    R4_ALT_ARITHMETIC_CONFIGS,
+    R5_HYBRID_CONFIGS,
+    REFERENCE_COST_90Q,
+    REFERENCE_COST_90Q_AFFINE_OPT,
     ArithmeticForm,
     ErrorBudgetEngine,
     FarosCandidateConfig,
     FarosIsqProposer,
     FarosParetoTournament,
     FidelityLevel,
-    R1_NONUNIFORM_CONFIGS,
-    R2_PREFIX_RESIDUAL_CONFIGS,
-    R3_DIRECT_PHASE_CONFIGS,
-    R4_ALT_ARITHMETIC_CONFIGS,
-    R5_HYBRID_CONFIGS,
-    ALL_FAROS_PORTFOLIO_CONFIGS,
-    REFERENCE_COST_90Q,
-    REFERENCE_COST_90Q_AFFINE_OPT,
     RepresentationType,
     Sable90Profiler,
     SegmentationStrategy,
@@ -54,6 +55,7 @@ from apedp_dyn.quantum_compilation.faros_isq import (
     materialize_faros_circuit,
     run_faros_isq_search,
 )
+from tests.kickmix_availability import require_shipped_extension
 
 
 def test_sable_90_profiler_and_official_cost():
@@ -94,7 +96,7 @@ def test_error_budget_engine_margin_and_tolerance():
     assert (tol > 0).all()
 
     # Exact model matches target -> 0 error -> max margin
-    min_margin, worst_ratio, worst_x = ErrorBudgetEngine.evaluate_margin(target, xs)
+    min_margin, worst_ratio, _worst_x = ErrorBudgetEngine.evaluate_margin(target, xs)
     assert min_margin > 0
     assert worst_ratio == pytest.approx(0.0)
 
@@ -171,14 +173,14 @@ def test_r4_alternative_arithmetic_forms():
     xs = generate_evaluation_subset(max_x=1024)
 
     # Estrin tree
-    estrin_cfg = [c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.ESTRIN_TREE][0]
+    estrin_cfg = next(c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.ESTRIN_TREE)
     p_estrin, _, m_estrin = evaluate_r4_alt_arithmetic(estrin_cfg, xs)
     assert p_estrin is True
     assert m_estrin["cost_evaluation"]["num_qubits"] == 86
     assert m_estrin["cost_evaluation"]["strictly_below_affine_opt"] is True
 
     # Bit-serial
-    serial_cfg = [c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.BIT_SERIAL][0]
+    serial_cfg = next(c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.BIT_SERIAL)
     p_serial, _, m_serial = evaluate_r4_alt_arithmetic(serial_cfg, xs)
     assert p_serial is True
     assert m_serial["cost_evaluation"]["num_qubits"] == 78
@@ -235,6 +237,7 @@ def test_multi_fidelity_pareto_tournament_execution():
 
 def test_faros_isq_proposer_screen_compile_and_measure():
     """Verify the FAROS proposer can screen, compile, and price candidates."""
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     contract = load_contract("invsqrt")
 
     proposer = FarosIsqProposer(portfolio=R2_PREFIX_RESIDUAL_CONFIGS[:2])
@@ -254,6 +257,7 @@ def test_faros_isq_proposer_screen_compile_and_measure():
 
 def test_run_faros_isq_search_end_to_end(tmp_path):
     """Verify end-to-end FAROS search orchestrator and output report."""
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     report = run_faros_isq_search(
         output_dir=tmp_path / "faros_run",
         budget=5,
@@ -338,7 +342,7 @@ def test_chebyshev_minimax_table_generation_and_loading():
     assert worst * (2**24) < 1.0  # Normalized continuous minimax ratio < 1.0
 
     # Every triple (K2, K1, K0) must be positive and within bit bounds
-    for key, (k2, k1, k0) in tables.items():
+    for k2, k1, k0 in tables.values():
         assert 0 <= k2 < (1 << cfg.w2)
         assert k1 > 0
         assert k0 > 0
@@ -366,6 +370,7 @@ def test_exhaustive_integer_certificate_execution(tmp_path):
 
 def test_materialize_faros_circuit_execution(tmp_path):
     """Verify materialization produces circuit artifact, SHA-256, and metadata."""
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     out_kmb = tmp_path / "invsqrt_faros_test_86q.kmb"
     meta = materialize_faros_circuit(
         output_path=out_kmb,
@@ -386,6 +391,7 @@ def test_materialize_faros_circuit_execution(tmp_path):
 
 def test_calibrate_faros_circuit_execution(tmp_path):
     """Verify fixed-delta replay without claiming an LP solver ran."""
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     out_kmb = tmp_path / "invsqrt_faros_test_cal.kmb"
     materialize_faros_circuit(output_path=out_kmb)
 
@@ -400,7 +406,11 @@ def test_calibrate_faros_circuit_execution(tmp_path):
 def test_verify_faros_candidate_receipt_structure(tmp_path):
     """Verify receipt structure and contract verification for FAROS candidate."""
     receipt_file = Path("artifacts/quantum_compilation/invsqrt/receipt_faros_r2_86q.json")
-    assert receipt_file.exists()
+    if not receipt_file.exists():
+        # The receipt records a 200-million-shot verifier run. `artifacts/` is
+        # git-ignored apart from a few tracked DQI files, so it exists only on
+        # the machine that ran the verifier; nothing here can regenerate it.
+        pytest.skip(f"{receipt_file} is not in this checkout (git-ignored verifier output)")
     data = json.loads(receipt_file.read_text(encoding="utf-8"))
 
     assert data["status"] == "PASS"

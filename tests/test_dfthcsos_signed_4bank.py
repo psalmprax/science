@@ -17,21 +17,25 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-import pytest
-import numpy as np
 
+import numpy as np
+import pytest
+
+from apedp_dyn.quantum_compilation.dfthcsos_adapter import (
+    extract_j3_signed_words,
+)
 from apedp_dyn.quantum_compilation.dfthcsos_signed_4bank import (
     ADDRESS_COUNT,
     BASE_WORD_BITS,
     COMPRESSED_DELTA_BITS_PER_ROW,
     HEADROOM,
-    J,
     K_CIRCUITS,
     PEAK_ANGLE_QUBITS,
     PROMOTION_STATUS_HOLD,
     QUBIT_CAP,
     SCRATCH_QUBITS,
     SELECTION_QUBITS,
+    J,
     compile_all_25_angle_circuits,
     compress_signed_word,
     decompress_signed_word,
@@ -41,9 +45,6 @@ from apedp_dyn.quantum_compilation.dfthcsos_signed_4bank import (
     resolve_4363_discrepancy,
     validate_signed_angle_word,
     verify_cos_positive_invariant,
-)
-from apedp_dyn.quantum_compilation.dfthcsos_adapter import (
-    extract_j3_signed_words,
 )
 
 
@@ -68,10 +69,10 @@ def test_signed_givens_invariant_mathematical_proof():
     assert verify_cos_positive_invariant(0.0)[0] is np.True_
 
     # Out of domain: angles with cos(theta) <= 0 must raise ValueError
-    with pytest.raises(ValueError, match="cos.*strictly positive"):
+    with pytest.raises(ValueError, match=r"cos.*strictly positive"):
         verify_cos_positive_invariant(1.6)
 
-    with pytest.raises(ValueError, match="cos.*strictly positive"):
+    with pytest.raises(ValueError, match=r"cos.*strictly positive"):
         verify_cos_positive_invariant(np.pi)
 
 

@@ -28,6 +28,7 @@ from __future__ import annotations
 import ast
 import math
 import re
+from typing import Any
 
 from apedp_dyn.vqc.circuit import (
     SCHEMA_VERSION,
@@ -54,7 +55,7 @@ class QasmUnsupportedError(ValueError):
 
 
 # --------------------------------------------------------------------- export
-def _condition_constant(condition) -> int:
+def _condition_constant(condition: Any) -> int:
     bits = {bit for bit, _value in condition}
     if not bits:
         return 0
@@ -65,7 +66,7 @@ def _condition_constant(condition) -> int:
     return value
 
 
-def _format_condition(condition, num_bits: int) -> str:
+def _format_condition(condition: Any, num_bits: int) -> str:
     tested = {bit for bit, _value in condition}
     if tested != set(range(num_bits)):
         raise QasmUnsupportedError(
@@ -209,7 +210,7 @@ def from_qasm(text: str) -> Circuit:
     """Parse an OpenQASM 2 program into the IR, refusing anything not exactly mappable."""
     registers: dict[str, tuple[str, int]] = {}
     offsets = {"q": 0, "c": 0}
-    ops: list = []
+    ops: list[Any] = []
     ancillas: tuple[int, ...] = ()
     metadata: dict[str, str] = {}
     seen_header = False
@@ -269,13 +270,13 @@ def from_qasm(text: str) -> Circuit:
 
         condition: tuple[tuple[int, bool], ...] = ()
         if condition_value is not None:
-            value = int(condition_value)
+            condition_int = int(condition_value)
             if num_bits == 0:
                 raise QasmUnsupportedError("conditional operation without a classical register")
-            if value >= 1 << num_bits:
+            if condition_int >= 1 << num_bits:
                 raise QasmUnsupportedError(
-                    f"condition c=={value} does not fit in {num_bits} bits")
-            condition = tuple((bit, bool((value >> bit) & 1)) for bit in range(num_bits))
+                    f"condition c=={condition_int} does not fit in {num_bits} bits")
+            condition = tuple((bit, bool((condition_int >> bit) & 1)) for bit in range(num_bits))
 
         if name == "measure":
             if "->" not in targets:

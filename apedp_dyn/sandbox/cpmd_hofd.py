@@ -3,6 +3,7 @@ confirmation equity-40 + multi30). Prereg committed BEFORE this file.
 """
 import sys
 import warnings
+from collections.abc import Sequence
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -13,25 +14,26 @@ import pandas as pd
 SW, EPS, NSW, ZW = 20, 1e-8, 200, 60
 
 
-def load_cols(close_path, close_cols, ofi_cols):
+def load_cols(close_path: str, close_cols: Sequence[str], ofi_cols: Sequence[str]) -> tuple[np.ndarray, np.ndarray]:
     df = pd.read_csv(close_path)
-    P = df[close_cols].to_numpy(dtype=float)
-    R = np.diff(np.log(P), axis=0)
-    ord_flow = df[ofi_cols].to_numpy(dtype=float)[1:]  # align with returns
+    P: np.ndarray = df[close_cols].to_numpy(dtype=float)
+    R: np.ndarray = np.diff(np.log(P), axis=0)
+    ord_flow: np.ndarray = df[ofi_cols].to_numpy(dtype=float)[1:]  # align with returns
     assert R.shape == ord_flow.shape, (R.shape, ord_flow.shape)
     return R, ord_flow
 
 
-def trailing_std(R, w=SW):
+def trailing_std(R: np.ndarray, w: int=SW) -> np.ndarray:
     n, N = R.shape
-    return np.array([[float(np.std(R[max(0, t - w + 1):t + 1, i]) + EPS)
-                      for i in range(N)] for t in range(n)])
+    out: np.ndarray = np.array([[float(np.std(R[max(0, t - w + 1):t + 1, i]) + EPS)
+                                for i in range(N)] for t in range(n)])
+    return out
 
 
-def hofd_forecast(R, ord_flow):
+def hofd_forecast(R: np.ndarray, ord_flow: np.ndarray) -> np.ndarray:
     n, N = R.shape
     sig = trailing_std(R)
-    fc = np.full((n, N), np.nan)
+    fc: np.ndarray = np.full((n, N), np.nan)
     for t in range(ZW, n - 1):
         w = ord_flow[t - ZW + 1:t + 1]
         mu, sd = w.mean(0), w.std(0) + EPS
@@ -40,7 +42,7 @@ def hofd_forecast(R, ord_flow):
     return fc
 
 
-def ic_null(F, R, seed):
+def ic_null(F: np.ndarray, R: np.ndarray, seed: int) -> tuple[float, float, float]:
     f, r = F[:-1].ravel(), R[1:].ravel()
     ok = np.isfinite(f) & np.isfinite(r)
     f, r = f[ok], r[ok]
@@ -52,7 +54,7 @@ def ic_null(F, R, seed):
     return obs, float(cnt / NSW), mse
 
 
-def evaluate(tag, R, ord_flow, seed, lo=0.0, hi=1.0):
+def evaluate(tag: str, R: np.ndarray, ord_flow: np.ndarray, seed: int, lo: float=0.0, hi: float=1.0) -> bool:
     assert R.shape == ord_flow.shape
     n = len(R)
     a, b = int(lo * n), int(hi * n)
@@ -89,7 +91,7 @@ def evaluate(tag, R, ord_flow, seed, lo=0.0, hi=1.0):
     return okg
 
 
-def run():
+def run() -> None:
     C = ["BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "AVAX", "DOGE", "DOT",
          "LINK", "MATIC", "NEAR", "ATOM", "UNI", "LTC"]
     Rc, Oc = load_cols("data/market/crypto_top15.csv", C, [a + "_OFI" for a in C])

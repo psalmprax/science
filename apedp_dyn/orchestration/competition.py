@@ -170,7 +170,7 @@ def _proposer_result(engine: str, proposals: Any) -> EngineResult:
     )
 
 
-def _train_matrix(X: Mapping[str, np.ndarray], Y: np.ndarray, train_ratio: float):
+def _train_matrix(X: Mapping[str, np.ndarray], Y: np.ndarray, train_ratio: float) -> Any:
     names = list(X)
     n = len(Y)
     cut = max(1, int(n * train_ratio))
@@ -179,7 +179,7 @@ def _train_matrix(X: Mapping[str, np.ndarray], Y: np.ndarray, train_ratio: float
     return names, M, y
 
 
-def _sindy(X, Y, train_ratio) -> EngineResult:
+def _sindy(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.sindy_proposer import SINDyProposer
 
     names, M, y = _train_matrix(X, Y, train_ratio)
@@ -188,7 +188,7 @@ def _sindy(X, Y, train_ratio) -> EngineResult:
     return _proposer_result("sindy", props)
 
 
-def _basis(X, Y, train_ratio) -> EngineResult:
+def _basis(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.basis_regression_proposer import (
         BasisRegressionProposer,
     )
@@ -199,7 +199,7 @@ def _basis(X, Y, train_ratio) -> EngineResult:
     return _proposer_result("basis_regression", props)
 
 
-def _reservoir(X, Y, train_ratio) -> EngineResult:
+def _reservoir(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.reservoir_proposer import ReservoirProposer
 
     names, M, y = _train_matrix(X, Y, train_ratio)
@@ -225,7 +225,7 @@ def _frame_proposer(
     return _proposer_result(engine, props)
 
 
-def _distributed_lag(X, Y, train_ratio):
+def _distributed_lag(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.distributed_lag_interaction_proposer import (
         DistributedLagInteractionProposer,
     )
@@ -233,7 +233,7 @@ def _distributed_lag(X, Y, train_ratio):
                            DistributedLagInteractionProposer, X, Y, train_ratio)
 
 
-def _regime_switching(X, Y, train_ratio):
+def _regime_switching(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.regime_switching_proposer import (
         RegimeSwitchingProposer,
     )
@@ -241,7 +241,7 @@ def _regime_switching(X, Y, train_ratio):
                            RegimeSwitchingProposer, X, Y, train_ratio)
 
 
-def _ncm(X, Y, train_ratio):
+def _ncm(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.ncm_structural_proposer import (
         NCMStructuralProposer,
     )
@@ -249,7 +249,7 @@ def _ncm(X, Y, train_ratio):
                            NCMStructuralProposer, X, Y, train_ratio)
 
 
-def _rime_ad(X, Y, train_ratio):
+def _rime_ad(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
     names, M, y = _train_matrix(X, Y, train_ratio)
     df = pd.DataFrame(M, columns=names)
@@ -258,7 +258,7 @@ def _rime_ad(X, Y, train_ratio):
     return _proposer_result("rime_ad", props)
 
 
-def _invariant_transfer(X, Y, train_ratio):
+def _invariant_transfer(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.invariant_transfer_proposer import (
         InvariantTransferProposer,
     )
@@ -286,7 +286,7 @@ def _named(
     return _proposer_result(engine, run(df))
 
 
-def _sparse_microstructure(X, Y, train_ratio) -> EngineResult:
+def _sparse_microstructure(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.sparse_microstructure_proposer import (
         SparseMicrostructureProposer,
     )
@@ -295,7 +295,7 @@ def _sparse_microstructure(X, Y, train_ratio) -> EngineResult:
                       {"train": df}, target_col="price"))
 
 
-def _order_book(X, Y, train_ratio) -> EngineResult:
+def _order_book(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.resiliency_proposer import (
         OrderBookResiliencyProposer,
     )
@@ -304,21 +304,21 @@ def _order_book(X, Y, train_ratio) -> EngineResult:
                       {"train": df}, target_col="price"))
 
 
-def _hamiltonian(X, Y, train_ratio) -> EngineResult:
+def _hamiltonian(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.stem_proposers import HamiltonianProposer
     return _named("hamiltonian", X, Y, train_ratio,
                   lambda df: HamiltonianProposer().fit_and_propose(
                       df, q_col="q", p_col="p"))
 
 
-def _solenoidal(X, Y, train_ratio) -> EngineResult:
+def _solenoidal(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.stem_proposers import SolenoidalFluidProposer
     return _named("solenoidal_fluid", X, Y, train_ratio,
                   lambda df: SolenoidalFluidProposer().fit_and_propose(
                       df, x_col="x", y_col="y", u_col="u", v_col="v"))
 
 
-def _sir(X, Y, train_ratio) -> EngineResult:
+def _sir(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.stem_proposers import CompartmentalSirProposer
     return _named("compartmental_sir", X, Y, train_ratio,
                   lambda df: CompartmentalSirProposer().fit_and_propose(

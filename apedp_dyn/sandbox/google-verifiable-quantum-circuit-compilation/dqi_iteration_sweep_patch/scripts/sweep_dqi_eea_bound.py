@@ -16,6 +16,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 
 def sha256(path: Path) -> str:
@@ -26,7 +27,7 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def load_callable(spec: str):
+def load_callable(spec: str) -> Any:
     if ':' not in spec:
         raise ValueError('--builder must be module:function')
     module_name, func_name = spec.split(':', 1)
@@ -53,7 +54,8 @@ def main() -> int:
     sys.path[:0] = [str(root / 'kickmix'), str(root / 'verifiers')]
     from dqi import verify_submission_dqi as dv
     builder = load_callable(a.builder)
-    out = a.output.resolve(); out.mkdir(parents=True, exist_ok=True)
+    out = a.output.resolve()
+    out.mkdir(parents=True, exist_ok=True)
     spec = dv.ProblemSpecDQI.benchmark_instance(num_shots=a.shots)
     rows = []
     for n_iters in a.iterations:
@@ -70,7 +72,7 @@ def main() -> int:
             row['verification'] = dict(report)
             row['status'] = 'VERIFIED' if report.get('status') == 'PASS' else 'REJECTED'
             row['measured_cost'] = report.get('score')
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - a failed iteration is recorded in the row and the sweep continues
             row.update({'status': 'ERROR', 'error': repr(exc)})
         row['seconds'] = time.monotonic() - started
         rows.append(row)

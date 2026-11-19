@@ -31,12 +31,6 @@ try:
 except Exception:
     XFORMERS_AVAILABLE = False
 
-try:
-    import apedp_kernel
-    RUST_SSM_AVAILABLE = hasattr(apedp_kernel, 'mamba2_selective_scan')
-except Exception:
-    apedp_kernel = None
-    RUST_SSM_AVAILABLE = False
 
 from jetflow_video.tensor_train import (
     TTLinear,
@@ -191,7 +185,15 @@ class AdaLNZero(nn.Module):
 
 
 class MambaTemporalBlock(nn.Module):
-    """Simple Mamba-style temporal block with Rust fallback."""
+    """Gated causal depthwise convolution over time.
+
+    Named for the Mamba block it is shaped like; it has no state-space scan.
+    Until 2026-11-17 it also called ``apedp_kernel.mamba2_selective_scan`` when
+    the kernel was installed: that call never succeeded (wrong argument shapes,
+    and the native function refuses with NotImplementedError), was swallowed by
+    a catch-all, and cost a device-to-host copy on every forward pass. The
+    output was always this convolution.
+    """
     def __init__(self, hidden_dim: int):
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -203,22 +205,12 @@ class MambaTemporalBlock(nn.Module):
         
     def forward(self, x):
         # x: (B*S, T, D)
-        b_s, t, d = x.shape
+        t = x.shape[1]
         x_proj = self.in_proj(x)
         x1, x2 = x_proj.chunk(2, dim=-1)
         # conv over time
         x1_conv = self.conv1d(x1.transpose(1, 2))[:, :, :t].transpose(1, 2)
-        if RUST_SSM_AVAILABLE and apedp_kernel is not None:
-            try:
-                import numpy as np
-                u = x1_conv.detach().cpu().numpy().astype('float64')
-                out_np = apedp_kernel.mamba2_selective_scan(u, u, np.ones(d), np.expand_dims(u, -1), np.expand_dims(u, -1), np.ones((b_s, d)))
-                x1_ssm = torch.from_numpy(np.array(out_np)).to(x.device).to(x.dtype)
-            except Exception:
-                x1_ssm = x1_conv
-        else:
-            x1_ssm = x1_conv
-        y = x1_ssm * torch.sigmoid(x2)
+        y = x1_conv * torch.sigmoid(x2)
         return self.out_proj(y)
 
 

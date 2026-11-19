@@ -3,6 +3,7 @@ and trade momentum regimes in financial time series."""
 from __future__ import annotations
 
 import sys
+from typing import Any
 
 sys.path.insert(0, '.')  # ensure apedp_dyn is importable
 
@@ -18,7 +19,7 @@ SOLE_SURVIVOR_GAMMA = 3.0
 CAL_SIGMA = 1.8
 RESID_RHO_FLAG = 0.5
 
-def generate_price_series(n_points=200, momentum=0.05, noise_sigma=0.02, regime="bull", seed=42):
+def generate_price_series(n_points: int=200, momentum: float=0.05, noise_sigma: float=0.02, regime: str="bull", seed: int=42) -> np.ndarray:
     rng = np.random.RandomState(seed)
     if regime == "bull":
         mom = momentum
@@ -36,7 +37,7 @@ def fit_candidates(prices: np.ndarray, noise_sigma: float = 0.02) -> list[Scored
     n = len(prices)
     y = prices[1:]
     x_lag = prices[:-1]
-    t_idx = np.arange(1, n, dtype=float)
+    t_idx: np.ndarray = np.arange(1, n, dtype=float)
 
     n_samples = len(y)
     n_train = n_samples // 2
@@ -146,7 +147,7 @@ def fit_candidates(prices: np.ndarray, noise_sigma: float = 0.02) -> list[Scored
 
     return candidates
 
-def detect_regime(prices, noise_sigma=0.02, data_origin="simulation"):
+def detect_regime(prices: np.ndarray, noise_sigma: float=0.02, data_origin: str="simulation") -> dict[str, Any]:
     candidates = fit_candidates(prices, noise_sigma=noise_sigma)
     adj = adjudicate(candidates,
         sole_survivor_rule=True,
@@ -171,8 +172,8 @@ def detect_regime(prices, noise_sigma=0.02, data_origin="simulation"):
     return {'regime': regime, 'status': status, 'promoted': promoted,
         'tau_epi': tau_epi, 'data_origin': adj.data_origin}
 
-def trading_strategy(prices, initial_capital=100.0, risk_per_trade=0.02,
-                     data_origin="simulation"):
+def trading_strategy(prices: np.ndarray, initial_capital: float=100.0, risk_per_trade: float=0.02,
+                     data_origin: str="simulation") -> dict[str, Any]:
     capital = initial_capital
     position = 0.0
     equity_curve = [capital]
@@ -218,7 +219,7 @@ def trading_strategy(prices, initial_capital=100.0, risk_per_trade=0.02,
         'num_trades': len([t for t in trades if t['type'] in ('long','short')]),
         'equity_curve': equity_curve}
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 60)
     print("APEDP TRADING ENGINE: Momentum Detection")
     print("=" * 60)

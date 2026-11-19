@@ -8,7 +8,7 @@ Provenance (D1.7) travels in ScoredCandidate.provenance from day one.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 GRAMMAR_VERSION = "mechanical-2nd-order v1"
 
@@ -98,13 +98,41 @@ class SystemCandidate:
         return tuple(p for e in self.equations for p in e.parameter_names())
 
 
+@runtime_checkable
+class CandidatePayload(Protocol):
+    """What a scored record may read without assuming a term grammar.
+
+    ``CandidateDynamics`` and ``SystemCandidate`` both satisfy it, and so does a
+    free-form proposal reference: it has an identity and provenance metadata, but
+    no term set to canonicalise. The referee can therefore carry either payload
+    without being told that an ungrammatical proposal is a grammar candidate.
+    """
+
+    @property
+    def candidate_id(self) -> str: ...
+
+    @property
+    def metadata(self) -> dict[str, Any]: ...
+
+    @property
+    def grammar_version(self) -> str: ...
+
+    @property
+    def generation_seed(self) -> int: ...
+
+    @property
+    def parent_candidates(self) -> tuple[str, ...]: ...
+
+    def parameter_names(self) -> tuple[str, ...]: ...
+
+
 @dataclass(frozen=True)
 class ScoredCandidate:
     """A candidate plus its full audit trail (D1.7 provenance)."""
 
-    candidate: CandidateDynamics | SystemCandidate
+    candidate: CandidateDynamics | SystemCandidate | CandidatePayload
     provenance: dict[str, Any] = field(default_factory=dict)
-    gates: tuple = ()
+    gates: tuple[Any, ...] = ()
     fit: Any = None
     train_loss: float | None = None
     holdout_rmse: float | None = None
@@ -114,9 +142,15 @@ class ScoredCandidate:
         if isinstance(c, SystemCandidate):
             term_set: Any = [list(e.term_set()) for e in c.equations]
             bounds = {k: v for e in c.equations for k, v in e.parameter_bounds.items()}
-        else:
+        elif isinstance(c, CandidateDynamics):
             term_set = list(c.term_set())
             bounds = dict(c.parameter_bounds)
+        else:
+            # A free-form reference has no term set: recording none is the honest
+            # provenance, and pretending it had one would let a gate rank a grammar
+            # the proposal never came from.
+            term_set = []
+            bounds = {}
         return {
             "candidate_id": c.candidate_id,
             "grammar_version": c.grammar_version,

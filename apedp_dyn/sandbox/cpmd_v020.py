@@ -5,6 +5,7 @@ implementation). Out-of-grammar leg stays OFF-PROTOCOL.
 """
 import sys
 import warnings
+from collections.abc import Iterable, Sequence
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -18,9 +19,9 @@ SIG = 0.01
 ALPHA = 0.05 / 60
 
 
-def gen_ladder_truth(seed, leg, A=2.0, n=3000):
+def gen_ladder_truth(seed: int, leg: str, A: float=2.0, n: int=3000) -> np.ndarray:
     rng = np.random.RandomState(int(seed))
-    out = rng.normal(0, SIG, n)
+    out: np.ndarray = rng.normal(0, SIG, n)
     buf = list(out[:K])
     for t in range(K, n - 1):
         zw = np.array(buf[-K:]) / (float(np.std(buf[-20:])) + EPS)
@@ -39,7 +40,7 @@ def gen_ladder_truth(seed, leg, A=2.0, n=3000):
     return out
 
 
-def oracle_ic(leg, A=2.0):
+def oracle_ic(leg: str, A: float=2.0) -> float:
     ics = []
     for i in range(10):
         ret = gen_ladder_truth(94000 + i, leg, A)
@@ -58,7 +59,7 @@ def oracle_ic(leg, A=2.0):
     return float(np.mean(ics))
 
 
-def search(ret, seed):
+def search(ret: np.ndarray, seed: int) -> list[tuple[str, float, float]]:
     forms = grammar_forms()
     hits = []
     for name, fn in forms.items():
@@ -68,9 +69,9 @@ def search(ret, seed):
     return hits
 
 
-def discovery(leg, A, seeds):
+def discovery(leg: str, A: float, seeds: Iterable[int]) -> tuple[list[tuple[str, float, float]], list[np.ndarray]]:
     paths = [gen_ladder_truth(sd, leg, A) for sd in seeds]
-    agg = {}
+    agg: dict[str, list[tuple[float, float]]] = {}
     for ret, sd in zip(paths, seeds, strict=False):
         for name, ic, p in search(ret, sd):
             agg.setdefault(name, []).append((ic, p))
@@ -80,13 +81,13 @@ def discovery(leg, A, seeds):
     return rows, paths
 
 
-def mse_on_paths(formname, paths):
+def mse_on_paths(formname: str, paths: list[np.ndarray]) -> np.ndarray:
     forms = grammar_forms()
     scaled = formname not in forms
     base = formname[:-1] if scaled else formname
     if base not in forms:  # defensive: fall back to rstrip
         base = formname.rstrip("s")
-    mses = []
+    mses: list[float] = []
     for ret in paths:
         n = len(ret)
         sig, C, Q, V, Mt = feats(ret)
@@ -100,10 +101,10 @@ def mse_on_paths(formname, paths):
             Cp = C[t]
         ok = np.isfinite(fc)
         mses.append(float(np.mean((fc[ok] - ret[ok]) ** 2)))
-    return np.array(mses)
+    return np.asarray(mses, dtype=float)
 
 
-def referee(rows, paths, true_names):
+def referee(rows: list[tuple[str, float, float]], paths: list[np.ndarray], true_names: Sequence[str]) -> str:
     passed = [r for r in rows if r[2] < ALPHA]
     if not passed:
         return "NO_RECOVERY"
@@ -121,7 +122,7 @@ def referee(rows, paths, true_names):
     return "MULTI_HYPOTHESIS"
 
 
-def run():
+def run() -> None:
     print("== B0: one-shot ladder calibration (record-only) ==")
     cal = {}
     for leg in ("high", "low", "mod"):
@@ -150,7 +151,7 @@ def run():
     # null leg
     from cpmd_discovery_suite import gen_B
     paths = [gen_B(93000 + i) for i in range(20)]
-    agg = {}
+    agg: dict[str, list[float]] = {}
     for ret, sd in zip(paths, range(93000, 93020), strict=False):
         for name, _ic, p in search(ret, sd):
             agg.setdefault(name, []).append(p)

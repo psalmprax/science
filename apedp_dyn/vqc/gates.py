@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import dataclasses
 import math
+from typing import Any
 
 import numpy as np
 
@@ -32,12 +33,14 @@ __all__ = [
 ]
 
 def _dagger(matrix: np.ndarray) -> np.ndarray:
-    return np.conjugate(np.transpose(matrix))
+    _out: np.ndarray = np.conjugate(np.transpose(matrix))
+    return _out
 
 
 def _rz(theta: float) -> np.ndarray:
-    return np.array([[np.exp(-0.5j * theta), 0.0],
+    _out: np.ndarray = np.array([[np.exp(-0.5j * theta), 0.0],
                      [0.0, np.exp(0.5j * theta)]], dtype=np.complex128)
+    return _out
 
 
 _FIXED = {
@@ -55,9 +58,11 @@ _FIXED["tdg"] = _dagger(_FIXED["t"])
 def _rotation(axis: str, theta: float) -> np.ndarray:
     c, s = math.cos(theta / 2.0), math.sin(theta / 2.0)
     if axis == "x":
-        return np.array([[c, -1.0j * s], [-1.0j * s, c]], dtype=np.complex128)
+        _out: np.ndarray = np.array([[c, -1.0j * s], [-1.0j * s, c]], dtype=np.complex128)
+        return _out
     if axis == "y":
-        return np.array([[c, -s], [s, c]], dtype=np.complex128)
+        _out = np.array([[c, -s], [s, c]], dtype=np.complex128)
+        return _out
     return _rz(theta)
 
 
@@ -106,13 +111,15 @@ def matrix_for(name: str, params: tuple[float, ...] = ()) -> np.ndarray:
         if len(params) != spec.num_params:
             raise ValueError(f"expected {spec.num_params} parameters, got {len(params)}")
         if spec.symbols == ("phase",):
-            return np.array([[1.0, 0.0], [0.0, np.exp(1j * float(params[0]))]],
+            _out_113: np.ndarray = np.array([[1.0, 0.0], [0.0, np.exp(1j * float(params[0]))]],
                             dtype=np.complex128)
+            return _out_113
         return _rotation(spec.symbols[0], float(params[0]))
-    return _FIXED[name]
+    _out: np.ndarray = _FIXED[name]
+    return _out
 
 
-def apply_gate(sim, name: str, targets: tuple[int, ...],
+def apply_gate(sim: Any, name: str, targets: tuple[int, ...],
                params: tuple[float, ...] = ()) -> None:
     """Apply `name` to a `StatevectorSimulator`, by the IR's control convention."""
     spec = GATE_SPECS.get(name)

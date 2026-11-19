@@ -121,6 +121,13 @@ class ExperimentOutcome:
     results: list[ExperimentResult]
     ledger: QuantumCandidateLedger | None = None
 
+    @property
+    def verdict_summary(self) -> dict[str, Any]:
+        """Verdict counts from the run's ledger; an empty run has an empty summary."""
+        if self.ledger is None:
+            return {"candidates": 0, "by_status": {}, "unverifiable": 0, "eligible": 0}
+        return self.ledger.verdict_summary()
+
 
 def _default_python() -> str:
     return os.environ.get("APEDP_Q_KICKMIX_PYTHON") or sys.executable

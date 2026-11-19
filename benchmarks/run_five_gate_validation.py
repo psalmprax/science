@@ -236,7 +236,8 @@ def gate5_sealed_confirmation() -> dict:
     return {"passed": bool(all(cases.values())), "cases": cases}
 
 
-def run_all_gates() -> dict:
+def run_all_gates(write: bool = False) -> dict:
+    """Run the five gates. ``write=True`` replaces the committed evidence files."""
     results = {"metadata": {
         "title": "RIME-AD Five-Gate Scientific Validation Programme",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -254,6 +255,14 @@ def run_all_gates() -> dict:
     results["gates"]["gate5_sealed_confirmation"] = gate5_sealed_confirmation()
     results["all_passed"] = bool(all(
         g["passed"] for g in results["gates"].values()))
+    if not write:
+        return results
+    # Only a deliberate run writes: `tests/test_dyn_five_gate_validation.py`
+    # imports this function, and until 2026-11-17 every test run rewrote the
+    # two committed evidence files in place -- new timestamps, new wall times,
+    # a new workspace path -- so the suite left the tree dirty and a reader
+    # could not tell the recorded measurement from an incidental rerun
+    # (docs/SYSTEM_FLAWS_AUDIT.md, F-05).
     JSON_OUT.write_text(json.dumps(results, indent=2), encoding="utf-8")
     print(f"Results written to {JSON_OUT}")
     generate_markdown_report(results)
@@ -328,4 +337,4 @@ def generate_markdown_report(results: dict) -> None:
 
 
 if __name__ == "__main__":
-    run_all_gates()
+    run_all_gates(write=True)

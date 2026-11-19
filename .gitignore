@@ -89,3 +89,27 @@ artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_216.kmb
 # verifiers/dfthcsos/SCORING_README.md, so a re-download is verifiable.
 apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/FeMoCo76o113e.fcidump
 artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_222.kmb
+/.agents/
+/.claude/
+/skills-lock.json
+
+# Local audit output: mypy/ruff/pytest logs from agent sessions
+.artifacts/
+submission/
+unused/
+
+# Vendored Qualtran source: gitlink removed (its remote 404s), local copy is residue
+apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/
+
+# Ledger head markers (FullLineageExperimentLedger tamper evidence): local state
+# that describes one working copy's ledger file, never a shared artefact.
+*.jsonl.head
+*.jsonl.head.tmp
+
+# Developer-local convenience link to the built native kernel in a virtualenv.
+# It pointed at .venv/lib/python3.12/..., which does not exist in a clone; the
+# kernel is importable from site-packages once built (maturin develop).
+/apedp_kernel
+
+# Lake build output of the machine-checked Lean core
+/lean_checked/.lake/

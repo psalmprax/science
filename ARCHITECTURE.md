@@ -74,7 +74,7 @@ To prevent holdout contamination:
 Preregistered settings cannot be scattered as independent literals across code and documentation. 
 
 - **Canonical Specification:** Stored at `specifications/canonical_preregistered_spec_v1.json`.
-- **Runtime Guard:** `apedp_dyn.conf.canonical_spec` computes the SHA-256 hash of the JSON file upon import. If the hash does not match `a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47`, import halts with `SpecificationIntegrityError`.
+- **Runtime Guard:** `apedp_dyn.conf.canonical_spec` computes the SHA-256 hash of the JSON file upon import. If the hash does not match `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329`, import halts with `SpecificationIntegrityError`.
 - **Consumption:**
   - `canonical_ledger.py` consumes `TACTICAL_ACTIVE_MIN` (5%) and `TACTICAL_ACTIVE_MAX` (90%), `CONTINUOUS_FACTOR_ACTIVE_MIN` (85%), `TAIL_RISK_MIN_EVENTS` (30).
   - `trial_ledger.py` consumes `DSR_THRESHOLD`.
@@ -89,8 +89,8 @@ Earlier scientific generations were sealed as immutable benchmark records rather
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1.json` — original sealed generation.
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_1.json` — first revision.
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_2.json` — second revision.
-- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_10.json` — current sealed generation (the one consumed by `blind_benchmark.py` via `FROZEN_RECORD`; supersedes v1_9 after the grammar-space expansion: `H-SQRTV` + `sqrt`/`tanh`/`min`/`max` operator declarations in `grammar_space.py` and saturating-rational term families in `grammar/candidate_ir.py`).
-- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_9.json`, `APEDPX_FROZEN_v1_8.json`, `APEDPX_FROZEN_v1_7.json`, `APEDPX_FROZEN_v1_6.json`, `APEDPX_FROZEN_v1_4.json`, `APEDPX_FROZEN_v1_3.json`, `APEDPX_FROZEN_v1_2.json`, `APEDPX_FROZEN_v1_1.json`, `APEDPX_FROZEN_v1.json` — superseded generations retained as immutable historical records.
+- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_18.json` — current sealed generation (the one consumed by `blind_benchmark.py` via `FROZEN_RECORD`; supersedes v1.13 after the sandbox-wide type-annotation pass, which drifted four guard files by annotations only — `eseds_dynamical.py`, `multi_asset_signals_sandbox.py`, `multi_grammar_sandbox.py`, `trading_signals_sandbox.py` — with no arithmetic, threshold, cohort or blind-case change). Its `remint_log` carries the old and new digest and the rationale for every drifted file.
+- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_13.json`, `APEDPX_FROZEN_v1_12.json`, `APEDPX_FROZEN_v1_11.json`, `APEDPX_FROZEN_v1_10.json`, `APEDPX_FROZEN_v1_8.json`, `APEDPX_FROZEN_v1_7.json`, `APEDPX_FROZEN_v1_6.json`, `APEDPX_FROZEN_v1_4.json`, `APEDPX_FROZEN_v1_3.json`, `APEDPX_FROZEN_v1_2.json`, `APEDPX_FROZEN_v1_1.json`, `APEDPX_FROZEN_v1.json` — superseded generations retained as immutable historical records.
 - `apedp_dyn/sandbox/governance_manifest.json` — manifest enumerating the sealed artifacts.
 
 The frozen generations intentionally carry **different threshold key sets** from the canonical live spec (e.g. `RESID_RHO_FLAG`, `SOLE_SURVIVOR_GAMMA`, `bootstrap_seed`). Do not "synchronize" them by editing: the canonical live thresholds are only those in `specifications/canonical_preregistered_spec_v1.json`.

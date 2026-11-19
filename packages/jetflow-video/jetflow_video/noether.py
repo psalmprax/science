@@ -75,9 +75,11 @@ class NoetherConservationEngine:
         dx = self.config.dx
         dy = self.config.dy
 
-        # 2D FFT wavenumbers
-        kx = 2.0 * torch.pi * torch.fft.fftfreq(w, d=dx, device=device)
-        ky = 2.0 * torch.pi * torch.fft.fftfreq(h, d=dy, device=device)
+        # 2D FFT wavenumbers, in the input's precision: float32 symbols applied to
+        # a float64 field left a residual divergence of ~1e-8 instead of ~1e-15.
+        symbol_dtype = torch.float64 if dtype == torch.float64 else torch.float32
+        kx = 2.0 * torch.pi * torch.fft.fftfreq(w, d=dx, device=device, dtype=symbol_dtype)
+        ky = 2.0 * torch.pi * torch.fft.fftfreq(h, d=dy, device=device, dtype=symbol_dtype)
         ky_grid, kx_grid = torch.meshgrid(ky, kx, indexing="ij")
 
         # Exact central difference Fourier symbols: s_x = sin(k_x * dx) / dx

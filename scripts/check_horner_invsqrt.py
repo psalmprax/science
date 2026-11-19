@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Independent checks for integer Horner rounding and reversibility limits."""
-from fractions import Fraction
 import unittest
+from fractions import Fraction
 
 import numpy as np
-
 from audit_horner_invsqrt import coefficient_table, evaluate_integer, round_shift
 from audit_normalized_invsqrt import FULL_MAX_X
 

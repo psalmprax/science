@@ -1,0 +1,90 @@
+{
+  "patent_id": "US7120566B1",
+  "source": "https://patents.google.com/patent/US7120566B1/en",
+  "retrieved_utc": "2026-10-31T18:27:03+00:00",
+  "http_status": 200,
+  "bytes": 279627,
+  "html_sha256": "a5f0f66c36a31bbf0bcff8244768d593a1eae4c0a2e4b609be305b3880b32f77",
+  "jurisdiction": "US",
+  "title": "Method for estimating changes in product life resulting from HALT using exponential acceleration model",
+  "abstract": "Abstract A method provides early estimation of product life using accelerated stress testing data. In an embodiment, data measured from a product operating in a first, high-stress environment is used to predict how long the product will operate in a second, normal operating environment before failure, using an exponential acceleration model. An additional feature of the present invention provides a quantified indication of how much the product has improved from a redesign.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A machine-readable medium storing computer-executable instructions to perform a method of estimating a life of a product, the method comprising: determining accelerated stress testing data for the product using the relationship t F =AF×exp(t A ), the accelerated stress testing data representing the response of the product operating in a first environment; and calculating the mean-time-between-failures (MTBF) for the product operating in a second environment based on the accelerated stress testing data, wherein t F is a time to failure on a field use time scale, AF is an acceleration factor, and t A is a time to failure on an accelerated time scale."
+    },
+    {
+      "num": "2",
+      "text": "2. The machine-readable medium of claim 1 , wherein said first environment is more likely than the second environment to cause the product to fail."
+    },
+    {
+      "num": "3",
+      "text": "3. The machine-readable medium of claim 1 , wherein the accelerated stress testing data represents the length of time the product operates in the first environment before the product fails."
+    },
+    {
+      "num": "4",
+      "text": "4. The machine-readable medium of claim 1 , wherein the accelerated stress testing data is derived from a plurality of different stress tests."
+    },
+    {
+      "num": "5",
+      "text": "5. The machine-readable medium of claim 4 , wherein the plurality of different stress tests includes a temperature test and a vibrational test."
+    },
+    {
+      "num": "6",
+      "text": "6. The machine-readable medium of claim 1 , the method further comprising calculating upper and lower confidence limits for the MTBF calculation."
+    },
+    {
+      "num": "7",
+      "text": "7. The machine-readable medium of claim 1 , wherein said accelerated stress testing data is determined at least in part from bill of materials (BOM) information on the product."
+    },
+    {
+      "num": "8",
+      "text": "8. The machine-readable medium of claim 1 , wherein said step of calculating is performed during the design of the product."
+    },
+    {
+      "num": "9",
+      "text": "9. The machine-readable medium of claim 1 , wherein said step of calculating is performed prior to manufacturing the product for commercial use."
+    },
+    {
+      "num": "10",
+      "text": "10. The machine-readable medium of claim 1 , wherein the accelerated stress testing data includes accelerated stress testing data for a previous design of the product."
+    },
+    {
+      "num": "11",
+      "text": "11. The machine-readable medium of claim 10 , wherein the accelerated stress testing data for the previous design of the product is derived from stress testing in an environment less likely to cause failure than said first environment."
+    },
+    {
+      "num": "12",
+      "text": "12. The machine-readable medium of claim 10 , the method further comprising calculating a change in MTBF from the previous design of the product."
+    },
+    {
+      "num": "13",
+      "text": "13. The machine-readable medium of claim 10 , the method further comprising calculating a factor increase or decrease in the life of the product as compared to the life of the previous design of the product."
+    },
+    {
+      "num": "14",
+      "text": "14. The machine-readable medium of claim 10 , wherein the accelerated stress testing data is derived from a plurality of different stress tests."
+    },
+    {
+      "num": "15",
+      "text": "15. The machine-readable medium of claim 14 , wherein the different stress tests include a temperature test and a vibrational test."
+    },
+    {
+      "num": "16",
+      "text": "16. The machine-readable medium of claim 10 , wherein said step of calculating is performed during the design of the product."
+    },
+    {
+      "num": "17",
+      "text": "17. The machine-readable medium of claim 10 , wherein said step of calculating is performed prior to manufacturing the product for commercial use."
+    },
+    {
+      "num": "18",
+      "text": "18. A machine-readable medium storing computer-executable instructions to perform a method of estimating a life of a product, the method comprising: determining accelerated stress testing data for the product using the relationship t F =AF×exp(t A ), the accelerated stress testing data representing the response of the product operating in a first environment; and calculating the mean-time-between-failures (MTBF) for the product operating in a second environment based on the accelerated stress testing data, wherein said first environment is more likely than the second environment to cause the product to fail; wherein the accelerated stress testing data is derived from a plurality of different stress tests; and wherein t F is a time to failure on a field use time scale, AF is an acceleration factor, and t A is a time to failure on an accelerated time scale."
+    },
+    {
+      "num": "19",
+      "text": "19. A machine-readable medium storing computer-executable instructions to perform a method of estimating a life of a product, the method comprising: determining accelerated stress testing data for the product using the relationship t F =AF×exp(t A ), the accelerated stress testing data representing the response of the product operating in a first environment; and calculating the mean-time-between-failures (MTBF) for the product operating in a second environment based on the accelerated stress testing data, wherein said first environment is more likely than the second environment to cause the product to fail; wherein said accelerated stress testing data is determined at least in part from bill of materials (BOM) information on the product; and wherein t F is a time to failure on a field use time scale, AF is an acceleration factor, and t A is a time to failure on an accelerated time scale."
+    }
+  ],
+  "extractor": "scripts/fetch_patent_corpus.py::_ClaimParser"
+}

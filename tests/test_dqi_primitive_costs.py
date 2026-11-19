@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-import pytest
+from tests.kickmix_availability import require_kickmix
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT = ROOT / "benchmarks" / "quantum_compilation" / "dqi_primitive_costs.json"
@@ -90,10 +90,7 @@ def test_the_104_qubit_target_needs_most_of_the_transient_headroom():
 def test_remeasurement_matches_the_record_when_kickmix_is_importable():
     sys.path.insert(0, str(BUNDLE / "kickmix"))
     sys.path.insert(0, str(BUNDLE / "verifiers" / "dqi"))
-    try:
-        import kickmix  # noqa: F401
-    except Exception as exc:  # built for a different interpreter
-        pytest.skip(f"kickmix not importable here: {exc}")
+    require_kickmix()
 
     sys.path.insert(0, str(ROOT / "scripts"))
     import measure_dqi_primitive_costs as m

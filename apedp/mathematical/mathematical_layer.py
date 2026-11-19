@@ -16,6 +16,12 @@ import sympy as sp
 
 from apedp.safety import safe_parse_expr
 
+# The canonical definition lives in apedp_dyn: the Lean bridge that consumes it
+# is owned by the canonical package, and a second class with the same three
+# values is not a re-export. Identity is the point -- ``is`` and ``isinstance``
+# across the boundary fail when two trees each define their own enum.
+from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,22 +47,6 @@ class ProofBoundaryStatus(str, Enum):
     INDISTINGUISHABLE_BELOW_RESOLUTION = "INDISTINGUISHABLE_BELOW_RESOLUTION"
 
 
-class ProofClaimStatus(str, Enum):
-    """Proof-claim tier, independent of empirical confidence (C-classes).
-
-    C-classes (C1..C5) report empirical support within the tested domain.
-    P-tiers report proof standing: P0 = no proof, P1 = proof candidate
-    (deductive argument proposed, unverified), P2 = formally verified proof.
-    No finite-sample pipeline in this repo emits above P0; P1/P2 are reserved
-    for a future proof-candidate/verification pipeline. RH therefore reports
-    (C1,P0): empirically supported on N tested, proof not established.
-    """
-
-    P0_NO_PROOF = "P0"
-    P1_CANDIDATE = "P1"
-    P2_VERIFIED = "P2"
-
-
 @dataclass(frozen=True)
 class MathematicalDomainAudit:
     """Outcome of mathematical domain and boundary consistency audit."""
@@ -77,7 +67,10 @@ class MathematicalDomainAudit:
     @property
     def cp_label(self) -> str:
         """Joint empirical/proof label stub (empirical part filled by caller)."""
-        return self.proof_claim.value
+        # str() on the enum's value: the canonical ProofClaimStatus is a
+        # str-Enum defined in apedp_dyn, which mypy sees through an Any
+        # boundary, and the declared return type is str either way.
+        return str(self.proof_claim.value)
 
 
 class MathematicalAssuranceEngine:

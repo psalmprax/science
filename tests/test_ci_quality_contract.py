@@ -83,11 +83,20 @@ def test_expression_evaluator_branch_coverage_is_a_ci_gate():
 
 
 def test_ci_torch_version_matches_project_test_extra():
+    """CI installs one exact torch, and the project's test extra admits it.
+
+    The extra is a range (``torch>=2.5``) since the owner downgraded CI to
+    2.9.1 on 2026-11-05 after a Dependabot bump to 2.14.1; an exact pin in the
+    extra is not required, a CI version outside the declared range is.
+    """
+    from packaging.requirements import Requirement
+
     project = (ROOT / "pyproject.toml").read_text()
-    pinned_torch = re.search(r'"torch==([^"]+)"', project).group(1)
+    declared = Requirement(re.search(r'"(torch[<>=!~][^"]*)"', project).group(1))
     test_job = _workflow("test.yml")["jobs"]["test"]
     script = "\n".join(step.get("run", "") for step in test_job["steps"])
-    assert f"torch=={pinned_torch}" in script
+    installed = re.search(r"torch==([0-9][^\s]*)", script).group(1)
+    assert installed in declared.specifier, (installed, str(declared))
     assert "https://download.pytorch.org/whl/cpu" in script
 
 
@@ -114,15 +123,19 @@ def test_security_scans_cover_dynamic_package_for_high_severity_findings():
         step.get("run", "")
         for step in _workflow("test.yml")["jobs"]["test"]["steps"]
     )
-    assert "bandit -r apedp/ -ll" in script
-    assert "bandit -r apedp_dyn/ -lll" in script
+    # Both packages at medium severity and above (-ll). Until the 2026-11-19
+    # stage merge apedp_dyn was scanned at high only (-lll); one combined scan
+    # at -ll covers strictly more.
+    assert re.search(r"bandit -r apedp/ apedp_dyn/ -ll(?!l)", script), script
 
 
 def test_strict_mypy_scope_includes_the_d5_conf_benchmark():
     project = (ROOT / "pyproject.toml").read_text()
     files = re.search(r"(?ms)^files = \[(.*?)^\]", project).group(1)
     assert '"apedp_dyn/conf/paths.py"' in files
-    assert '"apedp_dyn/conf/canonical_spec.py"' in files
+    # The spec module lives in the referee package; apedp_dyn.conf.canonical_spec
+    # is an alias of it (the same module object), so the file to check is this one.
+    assert '"apedp_referee/canonical_spec.py"' in files
     assert '"apedp_dyn/conf/benchmark.py"' in files
     assert '"apedp_dyn/quantum_compilation/faros_runtime.py"' in files
     assert '"apedp_dyn/quantum_compilation/kickmix_builds.py"' in files
@@ -132,7 +145,8 @@ def test_strict_mypy_scope_includes_the_d5_conf_benchmark():
 
 def test_lint_covers_mmlm_and_evidence_entrypoints():
     makefile = (ROOT / "Makefile").read_text()
-    assert "ruff check apedp_mmlm/" in makefile
+    lint_lines = [line for line in makefile.splitlines() if "ruff check" in line]
+    assert any(re.search(r"ruff check (\S+ )*apedp_mmlm/", line) for line in lint_lines), lint_lines
     for path in ("scripts/build_faros_candidate.py", "scripts/check_verifier_environment.py",
                  "scripts/run_mutation_battery.py"):
         assert path in makefile

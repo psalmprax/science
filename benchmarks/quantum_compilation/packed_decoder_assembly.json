@@ -1,0 +1,49 @@
+{
+  "script": "scripts/assemble_packed_decoder.py",
+  "stages": [
+    "key equation",
+    "coefficient sweep",
+    "gated Forney block",
+    "measured clear (reset per qubit)"
+  ],
+  "class": "one assembled circuit at a scaled instance; the official instance (degree 12, t 35, 4,095 positions) is not built here",
+  "instance": {
+    "degree": 4,
+    "t": 5,
+    "positions": 4,
+    "iterations": 10
+  },
+  "static_toffolis": 1062,
+  "qubits": 108,
+  "ops": {
+    "BIT_INVERT": 144,
+    "BIT_STORE0": 34,
+    "R": 100,
+    "HMR": 52,
+    "CX": 6142,
+    "CZ": 192,
+    "SWAP": 674,
+    "CCX": 1062,
+    "INFO_TAG": 2044,
+    "POP_CONDITION": 4,
+    "PUSH_CONDITION": 4
+  },
+  "t_mean": {
+    "shots": 8,
+    "per_shot": [
+      1026,
+      1008,
+      1026,
+      1062,
+      1008,
+      1026,
+      990,
+      1062
+    ],
+    "t_mean": 1026.0,
+    "t_max": 1062,
+    "t_min": 990
+  },
+  "archive_toffolis": 396919.33,
+  "note": "the live bit is an input to the assembly; in the full decoder it is the zero-locator read, which is measured at 0 Toffolis in scripts/emit_chien_forney_stage.py. The clear is `reset`, because this build has no `mr` and no Hadamard; `reset` and `mr` both emit zero ANDs"
+}

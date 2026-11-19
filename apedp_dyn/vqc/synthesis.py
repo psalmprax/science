@@ -91,12 +91,16 @@ __all__ = [
     "SYNTHESIS_GRAPH_TARGETS",
     "Construction",
     "DenseTierCost",
+    "I",
     "RefereeAgreement",
     "SpecificationCandidate",
     "SpecificationReport",
     "SynthesisError",
     "SynthesisOutcome",
     "TargetSpecification",
+    "X",
+    "Y",
+    "Z",
     "adjudicate_specification",
     "adjudicate_specification_candidate",
     "build",
@@ -672,7 +676,8 @@ def _projected_state_vector(target: TargetSpecification, *,
                 f"{pauli_string(labels, phase)} has empty intersection with the "
                 f"previous eigenspaces")
         vector = projected / norm
-    return vector
+    _out: np.ndarray = vector
+    return _out
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1094,7 +1099,8 @@ def build(family: str, target: TargetSpecification, *, seed: int = 0) -> Constru
         raise SynthesisError(
             f"family {family!r} constructs a {targets[0]!r} state, but the target is "
             f"{target.name!r}")
-    return FAMILIES[family][1](target, seed=seed)
+    _out: Construction = FAMILIES[family][1](target, seed=seed)
+    return _out
 
 
 def default_families(target: TargetSpecification) -> tuple[str, ...]:
@@ -1110,6 +1116,7 @@ def _is_unitary(circuit: Circuit) -> bool:
 def _state_of(circuit: Circuit) -> StabilizerState:
     state = StabilizerState(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # callers reject non-unitary ops first
         state.apply_gate(op.name, op.targets, op.params)
     return state
 
@@ -1133,13 +1140,15 @@ def _specification_order(raw: np.ndarray, num_qubits: int) -> np.ndarray:
     ``test_the_basis_order_of_the_two_tiers_is_pinned_on_an_asymmetric_state`` pins it.
     """
     order = [int(format(index, f"0{num_qubits}b")[::-1], 2) for index in range(1 << num_qubits)]
-    return np.asarray(raw, dtype=np.complex128)[order]
+    _out: np.ndarray = np.asarray(raw, dtype=np.complex128)[order]
+    return _out
 
 
 def _prepare_dense(circuit: Circuit) -> np.ndarray:
     """The prepared amplitudes, in the same basis order as the specification."""
     simulator = StatevectorSimulator(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # callers reject non-unitary ops first
         apply_gate(simulator, op.name, op.targets, op.params)
     return _specification_order(np.asarray(simulator.state, dtype=np.complex128),
                                 circuit.num_qubits)
@@ -1299,15 +1308,15 @@ def adjudicate_specification(circuit: Circuit, target: TargetSpecification, *,
         tier = "dense"
         actual = _prepare_dense(circuit)
         expected = specification_state_vector(target)
-        distance, phase = _phase_free_distance(actual, expected)
+        dist_value, phase_angle = _phase_free_distance(actual, expected)
         checks.append(Check(
             name="the prepared amplitudes are the specification, up to one global phase",
             requirement=(f"min_phi ||psi_c - e^(i phi) psi_s|| / sqrt(2**n) <= "
                          f"{DENSE_TOLERANCE:g} against the state projected out of the "
                          f"specification's stabilizers"),
-            measured={"distance": distance, "phi": phase, "tier": "dense",
+            measured={"distance": dist_value, "phi": phase_angle, "tier": "dense",
                       "relative_phase_sensitive": True},
-            passed=bool(distance <= DENSE_TOLERANCE)))
+            passed=bool(dist_value <= DENSE_TOLERANCE)))
     else:
         tier = "none"
         reason = (

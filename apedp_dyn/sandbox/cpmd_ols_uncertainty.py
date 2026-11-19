@@ -6,6 +6,7 @@ lags 4-12). Five uncertainty methods; 12 conditions x 200 seeds (5000+).
 import itertools
 import sys
 import warnings
+from typing import Any
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -23,14 +24,14 @@ BL = 3  # preregistered block length
 BBOOT_B = 200
 
 
-def ols_fit(y):
+def ols_fit(y: np.ndarray) -> tuple[float, np.ndarray]:
     ly = np.log(y)
     slope = float(np.sum(XC * ly) / DENOM)
     resid = ly - ly.mean() - slope * XC
     return -slope, resid
 
 
-def ci_ols(y):
+def ci_ols(y: np.ndarray) -> tuple[float, float, float]:
     s, r = ols_fit(y)
     n = len(y)
     s2 = float(np.sum(r ** 2)) / (n - 2)
@@ -38,7 +39,7 @@ def ci_ols(y):
     return s, s - 1.96 * se, s + 1.96 * se
 
 
-def ci_hac(y, bw=BW):
+def ci_hac(y: np.ndarray, bw: int=BW) -> tuple[float, float, float]:
     s, r = ols_fit(y)
     len(y)
     w = r * XC
@@ -50,7 +51,7 @@ def ci_hac(y, bw=BW):
     return s, s - 1.96 * se, s + 1.96 * se
 
 
-def ci_bboot(y, seed):
+def ci_bboot(y: np.ndarray, seed: int) -> tuple[float, float, float]:
     rng = np.random.RandomState(int(seed))
     s0, _ = ols_fit(y)
     n = len(y)
@@ -71,12 +72,13 @@ def ci_bboot(y, seed):
     return s0, 9.0, -9.0
 
 
-def ar1_cov(n, rho, s2=1.0):
+def ar1_cov(n: int, rho: float, s2: float=1.0) -> np.ndarray:
     i, j = np.ogrid[:n, :n]
-    return s2 * rho ** np.abs(i - j)
+    cov: np.ndarray = s2 * rho ** np.abs(i - j)
+    return cov
 
 
-def ci_gls(y, cov):
+def ci_gls(y: np.ndarray, cov: np.ndarray) -> tuple[float, float, float]:
     ly = np.log(y)
     X = np.column_stack([np.ones_like(XC), XC])
     try:
@@ -96,7 +98,7 @@ def ci_gls(y, cov):
     return -float(beta[1]), -float(beta[1]) - 1.96 * se, -float(beta[1]) + 1.96 * se
 
 
-def gen_dep(struct, rho, nl, sd, a=1.2, t0=8.0):
+def gen_dep(struct: str, rho: float, nl: float, sd: int, a: float=1.2, t0: float=8.0) -> tuple[np.ndarray, np.ndarray]:
     lags, yclean = gen("power", 0.0, sd, t0=t0, a=a)  # noiseless mean
     mu = yclean
     rng = np.random.RandomState(int(sd) + 777000)
@@ -115,12 +117,12 @@ def gen_dep(struct, rho, nl, sd, a=1.2, t0=8.0):
     return lags, mu * np.exp(e)
 
 
-def run():
+def run() -> None:
     conds = ([("ar1", r) for r in (0.0, 0.3, 0.5)] + [("cs", 0.3), ("cs", 0.5)]
              + [("ma1", 0.0)])
     print("v0.11: method cov/width per condition (n=200, PASS=coverage>=184)")
     for (struct, rho), nl in itertools.product(conds, (0.1, 0.3)):
-        res = {}
+        res: dict[str, dict[str, Any]] = {}
         for m in ("OLS", "HAC", "BBOOT", "GLS-O", "GLS-E"):
             res[m] = {"cov": 0, "w": [], "b": [], "n": 0}
         for k in range(200):
@@ -132,15 +134,14 @@ def run():
             _s0, _ = ols_fit(y)
             _, r = ols_fit(y)
             s2 = float(np.sum(r ** 2)) / (n - 2)
-            outs = {"OLS": ci_ols(y), "HAC": ci_hac(y), "BBOOT": ci_bboot(y, sd),
-                    "GLS-O": ci_gls(y, ar1_cov(n, rho if struct == "ar1" else 0.0, s2)),
-                    "GLS-E": None}
             # GLS-E: estimate rho from residual autocorrelation
             rr = r - r.mean()
             denom = float(np.sum(rr ** 2))
             rhohat = float(np.sum(rr[1:] * rr[:-1]) / denom) if denom > 0 else 0.0
             rhohat = float(np.clip(rhohat, -0.9, 0.9))
-            outs["GLS-E"] = ci_gls(y, ar1_cov(n, rhohat, s2))
+            outs = {"OLS": ci_ols(y), "HAC": ci_hac(y), "BBOOT": ci_bboot(y, sd),
+                    "GLS-O": ci_gls(y, ar1_cov(n, rho if struct == "ar1" else 0.0, s2)),
+                    "GLS-E": ci_gls(y, ar1_cov(n, rhohat, s2))}
             for m, (s, lo, hi) in outs.items():
                 if not np.isfinite(s):
                     continue

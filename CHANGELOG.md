@@ -13,18 +13,524 @@ inferred releases.
 
 ## [Unreleased]
 
+### Changed
+
+- **Running the tests no longer rewrites committed evidence (2026-11-17).**
+  The five-gate programme's two report files and the two Rust profile records
+  were replaced on every run with the running machine's timings and workspace
+  path. Writing is now opt-in (`run_all_gates(write=True)`,
+  `APEDP_WRITE_BENCHMARK_ARTIFACTS=1`); the figures are still printed and the
+  gates still assert on them. Also fixed in the same pass: `faros_isq`
+  substituted four nominal resource figures for measured ones behind a comment
+  promising a `circuit_stats_source` field that did not exist, and
+  `resiliency_proposer` emitted textbook decay constants as if they had been
+  fitted. `docs/SYSTEM_FLAWS_AUDIT.md`, L-01 to L-03.
+
+- **The three subsystems outside the referee were audited against something
+  other than themselves (2026-11-17).** Eight defects found and fixed, each
+  pinned by a test that fails on the old code: the video dataset and VAE
+  bridge substituted synthetic or untrained stand-ins for data and weights
+  that failed to load; the video README claimed comparisons with production
+  models, memory savings and photorealism nobody had measured; the solenoidal
+  projector was float32-exact only; a dead native branch cost a copy per
+  forward pass; the chemistry bridge rejected five of eighteen real drugs as
+  impossible and got two hydrogen counts wrong; "95 % distribution-free" ADMET
+  intervals were built from hand-written numbers; the FEP gateway's docstring
+  described Langevin sampling it does not do; and the module that decides
+  whether a quantum claim stands was untested and did not score forbidden
+  outcomes. `docs/SYSTEM_FLAWS_AUDIT.md`, K-01 to K-08.
+
+- **The referee core is its own package, `apedp-referee` (2026-11-17).**
+  `canonical_spec`, `promotion_lifecycle`, `experiment_ledger`,
+  `trial_ledger`, `novelty_adjudication`, `universe`, `proof_claim` and
+  `proof_evidence` moved to `apedp_referee/`, installable on its own
+  (`pip install ./apedp_referee`; numpy, scipy, pandas) and carried by the
+  full distribution too. The old module paths are aliases that return the same
+  module objects, with `.pyi` stubs for type checkers; no import changes.
+  `apedp_referee/_host.py` is the only place the referee reaches `apedp_dyn`,
+  for three host conveniences. `experiment_ledger` types its backend with a
+  `LedgerStorage` protocol instead of importing `BaseStorageBackend`. The
+  package ships a byte-identical copy of the canonical specification, checked
+  against the signed one. The full distribution now declares pandas. CI's
+  `referee-core` job installs the package into an empty environment and runs
+  its tests from outside the checkout. `docs/SYSTEM_FLAWS_AUDIT.md`, G-01
+  addendum.
+
+- **The parameter fitter converges, and its verdicts no longer depend on the
+  scipy release (2026-11-16).** `fit_candidate` integrates at
+  `FIT_RTOL = 1e-7` / `FIT_ATOL = 1e-9` and differentiates with
+  `FIT_DIFF_STEP = 1e-5` and `x_scale="jac"`, instead of `rtol=1e-3` with the
+  default step. The old fit stopped short of the minimum at points that
+  differed between scipy releases. The recorded STAB/10/rep2 failure (truth
+  collapses on holdout, rival promoted) no longer occurs: the truth is
+  promoted. `param_bootstrap_ci` centres its resamples at the same tolerance.
+  Fits cost about twice as long; the CI test job's limit is 75 minutes.
+  `docs/SYSTEM_FLAWS_AUDIT.md`, J-18.
+
+- **The referee core loads, and is tested, without the rest of the tree
+  (2026-11-16).** `apedp_dyn`, `apedp_dyn.epistemic` and `apedp_dyn.market`
+  re-export their public names lazily (`apedp_dyn/_lazy.py`); the names and
+  `__all__` are unchanged. `InvariantKind`, `LeanTheoremVerification` and
+  `LeanVerificationResult` are defined in the new, dependency-free
+  `apedp_dyn/epistemic/proof_evidence.py` and re-exported from
+  `agnostic_adapter` and `lean_universal_bridge` as the same objects.
+  Importing `promotion_lifecycle` went from 74 repository modules (with the
+  kernel, SymPy and pint) to 6 (with numpy); the whole core from 96 to 13.
+  `tests/referee_core_manifest.py` declares the core and its allowed
+  dependencies; `tests/test_referee_core_boundary.py` enforces them;
+  `tests/test_referee_core_standalone.py` walks the referee's main paths with
+  core-only imports; `tests/test_lazy_package_exports.py` pins that every
+  export is still the object its module defines; `tools/coverage_audit.py`
+  recognises the lazy shape as a re-export façade so
+  `tests/test_facade_contracts.py` keeps checking these packages' exports.
+  New `make test-referee-core`
+  and CI job `referee-core`, which installs numpy, scipy, pandas and pytest
+  and nothing else. No file moved and no package was split out; see
+  `docs/SYSTEM_FLAWS_AUDIT.md`, G-01.
+
+- **Every failure of the first full test run is traced to a cause; 43 of 44
+  are resolved (2026-11-16).** Detail and evidence in
+  `docs/SYSTEM_FLAWS_AUDIT.md`, entries J-01 to J-15. Changes to behaviour:
+  - `apedp_dyn/grammar/proposer.py` gains `drop_collinear_columns` and
+    `COLLINEARITY_LIMIT = 0.999`, which this file described on 2026-11-03 and
+    the repository did not contain. Duffing recovery is `{u, x, x3, v}` again.
+  - `apedp/model_synthesis.py` fits on `y / max|y|` when `max|y|` is above 1e4
+    (it already did below 1e-2): above about 3e5 the optimizer moved rates and
+    left amplitudes at their start values, and a `rational_transition` law at
+    scale 1e9 was classified `exponential_envelope`.
+  - Stage D refines in two unit-free x scales, `max|x|` and the geometric mean
+    of `|x|`, and keeps the better accepted result (`_stage_d_x_scales`).
+    `TIER_B_01` (Planck) returns R² 0.9991 where the synthesizer had abstained
+    at 0.940. No validation R² fell on the 64 corpus problems; three selections
+    changed.
+  - The parsimony tiebreak is `_parsimony_tiebreak` in
+    `apedp/model_synthesis_helpers.py`, moved unchanged so the near-OOD veto
+    can be tested on stated candidates.
+  - `apedp_dyn/sandbox/pde_verification_sandbox.py`: the time step respects
+    advection and diffusion together. The "verified" scheme had been stable
+    only at its default settings. `audit_interventional_invariance` measures
+    the evidence FLAW-07 made the apex tier require.
+  - `apedp_dyn/sandbox/apedp_x_meta_sandbox.py`: the clean Kepler case earns
+    rival rejection and interventional invariance by measurement
+    (`measure_kepler_claim_support`).
+  Changes to tests and records only:
+  - `tests/test_dyn_ha_coupling.py` and §76 of
+    `docs/TRADING_EQUATION_FORENSICS.md` carry the post-FLAW-A01 sequence, as
+    the 2026-11-02 entry below says they already did.
+  - `tests/test_dyn_tournament.py` pins what the trace has under four scipy
+    releases instead of one machine's whole trace, which none of them
+    reproduces. `tests/test_dyn_pointer.py` writes the artefact it reads.
+  - `tests/test_dyn_grammar_scope.py` (225 of 225, per the scaffold inventory)
+    and `tests/test_dyn_term_necessity.py` (a tie's order is not a contract).
+  - Ten vendored verifier files are restored to the bytes their records pin
+    and excluded from ruff and mypy.
+  - `benchmarks/exception_hygiene_baseline.json` is re-recorded:
+    `epistemic/adjudicate.py` 1,026 → 1,127 (the null-model guard of
+    `531f8e5`), three ceilings tightened.
+  - CI: the test job installs the pinned Lean release and deselects the
+    governance test, which the governance-manifest job reports and enforces.
+  - `rust/apedp-kernel`: the rational pair search evicts each quotient once
+    scored. One call on a 200-row problem peaked at 2,992 MB and now peaks at
+    377 MB; results are unchanged.
+  - `APEDPX_FROZEN_v1_18.json` is re-minted for the two sandbox files above.
+    **This re-mint changes B_internal outcomes** (two downgraded valid cases
+    are promoted); its `remint_log` entries say so.
+  **Caution about this file:** commit `a32bfa5` added 1,870 lines here and
+  changed nothing else. Three fixes it describes were not in the tree until
+  today. The rest of those lines have not been checked against the code.
+
+- **Six kickmix tests no longer mistake an empty directory for the extension
+  (2026-11-16).** They skipped unless `import kickmix` succeeded; with the
+  extension's parent directory on `sys.path` that import returns an empty
+  namespace package, the guard passes, and the test fails for lack of
+  `CircuitBuilder`. The first CI run of the test matrix to reach the suite
+  stopped on one of them after 849 passes. The guards now use
+  `tests/kickmix_availability.py`, which checks the capability.
+
+- **`import apedp` works on Python 3.10 again; quality limits re-pinned from
+  CI (2026-11-16).** `apedp/ingestion/ingestion_academic_apis.py` and two
+  scripts imported `datetime.UTC` (3.11+) although the package declares
+  `>=3.10` and CI has a 3.10 leg; that leg failed at the import and
+  `fail-fast` cancelled the other two. They use `timezone.utc`.
+  `tests/test_minimum_python_version.py` guards the declared minimum (grammar
+  for every file, plus a curated list of newer standard-library names).
+  `quality_baseline.json` is lowered to the counts the hosted runner measured
+  once the gate passed there (mypy `apedp_dyn/` 29→25, `apedp/` 938→897; ruff
+  `scripts/` 604→603, `benchmarks/` 217→202) and records that environment.
+
+- **What the first real CI run exposed, fixed (2026-11-16).** The workflow's
+  first run to start a job failed in three places that had nothing to do with
+  the commit that let it start. (1) `make typecheck`: 32 mypy errors under
+  `apedp_dyn/` against a pin of 29 that the gate's own environment could never
+  have measured (31 at the pin commit, one added since). Two annotation-only
+  edits remove seven; `scripts/check_quality_baseline.py` now lists the
+  findings when a path regresses. (2) The mutation-battery job called
+  `maturin develop` without a virtualenv, and two of the battery's 37 anchors
+  had not matched the source since 2026-10-25 and 2026-11-08, so the battery
+  could not have completed; the job gets a virtualenv and the anchors are
+  repaired. The committed report (37 of 37, dated 2026-10-23) is left as it
+  is and is stale. (3) `make lint-rust` had never passed: 119 rustfmt
+  differences and six compiler warnings under `-D warnings`. The kernel crate
+  is formatted and the warnings fixed; `rust/apedp-vqc` is left byte-identical
+  because a measurement record pins its sources, and the format check is
+  scoped to the kernel crate with that reason in the Makefile.
+  Two regressions of this audit's own are fixed in the same commit: `87d89b6`
+  had removed eighteen `# noqa: BLE001 - reason` markers that
+  `tests/test_dyn_exception_hygiene.py` counts as the record of a deliberate
+  blanket handler (restored; `BLE001` declared `external` to ruff so both
+  gates agree), and `9c9c8bf` had added an unmarked blanket handler to both
+  `safety.py` files (marked). First full-suite result with the kernel and
+  torch present, and the failures that predate this audit, are in
+  `docs/SYSTEM_FLAWS_AUDIT.md` (2026-11-16 round, F-01 to F-05).
+
+- **The test workflow is a valid workflow file again; it had run no job on
+  `stage` or `master` (2026-11-15).** `.github/workflows/test.yml` set
+  `RUSTUP_HOME: ${{ runner.temp }}/rustup` in a job-level `env:` block, where
+  the `runner` context does not exist, so GitHub rejected the file: 268 of its
+  304 recorded runs failed in 0 seconds ("workflow file issue"), including all
+  102 on `stage`. The variable is now exported from a step
+  (`Isolate Rust toolchain home`). `tests/test_ci_rust_toolchain.py` asserted
+  the invalid line and now asserts the valid one. New
+  `.github/workflows/workflow-lint.yml` runs a checksum-pinned actionlint over
+  every workflow from a separate file, so a rejected `test.yml` is reported by
+  something that still starts; `tests/test_ci_workflow_validity.py` checks the
+  same error class in pure Python. `make lint` is clean under the pinned
+  `ruff==0.17.3` on a clean checkout: `apedp_kernel` is declared first-party
+  (`[tool.ruff.lint.isort]`) instead of being inferred from a symlink, and 22
+  suppressions the pinned linter no longer needs were removed, reasons kept as
+  comments. Every "CI-gated" statement below this entry was written while the
+  workflow could not run; see `docs/SYSTEM_FLAWS_AUDIT.md` E-07.
+
+- **A machine-checked Lean core now exists and is CI-gated (2026-11-15).**
+  `lean_checked/` is a Lake project (pinned Lean 4.24.0) whose 39 theorems are
+  elaborated by the Lean kernel: dimensional-algebra group laws plus
+  consistency/refutation of candidate physics laws
+  (`ApedpChecked/Dimensions.lean` — e.g. kinetic energy and Newtonian gravity
+  are dimensionally consistent, momentum is provably *not* an energy), the
+  promotion lifecycle's no-shortcut and failure-halts-permanently properties
+  on a state-machine model (`Promotion.lean`), and the holdout
+  budget's claim/burn properties — burn is permanent, the inspection budget is
+  respected, a granted slice is single-use (`Holdout.lean`).
+  `scripts/check_lean_checked.py` gates it in two layers: a static layer that
+  forbids `sorry`/`axiom`/`native_decide`/`unsafe`/`opaque`/`implemented_by`
+  and requires every theorem in `Audit.lean`, and a kernel layer that rebuilds
+  the project and compares every theorem's `#print axioms` output against the
+  committed `lean_checked/axiom_audit.json` (only `propext`, `Quot.sound`,
+  `Classical.choice` allowed; 12 theorems use no axioms at all). New CI job
+  `lean-checked` installs the pinned toolchain from the Lean release and runs
+  `--check --require-lean`; the `build` job now needs it. Pinned by
+  `tests/test_lean_checked_core.py`, including a planted-defect test that
+  proves the static layer can actually fail. The theorems are about models,
+  so `tests/test_lean_model_conformance.py` runs each model beside the Python
+  it describes (`PromotionTracker`, `FullLineageExperimentLedger`) on every
+  short operation sequence and requires the same refusals and the same state.
+  It carries its own seeded defects: five planted in the real referees are
+  each caught, and a sixth (ignoring the halt flag) is recorded as an
+  equivalent mutant, because the single-shot rule already implies the halt.
+  This is the first part of the Lean story that is *checked* rather than
+  transcribed: the 557-file `formal/` tree remains unelaborated and is still
+  described as such (`docs/LEAN_FORMAL_STATUS.md`).
+
+- **A missing native build is no longer an abstention (2026-11-15).**
+  `RimeProposer.fit_and_propose` returned `[]` without `apedp_kernel`, the same
+  answer it gives for a null world; it now raises
+  `apedp_dyn.kernel_shim.NativeKernelUnavailableError` (a `RuntimeError`, which
+  the shim's own error now also is). Callers that relied on an empty list from a
+  machine without the kernel will see the error instead. Recorded as E-01 in
+  `docs/SYSTEM_FLAWS_AUDIT.md`.
+- **Test suite (2026-11-15).** `tests/conftest.py` reports a test stopped by a
+  missing `apedp_kernel` or `torch` as skipped with the reason, and CI sets
+  `APEDP_REQUIRE_NATIVE=1` so the same condition fails there. Tests no longer
+  write into the repository: the API persistence store, the known-truth results
+  file and the Lorenz registered results and ledger are written to scratch
+  directories (`benchmarks/run_lorenz_public_benchmark.py --out-dir`).
+- **Stage 4 measures serial dependence (2026-11-15).**
+  `verify_stage_4_from_holdout` uses the smaller of `n / horizon` and
+  `effective_sample_size(predictions, targets)`; unrelated overlapping series
+  passed a third of the time when the horizon was left undeclared.
+- **Added `benchmarks/run_promotion_gate_calibration.py`** and its record
+  `benchmarks/promotion_gate_calibration.json`: false-pass rates and power of
+  the stage 2, 4 and 5 gates and of stages 2-5 end to end, on simulated worlds.
+
+- **Follow-up to the integrity hardening (2026-11-14): the four items that round
+  left open.** Recorded in `docs/SYSTEM_FLAWS_AUDIT.md` (2026-11-14 section) and
+  pinned by `tests/test_integrity_followup_2026_11_14.py`.
+  - **Breaking: `PromotionTracker` refuses typed-in metrics by default.**
+    `verify_stage_1..6` raise `PromotionViolationError` unless the tracker is
+    built with `allow_reported_metrics=True`; a stage passed that way is recorded
+    with `evidence_source="caller_reported"` and its label ends in
+    `_ON_REPORTED_METRICS`. The evidence-taking entry points are
+    `verify_stage_1_from_lean`, `verify_stage_2_from_predictions`,
+    `verify_stage_3_from_forecasts`, `verify_stage_4_from_holdout`,
+    `verify_stage_5_from_returns` and `verify_stage_6_from_returns`; each
+    computes the metrics the stage is judged on. `is_evidence_backed()`,
+    `evidence_sources` and `assert_consistent()` report the tracker's standing,
+    and every record carries `recorded_at`. `verify_stage_5_from_ledger` (added
+    2026-11-12) still takes the Sharpe ratio and fee as numbers and therefore
+    also needs `allow_reported_metrics=True`.
+  - `VerifiedModuleLibrary` requires an evidence-backed, self-consistent
+    promotion for the same candidate
+    (`require_evidence_backed_promotion=True` by default) and records the
+    evidence sources on the registered module.
+  - `FullLineageExperimentLedger.record_data_exposure(..., fingerprint=...)`
+    identifies a confirmation holdout by content. `fingerprint_holdout_slice`
+    builds the fingerprint; a burned or spent slice is then refused under
+    another name, as a sub-window, with reordered or dropped columns, or as an
+    overlapping index range of the same dataset. Re-binding a slice name to
+    different content is refused. `require_holdout_fingerprint=True` makes the
+    fingerprint mandatory. Exposures without one behave as before.
+  - `trading_signals_sandbox.run_epistemic_trading_adjudication` accepts
+    `trial_ledger` and `experiment_ledger`, or opens the deployment's persistent
+    ledgers when `APEDP_SANDBOX_PERSISTENT_LEDGERS=1`. The holdout half is
+    claimed by content before it is scored and its outcome is written back; with
+    persistent ledgers a second seed on the same rows, or the same rows under a
+    new dataset name, raises `HoldoutContaminationError`. The result gains
+    `holdout_registration` and `trial_multiplicity.ledger_persistent` /
+    `search_replayed_from_ledger`. With neither ledgers nor the flag the run is
+    in-memory as before and its verdict, tier and metrics are unchanged. **The
+    freeze record `APEDPX_FROZEN_v1_18.json` is re-minted for this file**
+    (`1a67a951…` to `97cebc09…`); the rationale is in its `remint_log`.
+  - New `apedp_dyn/market/universe.py` (`audit_universe`, `find_stale_runs`,
+    `mask_stale_bars`, `point_in_time_membership`, `UniverseAudit`) and
+    `tools/build_point_in_time_universe.py`. `verify_stage_5_from_returns` takes
+    a required `universe` and refuses one that was selected in hindsight or
+    carries forward-filled bars.
+  - `data/market/PROVENANCE.json` records `universe_selection` for the six
+    multi-asset files (all hindsight-selected) and, for
+    `multi_asset_90_5yr_orderflow.csv`, `known_defects.forward_filled_delistings`:
+    XMR, MATIC, FTM, EOS and MKR stop trading inside the window and their last
+    bar is repeated to the end of the file, 1,266 asset-days in all. The CSV is
+    not modified; use `mask_stale_bars`.
+  - Removed from the index: the `apedp_kernel` symlink into a developer
+    virtualenv (now git-ignored), the empty `Crash` file, and
+    `apedp/discovery.py`, a shim shadowed by the `apedp/discovery/` package and
+    therefore never imported. Tracked binaries were inventoried and kept; see
+    `docs/REPOSITORY_RESIDUE.md`.
+  No canonical threshold changed, so the pending governance re-signing request
+  (digest `a8177b25…`) is still the right one. FLAW-01 remains open.
+
+- **Integrity hardening (2026-11-12): the promotion gates, the holdout guard and
+  the trial ledger no longer take the caller's word.** Each of these was bypassed
+  through its ordinary public API before this round; the bypasses and their pins
+  are in `tests/test_integrity_hardening_2026_11_12.py` and the round is recorded
+  in `docs/SYSTEM_FLAWS_AUDIT.md`. Behaviour changes a caller can observe:
+  - `PromotionTracker.verify_stage_2..6` still accept their threshold arguments,
+    but only to *tighten*: a value looser than the canonical-spec threshold (or a
+    non-finite one) raises `PromotionViolationError` instead of being applied. A
+    junk candidate previously reached `REAL_MARKET_PROMOTION_GRANTED` by passing
+    `min_dsr_hurdle=0.0` and friends.
+  - A stage is evaluated once. Re-running a recorded stage, or stage 1 on a halted
+    candidate, raises `PromotionPrerequisiteError`. The tracker also refuses to act
+    when `is_halted` / `highest_stage_passed` disagree with its stage records, so
+    assigning to those attributes no longer un-halts a candidate.
+  - `PromotionTracker(state_path=...)` journals stage outcomes and resumes from
+    them, so a halt survives a new tracker instance. Optional; without it the
+    tracker is in-memory as before.
+  - New `PromotionTracker.verify_stage_5_from_ledger(...)` computes the Deflated
+    Sharpe Ratio from a `CandidateTrialLedger` instead of accepting `dsr_metric`
+    as a number, and refuses a ledger with no persistence path.
+    `CandidateTrialLedger.is_persistent` and a `ledger_persistent` field on the
+    `dsr_with_selection_adjustment` payload disclose the same fact.
+  - `FullLineageExperimentLedger` gains `max_holdout_inspections` (default **1**):
+    a confirmation-holdout slice may be inspected by one candidate. Previously a
+    slice was only protected after a caller reported a failure, so any number of
+    candidates could be scored on it. Pass a larger value, or `None` for the old
+    unlimited behaviour, explicitly.
+  - Burn and budget lookups use a normalised slice identity (NFKC, whitespace
+    collapsed, case-folded), so `"holdout_2024 "` or `"spy"` no longer yields a
+    fresh slice. `get_burned_holdouts()` still returns the names as first burned;
+    `is_holdout_burned()` and `get_holdout_inspection_counts()` are new.
+  - Every appended ledger line carries `prev_hash` / `entry_hash`, and the newest
+    hash is mirrored in `<ledger>.head`. An edited, removed, inserted or truncated
+    entry, or an unparseable line, raises the new `LedgerIntegrityError`; the
+    exposure-time refresh used to skip unreadable lines. Ledgers written before the
+    chain existed still load and are chained from their last line onward.
+    `head_marker=False` opts a ledger out of the truncation marker only, for a
+    committed fixture that `git checkout` rewinds
+    (`benchmarks/run_lorenz_public_benchmark.py` uses it); `*.jsonl.head` is
+    git-ignored.
+  - With `APEDP_API_KEY` unset, the UI API (`apedp_dyn/ui/helpers.py`) now serves
+    loopback clients only. The non-loopback refusal lived in `run_server()`, which
+    `uvicorn apedp_dyn.ui.server:app --host 0.0.0.0` never calls.
+  - CI: `build` (and therefore `deploy`) now needs `governance-manifest`,
+    `audit-artifact-drift` and `mutation-battery` as well as `test`. **While
+    FLAW-01 is open the governance job is red, so this blocks image builds on
+    `main` until the trustees re-sign the manifest.** That is the intended
+    fail-closed behaviour, and it is a single line to revert if it is not wanted.
+  No canonical threshold, frozen record or freeze-pinned file changed.
+
+- **A promotion now has to beat the constant/null model by more than `tau_epi`.**
+  The referee compared the holdout-best candidate only against its nearest distinct
+  rival, so a pool whose winner was the null model could still be promoted: at 5%
+  noise in the quantum-vacuum subthreshold window (`E` 0.05-0.25 against
+  `Ec` 1.5) the four saturated residuals separate by only Δ/τ ≈ 1.09 and the
+  holdout-best head is `thermal_constant`, a single fitted level. `adjudicate()` now
+  also requires `rmse_null - rmse_best > tau_epi` whenever the pool contains a
+  constant model, identified structurally (every IR term is the unit term `one`)
+  rather than from a candidate id. A null cannot beat itself, so that margin is
+  exactly zero there and the fixture abstains with `NULL_MODEL_NOT_BEATEN` instead
+  of promoting the constant. No threshold value changed: the rule is the existing
+  resolution criterion applied to the floor hypothesis, so mechanisms that clear
+  the null by more than τ are unaffected (creep still promotes `power_law`, 57.8
+  against τ 3.01). `APEDPX_FROZEN_v1_18.json` is re-minted with the new
+  `adjudicate.py` digest, its `remint_log` rationale and an updated
+  `referee_change`, and `PINNED_FROZEN_REGISTRY` matches the new bytes.
+
+### Fixed
+
+- **The formula parser no longer evaluates unbounded numeric towers.**
+  `safe_parse_expr("9**9**9**9")` and `safe_parse_expr("zeta(10**7)")` did not
+  return: SymPy folds numeric sub-expressions during the parse, before the
+  function allowlist runs. Both copies (`apedp_dyn/safety.py`, `apedp/safety.py`)
+  now parse once with `evaluate=False` and replay the evaluation bottom-up,
+  refusing a numeric exponent above 1000, a numeric power above 20,000 bits, or a
+  numeric argument above 1000 to a function outside the cheap set (gamma, zeta,
+  Bessel, `n!`). The refusal is `FormulaResourceError`, a `ValueError`, so existing
+  handlers and the API's 4xx mapping are unchanged. Accepted formulas go through
+  the same evaluated parse as before and produce the same expression.
+- **The governance-manifest CI gate runs with nothing installed, as its job
+  assumes.** `scripts/check_governance_manifest_drift.py` imported
+  `apedp_dyn.conf.canonical_spec` through the package, which runs
+  `apedp_dyn/__init__.py` and imports SymPy; in the install-free job that was a
+  `ModuleNotFoundError` before any hash was compared. It now loads the one file by
+  path. The gate still fails on `stage`, now for the reason it exists: the signed
+  manifest seals `a6d026f3…` and the spec on disk is `a8177b25…` (FLAW-01).
+- **README no longer describes the Lean layer as formal verification, and its Lean
+  example runs.** The headline bullet now states the measured machine-checked
+  fraction (0.0, `docs/LEAN_FORMAL_STATUS.md`); the quick-start imported
+  `verify_lean4_code_stdin`, which does not exist, and now uses
+  `LeanUniversalBridge().verify_raw_lean_code_in_memory`.
+
+- **ESEDS benchmark judges its exact-integration candidates on the window it was
+  asked about.** Families C and D built the truth candidate as `N[:len(tt)]`,
+  slicing by length rather than by time, so each holdout block was compared against
+  the training prefix; the true mechanism was eliminated and a rival promoted
+  (`FPR_promo` 0.333 -> 0.0, `AAR` 0.50 -> 0.64). The freeze record carries the new
+  digest with its `remint_log` rationale; no threshold or scenario changed.
+- **Two sandbox tests pinned a verdict their referee no longer reaches.**
+  `tests/test_dyn_ui_sandbox.py::test_creep_abstains` expected `multi_hypothesis`
+  from the creep sandbox, but the rename to `test_creep_verdict_agrees_with_its_margin`
+  recorded in the 2026-11-02 entry never landed, so the stale assertion was still
+  there and failed; `tests/test_dyn_sandbox.py::test_subthreshold_regime_abstains`
+  made the same mistake for the quantum-vacuum sandbox, which F14 re-anchored onto
+  the holdout-best head. Both now pin the agreement the contract promises -- verdict
+  and promotion flag agree, a promotion needs `delta_rmse > tau_epi`, only the
+  expected mechanism may win -- and a low-confidence promotion must still be
+  labelled `WEAK_PROMOTION_MARGIN`. The subthreshold arm then changed in the same
+  pass: the holdout-best candidate in that field window is `thermal_constant`, so
+  the null floor (above) makes it abstain, and both subthreshold tests now pin that
+  abstention -- `test_dyn_quantum_sandbox.py::test_subthreshold_regime_abstains_at_the_null_floor`
+  and its counterpart here -- instead of a promotion the null won against itself.
+  The creep verdict is untouched, and whether the four saturated models are
+  physically distinguishable remains a physics claim for a larger holdout or lower
+  noise.
+- **`/api/benchmark/external60/run` keeps its scratch artifacts.** The route wrote
+  `apedp_<block>.json` inside a `TemporaryDirectory` context and then returned that
+  directory's path, so the directory was deleted before the caller could read it.
+  The run now writes to a `mkdtemp` directory and leaves it in place; the route
+  still writes to scratch only and never touches the frozen round.
+- **Freeze re-mint for `apedp_dyn/sandbox/multi_asset_signals_sandbox.py`.** The
+  multi-asset grammar audit built `eval_idx` and its period label from the raw
+  frame, before the volatility warmup rows were dropped, so the index stayed short
+  by the warmup length and ran off the end of every array it sliced. Both are now
+  derived after the truncation, and `APEDPX_FROZEN_v1_18.json` carries the new
+  digest with its `remint_log` rationale. No threshold, referee statement, cohort
+  or blind-case expectation changed.
+- **`apedp_dyn/ui/server.py` is 1,227 lines again, under its 1,686-line ceiling.** The module
+  had re-inlined 21 helpers that `apedp_dyn/ui/helpers.py` already holds byte-for-byte --
+  including two 188-line copies of `_format_sandbox_adjudication` -- which left the size
+  ratchet pinned 30 lines *below* the file it measures. It imports that surface back
+  (explicit `X as X` re-exports keep `apedp_dyn.ui.server.<name>` resolvable for the
+  endpoint modules and tests that import it), and the two divergent `_require_api_key`
+  copies collapse onto the hardened one: bearer-header support and a constant-time
+  `hmac.compare_digest`, which only the server copy had.
+- `tests/test_search_engines_real.py::test_extended_search_recovers_harmonic_on_untouched_holdout` selected its candidate by one spelling, `sin(2.0*(x0))`, which the search no longer emits: `_extended` trig probes pass the seed through `term_format.atom()`, which leaves atomic operands unparenthesised, so the recovered law is `sin(2.0*x0)`. The engine already found it (r2 0.99990, holdout > 0.99); the test now matches the law structurally and also pins the fitted scale and offset to the recovered coefficients.
+- Frequency-scaled trig probes have one spelling, defined by `apedp_dyn/grammar/term_format.harmonic`: `sin(2.0*x0)` for an atomic seed, `sin(2.0*(x0 + 1))` for a sum. `HierarchicalSearch._mid_search` emits through it, and a test or a candidate id hashed from the emitted text asks for the same string instead of spelling the law by hand -- which is how the harmonic recovery test came to expect `sin(2.0*(x0))`. The numeric frequency is rendered as a decimal however the caller holds it (`2`, `2.0` and `"2"` all give `2.0`), so one law cannot acquire two ids. The emitted text is unchanged for every seed; the spelling is pinned by `test_a_harmonic_probe_has_one_canonical_spelling`.
+- `apedp_dyn/ui/dashboard.html`: Complete unslopping and institutional REA pass. Stripped all 24 emojis across tabs, buttons, section headers, spinners and audit controls; eliminated glowing neon drop-shadows; replaced hue-gradient buttons with high-contrast slate action controls; added tabular lining numbers; implemented interactive SVG crosshairs with real-time coordinate tooltip inspection in `renderSandboxSVG`; and wired keyboard navigation hotkeys (1–6) for workspace switching. Synchronized `APEDPX_FROZEN_v1_18.json` checksum.
+- `APEDPX_FROZEN_v1_18.json` re-minted three guard-file hashes (`adjudicate.py`, `dashboard.html`, `server.py`) without a `remint_log` entry, leaving one rationale in the log for four changed digests. Each of the three now has its own entry with the old and new digest and what changed; none of them changes a threshold, referee statement or gate decision.
+- `apedp_dyn/ui/dashboard.html` and `apedp_dyn/ui/server.py`: Fixed stray closing brace in dashboard script block causing syntax errors and broken tab navigation. Wired domain-adaptive metric cards (Sharpe/Return, FPR/CAR/SFCR, packing density, ESEDS holdout), added domain visual cards (M0-M5 Extrapolation Ladder & EEDR Self-Correction, Two-Tier risk parity, causal and PDE invariant scorecards, Kepler packing bound), eliminated boolean string coercion on promoted formulas, and synchronized `APEDPX_FROZEN_v1_18.json` hashes.
+- `ProofClaimStatus` existed twice: `apedp/mathematical/mathematical_layer.py` defined its own class while `apedp_dyn/epistemic/proof_claim.py` documented that the legacy layer re-exports it. Two `str`-Enums with the same values are not the same class, so identity and `isinstance` across the boundary failed; the Lean bridge also imported the enum from the legacy tree, leaving the canonical package with an import-time edge back into `apedp`. The legacy module now imports the canonical class and the bridge imports from `apedp_dyn.epistemic.proof_claim`; both import orders and `apedp.symbolic_equivalence` were probed for cycles. Pinned by `tests/test_dyn_unregistered_module_behaviour.py`.
+- `ReservoirProposer` flattened its readout with `W_out.ravel()`, which is correct only for a single target: on a two-variable input the scorer raised `matmul: core dimension 0 ... size 46 is different from 23`. Each target now gets its own readout column and its own proposal; the single-column competition path is unchanged.
+- `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
+
 ### Added
+- **Calibration of stages 2 and 3 on real returns: PREREG-CRYPTO-CAL-2026-11
+  (2026-11-17).** Frozen, then run once on the development panel: 0 of 500
+  placebos passed stage 2 (95% upper bound 0.74%); injected effects passed at
+  1% (rho 0.01), 55% (0.02), 97% (0.03), 100% (0.05); reversal passed stage 2
+  and was refused at stage 3 as a literature factor. Every preregistered
+  expectation held. `preregistration/RESULT-CRYPTO-CAL-2026-11.md`.
+- **First preregistered run on unseen data: PREREG-CRYPTO-PIT-2026-11
+  (2026-11-17).** The panel (692 USDT assets, 183 delisted before the end,
+  24,693 checksummed source files) was built on GitHub Actions into the
+  `market-data` branch under Deviation 01, and the frozen analysis ran once.
+  Positive control (volatility persistence) passed stage 4 on the January 2026
+  holdout; placebo refused at stage 2; the order-flow hypothesis refused at
+  stage 2 on development data and never touched the holdout. Report and
+  unedited outputs: `preregistration/RESULT-CRYPTO-PIT-2026-11.md` and
+  `preregistration/RESULT-CRYPTO-PIT-2026-11/`.
+- **Preregistration PREREG-CRYPTO-PIT-2026-11 and the point-in-time data it
+  will run on (2026-11-17).** `scripts/build_point_in_time_crypto_panel.py`
+  builds a daily panel of every Binance USDT spot pair, delisted pairs
+  included, from the checksummed public archive;
+  `.github/workflows/market-data.yml` runs it on a GitHub runner and commits
+  the panel and its manifest to the orphan branch `market-data`.
+  `scripts/run_prereg_crypto_pit.py` is the frozen analysis: a known effect
+  (volatility clustering), a placebo, and an order-flow-imbalance hypothesis,
+  each through `PromotionTracker`, with the holdout split by date so each
+  candidate that reaches stage 4 claims its own window.
+  `preregistration/DIGEST.json` freezes the text, the builder and the analysis
+  script; `scripts/check_preregistration.py` checks them, and the workflow runs
+  it before downloading anything. Tests: `tests/test_point_in_time_crypto_panel.py`
+  (18), `tests/test_prereg_crypto_pit.py` (13).
+- `scripts/check_audit_artifact_drift.py`: rebuilds every committed audit artefact (`benchmarks/formal/lean_axiom_audit.json`, `benchmarks/applied_basis_report.json`, `benchmarks/untested_modules_register.json`, and the static-table census via its own `--check`) and fails on any difference. Wired as the `audit-artifact-drift` CI job and a pre-commit hook, so a report can no longer be hand-edited past review — the failure this exists for is the Lean audit that reported 0 circular proofs while a rebuild measured 94. Regeneration is `--write` and shows up in the diff.
+- `scripts/audit_untested_modules.py` + `benchmarks/untested_modules_register.json`: the `apedp_dyn` modules no test names (71 of 391), with a pinned ceiling. A module counts as referenced only by its dotted path, `import <dotted>`, or `from <package> import <name>`; prose and unrelated identifiers do not count, and `test_smoke_imports.py` import coverage is deliberately excluded because importing a module is not testing it. `tests/test_untested_module_register.py` pins the register and proves the detector on a synthetic tree. The census began at 94; `tests/test_dyn_unregistered_module_behaviour.py` (42 tests) now exercises 23 of those modules, and none of the 94 qualified as dead — each is imported by a package `__init__`/`ui/server.py` or cited by a preregistration document.
+- Governance re-signing package (FLAW-01): `specifications/governance_remint_request.json` (generated by the ceremony, anchored to `PINNED_SPEC_SHA256`), a trustee-facing procedure in `docs/GOVERNANCE_RESIGNING_PACKAGE.md` (exact digest, signing and self-verification snippets, return format, maintainer runbook, acceptance criteria), and `scripts/intake_governance_signature.py` — a fail-closed intake that verifies a returned signature against the manifest's registered key and refuses unregistered signers, wrong keys, malformed hex, naive timestamps, stale requests and duplicates. The request artifact also now reports the prior manifest's validity over the digest it SEALS (`prior_manifest_valid_signatures_over_sealed_digest`), instead of comparing it to the revised spec on disk, which could only ever say false. Pinned by `tests/test_governance_signature_intake.py` (9).
+- `scripts/audit_documentation_verified_rows.py`: executes every test file cited by a `Verified (N/N)` row in `docs/DOCUMENTATION.md` and reports which counts still reproduce, which files fail, and which rows cite nothing runnable. Report: `docs/DOCUMENTATION_VERIFIED_ROWS_AUDIT.md`.
+- `scripts/check_quality_baseline.py` + `quality_baseline.json` + `docs/QUALITY_BASELINE.md`: lint/type debt pinned at measured counts and ratcheted downward only.
 - Release-governance and changelog conventions.
 - Security reporting policy, dependency-update automation, and CodeQL analysis.
 - Validated BH/BY/Holm p-value adjustment with caller-supplied alpha, ordered results, and effective rejection threshold.
 - Explicit biopharma scope documentation and regression tests for evidence labels and unsupported omics inputs.
+- Sizing convergence diagnostics: `SizingDecision` reports `iterations`, `converged` and an analytic `kkt_residual` instead of stopping silently at `max_iterations`, and a non-converged case is polished by an active-set solve with a smooth-QP/kink-snap fallback. All 36 audit cases converge; the worst residual is 2.0e-12.
+- `scripts/audit_sizing_solver_convergence.py` and `benchmarks/sizing_solver_convergence.json` measure the sizing solver on ill-conditioned covariances (36 cases, `n = 2, 4, 8`, `κ = 10²…10¹²`), documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
+- `scripts/audit_sizing_real_market.py` and `benchmarks/sizing_real_market.json` walk the sizing rule forward over the repository's real equity and crypto panels (126-day lookback, 5-day rebalance, 0/5/20 bps). All six runs converge (0 unconverged, worst KKT 1.4e-13); documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
 - Source-linked scaffold inventory with evidence tiers, explicit prediction limits, and a regression guard for its references.
 
 ### Changed
+
+- Preregister the promotion-lifecycle stage thresholds instead of defaulting them in code. `canonical_spec` exposed `stage2_min_ic`, `stage4_min_oos_ic`, `stage4_oos_alpha`, `stage5_min_fee_bps`, `stage6_prospective_sharpe_hurdle` and `stage6_max_drawdown_ceiling` as `_THRESHOLDS.get(key, literal)` reads, and none of the six keys existed in `specifications/canonical_preregistered_spec_v1.json`: stages 2/4/5/6 enforced numbers the sealed document did not contain, and a key that went missing would silently fall back to a literal. The six entries are now in the canonical file with the values the callers already used (0.02, 0.015, 0.05, 3.0, 0.70, 0.25 — behaviour unchanged), the reads are strict subscripts, and `PINNED_SPEC_SHA256` moves to `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329`. `governance_manifest.json` is untouched and still seals `a6d026f3…`, so FLAW-01 remains open and fail-closed pending trustee signatures over the new digest.
+
+- Restore the bandit gate to blocking. The security scan ran `bandit -r apedp/ apedp_dyn/ -ll || true`, so it could not fail; it now exits non-zero on a finding and excludes only the vendored `kickmix/_qualtran_src` checkout by provenance, the same exclusion ruff and mypy already apply to that bundle. First-party findings were fixed at source: `eval` in `apedp/advanced_search.py` and `apedp_dyn/vqc/qasm.py` is replaced by closed-scope AST interpreters over the already-whitelisted grammar, the MD5 feature-index buckets in `apedp_dyn/video/semantic_bridge.py` pass `usedforsecurity=False`, and the `/tmp` scratch/sidecar literals in `apedp_dyn/distributed/cluster_launcher.py` and `apedp_dyn/sandbox/volume_sandbox.py` resolve through `tempfile.gettempdir()`. The four `urlopen` sites keep `# nosec B310` on the line with an explicit https scheme check, because the check cannot express a scheme-validated literal endpoint.
+
+- Cap Lean verification at P1 when the module declares the axioms it proves. `lean_formal/` is generated in the core-axiomatic mode that emits `axiom abs_mul`, `axiom tanh_odd`, `axiom cube_neg` and `axiom neg_mul_neg` into the same file, then closes the theorem with `rw` against them; the kernel accepts that because the conclusion is one of the premises, and `verify_candidate_formally` was awarding `P2_VERIFIED` for it. A module that declares its own axioms now yields `P1_CANDIDATE` with a note saying kernel acceptance establishes consistency with the injected premises, not an independent derivation. `LeanTheoremVerification.axiom_dependent` records which theorems are in that class, and `tests/test_dyn_lean_p2_requires_foundations.py` pins the rule with the kernel stubbed to exit 0 — the environment in which the overclaim actually occurred.
+
+- Reconcile the Lean audit with the tree it audits. `benchmarks/formal/lean_axiom_audit.json` claimed 0 theorems proved by rewriting a local axiom and 259 `incomplete` files; a fresh build measures 94 and 196 (`axiom_injected` 360, `sorry` 251). The 94 are real: 63 files under `apedp_dyn/lean_formal/` close a theorem with `rw [abs_mul ...]`, `rw [tanh_odd ...]`, `rw [cube_neg ...]` or `rw [neg_mul_neg ...]` against an axiom declared in the same file, so the premise is restated as the conclusion. They are emitted by `apedp_dyn/epistemic/lean_universal_bridge.py`, which still returns provable=True for those four patterns. The claim that the generator had been fixed and the shape removed was never true of any committed tree: at `53b574f6`, the commit that first wrote the report, the same file already read `rw [abs_mul c (tanh v)]`. The report is regenerated from the tree, `docs/LEAN_FORMAL_STATUS.md` and `docs/NEGATIVE_RESULTS_REGISTER.md` state 94/360/196, and the audit test is a downward ratchet at 94 instead of an assertion of zero. Downgrading those 94 from P2 in the verification ledger is a separate adjudication and is not done here.
+
+- Re-record the two ratchets whose pinned artefacts had drifted from the tree. `benchmarks/exception_hygiene_baseline.json` was written on 2026-11-06 and its size ceilings no longer described the files: `invsqrt_signed_digit.py` (+566), `faros_isq.py` (+70), `trading_grammar_catalog.py` (+38), `rust_bridge.py` (+14), `rime_repair_engine.py` (+11), `synthesis.py` (+9) and four files by one to three lines had all grown since. The re-pin records those sizes as the new ceilings — the growth is in this entry rather than silently absorbed — and the handler ratchet itself tightened: 224 annotated, 0 silent, up from 196 annotated. `scripts/static_table_census.json` recorded `sandbox/auto_degradation.py -> TRUTH` as a returned lookup, but `a497752a` turned that return into a computed local, so the scanner rightly stopped reporting it; `102c0650` added `quantum_compilation/faros_isq.py -> _RESOLVED_PYTHON`, a memo of resolved interpreter paths that the resolver reads back and that is recorded rather than argued away as a false positive. `docs/SCAFFOLD_INVENTORY.md` carries the matching row, so the census, the documentation and the scanner name the same 18 modules.
+
+- Burn down `var-annotated` (31 → 0), `no-redef` (4 → 0) and `misc` (6 → 2) over `apedp_dyn`. The annotations are the types the values already had: meshgrid targets are `np.ndarray`, channel ranges are `float`, the observed data banks are `list`-or-array, and the three domain clip sets say they hold both a clip and a clip-plus-state. The two `no-redef` families were real shadowing: a local edge-colouring constructor took `Any` for all seven parameters (now a real signature), the optional kernel import rebound an annotated name, a later branch redeclared the evidence list, and a repaired proposer reused `order`. The two inferrable lambdas are now typed closures, and `torch` — which ships `py.typed` — is followed so `nn.Module` subclasses have a real base; that surfaced a real `Tensor | None` initialisation in the transport head, fixed by asserting the `Conv2d` owns its parameters. `misc` is now only the two vendored decoder classes in `dqi_gluzdov_v6`, whose base arrives from the competition bundle at runtime and cannot be typed without stubs for that bundle. A new `tests/test_dyn_candidate_payload_protocol.py` pins the payload boundary: a free-form proposal is a `CandidatePayload` with an empty term set and is deliberately not a `CandidateDynamics`. The baseline moves to 29.
+
+- Drive `assignment`, `index` and `operator` to zero in `apedp_dyn` (13 → 0, 24 → 0, 13 → 0). A shared `CandidatePayload` protocol in the candidate IR now types `ScoredCandidate.candidate`, so a free-form proposal reference type-checks as a scored payload without pretending to be a grammar candidate; the gate-4 `arg-type` residual disappears with it. The rest are real-name and real-type fixes: shadowed loop variables, numpy scalar reads, a four-bit syndrome key, a track union, narrowed Optional operands, and guarded comparison operators that now report a non-numeric rule instead of raising. The frozen referee is re-minted as `APEDPX_FROZEN_v1_17.json` (annotation/payload-only); the payload protocol declares read-only members so a frozen proposal reference satisfies it structurally, and the mypy baseline is re-pinned at 72.
+
+- Burn down `attr-defined` (39 → 0) and `assignment` (34 → 13) in `apedp_dyn`: re-export the dispatch/receipt surfaces explicitly, correct three `SystemCandidate` attribute names, declare the Optional arrays, buffers and dict values that were inferred as concrete, and widen `CandidateVerdict` to each promoter's own candidate type. `pyproject.toml` gains a scoped `follow_imports = "normal"` override so mypy reads the `py.typed` FastAPI/pydantic stack, which retires the 28 `untyped-decorator`/`BaseModel` errors in `ui/server.py` instead of tolerating them. The frozen referee is re-minted as `APEDPX_FROZEN_v1_16.json` (annotation-only) because a guard file's digest changed; the mypy baseline is re-pinned at 126.
+- Risk-first debt burn-down under the pinned quality baseline. The vendored Qualtran checkout shipped with `kickmix` (`_qualtran_src`, 12,186 of the package's 14,486 mypy errors) is now excluded by provenance from both gates. `apedp_dyn/` ruff is 351 → 0: the last 199 were `E701`/`E702`, cleared with the repository's own `ruff format` (plus one hand split in `sweep_dqi_eea_bound.py`, which is recorded as patch-provided content), and the formatter exposed three untyped helpers that are now annotated. mypy is 14,486 → 1,611. Cleared families in risk order: undefined/unused names (`F`), loop-closure `B023`, `zip` without `strict`, blind excepts, scheme-unchecked URL opens, stale `noqa` directives and dead code. All 257 `no-untyped-def` sites in `apedp_dyn/sandbox/` now carry real annotations (numpy arrays, `Callable` signatures, typed return tuples); the body errors those signatures exposed were fixed at source, not widened back to `Any`.
+- Quality gates re-pinned at what they actually measure: `make lint` now runs the full configured ruff ruleset over `apedp/` and `tests/` (all 175 findings cleared) plus the baseline check, and `make typecheck` keeps the strict two-module check and adds the full-package mypy baseline. Previously `make lint` ran `--select E9,F` and bare `mypy` covered only `apedp_dyn/conf/`, so a green gate said nothing about ~1,200 files.
 - Biopharma heuristics now identify their evidence tier and unsupported outputs; target discovery refuses ignored omics input, and unsupported biomarker measurements are reported as not assessed.
+- `packages/` holds `jetflow-video` only. The six `packages/apedp-*` re-export shells (`audio`, `continuum`, `distributed`, `molecular`, `quantum`, `robotics`) were deleted with their `wheels.yml` matrix entries and dependabot configs: each `__init__.py` inserted the repo root on `sys.path` and re-exported `apedp_dyn`, so no wheel carried an implementation of its own. Their behaviour is tested where it lives (`tests/test_dyn_all_subpackages.py`).
+- `apedp/model_synthesis.py` is 1,494 lines (was 2,145): the split into `apedp/model_synthesis_helpers.py` had been created but never finished, so both copies were live and the class still carried the detector and template grammars. The module-level block now comes from the helpers module and the class delegates to `detect_regimes`, `s2_templates` and `exp_templates` there; every documented import path is re-exported.
+
+- Re-minted the APEDP-X freeze record as `APEDPX_FROZEN_v1_13.json` after `c38a172` moved the registry discovery route body from `apedp_dyn/ui/server.py` to `apedp_dyn/ui/registry_endpoint.py`. The moved body differs by one added import of the shared helpers, the route delegates through `discover_registry`, and no referee, threshold or blind case changed; `blind_benchmark.FROZEN_RECORD` now points at v1.13 (it still pointed at v1.10).
+- The CPython 3.13 verifier environment (`build/qvcc-venv313`) carries the runtime dependencies the quantum-compilation subprocess imports, so the kickmix screen test runs instead of skipping when `APEDP_Q_KICKMIX_PYTHON` names it.
+
+- Reject nonfinite or invalid inputs in biomarker and ADMET rule screens.
+- `embed_conformer_3d` passed `chirality_terms`/`chirality_strength` to `MolecularForceField`, which is distance-only and therefore achiral by construction, so every pocket relaxation of a chiral ligand raised `TypeError` before it started. The embedding now relaxes bonds and soft repulsion only, and says so; chirality is enforced by `PocketConditionedForceField`, which `build_pocket_force_field` derives from the same graph and which the pocket relaxation evaluates every step.
 
 ### Fixed
-- Reject nonfinite or invalid inputs in biomarker and ADMET rule screens.
+- FAROS-ISQ circuit materialization no longer spawns a hardcoded `/dev/shm/qvcc-venv313/bin/python` that exists on one machine. `resolve_builder_python` probes the caller's argument, `APEDP_Q_KICKMIX_PYTHON`, the legacy `APEDP_Q_PYTHON`, the repository runtime `build/qvcc-venv313`, and the current interpreter for CPython 3.13 + numpy + scipy + `kickmix`, and a failing build now carries the child's stderr instead of only "Circuit builder subprocess failed". `tests/test_faros_isq.py` is 19/19; the rebuilt artifact reproduces the pinned champion byte-for-byte (`sha256 7bd8955e…`, 1,448 Toffoli, 44 rotations, 90 qubits).
+- Documentation counts in `docs/DOCUMENTATION.md` were re-measured by executing every cited file; the audit report records which claims were stale (e.g. molecular SE(3) 6/6 → 9/9, coupled/2D PDE 3/3 → 12/12, Rime micro-sample 11/11 → 24/24) and why the historical pin totals were annotated rather than rewritten. The four Rime micro-sample rows now cite only the test file that pins them (the producer script stays linked but unbackticked), so the harness reports `MATCH`; the harness also reports the measured pytest execution time rather than the wall clock of a cache replay.
+- The sizing KKT residual now minimizes over the feasible cap multiplier instead of averaging kink-only active coordinates, and treats previous weights below `1e-12` as zero. Real-panel books no longer report false violations from an arbitrary multiplier or from floating-point dust left by an earlier solve.
+- `size_positions` compares the utility of holding the previous book with the polished candidate and keeps the previous book when it is at least as good, so a fee-driven no-trade decision is not replaced by a worse partial trade.
 
 ### Security
 - _Record security-related changes here._
@@ -35,6 +541,18 @@ The following dated entries preserve the existing rolling development record.
 They were not retrospectively assigned release versions.
 
 ---
+
+### Changed
+- `apedp_dyn/sandbox` now reports zero `no-untyped-def` findings: all 257 sites carry explicit parameter and return types, with numpy-returning expressions routed through ndarray-typed locals rather than widened to `Any`. Four frozen referee guard files drifted by annotation only (`eseds_dynamical.py`, `multi_asset_signals_sandbox.py`, `multi_grammar_sandbox.py`, `trading_signals_sandbox.py`), so the record is re-minted as `APEDPX_FROZEN_v1_14.json`: `blind_benchmark.FROZEN_RECORD` points at it, `ARCHITECTURE.md` names it as the current generation, its `remint_log` records every old/new digest with the rationale, and `verify_referee()` passes all 15 guard files. `tests/test_dyn_blind.py` is green again; before the re-mint it refused to score, which is the guard doing its job.
+- The `type-arg`, `var-annotated`, `no-any-return` and `unused-ignore` mypy families outside the sandbox were burned down without suppressions: bare generics in annotations gained type arguments (`dict[str, Any]`, `Callable[..., Any]`, `tuple[Any, ...]`), empty-container assignments got their declared types, `Any`-returning expressions go through a local declared with the function's own return annotation, and `# type: ignore` comments mypy reports as unused were deleted. mypy over `apedp_dyn` falls 1,611 → 959 (`no-any-return` 379 → 50, `type-arg` 189 → 35, `var-annotated` 233 → 85, `unused-ignore` 21 → 0). Frozen guard files were excluded so the re-mint stayed minimal; `no-untyped-def` (292) and the `no-untyped-call` (170) it implies are the next families.
+- `Makefile`: `PYTHON` defaults to the project virtualenv when `.venv/bin/python` exists, and `lint`, `typecheck`, `test`, `format`, `reproduce` and `vqc-parity` invoke their tools as `$(PYTHON) -m ...`. `make lint` and `make typecheck` no longer need `PYTHON=.venv/bin/python` or a `PATH` containing `ruff`/`mypy`.
+
+### Changed
+- Annotated every remaining untyped definition and call outside the frozen guards: `no-untyped-def` 292 → 0, `no-untyped-call` 170 → 10. Parameter types come from literal defaults where a default is present and `Any` otherwise; return types are `None` for no-value functions, the literal type for single-literal returns, and `Any` for generators and mixed returns.
+- Burned down the `union-attr` family (65 → 0) by narrowing each site to its real runtime shape instead of widening types: the VQC op streams now check `isinstance(op, Gate)` before touching `name`/`targets`/`params`, and the sandbox candidate streams use `cast(SystemCandidate | CandidateDynamics, ...)` where the enumeration guarantees the concrete candidate.
+- Burned down `arg-type` (66 → 8), `type-arg` (189 → 0), `var-annotated` (233 → 31) and `no-any-return` (379 → 10) with real types: total Optional sort keys, `float()` of Optional metrics made explicit with an `inf`/`nan` fallback, bare generics given arguments, numpy-returning expressions routed through ndarray locals, and three structural annotation drifts corrected (ODE RHS term representation, marginal-count keys, `_volume_gate_breakdown` signature).
+- The frozen referee record is re-minted as `APEDPX_FROZEN_v1_15.json` because the guard files themselves were annotated (frozen files carry the same typing debt): `blind_benchmark.FROZEN_RECORD` points at v1.15, `ARCHITECTURE.md` names it as the current generation, `remint_log` carries each old/new digest with the annotation-only rationale, and `verify_referee()` still matches all 15 guard files. No referee statement, threshold or control-flow decision changed.
+- mypy over `apedp_dyn` now stands at 29 (the entry above reached 959); `make typecheck` gates that number.
 
 ## [Unreleased] — APEDP-Q: verifier-guided quantum-circuit compilation (Milestone 1, Benchmark I) (2026-10-23)
 

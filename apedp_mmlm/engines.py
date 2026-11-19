@@ -4,7 +4,8 @@ Status: experimental
 
 Implements:
   - **Specification & Tokenization**: `MMLMResearchSpecification`, frozen falsifiable
-    hypotheses `H1`–`H5`, and deterministic word/subword/circuit/AST `MMLMTokenizer`.
+    hypotheses `H1`–`H5`, deterministic word/subword/circuit/AST `MMLMTokenizer`,
+    and byte-level `BPEMMLMTokenizer` with UTF-8 byte fallback.
   - **Engine 1 (Probabilistic Language Engine)**:
     - `WeightedAutomatonEngine`: Variable-order Markov / Weighted Finite-State Automaton
       with Kneser-Ney continuation backoff over $P(x_t \mid x_{1}, \dots, x_{t-1})$ up to order 5.
@@ -562,6 +563,7 @@ class TensorTrainMemoryEngine:
                 norm = float(np.linalg.norm(state))
                 if norm > 1e-9:
                     state /= norm
+
 
     def contract_context(self, context: Sequence[int]) -> np.ndarray:
         """Contract $G_1[x_1] G_2[x_2] \\cdots G_t[x_t]$ along the 1D chain."""

@@ -73,6 +73,7 @@ _STATUS_TO_CORE = {
     CandidateStatus.PROPOSED: CandidateLifecycleState.PROPOSED,
     CandidateStatus.SCREEN_REJECTED: CandidateLifecycleState.PRE_SCREEN_REJECTED,
     CandidateStatus.VERIFIER_REJECTED: CandidateLifecycleState.CONFIRMATION_REJECTED,
+    CandidateStatus.UNVERIFIABLE: CandidateLifecycleState.UNRESOLVED,
     CandidateStatus.VERIFIED_NONIMPROVING: CandidateLifecycleState.DEVELOPMENT_PASSED,
     CandidateStatus.VERIFIED_IMPROVEMENT: CandidateLifecycleState.CONFIRMED_VALID,
     CandidateStatus.INSUFFICIENT_EVIDENCE: CandidateLifecycleState.UNRESOLVED,
@@ -441,9 +442,17 @@ class QuantumCandidateLedger:
             outcome_status="PASSED" if receipt.status == "PASS" else "FAILED",
         )
 
-        if receipt.status != "PASS":
+        if receipt.status == "FAIL":
             status = CandidateStatus.VERIFIER_REJECTED
             reason = str(receipt.metrics.get("error", "official verifier did not pass"))
+        elif receipt.status != "PASS":
+            # A timeout, a crash or an unparseable summary measured nothing about the
+            # circuit.  Recording it as a rejection would turn a capability gap into
+            # evidence against the candidate, so it stays unresolved instead.
+            status = CandidateStatus.UNVERIFIABLE
+            reason = "capability gap: " + str(
+                receipt.metrics.get("error", "verifier produced no measured verdict")
+            )
         elif not is_final:
             status = CandidateStatus.VERIFIED_NONIMPROVING
             reason = (
@@ -562,6 +571,31 @@ class QuantumCandidateLedger:
                     "verified_score": node.metrics.get("verified_score"),
                     "verification_scope": node.metrics.get("verification_scope"),
                     "parameters": quantum.get("parameters", node.parameter_choices),
+                    # The quantum status sits behind the coarser core state; keep it
+                    # visible so UNVERIFIABLE and INSUFFICIENT_EVIDENCE stay distinct.
+                    "status": quantum.get("status") if isinstance(quantum, dict) else None,
                 }
             )
         return rows
+
+    def verdict_summary(self) -> dict[str, Any]:
+        """Count candidates by verdict, keeping capability gaps out of the denominator.
+
+        ``eligible`` is the number of candidates a rejection rate may be read over:
+        a run that never reached a measured verdict (``UNVERIFIABLE``) is a gap in
+        the harness, not a failed candidate.
+        """
+        rows = self.summary()
+        by_status: dict[str, int] = {}
+        for row in rows:
+            status = row.get("status")
+            if status is None:
+                continue
+            by_status[status] = by_status.get(status, 0) + 1
+        unverifiable = by_status.get(CandidateStatus.UNVERIFIABLE.value, 0)
+        return {
+            "candidates": len(rows),
+            "by_status": by_status,
+            "unverifiable": unverifiable,
+            "eligible": len(rows) - unverifiable,
+        }

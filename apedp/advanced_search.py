@@ -183,7 +183,7 @@ class DagNode:
 
 
 class ExpressionDag:
-    """DAG representation of expressions with Rust acceleration."""
+    """DAG representation of expressions built node by node."""
 
     def __init__(self, variables: list[str]):
         self.variables = variables
@@ -204,11 +204,6 @@ class ExpressionDag:
         return node_id
 
     def to_string(self, node_id: int | None = None) -> str:
-        if self._rust is not None and not self._use_python and len(self.nodes) == 0:
-            try:
-                return self._rust.canonicalize()
-            except Exception:  # noqa: BLE001,S110
-                pass
         nid = node_id if node_id is not None else self.root
         if nid >= len(self.nodes):
             return "0"
@@ -247,11 +242,6 @@ class ExpressionDag:
             return "0"
 
     def canonicalize(self) -> str:
-        if self._rust is not None and not self._use_python and len(self.nodes) == 0:
-            try:
-                return self._rust.canonicalize()
-            except Exception:  # noqa: BLE001,S110
-                pass
         return self.to_string()
 
     @property
@@ -424,9 +414,17 @@ class LatentSpace:
         return embedding
 
     def decode(self, latent: list[float]) -> str:
-        if self._rust is not None:
-            return self._rust.decode(latent)
-        return "x0"
+        """Refuse: the encoder is a feature hash and has no inverse.
+
+        The native decoder refuses for the same reason (see
+        `rust/apedp-kernel/src/latent.rs`), so this delegates nowhere: a vector
+        cannot be turned back into an expression, and returning a fixed `"x0"`
+        made every latent look like the same equation.
+        """
+        raise NotImplementedError(
+            "LatentSpace.decode has no inverse: the encoder is a feature hash "
+            "over characters and token counts, so a vector does not determine "
+            "an expression")
 
     def interpolate(self, expr1: str, expr2: str, alpha: float) -> list[float]:
         if self._rust is not None:
@@ -758,18 +756,21 @@ class HierarchicalSearch:
 
     def _expansions(self, expr: str, var: str) -> tuple[str, ...]:
         """The structural moves applied to a surviving seed, per template set."""
+        from apedp_dyn.grammar.term_format import atom
+
+        # A seed can be a sum (`x0 + 1`), so every template that appends an
+        # operator to it has to receive it as one unit, or the operator applies
+        # to the seed's first addend only.
+        seed = atom(expr)
         if self.template_set == "classic":
-            return (f"{expr}**2", f"{expr}*2", f"2*{expr}",
-                    f"sin({expr})", f"{expr}+1")
+            return (f"{seed}**2", f"{seed}*2", f"2*{seed}",
+                    f"sin({seed})", f"{seed}+1")
         # The seed itself is kept: with coefficients fitted, ``x`` is the right
         # answer for a straight line and dropping it would rank a worse shape first.
-        harmonics = tuple(
-            f"{function}({scale}*({expr}))"
-            for function in ("sin", "cos")
-            for scale in _TRIG_FREQUENCY_SCALES
-        )
-        return (expr, *[expansion.format(e=expr) for expansion in _EXTENDED_EXPANSIONS],
-                *harmonics, f"{expr}*{var}", f"{expr}/(1+{var})")
+        #
+        # Frequency-scaled trig is a separate family, layered on in ``_mid_search``.
+        return (expr, *[expansion.format(e=seed) for expansion in _EXTENDED_EXPANSIONS],
+                f"{seed}*{var}", f"{seed}/(1+{var})")
 
     def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
                     data: list[Any] | None = None,
@@ -782,7 +783,15 @@ class HierarchicalSearch:
         seen: set[str] = set()
         for seed in seeds[:5]:
             expr = seed['expression']
-            for expanded in self._expansions(expr, var):
+            probes = self._expansions(expr, var)
+            if self.template_set == "extended":
+                # `harmonic` owns the spelling: the seed arrives as one operand,
+                # not its first addend, and the emitted text is the one a test or
+                # a candidate id can reproduce without guessing parentheses.
+                from apedp_dyn.grammar.term_format import harmonic
+                probes = (*probes, *(harmonic(fn, sc, expr) for fn in ("sin", "cos")
+                                     for sc in _TRIG_FREQUENCY_SCALES))
+            for expanded in probes:
                 if expanded in seen:
                     continue
                 seen.add(expanded)

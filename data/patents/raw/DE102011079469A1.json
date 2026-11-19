@@ -1,0 +1,13 @@
+{
+  "patent_id": "DE102011079469A1",
+  "source": "https://patents.google.com/patent/DE102011079469A1/en",
+  "retrieved_utc": "2026-10-31T18:27:06+00:00",
+  "http_status": 200,
+  "bytes": 164081,
+  "html_sha256": "47276d0a2c45719570c7cd313695654c710e2d0353028e7ebeea17d207eb07cb",
+  "jurisdiction": "DE",
+  "title": "Method for determining charge acceptance and method for charging a rechargeable battery",
+  "abstract": "Abstract Translated from German Bei einem Verfahren zum Ermitteln einer Ladeakzeptanz ICA einer wiederaufladbaren Batterie wird die Batterie rechnerisch in eine vorbestimmte Anzahl n von Abteilungen i mit einer jeweiligen maximalen Ladekapazität Ci zerlegt, die über Widerstände Ri parallel geschaltet sind, und die Ladeakzeptanz ICA der Batterie aufgrund der Ladekapazität C1 und des Widerstands R1 der den Batterieanschlüssen benachbarten Abteilung ermittelt wird. Die Erfindung betrifft auch ein Verfahren zum Laden einer wiederaufladbaren Batterie.In a method of determining a charge acceptance I CA of a rechargeable battery, the battery is computationally decomposed into a predetermined number n of compartments i having a respective maximum charge capacitance C i connected in parallel through resistors R i and the charge acceptance I CA of the battery the charge capacitance C 1 and the resistance R 1 of the battery terminals adjacent department is determined. The invention also relates to a method for charging a rechargeable battery.",
+  "claims": [],
+  "extractor": "scripts/fetch_patent_corpus.py::_ClaimParser"
+}

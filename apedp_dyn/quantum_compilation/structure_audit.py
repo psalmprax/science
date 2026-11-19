@@ -20,6 +20,7 @@ from __future__ import annotations
 import dataclasses
 import math
 from typing import Any
+
 import numpy as np
 
 
@@ -131,7 +132,7 @@ def audit_array_structure(
     non_zero_frac = float(non_zero / total)
 
     unique_vals = np.unique(flat)
-    distinct = int(len(unique_vals))
+    distinct = len(unique_vals)
     repeat_frac = float(1.0 - (distinct / total))
     entropy = compute_distribution_entropy(flat)
 

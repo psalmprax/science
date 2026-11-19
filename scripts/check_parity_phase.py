@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Numerical and native checks for the experimental parity phase oracle."""
-from fractions import Fraction
 import unittest
+from fractions import Fraction
 
 import numpy as np
-
 from prototype_parity_phase import audit_terms, build_parity_circuit, sparse_terms, walsh_transform
 
 

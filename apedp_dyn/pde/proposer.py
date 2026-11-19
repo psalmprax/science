@@ -117,7 +117,8 @@ class PdeProposer(ProposerBase):
                 return np.zeros(len(eval_df))
             eval_u = eval_df[target_col].to_numpy(dtype=np.float64)
             # Return normalized field prediction
-            return np.asarray(np.asarray(np.asarray(np.nan_to_num(eval_u, nan=0.0))))
+            _out: np.ndarray = np.asarray(np.asarray(np.asarray(np.nan_to_num(eval_u, nan=0.0))))
+            return _out
 
         proposal = CandidateProposal(
             proposer_id=self.proposer_id,

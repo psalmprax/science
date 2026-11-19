@@ -272,33 +272,33 @@
       {
         "from": 10,
         "peak_ratio": 3.9566666591536257,
-        "time_ratio": 7.230941916077699,
+        "time_ratio": 6.009608967601228,
         "to": 11
       },
       {
         "from": 11,
         "peak_ratio": 3.9877971634694944,
-        "time_ratio": 3.077483785318693,
+        "time_ratio": 3.6977384471431147,
         "to": 12
       },
       {
         "from": 12,
         "peak_ratio": 3.99633494623126,
-        "time_ratio": 3.741739348305663,
+        "time_ratio": 4.150180471191918,
         "to": 13
       },
       {
         "from": 13,
         "peak_ratio": 3.998784236720026,
-        "time_ratio": 6.425724730690705,
+        "time_ratio": 4.617560023942405,
         "to": 14
       }
     ],
     "host": {
       "cpus": 8,
-      "memory_available_bytes": 14049718272,
+      "memory_available_bytes": 18457161728,
       "memory_total_bytes": 29225242624,
-      "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+      "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
       "python": "3.12.3"
     },
     "largest_measured_width": 14,
@@ -315,13 +315,13 @@
           "pauli_operator_bytes": 65536,
           "peak_traced_bytes": 222736,
           "qubits": 6,
-          "seconds": 0.052084260154515505,
+          "seconds": 0.009593533992301673,
           "state_vector_bytes": 1024,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 433467392,
+        "peak_rss_bytes": 432054272,
         "policy_reason": null,
         "policy_tier": "dense",
         "policy_verdict": "VALID",
@@ -340,13 +340,13 @@
           "pauli_operator_bytes": 1048576,
           "peak_traced_bytes": 1594736,
           "qubits": 8,
-          "seconds": 0.06755184917710721,
+          "seconds": 0.03232190100243315,
           "state_vector_bytes": 4096,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 433467392,
+        "peak_rss_bytes": 432054272,
         "policy_reason": null,
         "policy_tier": "dense",
         "policy_verdict": "VALID",
@@ -365,13 +365,13 @@
           "pauli_operator_bytes": 16777216,
           "peak_traced_bytes": 21296304,
           "qubits": 10,
-          "seconds": 0.2190912109799683,
+          "seconds": 0.200980081979651,
           "state_vector_bytes": 16384,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 433467392,
+        "peak_rss_bytes": 432054272,
         "policy_reason": null,
         "policy_tier": "dense",
         "policy_verdict": "VALID",
@@ -390,13 +390,13 @@
           "pauli_operator_bytes": 67108864,
           "peak_traced_bytes": 84262376,
           "qubits": 11,
-          "seconds": 1.5842358209192753,
+          "seconds": 1.2078117029741406,
           "state_vector_bytes": 32768,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 433467392,
+        "peak_rss_bytes": 432054272,
         "policy_reason": "the circuit is not Clifford and 11 qubits is above the dense specification bound of 10",
         "policy_tier": "none",
         "policy_verdict": "UNRESOLVED",
@@ -415,13 +415,13 @@
           "pauli_operator_bytes": 268435456,
           "peak_traced_bytes": 336021264,
           "qubits": 12,
-          "seconds": 4.875460051000118,
+          "seconds": 4.46617177099688,
           "state_vector_bytes": 65536,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 535826432,
+        "peak_rss_bytes": 537837568,
         "policy_reason": "the circuit is not Clifford and 12 qubits is above the dense specification bound of 10",
         "policy_tier": "none",
         "policy_verdict": "UNRESOLVED",
@@ -440,13 +440,13 @@
           "pauli_operator_bytes": 1073741824,
           "peak_traced_bytes": 1342853520,
           "qubits": 13,
-          "seconds": 18.242700713919476,
+          "seconds": 18.535418864979874,
           "state_vector_bytes": 131072,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 1542987776,
+        "peak_rss_bytes": 1545240576,
         "policy_reason": "the circuit is not Clifford and 13 qubits is above the dense specification bound of 10",
         "policy_tier": "none",
         "policy_verdict": "UNRESOLVED",
@@ -465,13 +465,13 @@
           "pauli_operator_bytes": 4294967296,
           "peak_traced_bytes": 5369781488,
           "qubits": 14,
-          "seconds": 117.22257313202135,
+          "seconds": 85.58840917795897,
           "state_vector_bytes": 262144,
           "within_tolerance": true
         },
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 5571002368,
+        "peak_rss_bytes": 5572808704,
         "policy_reason": "the circuit is not Clifford and 14 qubits is above the dense specification bound of 10",
         "policy_tier": "none",
         "policy_verdict": "UNRESOLVED",
@@ -486,7 +486,7 @@
         "cost": null,
         "memory_ceiling_bytes": 8589934592,
         "memory_ceiling_enforced": true,
-        "peak_rss_bytes": 5551656960,
+        "peak_rss_bytes": 5554245632,
         "policy_reason": "the circuit is not Clifford and 15 qubits is above the dense specification bound of 10",
         "policy_tier": "none",
         "policy_verdict": "UNRESOLVED",
@@ -693,7 +693,7 @@
         "+IIZZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
       ]
     },
-    "synthesize_seconds": 0.07771533192135394
+    "synthesize_seconds": 0.07022536901058629
   },
   "experiment_b": {
     "rows": [
@@ -709,7 +709,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 9,
         "verdict": "VALID",
-        "verification_seconds": 0.043473011115565896
+        "verification_seconds": 0.056464672030415386
       },
       {
         "circuit_sha256": "a7ad751193a3124b501726fc8572fbdb55b0603c776cb86d0c0dffb7fc2229ab",
@@ -723,7 +723,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 9,
         "verdict": "VALID",
-        "verification_seconds": 0.046560243004933
+        "verification_seconds": 0.046446904016193
       },
       {
         "circuit_sha256": "7ca37e9773c31143a62a849d5fbca378adfdd4a60b8e4d3edd60316510c227ef",
@@ -737,7 +737,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 9,
         "verdict": "VALID",
-        "verification_seconds": 0.05450939992442727
+        "verification_seconds": 0.04721820796839893
       },
       {
         "circuit_sha256": "04d392e547f0e0a19d46dea4bcec76f5590448aaaf30d8ac04cc63e65b7cc1f2",
@@ -751,7 +751,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 9,
         "verdict": "VALID",
-        "verification_seconds": 0.04583791992627084
+        "verification_seconds": 0.052980470994953066
       },
       {
         "circuit_sha256": "1f518f81771cb6adc749f1b05cb2e6eddd45a2a95cd9cf196e62d0ed4bc287d8",
@@ -765,7 +765,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 49,
         "verdict": "VALID",
-        "verification_seconds": 0.002524118172004819
+        "verification_seconds": 0.0023690679809078574
       },
       {
         "circuit_sha256": "7c298521614c50cf05114db13769789711bed72ff556d382dc0084abbc61899c",
@@ -779,7 +779,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 49,
         "verdict": "VALID",
-        "verification_seconds": 0.0036141059827059507
+        "verification_seconds": 0.0029486530111171305
       },
       {
         "circuit_sha256": "7e0ae5a91e40f07bd847ca872cde47962bfdb238d56b8d79e43caef71dfe5581",
@@ -793,7 +793,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 49,
         "verdict": "VALID",
-        "verification_seconds": 0.003293546847999096
+        "verification_seconds": 0.003570383007172495
       },
       {
         "circuit_sha256": "d1ffad48dcc7b9dca4f90542317242b75fdec776c9dfb5ff81d4d22e7508bd1b",
@@ -807,7 +807,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 49,
         "verdict": "VALID",
-        "verification_seconds": 0.003089145990088582
+        "verification_seconds": 0.002878254046663642
       },
       {
         "circuit_sha256": "cca020e9b9e4893a384c825f4ce87c2875001ce71d6048c1f7e17d0e9e28d949",
@@ -821,7 +821,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 99,
         "verdict": "VALID",
-        "verification_seconds": 0.00882341992110014
+        "verification_seconds": 0.009387512051034719
       },
       {
         "circuit_sha256": "64059b79d8d93b195c6fb8d67b2539b5979dab41f7fbce4728aa3d23d0d49cf6",
@@ -835,7 +835,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 99,
         "verdict": "VALID",
-        "verification_seconds": 0.010237688897177577
+        "verification_seconds": 0.01063690596492961
       },
       {
         "circuit_sha256": "6e7de177d80fdc90a64320a135fd0798d4246227061f24a9a446363e35902d26",
@@ -849,7 +849,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 99,
         "verdict": "VALID",
-        "verification_seconds": 0.013833397068083286
+        "verification_seconds": 0.011740112968254834
       },
       {
         "circuit_sha256": "a7a8e956c5fd2fc43dd5954844e36edc55e1a40240ed08660f181e884eb2f184",
@@ -863,7 +863,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 99,
         "verdict": "VALID",
-        "verification_seconds": 0.012836446054279804
+        "verification_seconds": 0.011635980976279825
       },
       {
         "circuit_sha256": "33315797eb1df1dca9e137389f759c7d9e6af0a23da60bfc5323235bb806231d",
@@ -877,7 +877,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 249,
         "verdict": "VALID",
-        "verification_seconds": 0.07006065198220313
+        "verification_seconds": 0.05537880101474002
       },
       {
         "circuit_sha256": "3f06e854f209cb249929b94449d633b16e5fccb0e17915ac8f12cb16935185dd",
@@ -891,7 +891,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 249,
         "verdict": "VALID",
-        "verification_seconds": 0.07248441711999476
+        "verification_seconds": 0.06653528299648315
       },
       {
         "circuit_sha256": "fe1ae3ab368cf0046b520ba1aa6b55a88d87a5aa5fc5c88e4d118c108c00904d",
@@ -905,7 +905,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 249,
         "verdict": "VALID",
-        "verification_seconds": 0.07439495297148824
+        "verification_seconds": 0.0782543399836868
       },
       {
         "circuit_sha256": "0cebd6166e9d972eb565ec486876232cf18c39abd1f3ec4e968a28fd13b03a36",
@@ -919,7 +919,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 249,
         "verdict": "VALID",
-        "verification_seconds": 0.061471170047298074
+        "verification_seconds": 0.0664514250238426
       },
       {
         "circuit_sha256": "090cac177c409fda64ceb9d94a6e3ed529b7a94af868b2f782d1a6887bdc0173",
@@ -933,7 +933,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 499,
         "verdict": "VALID",
-        "verification_seconds": 0.2221919170115143
+        "verification_seconds": 0.22416924103163183
       },
       {
         "circuit_sha256": "e313b1216ba2e72ff2b852130405221f499c3487be4a60574d93dc120bebbf21",
@@ -947,7 +947,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 499,
         "verdict": "VALID",
-        "verification_seconds": 0.26654531084932387
+        "verification_seconds": 0.28559039800893515
       },
       {
         "circuit_sha256": "baabf8db55f4135937ed647d63c58fc1ebce0bdeafcc68afba9de7748ea2d446",
@@ -961,7 +961,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 499,
         "verdict": "VALID",
-        "verification_seconds": 0.4011798969004303
+        "verification_seconds": 0.3270686269970611
       },
       {
         "circuit_sha256": "5ba00addbe95afc949cfc2172238cc5f37aae6a299ababcc1434b9113b70b0dc",
@@ -975,7 +975,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 499,
         "verdict": "VALID",
-        "verification_seconds": 0.27739360206760466
+        "verification_seconds": 0.29829151200829074
       },
       {
         "circuit_sha256": "581d6bcd3bff32c9b362909c4129f47caeb31df6606fe019a2bf27b587dff334",
@@ -989,7 +989,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 999,
         "verdict": "VALID",
-        "verification_seconds": 0.9075990249402821
+        "verification_seconds": 0.974860989023
       },
       {
         "circuit_sha256": "96da2b2ce35b358c6bccabf50397a2b86701f737ba3e9b4ecb859bc6f837928c",
@@ -1003,7 +1003,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 999,
         "verdict": "VALID",
-        "verification_seconds": 1.2030351490247995
+        "verification_seconds": 2.8775805810000747
       },
       {
         "circuit_sha256": "e2ba6d5fadd910f454afe7c4fd8f073f35a0f80f71f6dc5793a3c42b9fff548b",
@@ -1017,7 +1017,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 999,
         "verdict": "VALID",
-        "verification_seconds": 1.478845237987116
+        "verification_seconds": 2.780111421016045
       },
       {
         "circuit_sha256": "02035f46407cc41d526044c67b4c6a11225578ac991b18f832d1474b36b2be07",
@@ -1031,7 +1031,7 @@
         "tier": "stabilizer",
         "two_qubit_gates": 999,
         "verdict": "VALID",
-        "verification_seconds": 1.3994822432287037
+        "verification_seconds": 3.1158898059511557
       }
     ],
     "sizes": [
@@ -1356,14 +1356,14 @@
         "circuit_sha256": "7cb307952f43cd0f7e26590a84cb63868b1b1eba14b02fe9da7ddd9bc83b9f00",
         "cx_equivalent_two_qubit_gates": 68,
         "mapped_depth": 17,
-        "seconds": 0.0002790149301290512,
+        "seconds": 0.0005633499822579324,
         "swap_gates": 10
       },
       "lookahead": {
         "circuit_sha256": "defcf033a0332c1da3c039e4ebe60decc81d5108a7266ec8b6e4a28f4b9e5e26",
         "cx_equivalent_two_qubit_gates": 74,
         "mapped_depth": 19,
-        "seconds": 0.0003542450722306967,
+        "seconds": 0.0007773219840601087,
         "swap_gates": 11
       },
       "lookahead_is_deeper_by": 2,
@@ -1397,7 +1397,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.0023255138657987118,
+        "placement_seconds": 0.009319869976025075,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1435,7 +1435,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.005323370220139623,
+        "placement_seconds": 0.012198960990644991,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1473,7 +1473,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.002430689986795187,
+        "placement_seconds": 0.0022147740237414837,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1511,7 +1511,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.006363078020513058,
+        "placement_seconds": 0.006102906947489828,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1549,7 +1549,7 @@
         "native_entanglers": 591,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.0075011420994997025,
+        "placement_seconds": 0.012715903983917087,
         "qubits": 100,
         "restore_depth_cost": 75,
         "restore_swap_gates": 246,
@@ -1587,7 +1587,7 @@
         "native_entanglers": 549,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.010508797131478786,
+        "placement_seconds": 0.019404748978558928,
         "qubits": 100,
         "restore_depth_cost": 17,
         "restore_swap_gates": 225,
@@ -1625,7 +1625,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.0011181810405105352,
+        "placement_seconds": 0.002201179973781109,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1663,7 +1663,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.0011273820418864489,
+        "placement_seconds": 0.002433194953482598,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1701,7 +1701,7 @@
         "native_entanglers": 4929,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.05964582599699497,
+        "placement_seconds": 0.10429201199440286,
         "qubits": 100,
         "restore_depth_cost": 141,
         "restore_swap_gates": 2415,
@@ -1739,7 +1739,7 @@
         "native_entanglers": 4429,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.10783621808513999,
+        "placement_seconds": 0.1657770340098068,
         "qubits": 100,
         "restore_depth_cost": 120,
         "restore_swap_gates": 2165,
@@ -1777,7 +1777,7 @@
         "native_entanglers": 4401,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.05008464399725199,
+        "placement_seconds": 0.05394974700175226,
         "qubits": 100,
         "restore_depth_cost": 114,
         "restore_swap_gates": 2151,
@@ -1815,7 +1815,7 @@
         "native_entanglers": 3763,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.05106343305669725,
+        "placement_seconds": 0.09641205897787586,
         "qubits": 100,
         "restore_depth_cost": 88,
         "restore_swap_gates": 1832,
@@ -1853,7 +1853,7 @@
         "native_entanglers": 1193,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.014440052211284637,
+        "placement_seconds": 0.03174222900997847,
         "qubits": 100,
         "restore_depth_cost": 94,
         "restore_swap_gates": 547,
@@ -1891,7 +1891,7 @@
         "native_entanglers": 1121,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.019800808047875762,
+        "placement_seconds": 0.039785613014828414,
         "qubits": 100,
         "restore_depth_cost": 35,
         "restore_swap_gates": 511,
@@ -1929,7 +1929,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.0010257249232381582,
+        "placement_seconds": 0.0025158990174531937,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -1967,7 +1967,7 @@
         "native_entanglers": 99,
         "nodes": 100,
         "permutation_is_identity": true,
-        "placement_seconds": 0.0011695220600813627,
+        "placement_seconds": 0.002317277016118169,
         "qubits": 100,
         "restore_depth_cost": 0,
         "restore_swap_gates": 0,
@@ -2190,7 +2190,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.9844645238481462,
+          "seconds": 1.061109716014471,
           "seed": 0,
           "status": "compared",
           "tier": "stabilizer",
@@ -2311,7 +2311,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.0194452409632504,
+          "seconds": 0.03298514196649194,
           "seed": 1,
           "status": "compared",
           "tier": "stabilizer",
@@ -2432,7 +2432,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.019268447998911142,
+          "seconds": 0.033161338011268526,
           "seed": 2,
           "status": "compared",
           "tier": "stabilizer",
@@ -2553,7 +2553,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.020314808003604412,
+          "seconds": 0.029361486027482897,
           "seed": 3,
           "status": "compared",
           "tier": "stabilizer",
@@ -2674,7 +2674,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.022630633087828755,
+          "seconds": 0.030936770956031978,
           "seed": 4,
           "status": "compared",
           "tier": "stabilizer",
@@ -2795,7 +2795,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.021374970907345414,
+          "seconds": 0.09724839602131397,
           "seed": 0,
           "status": "compared",
           "tier": "stabilizer",
@@ -2916,7 +2916,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.021820391062647104,
+          "seconds": 0.05665796605171636,
           "seed": 1,
           "status": "compared",
           "tier": "stabilizer",
@@ -3037,7 +3037,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.018659010995179415,
+          "seconds": 0.04934970900649205,
           "seed": 2,
           "status": "compared",
           "tier": "stabilizer",
@@ -3158,7 +3158,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.018724116031080484,
+          "seconds": 0.08152644103392959,
           "seed": 3,
           "status": "compared",
           "tier": "stabilizer",
@@ -3279,7 +3279,7 @@
           "reported_depth": 100,
           "routed_depth": 100,
           "routing_swaps": 0,
-          "seconds": 0.017863511107861996,
+          "seconds": 0.037172007956542075,
           "seed": 4,
           "status": "compared",
           "tier": "stabilizer",
@@ -3400,7 +3400,7 @@
           "reported_depth": 188,
           "routed_depth": 188,
           "routing_swaps": 107,
-          "seconds": 0.02568682306446135,
+          "seconds": 0.05299729300895706,
           "seed": 0,
           "status": "compared",
           "tier": "stabilizer",
@@ -3521,7 +3521,7 @@
           "reported_depth": 189,
           "routed_depth": 189,
           "routing_swaps": 106,
-          "seconds": 0.027173501905053854,
+          "seconds": 0.04005550697911531,
           "seed": 1,
           "status": "compared",
           "tier": "stabilizer",
@@ -3642,7 +3642,7 @@
           "reported_depth": 192,
           "routed_depth": 192,
           "routing_swaps": 107,
-          "seconds": 0.024897655937820673,
+          "seconds": 0.040223849995527416,
           "seed": 2,
           "status": "compared",
           "tier": "stabilizer",
@@ -3763,7 +3763,7 @@
           "reported_depth": 190,
           "routed_depth": 190,
           "routing_swaps": 108,
-          "seconds": 0.025999812874943018,
+          "seconds": 0.04028666304657236,
           "seed": 3,
           "status": "compared",
           "tier": "stabilizer",
@@ -3884,7 +3884,7 @@
           "reported_depth": 190,
           "routed_depth": 190,
           "routing_swaps": 107,
-          "seconds": 0.022824205923825502,
+          "seconds": 0.036805207026191056,
           "seed": 4,
           "status": "compared",
           "tier": "stabilizer",
@@ -4005,7 +4005,7 @@
           "reported_depth": 176,
           "routed_depth": 176,
           "routing_swaps": 1316,
-          "seconds": 0.021928180009126663,
+          "seconds": 0.03980450198287144,
           "seed": 0,
           "status": "compared",
           "tier": "stabilizer",
@@ -4126,7 +4126,7 @@
           "reported_depth": 166,
           "routed_depth": 166,
           "routing_swaps": 1314,
-          "seconds": 0.025730192894116044,
+          "seconds": 0.07506146002560854,
           "seed": 1,
           "status": "compared",
           "tier": "stabilizer",
@@ -4247,7 +4247,7 @@
           "reported_depth": 171,
           "routed_depth": 171,
           "routing_swaps": 1314,
-          "seconds": 0.024043711135163903,
+          "seconds": 0.07893426303053275,
           "seed": 2,
           "status": "compared",
           "tier": "stabilizer",
@@ -4368,7 +4368,7 @@
           "reported_depth": 176,
           "routed_depth": 176,
           "routing_swaps": 1312,
-          "seconds": 0.023491387953981757,
+          "seconds": 0.043189976015128195,
           "seed": 3,
           "status": "compared",
           "tier": "stabilizer",
@@ -4489,7 +4489,7 @@
           "reported_depth": 169,
           "routed_depth": 169,
           "routing_swaps": 1316,
-          "seconds": 0.02439504605717957,
+          "seconds": 0.0490363470162265,
           "seed": 4,
           "status": "compared",
           "tier": "stabilizer",
@@ -4610,7 +4610,7 @@
           "reported_depth": 120,
           "routed_depth": 120,
           "routing_swaps": 1113,
-          "seconds": 0.02343169506639242,
+          "seconds": 0.05247646098723635,
           "seed": 0,
           "status": "compared",
           "tier": "stabilizer",
@@ -4731,7 +4731,7 @@
           "reported_depth": 133,
           "routed_depth": 133,
           "routing_swaps": 1110,
-          "seconds": 0.022336171939969063,
+          "seconds": 0.052280980977229774,
           "seed": 1,
           "status": "compared",
           "tier": "stabilizer",
@@ -4852,7 +4852,7 @@
           "reported_depth": 129,
           "routed_depth": 129,
           "routing_swaps": 1118,
-          "seconds": 0.022096585016697645,
+          "seconds": 0.04401271801907569,
           "seed": 2,
           "status": "compared",
           "tier": "stabilizer",
@@ -4973,7 +4973,7 @@
           "reported_depth": 144,
           "routed_depth": 144,
           "routing_swaps": 1105,
-          "seconds": 0.0215231420006603,
+          "seconds": 0.04765272204531357,
           "seed": 3,
           "status": "compared",
           "tier": "stabilizer",
@@ -5094,7 +5094,7 @@
           "reported_depth": 132,
           "routed_depth": 132,
           "routing_swaps": 1113,
-          "seconds": 0.02260948484763503,
+          "seconds": 0.05050031701102853,
           "seed": 4,
           "status": "compared",
           "tier": "stabilizer",
@@ -5215,7 +5215,7 @@
           "reported_depth": 69,
           "routed_depth": 69,
           "routing_swaps": 277,
-          "seconds": 0.02169068017974496,
+          "seconds": 0.04293949599377811,
           "seed": 0,
           "status": "compared",
           "tier": "stabilizer",
@@ -5336,7 +5336,7 @@
           "reported_depth": 68,
           "routed_depth": 68,
           "routing_swaps": 279,
-          "seconds": 0.02238531387411058,
+          "seconds": 0.04352526995353401,
           "seed": 1,
           "status": "compared",
           "tier": "stabilizer",
@@ -5457,7 +5457,7 @@
           "reported_depth": 73,
           "routed_depth": 73,
           "routing_swaps": 283,
-          "seconds": 0.0232958709821105,
+          "seconds": 0.04913918796228245,
           "seed": 2,
           "status": "compared",
           "tier": "stabilizer",
@@ -5578,7 +5578,7 @@
           "reported_depth": 72,
           "routed_depth": 72,
           "routing_swaps": 282,
-          "seconds": 0.024726392002776265,
+          "seconds": 0.04816563200438395,
           "seed": 3,
           "status": "compared",
           "tier": "stabilizer",
@@ -5699,7 +5699,7 @@
           "reported_depth": 69,
           "routed_depth": 69,
           "routing_swaps": 280,
-          "seconds": 0.024933737935498357,
+          "seconds": 0.040923892986029387,
           "seed": 4,
           "status": "compared",
           "tier": "stabilizer",
@@ -5798,7 +5798,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.004401822108775377,
+          "seconds": 0.006081056024413556,
           "swap_gates": 0,
           "topology": "line",
           "total_swaps": 0,
@@ -5812,7 +5812,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0012957209255546331,
+          "seconds": 0.0022410820238292217,
           "swap_gates": 0,
           "topology": "line",
           "total_swaps": 0,
@@ -5826,7 +5826,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.001109184930101037,
+          "seconds": 0.0023083920241333544,
           "swap_gates": 0,
           "topology": "line",
           "total_swaps": 0,
@@ -5840,7 +5840,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0013073529116809368,
+          "seconds": 0.002362427010666579,
           "swap_gates": 0,
           "topology": "line",
           "total_swaps": 0,
@@ -5854,7 +5854,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0011803391389548779,
+          "seconds": 0.0021638839971274137,
           "swap_gates": 0,
           "topology": "line",
           "total_swaps": 0,
@@ -5868,7 +5868,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.002773967105895281,
+          "seconds": 0.005839217978063971,
           "swap_gates": 0,
           "topology": "ring",
           "total_swaps": 0,
@@ -5882,7 +5882,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.001029117964208126,
+          "seconds": 0.00219037604983896,
           "swap_gates": 0,
           "topology": "ring",
           "total_swaps": 0,
@@ -5896,7 +5896,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0012965728528797626,
+          "seconds": 0.0025102149811573327,
           "swap_gates": 0,
           "topology": "ring",
           "total_swaps": 0,
@@ -5910,7 +5910,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0011549701448529959,
+          "seconds": 0.0024139239685609937,
           "swap_gates": 0,
           "topology": "ring",
           "total_swaps": 0,
@@ -5924,7 +5924,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0025322912260890007,
+          "seconds": 0.002231770020443946,
           "swap_gates": 0,
           "topology": "ring",
           "total_swaps": 0,
@@ -5938,7 +5938,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 117,
-          "seconds": 0.00930066592991352,
+          "seconds": 0.017348496010527015,
           "swap_gates": 225,
           "topology": "grid",
           "total_swaps": 450,
@@ -5952,7 +5952,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 117,
-          "seconds": 0.00803536013700068,
+          "seconds": 0.012664031994063407,
           "swap_gates": 225,
           "topology": "grid",
           "total_swaps": 450,
@@ -5966,7 +5966,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 117,
-          "seconds": 0.007515071891248226,
+          "seconds": 0.015537428029347211,
           "swap_gates": 225,
           "topology": "grid",
           "total_swaps": 450,
@@ -5980,7 +5980,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 117,
-          "seconds": 0.008265268988907337,
+          "seconds": 0.017664951039478183,
           "swap_gates": 225,
           "topology": "grid",
           "total_swaps": 450,
@@ -5994,7 +5994,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 117,
-          "seconds": 0.012605411931872368,
+          "seconds": 0.02329325198661536,
           "swap_gates": 225,
           "topology": "grid",
           "total_swaps": 450,
@@ -6008,7 +6008,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0014115700032562017,
+          "seconds": 0.002372435003053397,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6022,7 +6022,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0012202179059386253,
+          "seconds": 0.002329045964870602,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6036,7 +6036,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0010312690865248442,
+          "seconds": 0.002186555997468531,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6050,7 +6050,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0011659879237413406,
+          "seconds": 0.002232173050288111,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6064,7 +6064,7 @@
           "depth_before_restore": 100,
           "family": "chain",
           "mapped_depth": 100,
-          "seconds": 0.0010537730995565653,
+          "seconds": 0.002110928006004542,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6078,7 +6078,7 @@
           "depth_before_restore": 146,
           "family": "balanced_tree",
           "mapped_depth": 260,
-          "seconds": 0.038432723842561245,
+          "seconds": 0.1112538609886542,
           "swap_gates": 1863,
           "topology": "line",
           "total_swaps": 3726,
@@ -6092,7 +6092,7 @@
           "depth_before_restore": 155,
           "family": "balanced_tree",
           "mapped_depth": 275,
-          "seconds": 0.04753695288673043,
+          "seconds": 0.09313085000030696,
           "swap_gates": 2240,
           "topology": "line",
           "total_swaps": 4480,
@@ -6106,7 +6106,7 @@
           "depth_before_restore": 158,
           "family": "balanced_tree",
           "mapped_depth": 278,
-          "seconds": 0.055928714806213975,
+          "seconds": 0.10498455999186262,
           "swap_gates": 2165,
           "topology": "line",
           "total_swaps": 4330,
@@ -6120,7 +6120,7 @@
           "depth_before_restore": 155,
           "family": "balanced_tree",
           "mapped_depth": 277,
-          "seconds": 0.0646976251155138,
+          "seconds": 0.1442324939998798,
           "swap_gates": 2304,
           "topology": "line",
           "total_swaps": 4608,
@@ -6134,7 +6134,7 @@
           "depth_before_restore": 156,
           "family": "balanced_tree",
           "mapped_depth": 277,
-          "seconds": 0.09349149581976235,
+          "seconds": 0.20878969295881689,
           "swap_gates": 2314,
           "topology": "line",
           "total_swaps": 4628,
@@ -6148,7 +6148,7 @@
           "depth_before_restore": 115,
           "family": "balanced_tree",
           "mapped_depth": 206,
-          "seconds": 0.03595200297422707,
+          "seconds": 0.07009929203195497,
           "swap_gates": 1731,
           "topology": "ring",
           "total_swaps": 3462,
@@ -6162,7 +6162,7 @@
           "depth_before_restore": 117,
           "family": "balanced_tree",
           "mapped_depth": 206,
-          "seconds": 0.04216613108292222,
+          "seconds": 0.09717594395624474,
           "swap_gates": 1954,
           "topology": "ring",
           "total_swaps": 3908,
@@ -6176,7 +6176,7 @@
           "depth_before_restore": 124,
           "family": "balanced_tree",
           "mapped_depth": 212,
-          "seconds": 0.07033210503868759,
+          "seconds": 0.08985850302269682,
           "swap_gates": 1832,
           "topology": "ring",
           "total_swaps": 3664,
@@ -6190,7 +6190,7 @@
           "depth_before_restore": 125,
           "family": "balanced_tree",
           "mapped_depth": 219,
-          "seconds": 0.06887440197169781,
+          "seconds": 0.12324663798790425,
           "swap_gates": 2005,
           "topology": "ring",
           "total_swaps": 4010,
@@ -6204,7 +6204,7 @@
           "depth_before_restore": 118,
           "family": "balanced_tree",
           "mapped_depth": 208,
-          "seconds": 0.07622735388576984,
+          "seconds": 0.0806554569862783,
           "swap_gates": 1988,
           "topology": "ring",
           "total_swaps": 3976,
@@ -6218,7 +6218,7 @@
           "depth_before_restore": 51,
           "family": "balanced_tree",
           "mapped_depth": 86,
-          "seconds": 0.015944988001137972,
+          "seconds": 0.030668540042825043,
           "swap_gates": 503,
           "topology": "grid",
           "total_swaps": 1006,
@@ -6232,7 +6232,7 @@
           "depth_before_restore": 48,
           "family": "balanced_tree",
           "mapped_depth": 88,
-          "seconds": 0.01593317510560155,
+          "seconds": 0.028136979031842202,
           "swap_gates": 491,
           "topology": "grid",
           "total_swaps": 982,
@@ -6246,7 +6246,7 @@
           "depth_before_restore": 49,
           "family": "balanced_tree",
           "mapped_depth": 84,
-          "seconds": 0.016895751003175974,
+          "seconds": 0.03582175198243931,
           "swap_gates": 511,
           "topology": "grid",
           "total_swaps": 1022,
@@ -6260,7 +6260,7 @@
           "depth_before_restore": 45,
           "family": "balanced_tree",
           "mapped_depth": 81,
-          "seconds": 0.023036631057038903,
+          "seconds": 0.04777132801245898,
           "swap_gates": 497,
           "topology": "grid",
           "total_swaps": 994,
@@ -6274,7 +6274,7 @@
           "depth_before_restore": 44,
           "family": "balanced_tree",
           "mapped_depth": 74,
-          "seconds": 0.030166839016601443,
+          "seconds": 0.05793655902380124,
           "swap_gates": 489,
           "topology": "grid",
           "total_swaps": 978,
@@ -6288,7 +6288,7 @@
           "depth_before_restore": 12,
           "family": "balanced_tree",
           "mapped_depth": 12,
-          "seconds": 0.0011266081128269434,
+          "seconds": 0.005793343007098883,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6302,7 +6302,7 @@
           "depth_before_restore": 12,
           "family": "balanced_tree",
           "mapped_depth": 12,
-          "seconds": 0.0010232741478830576,
+          "seconds": 0.002563364978414029,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6316,7 +6316,7 @@
           "depth_before_restore": 12,
           "family": "balanced_tree",
           "mapped_depth": 12,
-          "seconds": 0.0009947761427611113,
+          "seconds": 0.00205594499129802,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6330,7 +6330,7 @@
           "depth_before_restore": 12,
           "family": "balanced_tree",
           "mapped_depth": 12,
-          "seconds": 0.0010970060247927904,
+          "seconds": 0.0021251849830150604,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -6344,7 +6344,7 @@
           "depth_before_restore": 12,
           "family": "balanced_tree",
           "mapped_depth": 12,
-          "seconds": 0.0010537721682339907,
+          "seconds": 0.00220251502469182,
           "swap_gates": 0,
           "topology": "all_to_all",
           "total_swaps": 0,
@@ -7489,7 +7489,7 @@
           "longest_hop": 10,
           "mapped_advantage": 34,
           "mapped_depth": 61,
-          "placement_seconds": 0.0014795600436627865,
+          "placement_seconds": 0.0036077150143682957,
           "qubits": 16,
           "restore_depth_cost": 26,
           "restore_swap_gates": 72,
@@ -7515,7 +7515,7 @@
           "longest_hop": 10,
           "mapped_advantage": 21,
           "mapped_depth": 48,
-          "placement_seconds": 0.0013049871195107698,
+          "placement_seconds": 0.0017402999801561236,
           "qubits": 16,
           "restore_depth_cost": 20,
           "restore_swap_gates": 72,
@@ -7541,7 +7541,7 @@
           "longest_hop": 10,
           "mapped_advantage": 27,
           "mapped_depth": 54,
-          "placement_seconds": 0.001435613026842475,
+          "placement_seconds": 0.00311447202693671,
           "qubits": 16,
           "restore_depth_cost": 22,
           "restore_swap_gates": 72,
@@ -7567,7 +7567,7 @@
           "longest_hop": 7,
           "mapped_advantage": 0,
           "mapped_depth": 27,
-          "placement_seconds": 0.0008907229639589787,
+          "placement_seconds": 0.0023570319754071534,
           "qubits": 16,
           "restore_depth_cost": 11,
           "restore_swap_gates": 38,
@@ -7593,7 +7593,7 @@
           "longest_hop": 6,
           "mapped_advantage": 28,
           "mapped_depth": 55,
-          "placement_seconds": 0.0011180280707776546,
+          "placement_seconds": 0.003138768021017313,
           "qubits": 16,
           "restore_depth_cost": 22,
           "restore_swap_gates": 54,
@@ -7619,7 +7619,7 @@
           "longest_hop": 7,
           "mapped_advantage": 9,
           "mapped_depth": 35,
-          "placement_seconds": 0.0014325908850878477,
+          "placement_seconds": 0.003380629001185298,
           "qubits": 16,
           "restore_depth_cost": 8,
           "restore_swap_gates": 42,
@@ -7645,7 +7645,7 @@
           "longest_hop": 10,
           "mapped_advantage": 28,
           "mapped_depth": 54,
-          "placement_seconds": 0.0016990669537335634,
+          "placement_seconds": 0.005294228962156922,
           "qubits": 16,
           "restore_depth_cost": 21,
           "restore_swap_gates": 63,
@@ -7671,7 +7671,7 @@
           "longest_hop": 10,
           "mapped_advantage": 37,
           "mapped_depth": 63,
-          "placement_seconds": 0.0026062510441988707,
+          "placement_seconds": 0.004915846977382898,
           "qubits": 16,
           "restore_depth_cost": 27,
           "restore_swap_gates": 105,
@@ -7697,7 +7697,7 @@
           "longest_hop": 7,
           "mapped_advantage": 0,
           "mapped_depth": 26,
-          "placement_seconds": 0.001369209960103035,
+          "placement_seconds": 0.004819147987291217,
           "qubits": 16,
           "restore_depth_cost": 11,
           "restore_swap_gates": 47,
@@ -7723,7 +7723,7 @@
           "longest_hop": 13,
           "mapped_advantage": 14,
           "mapped_depth": 40,
-          "placement_seconds": 0.0017769481055438519,
+          "placement_seconds": 0.005469449039082974,
           "qubits": 16,
           "restore_depth_cost": 18,
           "restore_swap_gates": 72,
@@ -7749,7 +7749,7 @@
           "longest_hop": 8,
           "mapped_advantage": 25,
           "mapped_depth": 52,
-          "placement_seconds": 0.0014198219869285822,
+          "placement_seconds": 0.0036341610248200595,
           "qubits": 16,
           "restore_depth_cost": 21,
           "restore_swap_gates": 68,
@@ -7775,7 +7775,7 @@
           "longest_hop": 8,
           "mapped_advantage": 19,
           "mapped_depth": 46,
-          "placement_seconds": 0.0012424169108271599,
+          "placement_seconds": 0.00487336702644825,
           "qubits": 16,
           "restore_depth_cost": 19,
           "restore_swap_gates": 68,
@@ -7801,7 +7801,7 @@
           "longest_hop": 8,
           "mapped_advantage": 29,
           "mapped_depth": 56,
-          "placement_seconds": 0.0014313389547169209,
+          "placement_seconds": 0.003699555993080139,
           "qubits": 16,
           "restore_depth_cost": 24,
           "restore_swap_gates": 73,
@@ -7827,7 +7827,7 @@
           "longest_hop": 7,
           "mapped_advantage": 0,
           "mapped_depth": 27,
-          "placement_seconds": 0.000851999968290329,
+          "placement_seconds": 0.002086537017021328,
           "qubits": 16,
           "restore_depth_cost": 11,
           "restore_swap_gates": 38,
@@ -7853,7 +7853,7 @@
           "longest_hop": 6,
           "mapped_advantage": 28,
           "mapped_depth": 55,
-          "placement_seconds": 0.0010598921217024326,
+          "placement_seconds": 0.002454828005284071,
           "qubits": 16,
           "restore_depth_cost": 22,
           "restore_swap_gates": 54,
@@ -7879,7 +7879,7 @@
           "longest_hop": 7,
           "mapped_advantage": 9,
           "mapped_depth": 35,
-          "placement_seconds": 0.001518402947112918,
+          "placement_seconds": 0.007043353980407119,
           "qubits": 16,
           "restore_depth_cost": 8,
           "restore_swap_gates": 42,
@@ -7905,7 +7905,7 @@
           "longest_hop": 8,
           "mapped_advantage": 20,
           "mapped_depth": 46,
-          "placement_seconds": 0.0018042339943349361,
+          "placement_seconds": 0.007691167993471026,
           "qubits": 16,
           "restore_depth_cost": 18,
           "restore_swap_gates": 61,
@@ -7931,7 +7931,7 @@
           "longest_hop": 8,
           "mapped_advantage": 17,
           "mapped_depth": 43,
-          "placement_seconds": 0.0019965439569205046,
+          "placement_seconds": 0.011479490029159933,
           "qubits": 16,
           "restore_depth_cost": 18,
           "restore_swap_gates": 78,
@@ -7957,7 +7957,7 @@
           "longest_hop": 7,
           "mapped_advantage": 0,
           "mapped_depth": 26,
-          "placement_seconds": 0.0013779259752482176,
+          "placement_seconds": 0.006658978993073106,
           "qubits": 16,
           "restore_depth_cost": 11,
           "restore_swap_gates": 47,
@@ -7983,7 +7983,7 @@
           "longest_hop": 7,
           "mapped_advantage": 3,
           "mapped_depth": 29,
-          "placement_seconds": 0.0014284681528806686,
+          "placement_seconds": 0.011597056989558041,
           "qubits": 16,
           "restore_depth_cost": 12,
           "restore_swap_gates": 49,
@@ -8009,7 +8009,7 @@
           "longest_hop": 1,
           "mapped_advantage": 8,
           "mapped_depth": 13,
-          "placement_seconds": 0.0003771900665014982,
+          "placement_seconds": 0.000538997002877295,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8035,7 +8035,7 @@
           "longest_hop": 1,
           "mapped_advantage": 8,
           "mapped_depth": 13,
-          "placement_seconds": 0.00041903601959347725,
+          "placement_seconds": 0.0009107380174100399,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8061,7 +8061,7 @@
           "longest_hop": 1,
           "mapped_advantage": 4,
           "mapped_depth": 9,
-          "placement_seconds": 0.00038392585702240467,
+          "placement_seconds": 0.0010321519803255796,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8087,7 +8087,7 @@
           "longest_hop": 1,
           "mapped_advantage": 0,
           "mapped_depth": 5,
-          "placement_seconds": 0.0004138750955462456,
+          "placement_seconds": 0.00692090397933498,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8113,7 +8113,7 @@
           "longest_hop": 1,
           "mapped_advantage": 3,
           "mapped_depth": 8,
-          "placement_seconds": 0.00037678214721381664,
+          "placement_seconds": 0.002183898992370814,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8139,7 +8139,7 @@
           "longest_hop": 1,
           "mapped_advantage": 8,
           "mapped_depth": 13,
-          "placement_seconds": 0.0004698280245065689,
+          "placement_seconds": 0.004143680969718844,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8165,7 +8165,7 @@
           "longest_hop": 1,
           "mapped_advantage": 8,
           "mapped_depth": 13,
-          "placement_seconds": 0.00040605803951621056,
+          "placement_seconds": 0.003264293947722763,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8191,7 +8191,7 @@
           "longest_hop": 1,
           "mapped_advantage": 4,
           "mapped_depth": 9,
-          "placement_seconds": 0.00041844602674245834,
+          "placement_seconds": 0.002056805999018252,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8217,7 +8217,7 @@
           "longest_hop": 1,
           "mapped_advantage": 0,
           "mapped_depth": 5,
-          "placement_seconds": 0.0003949529491364956,
+          "placement_seconds": 0.0007970049628056586,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8243,7 +8243,7 @@
           "longest_hop": 1,
           "mapped_advantage": 3,
           "mapped_depth": 8,
-          "placement_seconds": 0.0005388380959630013,
+          "placement_seconds": 0.0008130539790727198,
           "qubits": 16,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8269,7 +8269,7 @@
           "longest_hop": 82,
           "mapped_advantage": 504,
           "mapped_depth": 613,
-          "placement_seconds": 0.10225444589741528,
+          "placement_seconds": 0.2677631010301411,
           "qubits": 100,
           "restore_depth_cost": 296,
           "restore_swap_gates": 4050,
@@ -8295,7 +8295,7 @@
           "longest_hop": 82,
           "mapped_advantage": 251,
           "mapped_depth": 360,
-          "placement_seconds": 0.12433201400563121,
+          "placement_seconds": 0.1929190419614315,
           "qubits": 100,
           "restore_depth_cost": 170,
           "restore_swap_gates": 4050,
@@ -8321,7 +8321,7 @@
           "longest_hop": 82,
           "mapped_advantage": 395,
           "mapped_depth": 504,
-          "placement_seconds": 0.10111569496802986,
+          "placement_seconds": 0.1779884299612604,
           "qubits": 100,
           "restore_depth_cost": 238,
           "restore_swap_gates": 4050,
@@ -8347,7 +8347,7 @@
           "longest_hop": 20,
           "mapped_advantage": 0,
           "mapped_depth": 109,
-          "placement_seconds": 0.015163596021011472,
+          "placement_seconds": 0.024090847000479698,
           "qubits": 100,
           "restore_depth_cost": 52,
           "restore_swap_gates": 758,
@@ -8373,7 +8373,7 @@
           "longest_hop": 43,
           "mapped_advantage": 548,
           "mapped_depth": 657,
-          "placement_seconds": 0.032900223042815924,
+          "placement_seconds": 0.053504170035012066,
           "qubits": 100,
           "restore_depth_cost": 314,
           "restore_swap_gates": 1812,
@@ -8399,7 +8399,7 @@
           "longest_hop": 21,
           "mapped_advantage": 141,
           "mapped_depth": 222,
-          "placement_seconds": 0.02867300808429718,
+          "placement_seconds": 0.03509610804030672,
           "qubits": 100,
           "restore_depth_cost": 89,
           "restore_swap_gates": 999,
@@ -8425,7 +8425,7 @@
           "longest_hop": 42,
           "mapped_advantage": 383,
           "mapped_depth": 464,
-          "placement_seconds": 0.055586192989721894,
+          "placement_seconds": 0.09758967597736046,
           "qubits": 100,
           "restore_depth_cost": 211,
           "restore_swap_gates": 2157,
@@ -8451,7 +8451,7 @@
           "longest_hop": 88,
           "mapped_advantage": 321,
           "mapped_depth": 402,
-          "placement_seconds": 0.10581743717193604,
+          "placement_seconds": 0.16577350295847282,
           "qubits": 100,
           "restore_depth_cost": 192,
           "restore_swap_gates": 4549,
@@ -8477,7 +8477,7 @@
           "longest_hop": 27,
           "mapped_advantage": 0,
           "mapped_depth": 81,
-          "placement_seconds": 0.02460949611850083,
+          "placement_seconds": 0.04139059403678402,
           "qubits": 100,
           "restore_depth_cost": 38,
           "restore_swap_gates": 896,
@@ -8503,7 +8503,7 @@
           "longest_hop": 35,
           "mapped_advantage": 99,
           "mapped_depth": 180,
-          "placement_seconds": 0.04423646489158273,
+          "placement_seconds": 0.061387280002236366,
           "qubits": 100,
           "restore_depth_cost": 87,
           "restore_swap_gates": 1529,
@@ -8529,7 +8529,7 @@
           "longest_hop": 50,
           "mapped_advantage": 335,
           "mapped_depth": 444,
-          "placement_seconds": 0.16403107601217926,
+          "placement_seconds": 0.11347555997781456,
           "qubits": 100,
           "restore_depth_cost": 202,
           "restore_swap_gates": 2855,
@@ -8555,7 +8555,7 @@
           "longest_hop": 50,
           "mapped_advantage": 392,
           "mapped_depth": 501,
-          "placement_seconds": 0.07272898615337908,
+          "placement_seconds": 0.14577372698113322,
           "qubits": 100,
           "restore_depth_cost": 192,
           "restore_swap_gates": 2855,
@@ -8581,7 +8581,7 @@
           "longest_hop": 50,
           "mapped_advantage": 433,
           "mapped_depth": 542,
-          "placement_seconds": 0.10215027490630746,
+          "placement_seconds": 0.1734897059504874,
           "qubits": 100,
           "restore_depth_cost": 259,
           "restore_swap_gates": 4270,
@@ -8607,7 +8607,7 @@
           "longest_hop": 20,
           "mapped_advantage": 0,
           "mapped_depth": 109,
-          "placement_seconds": 0.015394127927720547,
+          "placement_seconds": 0.02722392900614068,
           "qubits": 100,
           "restore_depth_cost": 52,
           "restore_swap_gates": 758,
@@ -8633,7 +8633,7 @@
           "longest_hop": 43,
           "mapped_advantage": 548,
           "mapped_depth": 657,
-          "placement_seconds": 0.03721569082699716,
+          "placement_seconds": 0.058218366000801325,
           "qubits": 100,
           "restore_depth_cost": 314,
           "restore_swap_gates": 1812,
@@ -8659,7 +8659,7 @@
           "longest_hop": 21,
           "mapped_advantage": 141,
           "mapped_depth": 222,
-          "placement_seconds": 0.030338584911078215,
+          "placement_seconds": 0.18965070397825912,
           "qubits": 100,
           "restore_depth_cost": 89,
           "restore_swap_gates": 999,
@@ -8685,7 +8685,7 @@
           "longest_hop": 42,
           "mapped_advantage": 383,
           "mapped_depth": 464,
-          "placement_seconds": 0.05483661009930074,
+          "placement_seconds": 0.10091056698001921,
           "qubits": 100,
           "restore_depth_cost": 211,
           "restore_swap_gates": 2157,
@@ -8711,7 +8711,7 @@
           "longest_hop": 50,
           "mapped_advantage": 323,
           "mapped_depth": 404,
-          "placement_seconds": 0.09568023891188204,
+          "placement_seconds": 0.20743822498479858,
           "qubits": 100,
           "restore_depth_cost": 195,
           "restore_swap_gates": 3771,
@@ -8737,7 +8737,7 @@
           "longest_hop": 27,
           "mapped_advantage": 0,
           "mapped_depth": 81,
-          "placement_seconds": 0.0304801759775728,
+          "placement_seconds": 0.049626307969447225,
           "qubits": 100,
           "restore_depth_cost": 38,
           "restore_swap_gates": 896,
@@ -8763,7 +8763,7 @@
           "longest_hop": 35,
           "mapped_advantage": 99,
           "mapped_depth": 180,
-          "placement_seconds": 0.03834643913432956,
+          "placement_seconds": 0.06998506502714008,
           "qubits": 100,
           "restore_depth_cost": 87,
           "restore_swap_gates": 1529,
@@ -8789,7 +8789,7 @@
           "longest_hop": 1,
           "mapped_advantage": 32,
           "mapped_depth": 37,
-          "placement_seconds": 0.0027476020622998476,
+          "placement_seconds": 0.0031923609785735607,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8815,7 +8815,7 @@
           "longest_hop": 1,
           "mapped_advantage": 32,
           "mapped_depth": 37,
-          "placement_seconds": 0.003082356182858348,
+          "placement_seconds": 0.004844053997658193,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8841,7 +8841,7 @@
           "longest_hop": 1,
           "mapped_advantage": 16,
           "mapped_depth": 21,
-          "placement_seconds": 0.0027034329250454903,
+          "placement_seconds": 0.0051407599821686745,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8867,7 +8867,7 @@
           "longest_hop": 1,
           "mapped_advantage": 0,
           "mapped_depth": 5,
-          "placement_seconds": 0.0027747079730033875,
+          "placement_seconds": 0.005597673007287085,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8893,7 +8893,7 @@
           "longest_hop": 1,
           "mapped_advantage": 6,
           "mapped_depth": 11,
-          "placement_seconds": 0.0026625010650604963,
+          "placement_seconds": 0.005711454025004059,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8919,7 +8919,7 @@
           "longest_hop": 1,
           "mapped_advantage": 32,
           "mapped_depth": 37,
-          "placement_seconds": 0.00524381292052567,
+          "placement_seconds": 0.00843384995823726,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8945,7 +8945,7 @@
           "longest_hop": 1,
           "mapped_advantage": 32,
           "mapped_depth": 37,
-          "placement_seconds": 0.0030088680796325207,
+          "placement_seconds": 0.007492273987736553,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8971,7 +8971,7 @@
           "longest_hop": 1,
           "mapped_advantage": 16,
           "mapped_depth": 21,
-          "placement_seconds": 0.0024933330714702606,
+          "placement_seconds": 0.005408583965618163,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -8997,7 +8997,7 @@
           "longest_hop": 1,
           "mapped_advantage": 0,
           "mapped_depth": 5,
-          "placement_seconds": 0.002535009989514947,
+          "placement_seconds": 0.004845076997298747,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9023,7 +9023,7 @@
           "longest_hop": 1,
           "mapped_advantage": 6,
           "mapped_depth": 11,
-          "placement_seconds": 0.0033853810746222734,
+          "placement_seconds": 0.005546905973460525,
           "qubits": 100,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9049,7 +9049,7 @@
           "longest_hop": 362,
           "mapped_advantage": 2584,
           "mapped_depth": 2813,
-          "placement_seconds": 5.364123909035698,
+          "placement_seconds": 11.080312795995269,
           "qubits": 400,
           "restore_depth_cost": 1386,
           "restore_swap_gates": 72200,
@@ -9075,7 +9075,7 @@
           "longest_hop": 362,
           "mapped_advantage": 1291,
           "mapped_depth": 1520,
-          "placement_seconds": 5.317397665930912,
+          "placement_seconds": 8.25539718096843,
           "qubits": 400,
           "restore_depth_cost": 740,
           "restore_swap_gates": 72200,
@@ -9101,7 +9101,7 @@
           "longest_hop": 362,
           "mapped_advantage": 2065,
           "mapped_depth": 2294,
-          "placement_seconds": 4.199907521018758,
+          "placement_seconds": 6.5304100179928355,
           "qubits": 400,
           "restore_depth_cost": 1118,
           "restore_swap_gates": 72200,
@@ -9127,7 +9127,7 @@
           "longest_hop": 40,
           "mapped_advantage": 0,
           "mapped_depth": 229,
-          "placement_seconds": 0.14309712802059948,
+          "placement_seconds": 0.16121177398599684,
           "qubits": 400,
           "restore_depth_cost": 112,
           "restore_swap_gates": 6158,
@@ -9153,7 +9153,7 @@
           "longest_hop": 98,
           "mapped_advantage": 1975,
           "mapped_depth": 2204,
-          "placement_seconds": 0.3861676570959389,
+          "placement_seconds": 0.5768301869975403,
           "qubits": 400,
           "restore_depth_cost": 1082,
           "restore_swap_gates": 15181,
@@ -9179,7 +9179,7 @@
           "longest_hop": 41,
           "mapped_advantage": 583,
           "mapped_depth": 747,
-          "placement_seconds": 0.2436562639195472,
+          "placement_seconds": 0.32504827599041164,
           "qubits": 400,
           "restore_depth_cost": 279,
           "restore_swap_gates": 8054,
@@ -9205,7 +9205,7 @@
           "longest_hop": 141,
           "mapped_advantage": 1847,
           "mapped_depth": 2011,
-          "placement_seconds": 0.8591702620033175,
+          "placement_seconds": 1.0542851359932683,
           "qubits": 400,
           "restore_depth_cost": 917,
           "restore_swap_gates": 29179,
@@ -9231,7 +9231,7 @@
           "longest_hop": 370,
           "mapped_advantage": 1795,
           "mapped_depth": 1959,
-          "placement_seconds": 2.464713428169489,
+          "placement_seconds": 3.028639269003179,
           "qubits": 400,
           "restore_depth_cost": 897,
           "restore_swap_gates": 85306,
@@ -9257,7 +9257,7 @@
           "longest_hop": 57,
           "mapped_advantage": 0,
           "mapped_depth": 164,
-          "placement_seconds": 0.1928954131435603,
+          "placement_seconds": 0.250658271019347,
           "qubits": 400,
           "restore_depth_cost": 80,
           "restore_swap_gates": 7140,
@@ -9283,7 +9283,7 @@
           "longest_hop": 78,
           "mapped_advantage": 363,
           "mapped_depth": 527,
-          "placement_seconds": 0.36487721698358655,
+          "placement_seconds": 0.4865416430402547,
           "qubits": 400,
           "restore_depth_cost": 261,
           "restore_swap_gates": 14352,
@@ -9309,7 +9309,7 @@
           "longest_hop": 200,
           "mapped_advantage": 1665,
           "mapped_depth": 1894,
-          "placement_seconds": 2.2811900191009045,
+          "placement_seconds": 2.7725575999938883,
           "qubits": 400,
           "restore_depth_cost": 902,
           "restore_swap_gates": 43860,
@@ -9335,7 +9335,7 @@
           "longest_hop": 200,
           "mapped_advantage": 1977,
           "mapped_depth": 2206,
-          "placement_seconds": 2.2575052350293845,
+          "placement_seconds": 3.078379512007814,
           "qubits": 400,
           "restore_depth_cost": 882,
           "restore_swap_gates": 43860,
@@ -9361,7 +9361,7 @@
           "longest_hop": 200,
           "mapped_advantage": 2253,
           "mapped_depth": 2482,
-          "placement_seconds": 4.293719158042222,
+          "placement_seconds": 5.517189329955727,
           "qubits": 400,
           "restore_depth_cost": 1220,
           "restore_swap_gates": 76344,
@@ -9387,7 +9387,7 @@
           "longest_hop": 40,
           "mapped_advantage": 0,
           "mapped_depth": 229,
-          "placement_seconds": 0.1911616730503738,
+          "placement_seconds": 0.16684967098990455,
           "qubits": 400,
           "restore_depth_cost": 112,
           "restore_swap_gates": 6158,
@@ -9413,7 +9413,7 @@
           "longest_hop": 98,
           "mapped_advantage": 1975,
           "mapped_depth": 2204,
-          "placement_seconds": 0.45478292694315314,
+          "placement_seconds": 0.5269944029860198,
           "qubits": 400,
           "restore_depth_cost": 1082,
           "restore_swap_gates": 15181,
@@ -9439,7 +9439,7 @@
           "longest_hop": 41,
           "mapped_advantage": 583,
           "mapped_depth": 747,
-          "placement_seconds": 0.2826208279002458,
+          "placement_seconds": 0.32509237102931365,
           "qubits": 400,
           "restore_depth_cost": 279,
           "restore_swap_gates": 8054,
@@ -9465,7 +9465,7 @@
           "longest_hop": 141,
           "mapped_advantage": 1847,
           "mapped_depth": 2011,
-          "placement_seconds": 0.8523406980093569,
+          "placement_seconds": 1.1019401689991355,
           "qubits": 400,
           "restore_depth_cost": 917,
           "restore_swap_gates": 29179,
@@ -9491,7 +9491,7 @@
           "longest_hop": 198,
           "mapped_advantage": 1665,
           "mapped_depth": 1829,
-          "placement_seconds": 2.0733605979476124,
+          "placement_seconds": 2.450850730005186,
           "qubits": 400,
           "restore_depth_cost": 904,
           "restore_swap_gates": 69976,
@@ -9517,7 +9517,7 @@
           "longest_hop": 57,
           "mapped_advantage": 0,
           "mapped_depth": 164,
-          "placement_seconds": 0.17845628620125353,
+          "placement_seconds": 0.20394045201828703,
           "qubits": 400,
           "restore_depth_cost": 80,
           "restore_swap_gates": 7140,
@@ -9543,7 +9543,7 @@
           "longest_hop": 78,
           "mapped_advantage": 363,
           "mapped_depth": 527,
-          "placement_seconds": 0.40141007700003684,
+          "placement_seconds": 0.4820369490189478,
           "qubits": 400,
           "restore_depth_cost": 261,
           "restore_swap_gates": 14352,
@@ -9569,7 +9569,7 @@
           "longest_hop": 1,
           "mapped_advantage": 72,
           "mapped_depth": 77,
-          "placement_seconds": 0.010382155887782574,
+          "placement_seconds": 0.011010590998921543,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9595,7 +9595,7 @@
           "longest_hop": 1,
           "mapped_advantage": 72,
           "mapped_depth": 77,
-          "placement_seconds": 0.011169004021212459,
+          "placement_seconds": 0.010802199016325176,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9621,7 +9621,7 @@
           "longest_hop": 1,
           "mapped_advantage": 36,
           "mapped_depth": 41,
-          "placement_seconds": 0.010368453105911613,
+          "placement_seconds": 0.012813699955586344,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9647,7 +9647,7 @@
           "longest_hop": 1,
           "mapped_advantage": 0,
           "mapped_depth": 5,
-          "placement_seconds": 0.010600103996694088,
+          "placement_seconds": 0.011917244992218912,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9673,7 +9673,7 @@
           "longest_hop": 1,
           "mapped_advantage": 9,
           "mapped_depth": 14,
-          "placement_seconds": 0.010406951187178493,
+          "placement_seconds": 0.011158787994645536,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9699,7 +9699,7 @@
           "longest_hop": 1,
           "mapped_advantage": 72,
           "mapped_depth": 77,
-          "placement_seconds": 0.06719326414167881,
+          "placement_seconds": 0.062429721001535654,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9725,7 +9725,7 @@
           "longest_hop": 1,
           "mapped_advantage": 72,
           "mapped_depth": 77,
-          "placement_seconds": 0.01193130505271256,
+          "placement_seconds": 0.011385694961063564,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9751,7 +9751,7 @@
           "longest_hop": 1,
           "mapped_advantage": 36,
           "mapped_depth": 41,
-          "placement_seconds": 0.010308575816452503,
+          "placement_seconds": 0.012204456026665866,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9777,7 +9777,7 @@
           "longest_hop": 1,
           "mapped_advantage": 0,
           "mapped_depth": 5,
-          "placement_seconds": 0.011823828099295497,
+          "placement_seconds": 0.013349790999200195,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9803,7 +9803,7 @@
           "longest_hop": 1,
           "mapped_advantage": 9,
           "mapped_depth": 14,
-          "placement_seconds": 0.01083908905275166,
+          "placement_seconds": 0.01261997502297163,
           "qubits": 400,
           "restore_depth_cost": 0,
           "restore_swap_gates": 0,
@@ -9870,21 +9870,21 @@
         "operations": 40,
         "qubits": 16,
         "synthesis_samples": [
-          0.00010848883539438248,
-          0.0002435450442135334,
-          0.00011009909212589264
+          0.00020183302694931626,
+          0.00018302001990377903,
+          0.00020186702022328973
         ],
-        "synthesis_seconds": 0.00011009909212589264,
+        "synthesis_seconds": 0.00020183302694931626,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 24,
         "verdict": "VALID",
         "verification_samples": [
-          0.0006785241421312094,
-          0.0006426170002669096,
-          0.0007366668432950974
+          0.0011704089702107012,
+          0.00111785699846223,
+          0.001394373015500605
         ],
-        "verification_seconds": 0.0006785241421312094
+        "verification_seconds": 0.0011704089702107012
       },
       {
         "attains_the_floor": false,
@@ -9899,21 +9899,21 @@
         "operations": 40,
         "qubits": 16,
         "synthesis_samples": [
-          0.00012006983160972595,
-          0.00011609005741775036,
-          0.00016385805793106556
+          0.00022155599435791373,
+          0.00020902499090880156,
+          0.00021654804004356265
         ],
-        "synthesis_seconds": 0.00012006983160972595,
+        "synthesis_seconds": 0.00021654804004356265,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 24,
         "verdict": "VALID",
         "verification_samples": [
-          0.000617878045886755,
-          0.0006877470295876265,
-          0.0007217822130769491
+          0.001413040969055146,
+          0.0013001089682802558,
+          0.0012834530207328498
         ],
-        "verification_seconds": 0.0006877470295876265
+        "verification_seconds": 0.0013001089682802558
       },
       {
         "attains_the_floor": false,
@@ -9928,21 +9928,21 @@
         "operations": 40,
         "qubits": 16,
         "synthesis_samples": [
-          0.00014155404642224312,
-          0.0001555809285491705,
-          0.00015912996605038643
+          0.0002818959765136242,
+          0.00028304202714934945,
+          0.000273999001365155
         ],
-        "synthesis_seconds": 0.0001555809285491705,
+        "synthesis_seconds": 0.0002818959765136242,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 24,
         "verdict": "VALID",
         "verification_samples": [
-          0.0008935830555856228,
-          0.0009392921347171068,
-          0.0009788600727915764
+          0.0013309289934113622,
+          0.0013964500394649804,
+          0.0014670219970867038
         ],
-        "verification_seconds": 0.0009392921347171068
+        "verification_seconds": 0.0013964500394649804
       },
       {
         "attains_the_floor": true,
@@ -9957,21 +9957,21 @@
         "operations": 40,
         "qubits": 16,
         "synthesis_samples": [
-          0.00024269195273518562,
-          0.00016412208788096905,
-          0.00016166293062269688
+          0.0004075649776495993,
+          0.000344618980307132,
+          0.0003080940223298967
         ],
-        "synthesis_seconds": 0.00016412208788096905,
+        "synthesis_seconds": 0.000344618980307132,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 24,
         "verdict": "VALID",
         "verification_samples": [
-          0.0006893370300531387,
-          0.0006998421158641577,
-          0.0006781041156500578
+          0.0013376399874687195,
+          0.0013584530097432435,
+          0.001281060976907611
         ],
-        "verification_seconds": 0.0006893370300531387
+        "verification_seconds": 0.0013376399874687195
       },
       {
         "attains_the_floor": false,
@@ -9986,21 +9986,21 @@
         "operations": 40,
         "qubits": 16,
         "synthesis_samples": [
-          0.00026380782946944237,
-          0.0001249820925295353,
-          0.00011908798478543758
+          0.0002749779960140586,
+          0.0002379759680479765,
+          0.00043685600394383073
         ],
-        "synthesis_seconds": 0.0001249820925295353,
+        "synthesis_seconds": 0.0002749779960140586,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 24,
         "verdict": "VALID",
         "verification_samples": [
-          0.0009683019015938044,
-          0.0007014949806034565,
-          0.000701261917129159
+          0.001346417993772775,
+          0.0013228959869593382,
+          0.0012801410048268735
         ],
-        "verification_seconds": 0.0007014949806034565
+        "verification_seconds": 0.0013228959869593382
       },
       {
         "attains_the_floor": false,
@@ -10017,21 +10017,21 @@
         "operations": 39,
         "qubits": 16,
         "synthesis_samples": [
-          0.00012312713079154491,
-          0.00011561112478375435,
-          0.00014564115554094315
+          0.00022345903562381864,
+          0.00023164699086919427,
+          0.00021381198894232512
         ],
-        "synthesis_seconds": 0.00012312713079154491,
+        "synthesis_seconds": 0.00022345903562381864,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 23,
         "verdict": "INVALID",
         "verification_samples": [
-          0.0009229830466210842,
-          0.0007303559686988592,
-          0.0007490541320294142
+          0.0013290739734657109,
+          0.0012630970450118184,
+          0.0030530099757015705
         ],
-        "verification_seconds": 0.0007490541320294142
+        "verification_seconds": 0.0013290739734657109
       },
       {
         "attains_the_floor": false,
@@ -10048,21 +10048,21 @@
         "operations": 41,
         "qubits": 16,
         "synthesis_samples": [
-          0.0001322540920227766,
-          0.000118674011901021,
-          0.00011466699652373791
+          0.0003114449791610241,
+          0.0002312459982931614,
+          0.00028074299916625023
         ],
-        "synthesis_seconds": 0.000118674011901021,
+        "synthesis_seconds": 0.00028074299916625023,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 25,
         "verdict": "INVALID",
         "verification_samples": [
-          0.0006891109514981508,
-          0.0006798631511628628,
-          0.0006699990481138229
+          0.003734063997399062,
+          0.0043402500450611115,
+          0.001829562010243535
         ],
-        "verification_seconds": 0.0006798631511628628
+        "verification_seconds": 0.003734063997399062
       },
       {
         "attains_the_floor": false,
@@ -10079,21 +10079,21 @@
         "operations": 40,
         "qubits": 16,
         "synthesis_samples": [
-          0.0001246838364750147,
-          0.00011486303992569447,
-          0.00012561213225126266
+          0.002348114037886262,
+          0.0002494780346751213,
+          0.001323520962614566
         ],
-        "synthesis_seconds": 0.0001246838364750147,
+        "synthesis_seconds": 0.001323520962614566,
         "target": "cluster_4x4",
         "tier": "stabilizer",
         "two_qubit_gates": 24,
         "verdict": "INVALID",
         "verification_samples": [
-          0.0016210009343922138,
-          0.0010692118667066097,
-          0.001172824064269662
+          0.0026575730298645794,
+          0.001339060952886939,
+          0.001301590004004538
         ],
-        "verification_seconds": 0.001172824064269662
+        "verification_seconds": 0.001339060952886939
       },
       {
         "attains_the_floor": false,
@@ -10108,21 +10108,21 @@
         "operations": 280,
         "qubits": 100,
         "synthesis_samples": [
-          0.001631631050258875,
-          0.0014677930157631636,
-          0.0014643680769950151
+          0.0032628150074742734,
+          0.0034263450070284307,
+          0.0031766920001246035
         ],
-        "synthesis_seconds": 0.0014677930157631636,
+        "synthesis_seconds": 0.0032628150074742734,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 180,
         "verdict": "VALID",
         "verification_samples": [
-          0.014875252963975072,
-          0.01472063991241157,
-          0.014428345020860434
+          0.03197204094612971,
+          0.032240536995232105,
+          0.03243257402209565
         ],
-        "verification_seconds": 0.01472063991241157
+        "verification_seconds": 0.032240536995232105
       },
       {
         "attains_the_floor": false,
@@ -10137,21 +10137,21 @@
         "operations": 280,
         "qubits": 100,
         "synthesis_samples": [
-          0.0015734839253127575,
-          0.0015479610301554203,
-          0.0018653019797056913
+          0.0032816259772516787,
+          0.003304560959804803,
+          0.0032806790550239384
         ],
-        "synthesis_seconds": 0.0015734839253127575,
+        "synthesis_seconds": 0.0032816259772516787,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 180,
         "verdict": "VALID",
         "verification_samples": [
-          0.01538954395800829,
-          0.01435132697224617,
-          0.014779004966840148
+          0.031860441027674824,
+          0.020201732986606658,
+          0.029026099015027285
         ],
-        "verification_seconds": 0.014779004966840148
+        "verification_seconds": 0.029026099015027285
       },
       {
         "attains_the_floor": false,
@@ -10166,21 +10166,21 @@
         "operations": 280,
         "qubits": 100,
         "synthesis_samples": [
-          0.0024698630440980196,
-          0.002106532221660018,
-          0.002076070988550782
+          0.004270618024747819,
+          0.0043599409982562065,
+          0.003997821011580527
         ],
-        "synthesis_seconds": 0.002106532221660018,
+        "synthesis_seconds": 0.004270618024747819,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 180,
         "verdict": "VALID",
         "verification_samples": [
-          0.014600582886487246,
-          0.015158932888880372,
-          0.018008751096203923
+          0.01550585002405569,
+          0.015678921015933156,
+          0.015912356961052865
         ],
-        "verification_seconds": 0.015158932888880372
+        "verification_seconds": 0.015678921015933156
       },
       {
         "attains_the_floor": true,
@@ -10195,21 +10195,21 @@
         "operations": 280,
         "qubits": 100,
         "synthesis_samples": [
-          0.0017269470263272524,
-          0.0017813690938055515,
-          0.002507175086066127
+          0.0018199359765276313,
+          0.001800666970666498,
+          0.001763641950674355
         ],
-        "synthesis_seconds": 0.0017813690938055515,
+        "synthesis_seconds": 0.001800666970666498,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 180,
         "verdict": "VALID",
         "verification_samples": [
-          0.015380270080640912,
-          0.014588556019589305,
-          0.014469991903752089
+          0.016459110949654132,
+          0.01576412800932303,
+          0.020449729985557497
         ],
-        "verification_seconds": 0.014588556019589305
+        "verification_seconds": 0.016459110949654132
       },
       {
         "attains_the_floor": false,
@@ -10224,21 +10224,21 @@
         "operations": 280,
         "qubits": 100,
         "synthesis_samples": [
-          0.0016712420620024204,
-          0.0017484400887042284,
-          0.0014928218442946672
+          0.001864194986410439,
+          0.001740519015584141,
+          0.0016078930348157883
         ],
-        "synthesis_seconds": 0.0016712420620024204,
+        "synthesis_seconds": 0.001740519015584141,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 180,
         "verdict": "VALID",
         "verification_samples": [
-          0.014134449884295464,
-          0.014432339929044247,
-          0.01446839701384306
+          0.017287686991039664,
+          0.01712405198486522,
+          0.01739758503390476
         ],
-        "verification_seconds": 0.014432339929044247
+        "verification_seconds": 0.017287686991039664
       },
       {
         "attains_the_floor": false,
@@ -10255,21 +10255,21 @@
         "operations": 279,
         "qubits": 100,
         "synthesis_samples": [
-          0.0014310090336948633,
-          0.0013687519822269678,
-          0.0013602729886770248
+          0.0015736869536340237,
+          0.0015717989881522954,
+          0.001559473981615156
         ],
-        "synthesis_seconds": 0.0013687519822269678,
+        "synthesis_seconds": 0.0015717989881522954,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 179,
         "verdict": "INVALID",
         "verification_samples": [
-          0.015852845972403884,
-          0.018198981881141663,
-          0.018760248087346554
+          0.0160114309983328,
+          0.016423400957137346,
+          0.01592247502412647
         ],
-        "verification_seconds": 0.018198981881141663
+        "verification_seconds": 0.0160114309983328
       },
       {
         "attains_the_floor": false,
@@ -10286,21 +10286,21 @@
         "operations": 281,
         "qubits": 100,
         "synthesis_samples": [
-          0.0016224179416894913,
-          0.0026452040765434504,
-          0.0029310109093785286
+          0.00156900699948892,
+          0.0017105499864555895,
+          0.0016393749974668026
         ],
-        "synthesis_seconds": 0.0026452040765434504,
+        "synthesis_seconds": 0.0016393749974668026,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 181,
         "verdict": "INVALID",
         "verification_samples": [
-          0.015700783114880323,
-          0.017813399899750948,
-          0.01618440682068467
+          0.016180780017748475,
+          0.020882208016701043,
+          0.021935245022177696
         ],
-        "verification_seconds": 0.01618440682068467
+        "verification_seconds": 0.020882208016701043
       },
       {
         "attains_the_floor": false,
@@ -10317,21 +10317,21 @@
         "operations": 280,
         "qubits": 100,
         "synthesis_samples": [
-          0.0014657150022685528,
-          0.0015789719764143229,
-          0.0014799470081925392
+          0.0021166099468246102,
+          0.001770444039721042,
+          0.0015262910164892673
         ],
-        "synthesis_seconds": 0.0014799470081925392,
+        "synthesis_seconds": 0.001770444039721042,
         "target": "cluster_10x10",
         "tier": "stabilizer",
         "two_qubit_gates": 180,
         "verdict": "INVALID",
         "verification_samples": [
-          0.015234034974128008,
-          0.015801381086930633,
-          0.015418387949466705
+          0.020781097991857678,
+          0.028729154961183667,
+          0.018168276990763843
         ],
-        "verification_seconds": 0.015418387949466705
+        "verification_seconds": 0.020781097991857678
       },
       {
         "attains_the_floor": false,
@@ -10346,21 +10346,21 @@
         "operations": 1160,
         "qubits": 400,
         "synthesis_samples": [
-          0.022404035087674856,
-          0.019706154940649867,
-          0.019085848005488515
+          0.047931725974194705,
+          0.057142319972626865,
+          0.04656236502341926
         ],
-        "synthesis_seconds": 0.019706154940649867,
+        "synthesis_seconds": 0.047931725974194705,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 760,
         "verdict": "VALID",
         "verification_samples": [
-          0.25264923786744475,
-          0.23013390600681305,
-          0.2580434230621904
+          0.4449168569990434,
+          0.25940596201689914,
+          0.25112094602081925
         ],
-        "verification_seconds": 0.25264923786744475
+        "verification_seconds": 0.25940596201689914
       },
       {
         "attains_the_floor": false,
@@ -10375,21 +10375,21 @@
         "operations": 1160,
         "qubits": 400,
         "synthesis_samples": [
-          0.01943678199313581,
-          0.021164150908589363,
-          0.01965459599159658
+          0.022894378984346986,
+          0.02100578905083239,
+          0.021006216993555427
         ],
-        "synthesis_seconds": 0.01965459599159658,
+        "synthesis_seconds": 0.021006216993555427,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 760,
         "verdict": "VALID",
         "verification_samples": [
-          0.24980946979485452,
-          0.2518362598493695,
-          0.2556395740248263
+          0.6030857340083458,
+          0.6537743440130726,
+          0.5203434790018946
         ],
-        "verification_seconds": 0.2518362598493695
+        "verification_seconds": 0.6030857340083458
       },
       {
         "attains_the_floor": false,
@@ -10404,21 +10404,21 @@
         "operations": 1160,
         "qubits": 400,
         "synthesis_samples": [
-          0.03344770893454552,
-          0.030331505928188562,
-          0.03122935607098043
+          0.03396614297525957,
+          0.03327257896307856,
+          0.032834795012604445
         ],
-        "synthesis_seconds": 0.03122935607098043,
+        "synthesis_seconds": 0.03327257896307856,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 760,
         "verdict": "VALID",
         "verification_samples": [
-          0.22645072801969945,
-          0.2333019101060927,
-          0.2537947939708829
+          0.24765540997032076,
+          0.2709939600317739,
+          0.26580305700190365
         ],
-        "verification_seconds": 0.2333019101060927
+        "verification_seconds": 0.26580305700190365
       },
       {
         "attains_the_floor": true,
@@ -10433,21 +10433,21 @@
         "operations": 1160,
         "qubits": 400,
         "synthesis_samples": [
-          0.021466542035341263,
-          0.020294681191444397,
-          0.02176394802518189
+          0.020466583024244756,
+          0.021281432011164725,
+          0.02138806995935738
         ],
-        "synthesis_seconds": 0.021466542035341263,
+        "synthesis_seconds": 0.021281432011164725,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 760,
         "verdict": "VALID",
         "verification_samples": [
-          0.2781318221241236,
-          0.2516019861213863,
-          0.29390398086979985
+          0.25260397599777207,
+          0.24292561796028167,
+          0.26597406598739326
         ],
-        "verification_seconds": 0.2781318221241236
+        "verification_seconds": 0.25260397599777207
       },
       {
         "attains_the_floor": false,
@@ -10462,21 +10462,21 @@
         "operations": 1160,
         "qubits": 400,
         "synthesis_samples": [
-          0.030348057858645916,
-          0.02663977793417871,
-          0.02083652000874281
+          0.022243420011363924,
+          0.020745867979712784,
+          0.020629243983421475
         ],
-        "synthesis_seconds": 0.02663977793417871,
+        "synthesis_seconds": 0.020745867979712784,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 760,
         "verdict": "VALID",
         "verification_samples": [
-          0.2826698438730091,
-          0.23051154799759388,
-          0.24802623898722231
+          0.24796798400348052,
+          0.2492131450562738,
+          0.25348238699370995
         ],
-        "verification_seconds": 0.24802623898722231
+        "verification_seconds": 0.2492131450562738
       },
       {
         "attains_the_floor": false,
@@ -10493,21 +10493,21 @@
         "operations": 1159,
         "qubits": 400,
         "synthesis_samples": [
-          0.020326392026618123,
-          0.020891779102385044,
-          0.020131255965679884
+          0.021907459013164043,
+          0.022983237984590232,
+          0.021593466983176768
         ],
-        "synthesis_seconds": 0.020326392026618123,
+        "synthesis_seconds": 0.021907459013164043,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 759,
         "verdict": "INVALID",
         "verification_samples": [
-          0.2565904010552913,
-          0.24565162300132215,
-          0.2461922070942819
+          0.2472871760255657,
+          0.27578849002020434,
+          0.4494452550425194
         ],
-        "verification_seconds": 0.2461922070942819
+        "verification_seconds": 0.27578849002020434
       },
       {
         "attains_the_floor": false,
@@ -10524,21 +10524,21 @@
         "operations": 1161,
         "qubits": 400,
         "synthesis_samples": [
-          0.021196841029450297,
-          0.020324807846918702,
-          0.019721737131476402
+          0.02096110297134146,
+          0.022756842023227364,
+          0.020988254982512444
         ],
-        "synthesis_seconds": 0.020324807846918702,
+        "synthesis_seconds": 0.020988254982512444,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 761,
         "verdict": "INVALID",
         "verification_samples": [
-          0.2546374739613384,
-          0.28155898209661245,
-          0.25692017609253526
+          0.2517654019757174,
+          0.2659588039969094,
+          0.24773689697030932
         ],
-        "verification_seconds": 0.25692017609253526
+        "verification_seconds": 0.2517654019757174
       },
       {
         "attains_the_floor": false,
@@ -10555,21 +10555,21 @@
         "operations": 1160,
         "qubits": 400,
         "synthesis_samples": [
-          0.019019479164853692,
-          0.019519510911777616,
-          0.020747591042891145
+          0.02075632498599589,
+          0.021834118000697345,
+          0.02176965499529615
         ],
-        "synthesis_seconds": 0.019519510911777616,
+        "synthesis_seconds": 0.02176965499529615,
         "target": "cluster_20x20",
         "tier": "stabilizer",
         "two_qubit_gates": 760,
         "verdict": "INVALID",
         "verification_samples": [
-          0.2723175729624927,
-          0.2506100309547037,
-          0.2493012158665806
+          0.2582027360331267,
+          0.2605607830337249,
+          0.25194211897905916
         ],
-        "verification_seconds": 0.2506100309547037
+        "verification_seconds": 0.2582027360331267
       },
       {
         "attains_the_floor": false,
@@ -10584,21 +10584,21 @@
         "operations": 2640,
         "qubits": 900,
         "synthesis_samples": [
-          0.1168091269209981,
-          0.0998589659575373,
-          0.10131501802243292
+          0.10692351002944633,
+          0.10991199599811807,
+          0.11567833001026884
         ],
-        "synthesis_seconds": 0.10131501802243292,
+        "synthesis_seconds": 0.10991199599811807,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1740,
         "verdict": "VALID",
         "verification_samples": [
-          1.3652410018257797,
-          1.375418022973463,
-          1.332163415150717
+          1.511184597038664,
+          1.4832575830514543,
+          1.7488853799877688
         ],
-        "verification_seconds": 1.3652410018257797
+        "verification_seconds": 1.511184597038664
       },
       {
         "attains_the_floor": false,
@@ -10613,21 +10613,21 @@
         "operations": 2640,
         "qubits": 900,
         "synthesis_samples": [
-          0.10440296796150506,
-          0.10064793610945344,
-          0.10163349518552423
+          0.10941555502358824,
+          0.1140257139923051,
+          0.14572433498688042
         ],
-        "synthesis_seconds": 0.10163349518552423,
+        "synthesis_seconds": 0.1140257139923051,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1740,
         "verdict": "VALID",
         "verification_samples": [
-          1.3186733450274915,
-          1.2876135050319135,
-          1.2946607808116823
+          1.3733646390028298,
+          1.3481850589741953,
+          1.4135823150281794
         ],
-        "verification_seconds": 1.2946607808116823
+        "verification_seconds": 1.3733646390028298
       },
       {
         "attains_the_floor": false,
@@ -10642,21 +10642,21 @@
         "operations": 2640,
         "qubits": 900,
         "synthesis_samples": [
-          0.1509030289016664,
-          0.15120310196653008,
-          0.15581155917607248
+          0.17064328101696447,
+          0.18183322000550106,
+          0.17923357401741669
         ],
-        "synthesis_seconds": 0.15120310196653008,
+        "synthesis_seconds": 0.17923357401741669,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1740,
         "verdict": "VALID",
         "verification_samples": [
-          1.3791221368592232,
-          1.4207305118907243,
-          1.379051571013406
+          1.6502654709620401,
+          1.4906972990138456,
+          1.5513215779792517
         ],
-        "verification_seconds": 1.3791221368592232
+        "verification_seconds": 1.5513215779792517
       },
       {
         "attains_the_floor": true,
@@ -10671,21 +10671,21 @@
         "operations": 2640,
         "qubits": 900,
         "synthesis_samples": [
-          0.12198421405628324,
-          0.11503782588988543,
-          0.10200774390250444
+          0.12360213900683448,
+          0.12201467796694487,
+          0.12356688705040142
         ],
-        "synthesis_seconds": 0.11503782588988543,
+        "synthesis_seconds": 0.12356688705040142,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1740,
         "verdict": "VALID",
         "verification_samples": [
-          1.3138332411181182,
-          1.358984979102388,
-          1.2689527729526162
+          1.7386206979863346,
+          1.5056748819770291,
+          1.3609282380202785
         ],
-        "verification_seconds": 1.3138332411181182
+        "verification_seconds": 1.5056748819770291
       },
       {
         "attains_the_floor": false,
@@ -10700,21 +10700,21 @@
         "operations": 2640,
         "qubits": 900,
         "synthesis_samples": [
-          0.10128063010051847,
-          0.10787426284514368,
-          0.12272269814275205
+          0.11891915794694796,
+          0.10696115897735581,
+          0.10781553899869323
         ],
-        "synthesis_seconds": 0.10787426284514368,
+        "synthesis_seconds": 0.10781553899869323,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1740,
         "verdict": "VALID",
         "verification_samples": [
-          1.3915966481436044,
-          1.6496517569757998,
-          1.5093003078363836
+          1.4485124460188672,
+          1.5601298210094683,
+          2.206939109019004
         ],
-        "verification_seconds": 1.5093003078363836
+        "verification_seconds": 1.5601298210094683
       },
       {
         "attains_the_floor": false,
@@ -10731,21 +10731,21 @@
         "operations": 2639,
         "qubits": 900,
         "synthesis_samples": [
-          0.11247221892699599,
-          0.10431782901287079,
-          0.1042689720634371
+          0.11277666897512972,
+          0.11901685799239203,
+          0.11345587199321017
         ],
-        "synthesis_seconds": 0.10431782901287079,
+        "synthesis_seconds": 0.11345587199321017,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1739,
         "verdict": "INVALID",
         "verification_samples": [
-          1.397698346991092,
-          1.2837655229959637,
-          1.2528187949210405
+          1.7197002689936198,
+          1.5113710449659266,
+          1.4269866929971613
         ],
-        "verification_seconds": 1.2837655229959637
+        "verification_seconds": 1.5113710449659266
       },
       {
         "attains_the_floor": false,
@@ -10762,21 +10762,21 @@
         "operations": 2641,
         "qubits": 900,
         "synthesis_samples": [
-          0.10085452580824494,
-          0.09958731313236058,
-          0.10253534000366926
+          0.12489847297547385,
+          0.12774905504193157,
+          0.11302954098209739
         ],
-        "synthesis_seconds": 0.10085452580824494,
+        "synthesis_seconds": 0.12489847297547385,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1741,
         "verdict": "INVALID",
         "verification_samples": [
-          1.343756086891517,
-          1.3645657049492002,
-          1.2861131911631674
+          1.393604515993502,
+          1.7057196800014935,
+          1.8359372089616954
         ],
-        "verification_seconds": 1.343756086891517
+        "verification_seconds": 1.7057196800014935
       },
       {
         "attains_the_floor": false,
@@ -10793,21 +10793,21 @@
         "operations": 2640,
         "qubits": 900,
         "synthesis_samples": [
-          0.09698271285742521,
-          0.10510766203515232,
-          0.1014488241635263
+          0.13314993400126696,
+          0.11567271902458742,
+          0.13680610101437196
         ],
-        "synthesis_seconds": 0.1014488241635263,
+        "synthesis_seconds": 0.13314993400126696,
         "target": "cluster_30x30",
         "tier": "stabilizer",
         "two_qubit_gates": 1740,
         "verdict": "INVALID",
         "verification_samples": [
-          1.2809787499718368,
-          1.3065004979725927,
-          1.2680454070214182
+          1.6473628499661572,
+          1.5390406069927849,
+          1.640307986002881
         ],
-        "verification_seconds": 1.2809787499718368
+        "verification_seconds": 1.640307986002881
       },
       {
         "attains_the_floor": false,
@@ -10822,21 +10822,21 @@
         "operations": 93,
         "qubits": 25,
         "synthesis_samples": [
-          0.00027180789038538933,
-          0.0003008199855685234,
-          0.0003126950468868017
+          0.00024281401420012116,
+          0.0002352090086787939,
+          0.0002656220458447933
         ],
-        "synthesis_seconds": 0.0003008199855685234,
+        "synthesis_seconds": 0.00024281401420012116,
         "target": "irregular_25q_seed7",
         "tier": "stabilizer",
         "two_qubit_gates": 68,
         "verdict": "VALID",
         "verification_samples": [
-          0.0016801368910819292,
-          0.0016362920869141817,
-          0.0017048970330506563
+          0.0017771520069800317,
+          0.0017841110238805413,
+          0.0019099369528703392
         ],
-        "verification_seconds": 0.0016801368910819292
+        "verification_seconds": 0.0017841110238805413
       },
       {
         "attains_the_floor": false,
@@ -10851,21 +10851,21 @@
         "operations": 93,
         "qubits": 25,
         "synthesis_samples": [
-          0.0002760339993983507,
-          0.00026248302310705185,
-          0.0002700318582355976
+          0.00032609200570732355,
+          0.0002753569860942662,
+          0.00027011800557374954
         ],
-        "synthesis_seconds": 0.0002700318582355976,
+        "synthesis_seconds": 0.0002753569860942662,
         "target": "irregular_25q_seed7",
         "tier": "stabilizer",
         "two_qubit_gates": 68,
         "verdict": "VALID",
         "verification_samples": [
-          0.0017381131183356047,
-          0.0017176109831780195,
-          0.0017799190245568752
+          0.0017639700090512633,
+          0.0021069489885121584,
+          0.0024033989757299423
         ],
-        "verification_seconds": 0.0017381131183356047
+        "verification_seconds": 0.0021069489885121584
       },
       {
         "attains_the_floor": false,
@@ -10880,21 +10880,21 @@
         "operations": 93,
         "qubits": 25,
         "synthesis_samples": [
-          0.0005241299513727427,
-          0.0004503789823502302,
-          0.0004552071914076805
+          0.0004248740151524544,
+          0.0004016959574073553,
+          0.0003647760022431612
         ],
-        "synthesis_seconds": 0.0004552071914076805,
+        "synthesis_seconds": 0.0004016959574073553,
         "target": "irregular_25q_seed7",
         "tier": "stabilizer",
         "two_qubit_gates": 68,
         "verdict": "VALID",
         "verification_samples": [
-          0.0018333022017031908,
-          0.001949789933860302,
-          0.0018524890765547752
+          0.0017324569635093212,
+          0.0017592469812370837,
+          0.001679982990026474
         ],
-        "verification_seconds": 0.0018524890765547752
+        "verification_seconds": 0.0017324569635093212
       },
       {
         "attains_the_floor": true,
@@ -10909,21 +10909,21 @@
         "operations": 93,
         "qubits": 25,
         "synthesis_samples": [
-          0.0004848809912800789,
-          0.0003761579282581806,
-          0.0004211580380797386
+          0.0006562769995070994,
+          0.000524497008882463,
+          0.00047488202108070254
         ],
-        "synthesis_seconds": 0.0004211580380797386,
+        "synthesis_seconds": 0.000524497008882463,
         "target": "irregular_25q_seed7",
         "tier": "stabilizer",
         "two_qubit_gates": 68,
         "verdict": "VALID",
         "verification_samples": [
-          0.0018160310573875904,
-          0.0018253698945045471,
-          0.001935856882482767
+          0.0023025459959171712,
+          0.0030167060322128236,
+          0.003935518965590745
         ],
-        "verification_seconds": 0.0018253698945045471
+        "verification_seconds": 0.0030167060322128236
       },
       {
         "attains_the_floor": false,
@@ -10938,21 +10938,21 @@
         "operations": 93,
         "qubits": 25,
         "synthesis_samples": [
-          0.00029256613925099373,
-          0.00034943921491503716,
-          0.00033895508386194706
+          0.0006174760055728257,
+          0.0003730269963853061,
+          0.0004679469857364893
         ],
-        "synthesis_seconds": 0.00033895508386194706,
+        "synthesis_seconds": 0.0004679469857364893,
         "target": "irregular_25q_seed7",
         "tier": "stabilizer",
         "two_qubit_gates": 68,
         "verdict": "VALID",
         "verification_samples": [
-          0.001927560893818736,
-          0.0018186799716204405,
-          0.0017247539944946766
+          0.002291918033733964,
+          0.002242345013655722,
+          0.004221795010380447
         ],
-        "verification_seconds": 0.0018186799716204405
+        "verification_seconds": 0.002291918033733964
       },
       {
         "attains_the_floor": false,
@@ -10969,21 +10969,21 @@
         "operations": 93,
         "qubits": 25,
         "synthesis_samples": [
-          0.00036342511884868145,
-          0.00024282792583107948,
-          0.0002631042152643204
+          0.0006462959572672844,
+          0.0003458230057731271,
+          0.0005290360422804952
         ],
-        "synthesis_seconds": 0.0002631042152643204,
+        "synthesis_seconds": 0.0005290360422804952,
         "target": "irregular_25q_seed7",
         "tier": "stabilizer",
         "two_qubit_gates": 68,
         "verdict": "INVALID",
         "verification_samples": [
-          0.002024579094722867,
-          0.0017739399336278439,
-          0.0017395399045199156
+          0.0034682019613683224,
+          0.009536374011076987,
+          0.010432368027977645
         ],
-        "verification_seconds": 0.0017739399336278439
+        "verification_seconds": 0.009536374011076987
       },
       {
         "attains_the_floor": false,
@@ -10998,21 +10998,21 @@
         "operations": 335,
         "qubits": 64,
         "synthesis_samples": [
-          0.0009491047821938992,
-          0.0009966061916202307,
-          0.00094221206381917
+          0.0029168989858590066,
+          0.001253239985089749,
+          0.001620875031221658
         ],
-        "synthesis_seconds": 0.0009491047821938992,
+        "synthesis_seconds": 0.001620875031221658,
         "target": "irregular_64q_seed23",
         "tier": "stabilizer",
         "two_qubit_gates": 271,
         "verdict": "VALID",
         "verification_samples": [
-          0.01103943889029324,
-          0.014207007130607963,
-          0.02164738206192851
+          0.024328530009370297,
+          0.018076566979289055,
+          0.020858256961219013
         ],
-        "verification_seconds": 0.014207007130607963
+        "verification_seconds": 0.020858256961219013
       },
       {
         "attains_the_floor": false,
@@ -11027,21 +11027,21 @@
         "operations": 335,
         "qubits": 64,
         "synthesis_samples": [
-          0.0025495891459286213,
-          0.0012962950859218836,
-          0.0013072150759398937
+          0.0025693050120025873,
+          0.005461419990751892,
+          0.001757702964823693
         ],
-        "synthesis_seconds": 0.0013072150759398937,
+        "synthesis_seconds": 0.0025693050120025873,
         "target": "irregular_64q_seed23",
         "tier": "stabilizer",
         "two_qubit_gates": 271,
         "verdict": "VALID",
         "verification_samples": [
-          0.01994642079807818,
-          0.011818173108622432,
-          0.01141237118281424
+          0.017113829031586647,
+          0.014932818012312055,
+          0.012496467970777303
         ],
-        "verification_seconds": 0.011818173108622432
+        "verification_seconds": 0.014932818012312055
       },
       {
         "attains_the_floor": false,
@@ -11056,21 +11056,21 @@
         "operations": 335,
         "qubits": 64,
         "synthesis_samples": [
-          0.001783998915925622,
-          0.0016772761009633541,
-          0.0016222349368035793
+          0.0016829179949127138,
+          0.0019949739798903465,
+          0.0029649260104633868
         ],
-        "synthesis_seconds": 0.0016772761009633541,
+        "synthesis_seconds": 0.0019949739798903465,
         "target": "irregular_64q_seed23",
         "tier": "stabilizer",
         "two_qubit_gates": 271,
         "verdict": "VALID",
         "verification_samples": [
-          0.012282855110242963,
-          0.012294607935473323,
-          0.011177879991009831
+          0.027711867005564272,
+          0.015266331029124558,
+          0.02083744399715215
         ],
-        "verification_seconds": 0.012282855110242963
+        "verification_seconds": 0.02083744399715215
       },
       {
         "attains_the_floor": true,
@@ -11085,21 +11085,21 @@
         "operations": 335,
         "qubits": 64,
         "synthesis_samples": [
-          0.0018860690761357546,
-          0.0015868579503148794,
-          0.0016701549757272005
+          0.0031405450426973403,
+          0.0035350550315342844,
+          0.003677341970615089
         ],
-        "synthesis_seconds": 0.0016701549757272005,
+        "synthesis_seconds": 0.0035350550315342844,
         "target": "irregular_64q_seed23",
         "tier": "stabilizer",
         "two_qubit_gates": 271,
         "verdict": "VALID",
         "verification_samples": [
-          0.011812885059043765,
-          0.012373045086860657,
-          0.011808148119598627
+          0.024977095948997885,
+          0.02402416302356869,
+          0.01873557997168973
         ],
-        "verification_seconds": 0.011812885059043765
+        "verification_seconds": 0.02402416302356869
       },
       {
         "attains_the_floor": false,
@@ -11114,21 +11114,21 @@
         "operations": 335,
         "qubits": 64,
         "synthesis_samples": [
-          0.0011649529915302992,
-          0.0011134049855172634,
-          0.0017420200165361166
+          0.0022255899966694415,
+          0.0025250199832953513,
+          0.002255259023513645
         ],
-        "synthesis_seconds": 0.0011649529915302992,
+        "synthesis_seconds": 0.002255259023513645,
         "target": "irregular_64q_seed23",
         "tier": "stabilizer",
         "two_qubit_gates": 271,
         "verdict": "VALID",
         "verification_samples": [
-          0.012140619801357388,
-          0.012395479949191213,
-          0.012563579948619008
+          0.02288800704991445,
+          0.014773221977520734,
+          0.024043273006100208
         ],
-        "verification_seconds": 0.012395479949191213
+        "verification_seconds": 0.02288800704991445
       },
       {
         "attains_the_floor": false,
@@ -11145,21 +11145,21 @@
         "operations": 335,
         "qubits": 64,
         "synthesis_samples": [
-          0.001029058126732707,
-          0.0010622739791870117,
-          0.0011626631021499634
+          0.002160051022656262,
+          0.002247439988423139,
+          0.002259280998259783
         ],
-        "synthesis_seconds": 0.0010622739791870117,
+        "synthesis_seconds": 0.002247439988423139,
         "target": "irregular_64q_seed23",
         "tier": "stabilizer",
         "two_qubit_gates": 271,
         "verdict": "INVALID",
         "verification_samples": [
-          0.012091977056115866,
-          0.011673385975882411,
-          0.012163643958047032
+          0.02429216302698478,
+          0.023467082995921373,
+          0.023941210005432367
         ],
-        "verification_seconds": 0.012091977056115866
+        "verification_seconds": 0.023941210005432367
       },
       {
         "attains_the_floor": false,
@@ -11174,21 +11174,21 @@
         "operations": 45,
         "qubits": 9,
         "synthesis_samples": [
-          0.00010146992281079292,
-          9.825103916227818e-05,
-          9.584217332303524e-05
+          0.0002136899856850505,
+          0.00010713300434872508,
+          0.00010031397687271237
         ],
-        "synthesis_seconds": 9.825103916227818e-05,
+        "synthesis_seconds": 0.00010713300434872508,
         "target": "complete_k9",
         "tier": "stabilizer",
         "two_qubit_gates": 36,
         "verdict": "VALID",
         "verification_samples": [
-          0.0005351039581000805,
-          0.0005073919892311096,
-          0.0005510170012712479
+          0.000978112977463752,
+          0.0008081150008365512,
+          0.0007426830125041306
         ],
-        "verification_seconds": 0.0005351039581000805
+        "verification_seconds": 0.0008081150008365512
       },
       {
         "attains_the_floor": false,
@@ -11203,21 +11203,21 @@
         "operations": 45,
         "qubits": 9,
         "synthesis_samples": [
-          0.00011634896509349346,
-          0.00011418084613978863,
-          0.0001955130137503147
+          0.0002499750116840005,
+          0.00012855796376243234,
+          0.00012454105308279395
         ],
-        "synthesis_seconds": 0.00011634896509349346,
+        "synthesis_seconds": 0.00012855796376243234,
         "target": "complete_k9",
         "tier": "stabilizer",
         "two_qubit_gates": 36,
         "verdict": "VALID",
         "verification_samples": [
-          0.0005386800039559603,
-          0.0005668329540640116,
-          0.0005237709265202284
+          0.0005699929897673428,
+          0.0013738650013692677,
+          0.0008340600179508328
         ],
-        "verification_seconds": 0.0005386800039559603
+        "verification_seconds": 0.0008340600179508328
       },
       {
         "attains_the_floor": false,
@@ -11232,21 +11232,21 @@
         "operations": 45,
         "qubits": 9,
         "synthesis_samples": [
-          0.00014518317766487598,
-          0.00012622401118278503,
-          0.00012420397251844406
+          0.00021209794795140624,
+          0.0001578630181029439,
+          0.00019017799058929086
         ],
-        "synthesis_seconds": 0.00012622401118278503,
+        "synthesis_seconds": 0.00019017799058929086,
         "target": "complete_k9",
         "tier": "stabilizer",
         "two_qubit_gates": 36,
         "verdict": "VALID",
         "verification_samples": [
-          0.0005222540348768234,
-          0.0005027910228818655,
-          0.0005094360094517469
+          0.001038269023410976,
+          0.0007751260418444872,
+          0.0009003729792311788
         ],
-        "verification_seconds": 0.0005094360094517469
+        "verification_seconds": 0.0009003729792311788
       },
       {
         "attains_the_floor": false,
@@ -11261,21 +11261,21 @@
         "operations": 45,
         "qubits": 9,
         "synthesis_samples": [
-          0.0010732118971645832,
-          0.0011087239254266024,
-          0.001093441853299737
+          0.0011801510117948055,
+          0.0014243189943954349,
+          0.0015249649877659976
         ],
-        "synthesis_seconds": 0.001093441853299737,
+        "synthesis_seconds": 0.0014243189943954349,
         "target": "complete_k9",
         "tier": "stabilizer",
         "two_qubit_gates": 36,
         "verdict": "VALID",
         "verification_samples": [
-          0.0005327698308974504,
-          0.0005030808970332146,
-          0.0005124527961015701
+          0.0006165339727886021,
+          0.0005585789913311601,
+          0.0005319099873304367
         ],
-        "verification_seconds": 0.0005124527961015701
+        "verification_seconds": 0.0005585789913311601
       },
       {
         "attains_the_floor": false,
@@ -11290,21 +11290,21 @@
         "operations": 45,
         "qubits": 9,
         "synthesis_samples": [
-          0.00012650107964873314,
-          0.00011576595716178417,
-          0.00012499094009399414
+          0.00014251802349463105,
+          0.000146737031172961,
+          0.00012185901869088411
         ],
-        "synthesis_seconds": 0.00012499094009399414,
+        "synthesis_seconds": 0.00014251802349463105,
         "target": "complete_k9",
         "tier": "stabilizer",
         "two_qubit_gates": 36,
         "verdict": "VALID",
         "verification_samples": [
-          0.0005098229739814997,
-          0.000514154089614749,
-          0.0005366858094930649
+          0.0005567939952015877,
+          0.0005475159850902855,
+          0.0005368569982238114
         ],
-        "verification_seconds": 0.000514154089614749
+        "verification_seconds": 0.0005475159850902855
       },
       {
         "attains_the_floor": false,
@@ -11321,21 +11321,21 @@
         "operations": 45,
         "qubits": 9,
         "synthesis_samples": [
-          0.00010451697744429111,
-          0.00016549904830753803,
-          9.962008334696293e-05
+          0.0001933799940161407,
+          0.00011358200572431087,
+          0.0001056739711202681
         ],
-        "synthesis_seconds": 0.00010451697744429111,
+        "synthesis_seconds": 0.00011358200572431087,
         "target": "complete_k9",
         "tier": "stabilizer",
         "two_qubit_gates": 36,
         "verdict": "INVALID",
         "verification_samples": [
-          0.0005411868914961815,
-          0.0005346760153770447,
-          0.0005371728911995888
+          0.0006297659710980952,
+          0.0008962489664554596,
+          0.0005945860175415874
         ],
-        "verification_seconds": 0.0005371728911995888
+        "verification_seconds": 0.0006297659710980952
       }
     ],
     "scheduler": {
@@ -12329,7 +12329,7 @@
               "+IZZXZIIIIIIIIIIIIIIIIIIIIIIIZIII"
             ]
           },
-          "synthesize_seconds": 0.01640438591130078
+          "synthesize_seconds": 0.01825158903375268
         },
         {
           "beta": 0.1,
@@ -12396,7 +12396,7 @@
               "+IZZXZZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
             ]
           },
-          "synthesize_seconds": 0.032100560842081904
+          "synthesize_seconds": 0.03526852000504732
         },
         {
           "beta": 0.1,
@@ -12466,7 +12466,7 @@
               "+ZZIXZZZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
             ]
           },
-          "synthesize_seconds": 0.07246428914368153
+          "synthesize_seconds": 0.08106050302740186
         }
       ],
       "task": "the Experiment E schedule measurement on a second graph source: Watts-Strogatz, which has triangles, odd cycles and a rewire-set degree distribution that neither the lattice nor the seeded tree has"
@@ -12664,7 +12664,7 @@
             "+IIZXIIIZIIIIIIII"
           ]
         },
-        "synthesize_seconds": 0.010642698034644127
+        "synthesize_seconds": 0.035340628994163126
       },
       {
         "busiest_qubits": [
@@ -12737,7 +12737,7 @@
             "+IIZXZIIIIIIIIZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
           ]
         },
-        "synthesize_seconds": 0.17199635109864175
+        "synthesize_seconds": 0.34676616796059534
       },
       {
         "busiest_qubits": [
@@ -12810,7 +12810,7 @@
             "+IIZXZIIIIIIIIIIIIIIIIIIZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
           ]
         },
-        "synthesize_seconds": 2.5615128420758992
+        "synthesize_seconds": 6.145834049966652
       },
       {
         "busiest_qubits": [
@@ -12883,7 +12883,7 @@
             "+IIZXZIIIIIIIIIIIIIIIIIIIIIIIIIIIIZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
           ]
         },
-        "synthesize_seconds": 13.940264141885564
+        "synthesize_seconds": 14.120967350027058
       },
       {
         "busiest_qubits": [
@@ -12961,7 +12961,7 @@
             "+IZIXIIIIIIIZIIIIIIIIIIIZI"
           ]
         },
-        "synthesize_seconds": 0.019076591124758124
+        "synthesize_seconds": 0.020373308972921222
       },
       {
         "busiest_qubits": [
@@ -13043,7 +13043,7 @@
             "+ZIIXIZZIIIZIIIZIIIZIIIIIIIIIIIIIIZIIIIIIZIIIIIZIIIIIIIIIZIIIIIII"
           ]
         },
-        "synthesize_seconds": 0.10016280179843307
+        "synthesize_seconds": 0.22751581895863637
       },
       {
         "busiest_qubits": [
@@ -13121,7 +13121,7 @@
             "+ZZZXZZZZZ"
           ]
         },
-        "synthesize_seconds": 0.007682617986574769
+        "synthesize_seconds": 0.014508826949167997
       }
     ],
     "timing": {
@@ -13134,7 +13134,7 @@
       "why": "a single wall clock at 400-900 qubits moves by tens of percent between runs on a loaded host, which is the size of the differences read off these columns; each phase is therefore timed three times on the same rebuilt circuit and the row quotes the median, with all three samples recorded beside it so the statistic is recomputable and the spread it hid is visible"
     }
   },
-  "generated_utc": "2026-10-31T12:16:15Z",
+  "generated_utc": "2026-11-10T11:12:48Z",
   "limitations": [
     "the construction space is a grammar of named wireings (chain, star, balanced binary tree, seeded random tree, ring), not a general synthesiser: the engine selects among constructions it knows how to build, and it cannot invent a topology that is not in the grammar",
     "two targets are specified (GHZ and a ring graph state); a third would need its own construction family, so 'synthesis from a specification' is demonstrated, not generalised",
@@ -13505,7 +13505,7 @@
             "reason": "2 of 400 generators do not stabilize the prepared state",
             "referee": "stim",
             "satisfied": 398,
-            "seconds": 0.07114643603563309,
+            "seconds": 0.0658014600048773,
             "verdict": "INVALID",
             "version": "1.16.0"
           },
@@ -13545,7 +13545,7 @@
             "reason": "2 of 400 generators do not stabilize the prepared state",
             "referee": "stim",
             "satisfied": 398,
-            "seconds": 0.08204707293771207,
+            "seconds": 0.06590640399372205,
             "verdict": "INVALID",
             "version": "1.16.0"
           },
@@ -13585,7 +13585,7 @@
             "reason": "2 of 400 generators do not stabilize the prepared state",
             "referee": "stim",
             "satisfied": 398,
-            "seconds": 0.06152904499322176,
+            "seconds": 0.07872215798124671,
             "verdict": "INVALID",
             "version": "1.16.0"
           },
@@ -13614,7 +13614,7 @@
             "reason": "every generator of the specification stabilizes the prepared state",
             "referee": "stim",
             "satisfied": 400,
-            "seconds": 0.2044176049530506,
+            "seconds": 0.07384054799331352,
             "verdict": "VALID",
             "version": "1.16.0"
           },
@@ -13639,7 +13639,7 @@
             "reason": "every generator of the specification stabilizes the prepared state",
             "referee": "stim",
             "satisfied": 900,
-            "seconds": 0.22547326190397143,
+            "seconds": 0.23562245903303847,
             "verdict": "VALID",
             "version": "1.16.0"
           },
@@ -13654,16 +13654,16 @@
     }
   },
   "reproducibility": {
-    "colouring_sha256": "1320de16134f9d3690d6866f31bedeb2c3d30aa2a99f920c90ffaf7f76d24a70",
+    "colouring_sha256": "f575d658047be8635dcea771c18491462ab91c8099c6aec3177ccbf23ad87567",
     "command": "python scripts/measure_vqc_synthesis.py --qubits 100",
-    "discovery_sha256": "f825dfd168704f1993f738a3ad740f6e4a044795fc19fa1339f460cdaed8b7f9",
-    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
+    "discovery_sha256": "ec894610a96b94431b26258b70d507f5cb025e2c0af968958cf27cca54e96596",
+    "equivalence_sha256": "cd9fd5b0e42bd412c82a7ca7c8eec13643a99157cbac935f059dd2bf11504b39",
     "placement_sha256": "38f255587e707020e31c945a899e82b7a3379e5fdc475ff62271683f19c514e5",
-    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
     "python": "3.12.3",
     "script_sha256": "5ff4130bcda34de78baec22231eefd2852918ebf7fd181bf767d1d86ffb27b26",
-    "stabilizer_sha256": "ba5d7235c965d824d024ce302429de79aad6111ba9a092478e6554315085d78c",
-    "synthesis_sha256": "dda189dc2be471c0c0cefa2ef0e7c1fab84d290ef018227f741442055a066f88"
+    "stabilizer_sha256": "0237e2bbcf8690f4753228b8a3b6e9121c1161c96eacdd3fae575685fd682b05",
+    "synthesis_sha256": "dae4e2cda833588c9a2681a8dd84384361ea3e2eda3e131bece5039396d126dc"
   },
   "schema": "apedp.vqc.synthesis.v3",
   "second_target": {
@@ -14127,7 +14127,7 @@
         "+IIZXZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
       ]
     },
-    "synthesize_seconds": 0.045373475179076195
+    "synthesize_seconds": 0.04271192796295509
   },
   "third_referee": {
     "abstained": 0,
@@ -14152,13 +14152,13 @@
           "checkers": [
             {
               "checker": "decision_diagram_alternating",
-              "equivalence": "equivalent",
-              "runtime": 0.000953221
+              "equivalence": "no_information",
+              "runtime": 0.0
             },
             {
               "checker": "zx",
-              "equivalence": "no_information",
-              "runtime": 0.0
+              "equivalence": "equivalent",
+              "runtime": 0.000263212
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14201,7 +14201,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.10764601803384721
+            0.02193477499531582
           ],
           "seed": null,
           "status": "compared",
@@ -14225,13 +14225,13 @@
           "checkers": [
             {
               "checker": "decision_diagram_alternating",
-              "equivalence": "equivalent",
-              "runtime": 6.6541e-05
+              "equivalence": "no_information",
+              "runtime": 0.0
             },
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.001745423
+              "runtime": 0.000239578
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14274,7 +14274,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.022734225960448384
+            0.0125326769775711
           ],
           "seed": null,
           "status": "compared",
@@ -14304,7 +14304,7 @@
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.000307894
+              "runtime": 0.000234922
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14347,7 +14347,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.005486426874995232
+            0.0061444739694707096
           ],
           "seed": null,
           "status": "compared",
@@ -14377,7 +14377,7 @@
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.000257033
+              "runtime": 0.000199955
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14420,7 +14420,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.010420502163469791
+            0.012461635051295161
           ],
           "seed": null,
           "status": "compared",
@@ -14450,7 +14450,7 @@
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.000302786
+              "runtime": 0.000221792
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14493,7 +14493,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.010190285975113511
+            0.011788135045208037
           ],
           "seed": null,
           "status": "compared",
@@ -14523,7 +14523,7 @@
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.000412896
+              "runtime": 0.000531983
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14566,7 +14566,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.010362080996856093
+            0.006825518968980759
           ],
           "seed": null,
           "status": "compared",
@@ -14596,7 +14596,7 @@
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.00566624
+              "runtime": 0.012283929
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14639,7 +14639,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.05395476915873587
+            0.08176112099317834
           ],
           "seed": null,
           "status": "compared",
@@ -14669,7 +14669,7 @@
             {
               "checker": "zx",
               "equivalence": "equivalent",
-              "runtime": 0.016368393
+              "runtime": 0.015800464
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14712,7 +14712,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.23855118919163942
+            0.20711047004442662
           ],
           "seed": null,
           "status": "compared",
@@ -14737,12 +14737,12 @@
             {
               "checker": "zx",
               "equivalence": "probably_not_equivalent",
-              "runtime": 0.000225748
+              "runtime": 0.000101708
             },
             {
               "checker": "decision_diagram_alternating",
               "equivalence": "not_equivalent",
-              "runtime": 0.000135711
+              "runtime": 0.000165919
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14751,8 +14751,8 @@
             },
             {
               "checker": "decision_diagram_simulation",
-              "equivalence": "not_equivalent",
-              "runtime": 0.002221678
+              "equivalence": "no_information",
+              "runtime": 0.0
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14790,7 +14790,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.009396552108228207
+            0.008828798949252814
           ],
           "seed": null,
           "status": "compared",
@@ -14815,12 +14815,12 @@
             {
               "checker": "zx",
               "equivalence": "probably_not_equivalent",
-              "runtime": 0.000212844
+              "runtime": 0.000198236
             },
             {
               "checker": "decision_diagram_alternating",
               "equivalence": "not_equivalent",
-              "runtime": 0.00014058
+              "runtime": 0.000160855
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14868,7 +14868,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.009434603853151202
+            0.0118330450495705
           ],
           "seed": null,
           "status": "compared",
@@ -14893,12 +14893,12 @@
             {
               "checker": "zx",
               "equivalence": "probably_not_equivalent",
-              "runtime": 0.001630094
+              "runtime": 0.000245186
             },
             {
               "checker": "decision_diagram_alternating",
               "equivalence": "not_equivalent",
-              "runtime": 0.000181978
+              "runtime": 0.000157834
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14908,22 +14908,7 @@
             {
               "checker": "decision_diagram_simulation",
               "equivalence": "not_equivalent",
-              "runtime": 0.000635654
-            },
-            {
-              "checker": "decision_diagram_simulation",
-              "equivalence": "not_equivalent",
-              "runtime": 0.001062854
-            },
-            {
-              "checker": "decision_diagram_simulation",
-              "equivalence": "not_equivalent",
-              "runtime": 0.000290671
-            },
-            {
-              "checker": "decision_diagram_simulation",
-              "equivalence": "not_equivalent",
-              "runtime": 0.000442804
+              "runtime": 0.000287131
             },
             {
               "checker": "decision_diagram_simulation",
@@ -14932,8 +14917,23 @@
             },
             {
               "checker": "decision_diagram_simulation",
-              "equivalence": "not_equivalent",
-              "runtime": 0.000317658
+              "equivalence": "no_information",
+              "runtime": 0.0
+            },
+            {
+              "checker": "decision_diagram_simulation",
+              "equivalence": "no_information",
+              "runtime": 0.0
+            },
+            {
+              "checker": "decision_diagram_simulation",
+              "equivalence": "no_information",
+              "runtime": 0.0
+            },
+            {
+              "checker": "decision_diagram_simulation",
+              "equivalence": "no_information",
+              "runtime": 0.0
             }
           ],
           "considered_equivalent": [
@@ -14946,7 +14946,7 @@
           "numerical_tolerance": 2.2737367544323206e-13,
           "repeats": 1,
           "seconds": [
-            0.012481159996241331
+            0.006347713002469391
           ],
           "seed": null,
           "status": "compared",

@@ -1,0 +1,491 @@
+{
+  "schema": "two_dof_saturation_fit/v1",
+  "generated_by": "scripts/measure_two_dof_saturation_fit.py",
+  "plant": {
+    "problem_id": "PLANT-2DOF-LANGMUIR",
+    "laws": [
+      "langmuir_bind",
+      "hill2_bind",
+      "hill3_bind"
+    ],
+    "parameters": {
+      "c": [
+        0.2,
+        0.15
+      ],
+      "a": [
+        2.0,
+        3.0
+      ],
+      "s": [
+        0.3,
+        0.45
+      ]
+    },
+    "note": "per mass: -c*v - a*x/(s+|x|) + u, both masses; the two reference levels differ so a shared scale would be wrong"
+  },
+  "slate": {
+    "raw_systems": 225,
+    "kept_after_gates_1_2": 225,
+    "laws_enumerated": [
+      "langmuir_bind",
+      "hill2_bind",
+      "hill3_bind"
+    ]
+  },
+  "fits": {
+    "langmuir_bind": {
+      "candidate_id": "mg2-0080",
+      "term_sets": [
+        [
+          "u",
+          "v",
+          "langmuir_bind"
+        ],
+        [
+          "u",
+          "v",
+          "langmuir_bind"
+        ]
+      ],
+      "train_loss": 0.00012444476304662903,
+      "holdout_rmse": 0.051639150459922706,
+      "nfev": 24,
+      "parameters_by_role": {
+        "dof0.input": {
+          "name": "q9",
+          "value": 0.960836
+        },
+        "dof0.damping": {
+          "name": "q10",
+          "value": -0.172119
+        },
+        "dof0.saturation": {
+          "name": "q11",
+          "value": -1.891676
+        },
+        "dof0.scale": {
+          "name": "s0_langmuir",
+          "value": 0.260495
+        },
+        "dof1.input": {
+          "name": "q52",
+          "value": 1.000065
+        },
+        "dof1.damping": {
+          "name": "q53",
+          "value": -0.149748
+        },
+        "dof1.saturation": {
+          "name": "q54",
+          "value": -2.911267
+        },
+        "dof1.scale": {
+          "name": "s1_langmuir",
+          "value": 0.427536
+        }
+      },
+      "gates": {
+        "gate1_status": {
+          "passed": true,
+          "detail": "4 equations dimensionally consistent"
+        },
+        "gate2_status": {
+          "passed": true,
+          "detail": "4 explicit first-order equations"
+        },
+        "dao_status": {
+          "passed": true,
+          "detail": "pure ODE mode; no DAE constraints"
+        },
+        "gate3_status": {
+          "passed": true,
+          "detail": "span (0.0, 8.0): ok"
+        },
+        "gate4_status": {
+          "passed": true,
+          "detail": "rmse 0.0516 <= tol 0.0857 (margin_ratio 0.603)"
+        }
+      },
+      "rejection_reason": null,
+      "multistart": {
+        "n_starts": 1,
+        "starts": [
+          "scale-1.0"
+        ]
+      }
+    },
+    "hill2_bind": {
+      "candidate_id": "mg2-0096",
+      "term_sets": [
+        [
+          "u",
+          "v",
+          "hill2_bind"
+        ],
+        [
+          "u",
+          "v",
+          "hill2_bind"
+        ]
+      ],
+      "train_loss": 0.9005968992603574,
+      "holdout_rmse": 9.653331258458381,
+      "nfev": 37,
+      "parameters_by_role": {
+        "dof0.input": {
+          "name": "q12",
+          "value": -0.371066
+        },
+        "dof0.damping": {
+          "name": "q13",
+          "value": 0.726725
+        },
+        "dof0.saturation": {
+          "name": "q14",
+          "value": 0.431747
+        },
+        "dof0.scale": {
+          "name": "s0_hill2",
+          "value": 0.422499
+        },
+        "dof1.input": {
+          "name": "q55",
+          "value": 0.261468
+        },
+        "dof1.damping": {
+          "name": "q56",
+          "value": -2.053405
+        },
+        "dof1.saturation": {
+          "name": "q57",
+          "value": -0.130058
+        },
+        "dof1.scale": {
+          "name": "s1_hill2",
+          "value": 9.638661
+        }
+      },
+      "gates": {
+        "gate1_status": {
+          "passed": true,
+          "detail": "4 equations dimensionally consistent"
+        },
+        "gate2_status": {
+          "passed": true,
+          "detail": "4 explicit first-order equations"
+        },
+        "dao_status": {
+          "passed": true,
+          "detail": "pure ODE mode; no DAE constraints"
+        },
+        "gate3_status": {
+          "passed": true,
+          "detail": "span (0.0, 8.0): ok"
+        },
+        "gate4_status": {
+          "passed": false,
+          "detail": "rmse 9.65 > tol 0.0857 (margin_ratio 113)"
+        }
+      },
+      "rejection_reason": null,
+      "multistart": {
+        "n_starts": 1,
+        "starts": [
+          "single"
+        ]
+      }
+    },
+    "hill3_bind": {
+      "candidate_id": "mg2-0112",
+      "term_sets": [
+        [
+          "u",
+          "v",
+          "hill3_bind"
+        ],
+        [
+          "u",
+          "v",
+          "hill3_bind"
+        ]
+      ],
+      "train_loss": 0.888034893577905,
+      "holdout_rmse": 1.346171254542421,
+      "nfev": 38,
+      "parameters_by_role": {
+        "dof0.input": {
+          "name": "q15",
+          "value": -0.048247
+        },
+        "dof0.damping": {
+          "name": "q16",
+          "value": 0.4752
+        },
+        "dof0.saturation": {
+          "name": "q17",
+          "value": -0.345045
+        },
+        "dof0.scale": {
+          "name": "s0_hill3",
+          "value": 1.024227
+        },
+        "dof1.input": {
+          "name": "q58",
+          "value": 0.233178
+        },
+        "dof1.damping": {
+          "name": "q59",
+          "value": -1.910675
+        },
+        "dof1.saturation": {
+          "name": "q60",
+          "value": -0.535575
+        },
+        "dof1.scale": {
+          "name": "s1_hill3",
+          "value": 195.412891
+        }
+      },
+      "gates": {
+        "gate1_status": {
+          "passed": true,
+          "detail": "4 equations dimensionally consistent"
+        },
+        "gate2_status": {
+          "passed": true,
+          "detail": "4 explicit first-order equations"
+        },
+        "dao_status": {
+          "passed": true,
+          "detail": "pure ODE mode; no DAE constraints"
+        },
+        "gate3_status": {
+          "passed": true,
+          "detail": "span (0.0, 8.0): ok"
+        },
+        "gate4_status": {
+          "passed": false,
+          "detail": "rmse 1.35 > tol 0.0857 (margin_ratio 15.7)"
+        }
+      },
+      "rejection_reason": null,
+      "multistart": {
+        "n_starts": 1,
+        "starts": [
+          "single"
+        ]
+      }
+    },
+    "linear_control": {
+      "candidate_id": "mg2-0016",
+      "term_sets": [
+        [
+          "u",
+          "v"
+        ],
+        [
+          "u",
+          "v"
+        ]
+      ],
+      "train_loss": 1.197712184587784,
+      "holdout_rmse": 0.9077319908550469,
+      "nfev": 42,
+      "parameters_by_role": {
+        "dof0.input": {
+          "name": "q1",
+          "value": -0.204924
+        },
+        "dof0.damping": {
+          "name": "q2",
+          "value": -0.273681
+        },
+        "dof1.input": {
+          "name": "q44",
+          "value": 0.505222
+        },
+        "dof1.damping": {
+          "name": "q45",
+          "value": -3.986519
+        }
+      },
+      "gates": {
+        "gate1_status": {
+          "passed": true,
+          "detail": "4 equations dimensionally consistent"
+        },
+        "gate2_status": {
+          "passed": true,
+          "detail": "4 explicit first-order equations"
+        },
+        "dao_status": {
+          "passed": true,
+          "detail": "pure ODE mode; no DAE constraints"
+        },
+        "gate3_status": {
+          "passed": true,
+          "detail": "span (0.0, 8.0): ok"
+        },
+        "gate4_status": {
+          "passed": false,
+          "detail": "rmse 0.908 > tol 0.0857 (margin_ratio 10.6)"
+        }
+      },
+      "rejection_reason": null
+    }
+  },
+  "recovery": {
+    "dof0.damping": {
+      "parameter": "q10",
+      "planted": 0.2,
+      "fitted": 0.172119,
+      "signed_fitted": -0.172119,
+      "relative_error": 0.1394
+    },
+    "dof0.saturation": {
+      "parameter": "q11",
+      "planted": 2.0,
+      "fitted": 1.891676,
+      "signed_fitted": -1.891676,
+      "relative_error": 0.0542
+    },
+    "dof0.scale": {
+      "parameter": "s0_langmuir",
+      "planted": 0.3,
+      "fitted": 0.260495,
+      "signed_fitted": 0.260495,
+      "relative_error": 0.1317
+    },
+    "dof1.damping": {
+      "parameter": "q53",
+      "planted": 0.15,
+      "fitted": 0.149748,
+      "signed_fitted": -0.149748,
+      "relative_error": 0.0017
+    },
+    "dof1.saturation": {
+      "parameter": "q54",
+      "planted": 3.0,
+      "fitted": 2.911267,
+      "signed_fitted": -2.911267,
+      "relative_error": 0.0296
+    },
+    "dof1.scale": {
+      "parameter": "s1_langmuir",
+      "planted": 0.45,
+      "fitted": 0.427536,
+      "signed_fitted": 0.427536,
+      "relative_error": 0.0499
+    }
+  },
+  "adjudication": {
+    "status": "unique_support",
+    "candidates": [
+      "mg2-0080",
+      "mg2-0096",
+      "mg2-0112"
+    ],
+    "detail": "nearest distinct rival separated by \u0394=1.29 > \u03c4=0.0429 [holdout-scale]; note: winner holdout residuals are structured (|rho1|=0.999 exceeds the 0.5 whiteness flag) \u2014 reported for the record, not enforced, since a structurally distinct rival was separated on this holdout"
+  },
+  "noise_sweep": [
+    {
+      "relative_noise": 0.0,
+      "train_loss": 0.00012444476304662903,
+      "holdout_rmse": 0.051639150459922706,
+      "scale_recovery": {
+        "dof0.scale": {
+          "planted": 0.3,
+          "fitted": 0.260495,
+          "relative_error": 0.1317
+        },
+        "dof1.scale": {
+          "planted": 0.45,
+          "fitted": 0.427536,
+          "relative_error": 0.0499
+        }
+      }
+    },
+    {
+      "relative_noise": 0.01,
+      "train_loss": 0.00010433833279642323,
+      "holdout_rmse": 0.010098838028401516,
+      "scale_recovery": {
+        "dof0.scale": {
+          "planted": 0.3,
+          "fitted": 0.291757,
+          "relative_error": 0.0275
+        },
+        "dof1.scale": {
+          "planted": 0.45,
+          "fitted": 0.452123,
+          "relative_error": 0.0047
+        }
+      }
+    },
+    {
+      "relative_noise": 0.03,
+      "train_loss": 0.0009084168256071675,
+      "holdout_rmse": 0.018854238237188802,
+      "scale_recovery": {
+        "dof0.scale": {
+          "planted": 0.3,
+          "fitted": 0.31486,
+          "relative_error": 0.0495
+        },
+        "dof1.scale": {
+          "planted": 0.45,
+          "fitted": 0.460527,
+          "relative_error": 0.0234
+        }
+      }
+    }
+  ],
+  "objective_floor": {
+    "note": "plant-seeded fit: the objective's floor, not what the search can find",
+    "train_loss": 4.771797117646207e-07,
+    "holdout_rmse": 0.001693576490685745,
+    "nfev": 17,
+    "warm_start_train_loss": 0.00012444476304662903,
+    "warm_start_over_floor": 260.8,
+    "recovery": {
+      "dof0.damping": {
+        "planted": 0.2,
+        "fitted": 0.199986,
+        "relative_error": 0.0001
+      },
+      "dof0.saturation": {
+        "planted": 2.0,
+        "fitted": 2.00008,
+        "relative_error": 0.0
+      },
+      "dof0.scale": {
+        "planted": 0.3,
+        "fitted": 0.299997,
+        "relative_error": 0.0
+      },
+      "dof1.damping": {
+        "planted": 0.15,
+        "fitted": 0.151169,
+        "relative_error": 0.0078
+      },
+      "dof1.saturation": {
+        "planted": 3.0,
+        "fitted": 3.001294,
+        "relative_error": 0.0004
+      },
+      "dof1.scale": {
+        "planted": 0.45,
+        "fitted": 0.449863,
+        "relative_error": 0.0003
+      }
+    }
+  },
+  "settings": {
+    "starts": 1,
+    "max_nfev": 100,
+    "noise_seed": 7
+  },
+  "wall_seconds": 18.28,
+  "limitations": "One planted law, one excitation design, one IC pair. The plant's structure is in the enumerated slate, so this measures the fitter and the binding, not the grammar's search power."
+}

@@ -3235,6 +3235,166 @@
       "timestamp": "2026-10-19T16:57:49.575201+00:00",
       "checks_passed": true,
       "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": null,
+      "to_state": "Draft",
+      "timestamp": "2026-11-07T17:20:34.437464+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Draft",
+      "to_state": "Candidate",
+      "timestamp": "2026-11-07T17:20:34.475806+00:00",
+      "checks_passed": true,
+      "evidence_id": "TOURNAMENT-ENTRY"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Candidate",
+      "to_state": "Retired",
+      "timestamp": "2026-11-07T17:20:34.516584+00:00",
+      "checks_passed": true,
+      "evidence_id": "REFUTED_BY_Evidence_Flaw_zero"
+    },
+    {
+      "model_name": "Model_H1_Regularized",
+      "from_state": null,
+      "to_state": "Candidate",
+      "timestamp": "2026-11-07T17:20:34.527822+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": null,
+      "to_state": "Draft",
+      "timestamp": "2026-11-07T20:23:28.579985+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Draft",
+      "to_state": "Candidate",
+      "timestamp": "2026-11-07T20:23:28.612468+00:00",
+      "checks_passed": true,
+      "evidence_id": "TOURNAMENT-ENTRY"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Candidate",
+      "to_state": "Retired",
+      "timestamp": "2026-11-07T20:23:28.624009+00:00",
+      "checks_passed": true,
+      "evidence_id": "REFUTED_BY_Evidence_Flaw_zero"
+    },
+    {
+      "model_name": "Model_H1_Regularized",
+      "from_state": null,
+      "to_state": "Candidate",
+      "timestamp": "2026-11-07T20:23:28.635257+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": null,
+      "to_state": "Draft",
+      "timestamp": "2026-11-10T07:09:33.636539+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Draft",
+      "to_state": "Candidate",
+      "timestamp": "2026-11-10T07:09:33.654718+00:00",
+      "checks_passed": true,
+      "evidence_id": "TOURNAMENT-ENTRY"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Candidate",
+      "to_state": "Retired",
+      "timestamp": "2026-11-10T07:09:33.701596+00:00",
+      "checks_passed": true,
+      "evidence_id": "REFUTED_BY_Evidence_Flaw_zero"
+    },
+    {
+      "model_name": "Model_H1_Regularized",
+      "from_state": null,
+      "to_state": "Candidate",
+      "timestamp": "2026-11-10T07:09:33.719458+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": null,
+      "to_state": "Draft",
+      "timestamp": "2026-11-10T11:14:49.714713+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Draft",
+      "to_state": "Candidate",
+      "timestamp": "2026-11-10T11:14:49.746576+00:00",
+      "checks_passed": true,
+      "evidence_id": "TOURNAMENT-ENTRY"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Candidate",
+      "to_state": "Retired",
+      "timestamp": "2026-11-10T11:14:49.773064+00:00",
+      "checks_passed": true,
+      "evidence_id": "REFUTED_BY_Evidence_Flaw_zero"
+    },
+    {
+      "model_name": "Model_H1_Regularized",
+      "from_state": null,
+      "to_state": "Candidate",
+      "timestamp": "2026-11-10T11:14:49.800026+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": null,
+      "to_state": "Draft",
+      "timestamp": "2026-11-10T17:07:58.489471+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Draft",
+      "to_state": "Candidate",
+      "timestamp": "2026-11-10T17:07:58.545730+00:00",
+      "checks_passed": true,
+      "evidence_id": "TOURNAMENT-ENTRY"
+    },
+    {
+      "model_name": "H1",
+      "from_state": "Candidate",
+      "to_state": "Retired",
+      "timestamp": "2026-11-10T17:07:58.579548+00:00",
+      "checks_passed": true,
+      "evidence_id": "REFUTED_BY_Evidence_Flaw_zero"
+    },
+    {
+      "model_name": "Model_H1_Regularized",
+      "from_state": null,
+      "to_state": "Candidate",
+      "timestamp": "2026-11-10T17:07:58.629034+00:00",
+      "checks_passed": true,
+      "evidence_id": "INIT"
     }
   ]
 }

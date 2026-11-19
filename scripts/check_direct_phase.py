@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Native regression checks for the experimental direct phase prototype."""
-from fractions import Fraction
 import unittest
-
-import kickmix as km
+from fractions import Fraction
 
 from prototype_direct_phase import build_direct, phase_words
+
+import kickmix as km
 
 
 class DirectPhaseTests(unittest.TestCase):
@@ -13,7 +13,7 @@ class DirectPhaseTests(unittest.TestCase):
         words = phase_words(15, 40)
         circuit = build_direct(words, 40)
         self.assertLessEqual(circuit.num_qubits, 50)
-        inputs = list(range(17)) + [32, 4096, 1 << 21, (1 << 22) - 1]
+        inputs = [*list(range(17)), 32, 4096, 1 << 21, (1 << 22) - 1]
         simulator = km.Simulator(batch_size=256)
         simulator.use_same_registers_as(circuit)
         scratch = km.array([km.q(i) for i in range(22, circuit.num_qubits)])

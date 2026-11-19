@@ -9,6 +9,9 @@ on out-of-sample holdout data with actual buy/sell execution, P&L, win/loss rate
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
+import os
 import sys
 import time
 from dataclasses import dataclass
@@ -27,10 +30,17 @@ from apedp_dyn.epistemic.claim_ladder import (
     EvidenceRequirement,
     adjudicate_scientific_claim,
 )
+from apedp_dyn.epistemic.experiment_ledger import (
+    DatasetRole,
+    FullLineageExperimentLedger,
+    fingerprint_holdout_slice,
+)
+from apedp_dyn.epistemic.lean_universal_bridge import LeanVerificationResult
 from apedp_dyn.epistemic.market_extrapolation import (
     evaluate_single_asset_market_ladder,
 )
 from apedp_dyn.epistemic.promotion_lifecycle import PromotionTracker
+from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
 from apedp_dyn.epistemic.trial_ledger import (
     CandidateTrialLedger,
     compute_deflated_sharpe_ratio,
@@ -75,7 +85,7 @@ def make_synthetic_dataset(n: int = 600, seed: int = 42) -> pd.DataFrame:
         # Cointegrated second asset with error correction
         pair[t] = 0.5 * p[t] + rng.normal(0, 2.0)
 
-    r = np.append(0.0, np.diff(np.log(p)))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(p)))
     # Estimate High and Low
     high = p * np.exp(np.abs(rng.normal(0, vol, size=n)))
     low = p * np.exp(-np.abs(rng.normal(0, vol, size=n)))
@@ -111,7 +121,7 @@ def load_real_btc_orderflow(limit: int = 600) -> pd.DataFrame:
 
     df = pd.DataFrame(rows[-limit:]).reset_index(drop=True)
     df["close"] = df["price"]
-    r = np.append(0.0, np.diff(np.log(df["price"].to_numpy(float))))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(df["price"].to_numpy(float))))
     df["r"] = r
 
     # Rolling synthetic High/Low from realized range
@@ -142,7 +152,7 @@ def load_real_sp500_dataset(limit: int = 600) -> pd.DataFrame:
 
     p = np.array(px[-limit:])
     n = len(p)
-    r = np.append(0.0, np.diff(np.log(p)))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(p)))
     vol = np.abs(r) * p * 1000.0 + 100.0
     vol_proxy = pd.Series(np.abs(r)).rolling(5, min_periods=1).mean().to_numpy()
 
@@ -364,7 +374,7 @@ def _feat_hurst(p: pd.DataFrame, window: int = 30) -> np.ndarray:
     out = np.full(len(r), np.nan)
     for t in range(window, len(r)):
         sub = r[t - window:t]
-        cum_dev = np.cumsum(sub - np.mean(sub))
+        cum_dev: np.ndarray = np.cumsum(sub - np.mean(sub))
         r_range = np.max(cum_dev) - np.min(cum_dev)
         s_std = np.std(sub)
         if s_std > 1e-9 and r_range > 1e-9:
@@ -430,7 +440,8 @@ def extract_all_22_features(panel: pd.DataFrame) -> np.ndarray:
             # whole 22-feature matrix; the failure IS the fallback.
             arr = np.zeros(len(panel))
         cols.append(np.nan_to_num(arr, nan=0.0))
-    return np.column_stack(cols)
+    _out: np.ndarray = np.column_stack(cols)
+    return _out
 
 
 # ── Backtest Simulator ────────────────────────────────────────────────────
@@ -560,6 +571,7 @@ def run_genetic_algorithm(
     seed: int = 42,
     ledger: CandidateTrialLedger | None = None,
     search_id: str = "ga_trading_signals",
+    search_metadata: dict[str, Any] | None = None,
 ) -> Chromosome:
     """Evolve multi-signal combinations across all 22 signals strictly on train split.
 
@@ -614,7 +626,7 @@ def run_genetic_algorithm(
                 in_sample_sharpe=sharpe,
                 n_bars=len(px_tr),
                 status="EVALUATED",
-                metadata={"search_id": search_id},
+                metadata={"search_id": search_id, **(search_metadata or {})},
             )
 
         if trades < 6:
@@ -677,7 +689,7 @@ def run_genetic_algorithm(
 
 
 # ── Full Tournament & Out-of-Sample Evaluation ────────────────────────────
-def run_all_signals_experiment(panel: pd.DataFrame, dataset_name: str, initial_capital: float = 10000.0):
+def run_all_signals_experiment(panel: pd.DataFrame, dataset_name: str, initial_capital: float = 10000.0) -> None:
     """Run full 22-signal standalone vs combination tournament on out-of-sample data."""
     n = len(panel)
     n_train = n // 2
@@ -805,6 +817,41 @@ def run_all_signals_experiment(panel: pd.DataFrame, dataset_name: str, initial_c
 
 
 # ── Epistemic Verification & AEH Harness Adjudication ──────────────────────
+#: Set to 1/true to make the sandbox journal its trials and holdout exposures to
+#: the deployment's persistent ledgers when the caller passes none. It is opt-in
+#: because the sandbox's ordinary use -- re-running one dataset with new seeds --
+#: is exactly what a persistent single-use holdout refuses.
+PERSISTENT_LEDGERS_ENV = "APEDP_SANDBOX_PERSISTENT_LEDGERS"
+
+
+def _resolve_sandbox_ledgers(
+    dataset_name: str,
+    trial_ledger: CandidateTrialLedger | None,
+    experiment_ledger: FullLineageExperimentLedger | None,
+) -> tuple[CandidateTrialLedger, FullLineageExperimentLedger]:
+    """Ledgers for one adjudication run: the caller's, the deployment's, or ephemeral.
+
+    A ledger the caller passes is used as given. Otherwise, with
+    ``APEDP_SANDBOX_PERSISTENT_LEDGERS`` set, the deployment's persistent
+    ledgers are opened (one trial family per dataset; one shared experiment
+    ledger, because a holdout is a resource shared by everything that could
+    inspect it). Otherwise both are in-memory, and the result says so.
+    """
+    persist = os.environ.get(PERSISTENT_LEDGERS_ENV, "").strip().lower() in {"1", "true", "yes"}
+    slug = "".join(ch if ch.isalnum() else "_" for ch in dataset_name.lower())
+    if trial_ledger is None:
+        trial_ledger = (
+            CandidateTrialLedger.from_env(f"trial_ledger_trading_{slug}.jsonl")
+            if persist
+            else CandidateTrialLedger()
+        )
+    if experiment_ledger is None:
+        experiment_ledger = (
+            FullLineageExperimentLedger.from_env() if persist else FullLineageExperimentLedger()
+        )
+    return trial_ledger, experiment_ledger
+
+
 def run_epistemic_trading_adjudication(
     df: pd.DataFrame | None = None,
     dataset_name: str = "btc_orderflow",
@@ -814,6 +861,8 @@ def run_epistemic_trading_adjudication(
     generations: int = 20,
     seed: int = 42,
     claimed_tier: ClaimLevel = ClaimLevel.C4_CAUSAL_MECHANISTIC,
+    trial_ledger: CandidateTrialLedger | None = None,
+    experiment_ledger: FullLineageExperimentLedger | None = None,
 ) -> dict[str, Any]:
     """Run epistemic verification of quantitative trading signals under the AEH harness.
 
@@ -822,6 +871,15 @@ def run_epistemic_trading_adjudication(
     Enforces that observational price series claiming C4 (Causal Alpha) trigger CLAIM_TARGET_MISMATCH
     and are calibrated via EEDR to C2 (Predictive Generalization) without evidence mutation,
     while overfitted models with negative Sharpe or excessive drawdown terminate in TERMINAL_ABSTAIN.
+
+    ``trial_ledger`` and ``experiment_ledger`` carry the search multiplicity and
+    the holdout's history across runs. The holdout half is claimed in the
+    experiment ledger, by content, *before* it is scored; with a persistent
+    ledger a second candidate on the same rows -- another seed, another split
+    name -- raises ``HoldoutContaminationError`` instead of being scored, and a
+    failed candidate burns the slice. Without persistent ledgers the run is
+    self-contained and its output reports ``ledger_persistent: False``: the
+    deflation and the holdout guard then cover this run only.
     """
     if panel is None:
         if df is not None:
@@ -850,12 +908,27 @@ def run_epistemic_trading_adjudication(
     )
 
     # 2. In-sample GA discovery (every fitness evaluation is charged as a trial)
-    trial_ledger = CandidateTrialLedger()
+    trial_ledger, experiment_ledger = _resolve_sandbox_ledgers(
+        dataset_name, trial_ledger, experiment_ledger
+    )
     search_id = f"ga_trading_signals:{dataset_name}:{seed}"
+    # The search is deterministic in (data, split, population, generations,
+    # seed). Replaying one that a persistent ledger already holds evaluates the
+    # same hypotheses again, so it is not charged twice; any change to those
+    # inputs is a new search and is charged in full.
+    search_fingerprint = hashlib.sha256(
+        json.dumps([harness.dataset_hash, n_train, pop_size, generations, seed]).encode()
+    ).hexdigest()[:16]
+    search_already_journaled = any(
+        rec.metadata.get("search_fingerprint") == search_fingerprint
+        for rec in trial_ledger.get_records()
+    )
     best_chrom = run_genetic_algorithm(
         X_tr, px_tr,
         pop_size=pop_size, generations=generations, seed=seed,
-        ledger=trial_ledger, search_id=search_id,
+        ledger=None if search_already_journaled else trial_ledger,
+        search_id=search_id,
+        search_metadata={"search_fingerprint": search_fingerprint},
     )
     active_idx = np.where(best_chrom.mask)[0]
     active_sigs = [SIGNAL_REGISTRY[i][0] for i in active_idx]
@@ -868,6 +941,46 @@ def run_epistemic_trading_adjudication(
         proposer_fn=lambda: f"GA_EVOLVED [{combo_str}] (thr={best_chrom.threshold:.3f})",
         claimed_tier=claimed_tier,
         metadata={"active_signals": active_sigs, "threshold": float(best_chrom.threshold)},
+    )
+
+    # 3b. Claim the holdout before looking at it. The candidate is identified by
+    # what it is (signals, weights, threshold), not by the dataset's name, so a
+    # different seed's winner is a different candidate; the slice is identified
+    # by its prices and row positions, so renaming it does not make it new.
+    formula_digest = hashlib.sha256(
+        json.dumps(
+            [
+                best_chrom.mask.astype(int).tolist(),
+                [float(f"{w:.12g}") for w in best_chrom.weights],
+                float(f"{best_chrom.threshold:.12g}"),
+            ]
+        ).encode()
+    ).hexdigest()[:12]
+    ledger_candidate_id = f"{cand_id}:{formula_digest}"
+    try:
+        experiment_ledger.get_candidate(ledger_candidate_id)
+    except KeyError:
+        experiment_ledger.register_candidate(
+            ledger_candidate_id,
+            proposer_id="ga_trading_signals",
+            formula=f"GA_EVOLVED [{combo_str}] (thr={best_chrom.threshold:.3f})",
+            feature_set=tuple(active_sigs),
+            parameter_choices={
+                "threshold": float(best_chrom.threshold),
+                "seed": float(seed),
+                "pop_size": float(pop_size),
+                "generations": float(generations),
+            },
+        )
+    experiment_ledger.record_data_exposure(
+        ledger_candidate_id, dataset_name, f"train_rows_0_{n_train}", DatasetRole.TRAINING_DEVELOPMENT,
+        outcome_status="PASSED",
+    )
+    holdout_slice_id = f"holdout_rows_{n_train}_{n}"
+    holdout_fingerprint = fingerprint_holdout_slice(px_ho, index=np.arange(n_train, n))
+    experiment_ledger.record_data_exposure(
+        ledger_candidate_id, dataset_name, holdout_slice_id, DatasetRole.CONFIRMATION_HOLDOUT,
+        outcome_status="IN_PROGRESS", fingerprint=holdout_fingerprint,
     )
 
     # 4. Out-of-Sample Holdout Evaluation & Market Extrapolation Ladder (ESEDS for Markets)
@@ -922,6 +1035,10 @@ def run_epistemic_trading_adjudication(
         "recorded_trials": trial_ledger.trial_count,
         "effective_trials": trial_ledger.effective_trial_count,
         "search_id": search_id,
+        # False means the count above is this run's search only: earlier runs
+        # on the same data were not charged.
+        "ledger_persistent": trial_ledger.is_persistent,
+        "search_replayed_from_ledger": search_already_journaled,
     }
     dsr_adjusted: float | None = None
     dsr_naive: float | None = None
@@ -954,17 +1071,42 @@ def run_epistemic_trading_adjudication(
     # candidate. GA strategies carry no Lean-verified law and no dimensional
     # analysis, so stage 1 refuses and the candidate halts there -- economic
     # validity (stage 5) is never reachable without mathematical consistency.
+    # Stage 1 is derived from a Lean result, and the honest one here is "there
+    # is none": no theorems, no proof.
     tracker = PromotionTracker(candidate_id=cand_id)
-    stage1 = tracker.verify_stage_1(
-        lean_status="P1_CANDIDATE",
-        dimensions_consistent=False,
-        bounded=bool(np.all(np.isfinite(best_chrom.weights))),
+    stage1 = tracker.verify_stage_1_from_lean(
+        LeanVerificationResult(
+            candidate_id=cand_id,
+            formula_repr=combo_str,
+            all_theorems_proven=False,
+            proof_claim_status=ProofClaimStatus.P0_NO_PROOF,
+            notes="GA-evolved signal combination: no Lean law or dimensional analysis exists.",
+        )
     )
     promotion_block = {
         "highest_stage_passed": int(tracker.highest_stage_passed),
         "is_halted": tracker.is_halted,
         "halt_reason": tracker.halt_reason,
         "stage_1_status": stage1.status_label,
+        "stage_1_evidence_source": stage1.evidence_source,
+    }
+
+    # 4e. Write the holdout's outcome back. A candidate that fails here burns
+    # the slice for every later candidate.
+    holdout_passed = bool(ga_sharpe > 0.0 and ga_max_dd <= 35.0)
+    experiment_ledger.record_data_exposure(
+        ledger_candidate_id, dataset_name, holdout_slice_id, DatasetRole.CONFIRMATION_HOLDOUT,
+        outcome_status="PASSED" if holdout_passed else "FAILED", fingerprint=holdout_fingerprint,
+    )
+    holdout_registration = {
+        "ledger_candidate_id": ledger_candidate_id,
+        "dataset_id": dataset_name,
+        "slice_identifier": holdout_slice_id,
+        "content_hash": holdout_fingerprint.content_hash,
+        "outcome": "PASSED" if holdout_passed else "FAILED",
+        # False means nothing stops the same rows being scored again in another
+        # process: the registration lasts only as long as this run.
+        "ledger_persistent": experiment_ledger.persistence_path is not None,
     }
 
     # 5. Formulate Evidence Bundle
@@ -986,10 +1128,11 @@ def run_epistemic_trading_adjudication(
         metadata={
             "market_ladder_highest_rung": market_ladder.highest_rung_passed.value,
             "trial_multiplicity": trial_multiplicity,
+            "holdout_registration": holdout_registration,
         },
     )
 
-    if ga_sharpe > 0.0 and ga_max_dd <= 35.0:
+    if holdout_passed:
         bundle.add(EvidenceRequirement.IN_SAMPLE_CONVERGENCE)
         bundle.add(EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT)
         if market_ladder.extrapolative_safe:
@@ -1069,6 +1212,7 @@ def run_epistemic_trading_adjudication(
         },
         "market_extrapolation_ladder": market_ladder.to_dict(),
         "trial_multiplicity": trial_multiplicity,
+        "holdout_registration": holdout_registration,
         "promotion_lifecycle": promotion_block,
         "candidates": cand_metrics,
         "epistemic_framework": {
@@ -1093,11 +1237,11 @@ def run_epistemic_trading_adjudication(
 
 # ── CLI Entrypoint ────────────────────────────────────────────────────────
 
-def main():
+def main() -> None:
     print("=" * 105)
     print("APEDP COMPREHENSIVE 22-SIGNAL UNIVERSE & GENETIC ALGORITHM SYSTEM")
     print(f"Total Registered Trading Signals: {len(SIGNAL_REGISTRY)}")
-    cats = {}
+    cats: dict[str, list[str]] = {}
     for sig_id, name, cat, _ in SIGNAL_REGISTRY:
         cats.setdefault(cat, []).append(f"{sig_id} ({name})")
     for cat, sigs in cats.items():

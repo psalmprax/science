@@ -1,0 +1,19 @@
+{
+  "patent_id": "US8642660B2",
+  "source": "https://patents.google.com/patent/US8642660B2/en",
+  "retrieved_utc": "2026-11-01T01:35:08+00:00",
+  "http_status": 200,
+  "bytes": 1304015,
+  "html_sha256": "d6622bb8fbe3ac69ad6a11248e3e144a4940d6b8752405836090fc6b80150969",
+  "jurisdiction": "US",
+  "title": "Method for altering the lifespan of eukaryotic organisms",
+  "abstract": "Abstract A method for altering the lifespan of a eukaryotic organism. The method comprises the steps of providing a lifespan altering compound, and administering an effective amount of the compound to a eukaryotic organism, such that the lifespan of the organism is altered. In one embodiment, the compound is identified using the DeaD assay.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A method for altering the lifespan of a eukaryotic organism comprising the steps of: a) providing a lifespan altering compound comprising scaffold c1: Figure US08642660-20140204-C00002 wherein the compound has an EC50 in a DeaD assay of 10 μM r less if tested in a DeaD assay; and b) administering an effective amount of the compound to a eukaryotic organism, such that the lifespan of the eukaryotic organism is altered, wherein the altered lifespan comprises an increase in lifespan."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "product lifetime accelerated aging model"
+}

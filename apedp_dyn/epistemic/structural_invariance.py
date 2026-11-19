@@ -142,7 +142,7 @@ def invariant_structure_verdict(
         raise ValueError("min_slices cannot exceed n_slices")
 
     shuffled = frame.iloc[np.random.RandomState(0).permutation(len(frame))].reset_index(drop=True)
-    bounds = np.linspace(0, len(shuffled), n_slices + 1).astype(int)
+    bounds: np.ndarray = np.linspace(0, len(shuffled), n_slices + 1).astype(int)
     results: list[SliceResult] = []
     for k in range(n_slices):
         sl = shuffled.iloc[bounds[k]:bounds[k + 1]].reset_index(drop=True)

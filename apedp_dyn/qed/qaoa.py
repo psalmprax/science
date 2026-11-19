@@ -31,6 +31,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -79,14 +80,15 @@ class Qubo:
         values += bits @ np.asarray(self.linear, dtype=float)
         for i, j, value in self.quadratic:
             values += value * bits[:, i] * bits[:, j]
-        return values
+        _out: np.ndarray = values
+        return _out
 
     def argmin(self) -> tuple[int, float]:
         values = self.energies()
         index = int(np.argmin(values))
         return index, float(values[index])
 
-    def rotations(self, depth: int) -> dict:
+    def rotations(self, depth: int) -> dict[str, Any]:
         """The rotations one layer of the phase separator plus mixer costs."""
         quadratic = len(self.quadratic)
         return {
@@ -134,8 +136,10 @@ def normalised(values: np.ndarray) -> np.ndarray:
     values = np.asarray(values, dtype=float)
     spread = float(values.max() - values.min())
     if spread <= 0:
-        return np.zeros_like(values)
-    return (values - values.min()) / spread
+        _out: np.ndarray = np.zeros_like(values)
+        return _out
+    _out = (values - values.min()) / spread
+    return _out
 
 
 def _apply_mixer(state: np.ndarray, beta: float, n: int) -> np.ndarray:
@@ -161,7 +165,7 @@ def qaoa_state(costs: np.ndarray, depth: int, angles: Sequence[float]) -> np.nda
         raise QuboRefusal(f"a diagonal cost needs a power-of-two length, got {costs.size}")
     if len(angles) != 2 * depth:
         raise QuboRefusal(f"depth {depth} needs {2 * depth} angles, got {len(angles)}")
-    state = np.full(costs.size, 1.0 / np.sqrt(costs.size), dtype=complex)
+    state: np.ndarray = np.full(costs.size, 1.0 / np.sqrt(costs.size), dtype=complex)
     for layer in range(depth):
         gamma = float(angles[2 * layer])
         beta = float(angles[2 * layer + 1])
@@ -226,7 +230,7 @@ class QaoaRun:
     probabilities: tuple[float, ...]
     samples: tuple[int, ...]
     candidates: tuple[int, ...]
-    rotations: dict
+    rotations: dict[str, Any]
 
     def probability_of(self, mask: int) -> float:
         return float(self.probabilities[mask])

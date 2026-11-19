@@ -1,6 +1,6 @@
 {
   "schema": "apedp.vqc.stabilizer_scaling.v1",
-  "generated_utc": "2026-10-31T03:06:14Z",
+  "generated_utc": "2026-11-10T10:40:48Z",
   "command": {
     "sizes": [
       100,
@@ -25,9 +25,9 @@
       "generators": 100,
       "tableau_label_bytes": 10000,
       "dense_amplitudes_log10": 30.103,
-      "build_seconds": 0.0074667129665613174,
-      "validate_seconds": 0.007291334914043546,
-      "sample_seconds_per_shot": 0.006939141894690692,
+      "build_seconds": 0.00816198397660628,
+      "validate_seconds": 0.006119146011769772,
+      "sample_seconds_per_shot": 0.010391420750238467,
       "shots": 8,
       "checks": {
         "generators match the closed form": true,
@@ -35,7 +35,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 168692
+      "peak_rss_kib": 170588
     },
     {
       "family": "ghz_star",
@@ -44,9 +44,9 @@
       "generators": 100,
       "tableau_label_bytes": 10000,
       "dense_amplitudes_log10": 30.103,
-      "build_seconds": 0.0039083820302039385,
-      "validate_seconds": 0.0068071039859205484,
-      "sample_seconds_per_shot": 0.008126755972625688,
+      "build_seconds": 0.004036572994664311,
+      "validate_seconds": 0.016747902962379158,
+      "sample_seconds_per_shot": 0.010578279870969709,
       "shots": 8,
       "checks": {
         "generators match the closed form": true,
@@ -54,7 +54,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 168692
+      "peak_rss_kib": 170588
     },
     {
       "family": "ring_graph_state",
@@ -63,9 +63,9 @@
       "generators": 100,
       "tableau_label_bytes": 10000,
       "dense_amplitudes_log10": 30.103,
-      "build_seconds": 0.007880586897954345,
-      "validate_seconds": 0.004702216014266014,
-      "sample_seconds_per_shot": 0.0022166014823596925,
+      "build_seconds": 0.008766857034061104,
+      "validate_seconds": 0.007094249012880027,
+      "sample_seconds_per_shot": 0.003910321625880897,
       "shots": 8,
       "checks": {
         "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
@@ -73,7 +73,7 @@
         "samples are distinct states of the support": true
       },
       "stabilised_generators": 100,
-      "peak_rss_kib": 168692
+      "peak_rss_kib": 170588
     },
     {
       "family": "random_clifford_layers",
@@ -82,16 +82,16 @@
       "generators": 100,
       "tableau_label_bytes": 10000,
       "dense_amplitudes_log10": 30.103,
-      "build_seconds": 0.03887550602667034,
-      "validate_seconds": 0.007455076090991497,
-      "sample_seconds_per_shot": 0.12217444938141853,
+      "build_seconds": 0.0671118670143187,
+      "validate_seconds": 0.012743503029923886,
+      "sample_seconds_per_shot": 0.19717593562381808,
       "shots": 8,
       "checks": {
         "tableau validates": true,
         "every generator is an exact eigenstate": true,
         "samples were produced": true
       },
-      "peak_rss_kib": 168820
+      "peak_rss_kib": 170716
     },
     {
       "family": "ghz_chain",
@@ -100,9 +100,9 @@
       "generators": 200,
       "tableau_label_bytes": 40000,
       "dense_amplitudes_log10": 60.206,
-      "build_seconds": 0.01648018811829388,
-      "validate_seconds": 0.015637406148016453,
-      "sample_seconds_per_shot": 0.022288123378530145,
+      "build_seconds": 0.035040036018472165,
+      "validate_seconds": 0.02259472501464188,
+      "sample_seconds_per_shot": 0.03692306837183423,
       "shots": 8,
       "checks": {
         "generators match the closed form": true,
@@ -110,7 +110,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 169332
+      "peak_rss_kib": 171228
     },
     {
       "family": "ghz_star",
@@ -119,9 +119,9 @@
       "generators": 200,
       "tableau_label_bytes": 40000,
       "dense_amplitudes_log10": 60.206,
-      "build_seconds": 0.015258549014106393,
-      "validate_seconds": 0.02979717100970447,
-      "sample_seconds_per_shot": 0.02169117660378106,
+      "build_seconds": 0.021407890017144382,
+      "validate_seconds": 0.04250538698397577,
+      "sample_seconds_per_shot": 0.03217965399380773,
       "shots": 8,
       "checks": {
         "generators match the closed form": true,
@@ -129,7 +129,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 169332
+      "peak_rss_kib": 171228
     },
     {
       "family": "ring_graph_state",
@@ -138,9 +138,9 @@
       "generators": 200,
       "tableau_label_bytes": 40000,
       "dense_amplitudes_log10": 60.206,
-      "build_seconds": 0.02486104890704155,
-      "validate_seconds": 0.014235551934689283,
-      "sample_seconds_per_shot": 0.007531585259130225,
+      "build_seconds": 0.03396795899607241,
+      "validate_seconds": 0.023326093971263617,
+      "sample_seconds_per_shot": 0.013982107753690798,
       "shots": 8,
       "checks": {
         "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
@@ -148,7 +148,7 @@
         "samples are distinct states of the support": true
       },
       "stabilised_generators": 200,
-      "peak_rss_kib": 169332
+      "peak_rss_kib": 171228
     },
     {
       "family": "random_clifford_layers",
@@ -157,16 +157,16 @@
       "generators": 200,
       "tableau_label_bytes": 40000,
       "dense_amplitudes_log10": 60.206,
-      "build_seconds": 0.178587696980685,
-      "validate_seconds": 0.024387813871726394,
-      "sample_seconds_per_shot": 0.9350282812374644,
+      "build_seconds": 0.30325443897163495,
+      "validate_seconds": 0.0356218860251829,
+      "sample_seconds_per_shot": 1.6713808608765248,
       "shots": 8,
       "checks": {
         "tableau validates": true,
         "every generator is an exact eigenstate": true,
         "samples were produced": true
       },
-      "peak_rss_kib": 169460
+      "peak_rss_kib": 171356
     },
     {
       "family": "ghz_chain",
@@ -175,9 +175,9 @@
       "generators": 500,
       "tableau_label_bytes": 250000,
       "dense_amplitudes_log10": 150.515,
-      "build_seconds": 0.09847252420149744,
-      "validate_seconds": 0.10208646301180124,
-      "sample_seconds_per_shot": 0.13649486494250596,
+      "build_seconds": 0.3685836609802209,
+      "validate_seconds": 0.18442354403669015,
+      "sample_seconds_per_shot": 0.2331038229749538,
       "shots": 1,
       "checks": {
         "generators match the closed form": true,
@@ -185,7 +185,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 172916
+      "peak_rss_kib": 174812
     },
     {
       "family": "ghz_star",
@@ -194,9 +194,9 @@
       "generators": 500,
       "tableau_label_bytes": 250000,
       "dense_amplitudes_log10": 150.515,
-      "build_seconds": 0.09932730300351977,
-      "validate_seconds": 0.18976742611266673,
-      "sample_seconds_per_shot": 0.13544400106184185,
+      "build_seconds": 0.16127716802293435,
+      "validate_seconds": 0.36979150195838884,
+      "sample_seconds_per_shot": 0.2966490909457207,
       "shots": 1,
       "checks": {
         "generators match the closed form": true,
@@ -204,7 +204,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 172928
+      "peak_rss_kib": 174812
     },
     {
       "family": "ring_graph_state",
@@ -213,9 +213,9 @@
       "generators": 500,
       "tableau_label_bytes": 250000,
       "dense_amplitudes_log10": 150.515,
-      "build_seconds": 0.16059616580605507,
-      "validate_seconds": 0.10334279504604638,
-      "sample_seconds_per_shot": 0.04710596916265786,
+      "build_seconds": 0.2996759670204483,
+      "validate_seconds": 0.17927917302586138,
+      "sample_seconds_per_shot": 0.08742776798317209,
       "shots": 1,
       "checks": {
         "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
@@ -223,7 +223,7 @@
         "samples are distinct states of the support": true
       },
       "stabilised_generators": 500,
-      "peak_rss_kib": 172932
+      "peak_rss_kib": 174812
     },
     {
       "family": "random_clifford_layers",
@@ -232,16 +232,16 @@
       "generators": 500,
       "tableau_label_bytes": 250000,
       "dense_amplitudes_log10": 150.515,
-      "build_seconds": 1.7148456359282136,
-      "validate_seconds": 0.15417615720070899,
-      "sample_seconds_per_shot": 15.517570446943864,
+      "build_seconds": 3.159203852992505,
+      "validate_seconds": 0.26020063599571586,
+      "sample_seconds_per_shot": 25.01043397601461,
       "shots": 1,
       "checks": {
         "tableau validates": true,
         "every generator is an exact eigenstate": true,
         "samples were produced": true
       },
-      "peak_rss_kib": 173416
+      "peak_rss_kib": 175288
     },
     {
       "family": "ghz_chain",
@@ -250,9 +250,9 @@
       "generators": 1000,
       "tableau_label_bytes": 1000000,
       "dense_amplitudes_log10": 301.03,
-      "build_seconds": 0.4273361589293927,
-      "validate_seconds": 0.4045926248654723,
-      "sample_seconds_per_shot": 0.6319064700510353,
+      "build_seconds": 0.853565463970881,
+      "validate_seconds": 0.7295360070420429,
+      "sample_seconds_per_shot": 1.2814873160095885,
       "shots": 1,
       "checks": {
         "generators match the closed form": true,
@@ -260,7 +260,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 185604
+      "peak_rss_kib": 187424
     },
     {
       "family": "ghz_star",
@@ -269,9 +269,9 @@
       "generators": 1000,
       "tableau_label_bytes": 1000000,
       "dense_amplitudes_log10": 301.03,
-      "build_seconds": 0.43889038101769984,
-      "validate_seconds": 0.8479954639915377,
-      "sample_seconds_per_shot": 0.6235619329381734,
+      "build_seconds": 0.8879526070086285,
+      "validate_seconds": 1.3994301779894158,
+      "sample_seconds_per_shot": 1.308663976029493,
       "shots": 1,
       "checks": {
         "generators match the closed form": true,
@@ -279,7 +279,7 @@
         "every sample has even weight": true,
         "tableau validates": true
       },
-      "peak_rss_kib": 185620
+      "peak_rss_kib": 187448
     },
     {
       "family": "ring_graph_state",
@@ -288,9 +288,9 @@
       "generators": 1000,
       "tableau_label_bytes": 1000000,
       "dense_amplitudes_log10": 301.03,
-      "build_seconds": 0.7287911658640951,
-      "validate_seconds": 0.43269464396871626,
-      "sample_seconds_per_shot": 0.2658501418773085,
+      "build_seconds": 1.6727419249946252,
+      "validate_seconds": 0.5879013129742816,
+      "sample_seconds_per_shot": 0.4521819709916599,
       "shots": 1,
       "checks": {
         "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
@@ -298,7 +298,7 @@
         "samples are distinct states of the support": true
       },
       "stabilised_generators": 1000,
-      "peak_rss_kib": 185628
+      "peak_rss_kib": 187476
     },
     {
       "family": "random_clifford_layers",
@@ -307,16 +307,16 @@
       "generators": 1000,
       "tableau_label_bytes": 1000000,
       "dense_amplitudes_log10": 301.03,
-      "build_seconds": 11.519803358940408,
-      "validate_seconds": 0.7288627868983895,
-      "sample_seconds_per_shot": 133.65884102298878,
+      "build_seconds": 18.379052821022924,
+      "validate_seconds": 1.0422052099602297,
+      "sample_seconds_per_shot": 216.89219972398132,
       "shots": 1,
       "checks": {
         "tableau validates": true,
         "every generator is an exact eigenstate": true,
         "samples were produced": true
       },
-      "peak_rss_kib": 186808
+      "peak_rss_kib": 188664
     }
   ],
   "equivalence_at_scale": [
@@ -327,7 +327,7 @@
         "gates": 822,
         "verdict": "VALID",
         "mismatched": 0,
-        "seconds": 0.02978130802512169
+        "seconds": 0.03458186599891633
       },
       "mutated": {
         "gates": 750,
@@ -338,7 +338,7 @@
           "reference": "+IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX",
           "candidate": "-IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX"
         },
-        "seconds": 0.02537040109746158
+        "seconds": 0.02992609702050686
       }
     },
     {
@@ -348,7 +348,7 @@
         "gates": 8190,
         "verdict": "VALID",
         "mismatched": 0,
-        "seconds": 1.468610516982153
+        "seconds": 2.157867657020688
       },
       "mutated": {
         "gates": 7500,
@@ -359,7 +359,7 @@
           "reference": "+IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX",
           "candidate": "-IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX"
         },
-        "seconds": 1.6135544311255217
+        "seconds": 3.200922082993202
       }
     }
   ],
@@ -374,7 +374,7 @@
         "verdict": "INVALID",
         "mismatched": 196
       },
-      "seconds": 0.025171750923618674
+      "seconds": 0.05238338198978454
     },
     {
       "qubits": 1000,
@@ -386,7 +386,7 @@
         "verdict": "INVALID",
         "mismatched": 1996
       },
-      "seconds": 2.5030974401161075
+      "seconds": 5.233210880018305
     }
   ],
   "checks": [
@@ -448,10 +448,10 @@
   ],
   "reproducibility": {
     "script_sha256": "7f8a30141670da1e8003ec6b4fb750ddff8a33b37be6c380775cd993cc86e5b0",
-    "module_sha256": "ba5d7235c965d824d024ce302429de79aad6111ba9a092478e6554315085d78c",
-    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
+    "module_sha256": "0237e2bbcf8690f4753228b8a3b6e9121c1161c96eacdd3fae575685fd682b05",
+    "equivalence_sha256": "cd9fd5b0e42bd412c82a7ca7c8eec13643a99157cbac935f059dd2bf11504b39",
     "python": "3.12.3",
-    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
     "command": "python scripts/measure_vqc_stabilizer_scaling.py --sizes 100 200 500 1000 --shots 8 --seed 20261030"
   },
   "verdict": "the stabilizer tier builds, validates, samples and adjudicates Clifford circuits at every size measured, and the two circuits of each pair are decided from 2n images with no matrix"

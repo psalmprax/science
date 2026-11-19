@@ -1,0 +1,111 @@
+{
+  "engine": "kickmix",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+  "kickmix_role": "local rebuild with MR (scripts/build_kickmix_mr.py); not the pinned competition binary and not eligible for a receipt",
+  "degree": 12,
+  "measure": "every Toffoli of one GF(2^12) scaffold division and inverse call, attributed to the engine's own tags, span by span; then the per-shot bill re-decomposed from the measured product count and re-priced at the 2n-1 AND bound",
+  "calls": {
+    "init_gf2_div_with_scaffold": {
+      "call": "init_gf2_div_with_scaffold",
+      "toffolis": 378,
+      "ccx": 378,
+      "ops": {
+        "R": 72,
+        "CX": 3288,
+        "SWAP": 179,
+        "CCX": 378,
+        "INFO_TAG": 138
+      },
+      "qubits": 96,
+      "gf_mul_calls": 6,
+      "gf_mul_sizes": [
+        63,
+        63,
+        63,
+        63,
+        63,
+        63
+      ],
+      "c_gf_mul_calls": 0,
+      "c_gf_mul_sizes": [],
+      "gf_unmul_calls": 0,
+      "multiply_toffolis": 378,
+      "non_multiply_toffolis": 0
+    },
+    "init_gf2_inverse_with_scaffold": {
+      "call": "init_gf2_inverse_with_scaffold",
+      "toffolis": 315,
+      "ccx": 315,
+      "ops": {
+        "R": 60,
+        "CX": 2807,
+        "SWAP": 158,
+        "CCX": 315,
+        "INFO_TAG": 122
+      },
+      "qubits": 84,
+      "gf_mul_calls": 5,
+      "gf_mul_sizes": [
+        63,
+        63,
+        63,
+        63,
+        63
+      ],
+      "c_gf_mul_calls": 0,
+      "c_gf_mul_sizes": [],
+      "gf_unmul_calls": 0,
+      "multiply_toffolis": 315,
+      "non_multiply_toffolis": 0
+    }
+  },
+  "pricing": {
+    "per_shot_bill_toffolis": 46656.0,
+    "division_share_of_the_term": 0.847694440457351,
+    "per_call_toffolis": 378,
+    "primitive_cost_record_toffolis": 378.0,
+    "calls_per_shot": 123.42857142857143,
+    "products_per_call": 6,
+    "ands_per_product": 63,
+    "products_per_shot": 740.5714285714286,
+    "bill_rebuilds_from_the_measurement": 46656.0,
+    "assumption_it_replaces": {
+      "products_per_shot": 864,
+      "ands_per_product": 54,
+      "bill": 46656,
+      "product_count_ratio": 0.8571428571428571
+    },
+    "at_the_and_bound": {
+      "ands": 23,
+      "division_and_forney_toffolis": 55038.7,
+      "products_in_that_term_assumed": 1019.2351851851852,
+      "products_in_that_term_measured": 873.6301587301587,
+      "division_toffolis_assumed": 23442.409259259257,
+      "division_toffolis_measured": 20093.49365079365,
+      "difference_toffolis": 3348.915608465606,
+      "in_place_corrected": {
+        "multiply_toffolis": 120849.66666666667,
+        "division_toffolis": 20093.49365079365,
+        "products_toffolis": 140943.1603174603,
+        "t_mean_toffolis": 440896.3603174603,
+        "vs_target": 0.9902687388230783
+      },
+      "in_place_as_recorded": {
+        "multiply_toffolis": 120849.66666666667,
+        "division_toffolis": 23442.409259259257,
+        "products_toffolis": 144292.07592592592,
+        "t_mean_toffolis": 444245.27592592593,
+        "vs_target": 0.9977905211159335
+      },
+      "materialised_corrected": {
+        "multiply_toffolis": 183901.66666666666,
+        "division_toffolis": 20093.49365079365,
+        "products_toffolis": 203995.1603174603,
+        "t_mean_toffolis": 503948.3603174603,
+        "vs_target": 1.131885749395166
+      }
+    }
+  },
+  "verdict": "one division call is 6 gf_mul calls of 63 Toffolis each and nothing else, so the measured 46,656 per-shot bill is 740.6 products, not 864 of 54. The bill is unchanged -- it is the measured total either way -- but at the 23-AND bound the division term is 20,093.5 Toffolis rather than 23,442.4, which moves the in-place row from T 444,245.3 to 440,896.4 (0.9903x the target)"
+}

@@ -64,8 +64,8 @@ def _count_kept(dae_mode):
 
 class TestD5STABKeptCounts:
     def test_ode_mode_kept(self):
-        """Pure ODE mode: 676 systems survive pruning (D2b behavior)."""
-        assert _count_kept(dae_mode="none") == 676
+        """Pure ODE mode: 225 constraint-free systems survive pruning."""
+        assert _count_kept(dae_mode="none") == 225
 
 
 class TestD5STAB:

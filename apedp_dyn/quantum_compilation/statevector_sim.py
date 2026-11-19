@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import dataclasses
 import math
+from typing import Any
 
 import numpy as np
 
@@ -71,7 +72,7 @@ class Branch:
     probability: float
     state: np.ndarray
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "bits": [bool(bit) for bit in self.bits],
             "probability": float(self.probability),
@@ -90,7 +91,7 @@ class StatevectorSimulator:
                 f"this tier is for gadgets, not for the decoder"
             )
         self.num_qubits = int(num_qubits)
-        self.state = np.zeros(1 << self.num_qubits, dtype=np.complex128)
+        self.state: np.ndarray = np.zeros(1 << self.num_qubits, dtype=np.complex128)
         self.state[0] = 1.0
         self.bits: dict[int, bool] = {}
 
@@ -105,7 +106,7 @@ class StatevectorSimulator:
         self.state[:] = 0.0
         self.state[int(value)] = 1.0
 
-    def set_state(self, amplitudes) -> None:
+    def set_state(self, amplitudes: Any) -> None:
         vector = np.asarray(amplitudes, dtype=np.complex128).reshape(-1)
         if vector.size != self.state.size:
             raise ValueError(f"expected {self.state.size} amplitudes, got {vector.size}")
@@ -115,7 +116,7 @@ class StatevectorSimulator:
         self.state[:] = vector
 
     # -- one-qubit and two-qubit gates ------------------------------------
-    def _axis(self, qubit: int):
+    def _axis(self, qubit: int) -> Any:
         """The state as ``(higher qubits, this qubit, lower qubits)``.
 
         The basis index is ``sum(bit_i << i)``, so qubit ``q`` is the middle axis of
@@ -123,7 +124,7 @@ class StatevectorSimulator:
         """
         return self.state.reshape(self.state.size >> (qubit + 1), 2, 1 << qubit)
 
-    def apply_matrix(self, qubit: int, matrix) -> None:
+    def apply_matrix(self, qubit: int, matrix: Any) -> None:
         """Apply a 2x2 unitary to `qubit`."""
         if not 0 <= qubit < self.num_qubits:
             raise IndexError(f"qubit {qubit} out of range")
@@ -153,11 +154,11 @@ class StatevectorSimulator:
     def ccx(self, control0: int, control1: int, target: int) -> None:
         self._xor_into(control0, target, [(control0, control1)])
 
-    def _xor_into(self, control: int, target: int, controls) -> None:
+    def _xor_into(self, control: int, target: int, controls: Any) -> None:
         if control == target:
             raise ValueError("control and target must differ")
         index = np.arange(self.state.size)
-        mask = np.ones(self.state.size, dtype=bool)
+        mask: np.ndarray = np.ones(self.state.size, dtype=bool)
         for group in controls:
             for c in group:
                 mask &= ((index >> c) & 1).astype(bool)
@@ -225,7 +226,7 @@ class StatevectorSimulator:
         return bool(outcome)
 
     # -- op-list execution with exact branching ---------------------------
-    def apply_op(self, op) -> bool | None:
+    def apply_op(self, op: Any) -> bool | None:
         """Apply one op; return the measurement outcome if it measured."""
         kind = op[0]
         if kind == "gate":
@@ -253,9 +254,9 @@ class StatevectorSimulator:
             return None
         raise ValueError(f"unknown op {kind!r}")
 
-    def branches(self, ops, *, max_branches: int = 64) -> list[Branch]:
+    def branches(self, ops: Any, *, max_branches: int = 64) -> list[Branch]:
         """Every measurement outcome, with its weight and its post-state."""
-        pending: list[tuple[tuple[bool, ...], float, np.ndarray, dict[int, bool], list]] = [
+        pending: list[tuple[tuple[bool, ...], float, np.ndarray, dict[int, bool], list[Any]]] = [
             ((), 1.0, self.state.copy(), dict(self.bits), list(ops))
         ]
         finished: list[Branch] = []
@@ -278,7 +279,7 @@ class StatevectorSimulator:
                         child.measure_and_reset(qubit, outcome=outcome)
                         child.bits[bit_index] = outcome
                         rest = remaining[position + 1:]
-                        pending.append((bits + (outcome,), probability * weight,
+                        pending.append(((*bits, outcome), probability * weight,
                                         child.state.copy(), dict(child.bits),
                                         list(rest)))
                         if len(pending) + len(finished) > max_branches:
@@ -299,7 +300,7 @@ class StatevectorSimulator:
         return finished
 
 
-def global_phase_free_equality(left, right, *, tolerance: float = 1e-9) -> bool:
+def global_phase_free_equality(left: Any, right: Any, *, tolerance: float = 1e-9) -> bool:
     """Whether two statevectors are equal up to one global phase."""
     a = np.asarray(left, dtype=np.complex128).reshape(-1)
     b = np.asarray(right, dtype=np.complex128).reshape(-1)
@@ -312,7 +313,7 @@ def global_phase_free_equality(left, right, *, tolerance: float = 1e-9) -> bool:
     return bool(np.allclose(b, overlap / magnitude * a, atol=tolerance, rtol=0.0))
 
 
-def fidelity(reference, branches) -> float:
+def fidelity(reference: Any, branches: Any) -> float:
     """``sum_i p_i * |<reference|psi_i>|^2``: how much of `reference` the mixture keeps.
 
     The gated circuit is a channel, not a unitary: a measurement makes it a
@@ -328,7 +329,7 @@ def fidelity(reference, branches) -> float:
     return float(total)
 
 
-def dimension_report(num_qubits: int, *, bytes_per_amplitude: int = 16) -> dict:
+def dimension_report(num_qubits: int, *, bytes_per_amplitude: int = 16) -> dict[str, Any]:
     """What an amplitude-level treatment of `num_qubits` would cost, in arithmetic.
 
     Reported on a log10 scale as well as a float, because the decoder's 1,913 qubits
@@ -336,7 +337,7 @@ def dimension_report(num_qubits: int, *, bytes_per_amplitude: int = 16) -> dict:
     of amplitudes, not that it has a value.
     """
     log10_amplitudes = num_qubits * math.log10(2.0)
-    report = {
+    report: dict[str, Any] = {
         "num_qubits": int(num_qubits),
         "log10_amplitudes": log10_amplitudes,
         "log10_bytes_at_16_per_amplitude": log10_amplitudes + math.log10(bytes_per_amplitude),

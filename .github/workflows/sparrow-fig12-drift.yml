@@ -1,0 +1,74 @@
+name: Figure 12 drift
+
+on:
+  push:
+    # Every branch, matching .github/workflows/test.yml: work on `stage` went
+    # uncovered once already.
+    branches: ['**']
+    paths:
+      - 'apedp_dyn/quantum/sparrow_photonics.py'
+      - 'apedp_dyn/quantum/dqi_photonic_resource.py'
+      - 'scripts/digitise_fig12_cycle.py'
+      - 'scripts/check_fig12_drift.py'
+      - 'tests/test_dyn_sparrow_deterministic_photonics.py'
+      - '.github/workflows/sparrow-fig12-drift.yml'
+  pull_request:
+    paths:
+      - 'apedp_dyn/quantum/sparrow_photonics.py'
+      - 'apedp_dyn/quantum/dqi_photonic_resource.py'
+      - 'scripts/digitise_fig12_cycle.py'
+      - 'scripts/check_fig12_drift.py'
+      - 'tests/test_dyn_sparrow_deterministic_photonics.py'
+      - '.github/workflows/sparrow-fig12-drift.yml'
+  schedule:
+    # Weekly, so a replaced preprint is noticed even with no commits.
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fig12-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fig12-drift:
+    name: Digitised Fig. 12(a) points match the pinned extraction
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install poppler and imaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+          python -m pip install --upgrade numpy pillow
+
+      - name: Cache the blueprint PDF
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sparrow
+          key: arxiv-2507.16152v2
+
+      - name: Fetch the blueprint PDF
+        run: |
+          mkdir -p ~/.cache/sparrow
+          pdf="$HOME/.cache/sparrow/2507.16152v2.pdf"
+          if [ ! -s "$pdf" ]; then
+            curl -sSL --retry 3 --retry-delay 5 -o "$pdf" https://arxiv.org/pdf/2507.16152v2
+          fi
+          # Never let a truncated download reach the digitizer: it would be reported
+          # as a detection failure rather than the network problem it is.
+          test -s "$pdf" || { echo "could not fetch 2507.16152v2"; exit 1; }
+          size=$(wc -c < "$pdf")
+          echo "pdf bytes: $size"
+          test "$size" -gt 200000 || { echo "pdf too small, download likely failed"; exit 1; }
+
+      - name: Check digitised points against the pins
+        run: python3 scripts/check_fig12_drift.py --pdf "$HOME/.cache/sparrow/2507.16152v2.pdf"

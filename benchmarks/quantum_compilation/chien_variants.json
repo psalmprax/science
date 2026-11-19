@@ -1,0 +1,56 @@
+{
+  "script": "scripts/emit_chien_variants.py",
+  "reference": "scripts/emit_chien_forney_stage.py, scripts/emit_uncompute_pass.py",
+  "class": "measured variants for a block of positions; the sweep is a projection",
+  "positions": 4095,
+  "measured": {
+    "batch_inversion_block": {
+      "positions": 8,
+      "products": 21,
+      "toffolis": 1638,
+      "toffolis_per_position": 204.75,
+      "qubits": 420,
+      "per_product_toffolis": 63.0,
+      "projected_to_4095": 774081.0
+    },
+    "gated_block": {
+      "positions": 8,
+      "toffolis": 2520,
+      "toffolis_per_position": 315.0,
+      "qubits": 96,
+      "projected_if_every_position_live": 1289925.0,
+      "projected_with_at_most_t_live": 11025.0
+    }
+  },
+  "remainder": 83809.33000000002,
+  "variants": {
+    "unconditional_per_position": {
+      "toffolis": 1289925.0,
+      "fits_remainder": false,
+      "ratio_to_remainder": 15.39118616029981
+    },
+    "shared_single_inversion": {
+      "toffolis": 774081.0,
+      "fits_remainder": false,
+      "ratio_to_remainder": 9.236215108747437,
+      "saving_vs_unconditional": 1.6663953772279645
+    },
+    "runtime_gated_blocks": {
+      "toffolis": 11025.0,
+      "fits_remainder": true,
+      "fraction_of_remainder": 0.13154859966068214,
+      "assumption": "at most t = deg(sigma) <= 35 of the 4,095 positions have a zero locator value, which is what T_mean averages over shots"
+    }
+  },
+  "runtime_conditioned_total": {
+    "key_equation": 313110.0,
+    "coefficient_sweep": 0,
+    "forney_gated": 11025.0,
+    "uncompute_measure_based": 0,
+    "total": 324135.0,
+    "archive_toffolis": 396919.33,
+    "archive_over_measured": 1.2245494315640089,
+    "conclusion": "with the locator gated to at most t live positions and the adjoint replaced by a Z-basis clear, the packed decoder totals 324,135 Toffolis -- 1.22x *below* the archive's 396,919. The archive is therefore consistent with this construction once the cost is read as T_mean (executed gates averaged over shots) rather than a static count, and the static count (1,916,145) is consistent with nothing in the archive at all"
+  },
+  "not_measurable": "the measure-based uncompute is priced at 0 Toffolis by construction: a Z-basis clear emits no AND. kickmix has no `mr`, so the circuit that contains it cannot be counted here; `local_mr_sim` runs `mr` but reports values and phases, not gates"
+}
