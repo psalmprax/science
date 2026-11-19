@@ -77,8 +77,8 @@ three preregistered expectations missed.
   is lagged. The "GA" arms are a genetic search over columns of a hand-built
   library that contains the true interaction, now named as such. Tests pin
   that each row's `engine_class` is the engine the script constructed.
-- **M-06 the holdout spends its rows where rivals agree — ADDRESSED BY A NEW
-  PROCEDURE, UNPROVEN.** M-02's abstentions come from comparing rivals on a
+- **M-06 the holdout spends its rows where rivals agree — ADDRESSED; TESTED
+  2026-11-19 (PREREG-CONTRAST-2026-11: three of four expectations held).** M-02's abstentions come from comparing rivals on a
   random holdout, where a small term barely moves the error.
   `discovery_l2/contrast_confirmation.py` compares them on rows chosen (from
   inputs alone) where they disagree. Development study on already-seen laws,
@@ -90,6 +90,14 @@ three preregistered expectations missed.
   a known noise model, and laws linear in their coefficients. Next: a
   preregistered run on fresh laws with a random-rows control arm at the same
   row count.
+  **Preregistered result** on 40 fresh laws, 80 runs: true law uniquely
+  confirmed 63 (random-rows control 54, paired p = 0.002; referee promoted it
+  in 28 and a wrong law in 5); wrong law named alone 0; true law refuted 2.
+  Missed: with the truth removed it said `no_survivor` in 61 of 80 (expected
+  at least 64) and named a wrong law alone in 19 (expected at most 4), mostly
+  a rival that was indistinguishable from the truth on the domain. `unique`
+  is relative to the candidates given; only `no_survivor` says anything about
+  the search space. `preregistration/RESULT-CONTRAST-2026-11.md`.
 - **M-07 the ODE path differentiates noisy data — PARTLY ADDRESSED.**
   `ode/weak_form.py` integrates instead. On the Lorenz world (20 seeds,
   development study) its coefficients are much better up to 5 % noise, but

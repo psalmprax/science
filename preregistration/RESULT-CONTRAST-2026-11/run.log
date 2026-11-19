@@ -1,0 +1,23 @@
+{
+ "runs": 80,
+ "truth_among_candidates": 80,
+ "referee_promoted_truth": 28,
+ "contrast_unique_truth": 63,
+ "contrast_truth_in_class": 78,
+ "contrast_wrong_law_alone": 0,
+ "contrast_no_survivor": 2,
+ "random_unique_truth": 54,
+ "random_truth_in_class": 77,
+ "random_wrong_law_alone": 0,
+ "random_no_survivor": 3,
+ "paired_only_contrast": 9,
+ "paired_only_random": 0,
+ "paired_sign_test_p": 0.001953125,
+ "truth_removed_no_survivor": 61,
+ "truth_removed_wrong_law_alone": 19,
+ "truth_removed_equivalent_class": 0,
+ "median_rows_read": {
+  "contrast": 60.0,
+  "random": 222.5
+ }
+}

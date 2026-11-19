@@ -454,6 +454,11 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Contrast confirmation tested on fresh laws: PREREG-CONTRAST-2026-11 (2026-11-19).** Frozen, then
+  run once: true law uniquely confirmed in 63 of 80 runs (random-rows control 54, paired p = 0.002;
+  the referee promoted it in 28), no wrong law named, 2 true laws refuted. Three expectations held.
+  The fourth missed: with the true law removed it named a wrong law alone in 19 of 80 runs, so its
+  `unique` is relative to the candidates given. `preregistration/RESULT-CONTRAST-2026-11.md`.
 - **Outside engines frozen: PREREG-SRBENCH-EXTERNAL-2026-11 (2026-11-19).** PySR, PhySO and the
   exhaustive search on the baseline's protocol, 798 runs, frozen before any baseline result was seen.
   Expectations: an outside engine, and the exhaustive search, each beat every baseline engine on
