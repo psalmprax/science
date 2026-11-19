@@ -454,6 +454,28 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Distributed discovery without a broker (`apedp_dyn/discovery_l2/work_queue.py`).** A queue
+  is a directory any machines sharing a filesystem can work on; the coordinator is the only
+  ledger writer. One worker and three processes give the same candidates, verdicts and trial
+  counts (records compared without timestamps, which necessarily differ).
+- **A discovery loop with refusal memory (`apedp_dyn/discovery_l2/refusal_memory.py`).** Climbs
+  strict grammar → coefficients with units → two-term superposition until the referee promotes,
+  on a proposer-validation half of the data only, then confirms once on the other half. Every
+  round is charged as a trial; memory is per domain and reads verdicts only. The climb does not
+  stop on the refusal's attribution, because the referee reports a law outside the space as
+  observationally non-identifiable among the wrong candidates it sees.
+- **Blind discovery benchmark run: PREREG-BLIND-L2-2026-11 (2026-11-19).** Run once at
+  `e2a37cb`. 7 wrong-law promotions in 288 runs (false discoveries at noise up to 5%: 4 of
+  216, expectation held), none on a textbook law. Recovery 82% on known laws and 58% on
+  invented ones; the recovery and familiarity expectations missed. After the run: the gap is
+  two-term laws whose smaller term falls under the referee's 5%-of-signal resolution floor
+  (M-02), and the zero-noise misses are the referee refusing exact fits (M-01). `preregistration/RESULT-BLIND-L2-2026-11.md`.
+- **Blind discovery benchmark frozen: PREREG-BLIND-L2-2026-11 (2026-11-19).** The first
+  measurement of the discoverer rather than the referee: 288 runs of `L2DiscoveryEngine` on
+  12 textbook laws and 24 invented ones over meaningless names, with a distractor variable
+  and a noise ladder. Expectations fixed before the run: false discoveries at most 5% at
+  noise up to 5%, recovery at least 80% at noise up to 1%, and no more than 15 points between
+  known and invented laws. `scripts/run_blind_discovery_benchmark.py`.
 - **Calibration of stages 2 and 3 on real returns: PREREG-CRYPTO-CAL-2026-11
   (2026-11-17).** Frozen, then run once on the development panel: 0 of 500
   placebos passed stage 2 (95% upper bound 0.74%); injected effects passed at

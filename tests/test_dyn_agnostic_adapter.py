@@ -129,6 +129,25 @@ def test_agnostic_adapter_structural_rivals():
     assert min_delta < 0.05
 
 
+def test_the_comparison_says_which_arms_are_declared_and_which_computed():
+    """Arms A and B are written by the sandbox; only arm C derives its verdicts.
+
+    The report must say so, so that their 0 % and 100 % false-promotion rates
+    are not read as measurements (relabelled 2026-11-19)."""
+    from apedp_dyn.sandbox import agnostic_domain_sandbox as sandbox
+
+    report = sandbox.run_ablation_experiment()
+    assert report["evidence_basis"] == {
+        "arm_a_specialized": "declared",
+        "arm_b_core_naive": "declared",
+        "arm_c_agnostic": "computed",
+    }
+    assert "synthetic" in report["corpus"]
+    doc = sandbox.__doc__ or ""
+    assert "decisive comparative ablation experiment:" not in doc  # the old claim, as a heading
+    assert "Declared evidence" in doc and "Computed" in doc
+
+
 def test_3arm_ablation_experiment_scorecard():
     """Execute full 3-arm ablation and assert key epistemic findings."""
     bench = run_ablation_experiment()

@@ -6,6 +6,58 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-19 round — the discoverer measured blind
+
+Basis: the preregistered run `PREREG-BLIND-L2-2026-11` (frozen at `e2a37cb`;
+report `preregistration/RESULT-BLIND-L2-2026-11.md`): 288 runs of
+`L2DiscoveryEngine` on 12 textbook and 24 invented laws with a distractor
+variable at 0/1/5/10 % noise. Wrong-law promotions: 7 of 288, none on a
+textbook law. Recovery: 82 % on known laws, 58 % on invented ones; two of the
+three preregistered expectations missed.
+
+- **M-01 the referee refuses a perfect fit as unassessed — OPEN, referee
+  decision.** All nine known-law misses at zero noise are the right law fitted
+  with RMSE 0 and refused because "residual series is constant: |rho1|
+  undefined, whiteness unassessable" (`epistemic/adjudicate.py`, and the same
+  rule in `whiteness_calibration.py`). A residual of zeros has nothing to test,
+  so the verdict should say "exact fit", not "structured residuals". Costs
+  nothing on real data, which always carry noise; it does distort every
+  noise-free simulation benchmark. Not changed: `adjudicate.py` is pinned by
+  `APEDPX_FROZEN_v1_18.json`, and what an exact fit should earn is for the
+  owner to decide.
+- **M-02 a term carrying less than 5 % of the signal cannot be confirmed —
+  RECORDED, by design.** Of 64 two-term runs, 7 recovered, 7 promoted the
+  dominant term, 50 abstained. Diagnosed after the run: the true law is in the
+  search space (each additive term has its own coefficient), was generated for
+  all eight laws and ranked first in six, and was refused because the referee's
+  resolution threshold never drops below `REL_FLOOR` = 5 % of the signal RMS,
+  and every smaller term the generator drew moves the holdout error by less.
+  The floor is calibrated and stays; what it means is that on passive data the
+  engine discovers only laws whose every term is large, and anything finer
+  needs a designed intervention (`discovery_l2/active_intervention.py`).
+  (The run's first report and the commit that added it blamed one fitted scale
+  per candidate; that was wrong, and is corrected here and in the report.)
+- **M-03 the benchmark generator did not check identifiability — RECORDED.**
+  Six of the seven false discoveries come from laws whose second term varies by
+  at most 3 against a first term reaching thousands, below the noise at 1 %.
+  They stay counted as false discoveries, as preregistered; a successor
+  generator should reject draws whose terms differ in spread by more than the
+  noise. Separately, the benchmark's comparison raises on a promoted law that
+  is not a sum of monomials; none was promoted, so the run is unaffected.
+
+Built in the same round, from the plan agreed on 2026-11-18 with its four
+corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that
+learns per domain from verdicts only, on a proposer-validation half, with
+every round charged as a trial and the confirmation half spent once; and a
+broker-free work queue (`discovery_l2/work_queue.py`) whose single ledger
+writer makes the verdicts independent of the number of workers. The plan's
+step of stopping the loop on the refusal's attribution was dropped: the
+referee reports a law outside the search space as
+`intrinsic_observational_nonidentifiability`, so that rule would stop exactly
+where it should climb.
+
+---
+
 ## 2026-11-17 round — the three subsystems outside the referee
 
 Basis: `stage` after the referee package merged (PR #64). The question asked
