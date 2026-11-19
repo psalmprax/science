@@ -1,7 +1,7 @@
 """The language-model proposer with a real model, through the main search path.
 
     python scripts/run_llm_proposer_benchmark.py models                 # what the key can call
-    python scripts/run_llm_proposer_benchmark.py smoke                  # two toy laws, not benchmark data
+    python scripts/run_llm_proposer_benchmark.py smoke                  # each preferred model on one toy law
     python scripts/run_llm_proposer_benchmark.py run --shard 0/2 --out llm-out
     python scripts/run_llm_proposer_benchmark.py collect --out llm-out
 
@@ -20,8 +20,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import sys
+import time
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -73,16 +73,18 @@ class Recording(ProposerBase):
 
 
 def llm_path(X: dict[str, np.ndarray], y: np.ndarray, pool_X: np.ndarray, measure: Any, model: str,
-             interval: float = INTERVAL_S, always_search: bool = False) -> tuple[Any, dict[str, Any]]:
-    client = llm_clients.nvidia_client(model, min_interval=interval)
-    proposer = Recording(LlmEquationProposer(client, target_col="__target__", rounds=ROUNDS, per_round=PER_ROUND,
+             interval: float = INTERVAL_S, always_search: bool = False, rounds: int = ROUNDS,
+             retries: int = 4) -> tuple[Any, dict[str, Any]]:
+    client = llm_clients.nvidia_client(model, min_interval=interval, retries=retries)
+    proposer = Recording(LlmEquationProposer(client, target_col="__target__", rounds=rounds, per_round=PER_ROUND,
                                              max_proposals=MAX_PROPOSALS))
     result = main_search.discover(X, y, pool_X, measure, proposer=proposer, noise="absolute", seed=base.SEED,
                                   always_search=always_search)
+    seen = proposer.inner.last_run  # type: ignore[attr-defined]
     record = {"model": model, "calls": client.calls, "proposals": len(proposer.proposals),  # type: ignore[attr-defined]
               "recited_before_data": sum(bool(p.metadata.get("recited_before_data")) for p in proposer.proposals),
-              "replies_rejected": max((int(p.metadata.get("replies_rejected_as_unsafe_or_unparseable", 0)) for p in proposer.proposals), default=0),
-              "formulas": [p.formula for p in proposer.proposals]}
+              "skeletons_tried": seen.get("skeletons_tried", 0), "replies_rejected": seen.get("replies_rejected", 0),
+              "first_reply": seen.get("first_reply", ""), "formulas": [p.formula for p in proposer.proposals]}
     return result, record
 
 
@@ -166,13 +168,18 @@ def main(argv: list[str] | None = None) -> int:
         print("LISTED " + " | ".join(listed), flush=True)
         if args.command == "models":
             return 0
-        model = os.environ.get("LLM_MODEL") or llm_clients.pick_model()
-        print(f"model that answered: {model}", flush=True)
-        for text in ("x0*exp(-0.37*x1)", "x0/(x0 + x1)", "sqrt(x0**2 + 3*x1)"):
-            X, y, pool, measure = toy(text, seed=len(text))
-            result, record = llm_path(X, y, pool, measure, model, interval=1.6, always_search=True)
-            print(json.dumps({"truth": text, "action": result.action, "law": result.law, "found_by": result.found_by,
-                              "adequacy": result.adequacy, "llm": record}, default=str), flush=True)
+        # every preferred model the catalogue lists, on one toy law: which answer, how fast, and what they propose
+        truth = "x0*exp(-0.37*x1)"
+        X, y, pool, measure = toy(truth, seed=7)
+        for model in [m for m in llm_clients.PREFERRED_MODELS if m in listed]:
+            started = time.time()
+            try:
+                result, record = llm_path(X, y, pool, measure, model, interval=1.6, always_search=True, rounds=2, retries=1)
+                print("SURVEY " + json.dumps({"model": model, "seconds": round(time.time() - started, 1), "action": result.action,
+                                              "law": result.law, "found_by": result.found_by, **record}, default=str), flush=True)
+            except Exception as exc:  # noqa: BLE001 - a model that fails is a survey result, not a crash
+                print("SURVEY " + json.dumps({"model": model, "seconds": round(time.time() - started, 1),
+                                              "failed": f"{type(exc).__name__}: {exc}"[:200]}), flush=True)
         return 0
     check_frozen()
     args.out.mkdir(parents=True, exist_ok=True)

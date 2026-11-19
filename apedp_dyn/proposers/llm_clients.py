@@ -28,10 +28,11 @@ from typing import Any
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 KEY_VARIABLE = "NVIDIA_API_KEY"
-#: tried in order; the first that answers is used
+#: tried in order; the first that answers is used (the chat models the catalogue listed on 2026-11-19)
 PREFERRED_MODELS = (
-    "meta/llama-3.3-70b-instruct", "nvidia/llama-3.3-nemotron-super-49b-v1", "nvidia/nemotron-3-super-120b-a12b",
-    "meta/llama-3.1-70b-instruct", "mistralai/mistral-large-2-instruct", "meta/llama-3.1-8b-instruct",
+    "nvidia/nemotron-3-ultra-550b-a55b", "mistralai/mistral-large-4-1t-a52b", "moonshotai/kimi-k3.1-pro",
+    "google/gemma-4-31b-it", "stepfun-ai/step-5-preview", "z-ai/glm-5.3-flash", "minimaxai/minimax-m3.1-flash",
+    "nvidia/nemotron-3.5-lightning-30b-a3b", "meta/muse-glimmer-30b",
 )
 #: listed models whose names say they are not general chat models; never tried as a fallback
 _NOT_CHAT = ("embed", "rerank", "guard", "safety", "detect", "vision", "-vl", "whisper", "parakeet", "tts", "ocr", "clip",
@@ -72,7 +73,7 @@ def available_models(api_key: str | None = None, base_url: str = NVIDIA_BASE_URL
 
 
 def nvidia_client(model: str, *, api_key: str | None = None, base_url: str = NVIDIA_BASE_URL, temperature: float = 0.0,
-                  max_tokens: int = 400, min_interval: float = 1.6, retries: int = 4, timeout: float = 90.0,
+                  max_tokens: int = 1500, min_interval: float = 1.6, retries: int = 4, timeout: float = 90.0,
                   sleep: Callable[[float], None] = time.sleep) -> Callable[[str], str]:
     """A ``prompt -> reply`` callable for one model. ``client.calls`` counts requests; ``client.model`` names the model.
 

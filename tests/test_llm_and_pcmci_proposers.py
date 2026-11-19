@@ -102,3 +102,15 @@ def test_pcmci_says_so_when_tigramite_is_missing(monkeypatch):
     monkeypatch.setattr(pc, "is_available", lambda: False)
     with pytest.raises(pc.PcmciUnavailableError):
         pc.PcmciProposer().fit_and_propose(_echo_world(0))
+
+
+def test_replies_are_read_through_the_decoration_models_add():
+    text = ("Here are my proposals:\n```\n1. `y = c0 * x_0 * exp(-c1 * x_1)`\n2. f(x0, x1) = x0 / (x1 + c0).\n"
+            "- $c0*x0^2 + c1$\nExpression: sqrt(x0)*x1;\n```\nI hope this helps, 0.5*x0 is also possible.\n0.5*x0 + c0")
+    assert lp._replies(text) == ["c0 * x0 * exp(-c1 * x1)", "x0 / (x1 + c0)", "c0*x0^2 + c1", "sqrt(x0)*x1", "0.5*x0 + c0"]
+
+
+def test_what_the_last_call_saw_is_kept_even_when_nothing_parses():
+    proposer = lp.LlmEquationProposer(Scripted(probe="", rounds=["I cannot see a pattern in these numbers at all."]), rounds=1)
+    assert proposer.fit_and_propose(FRAME) == ()
+    assert proposer.last_run["skeletons_tried"] == 0 and "cannot see" in proposer.last_run["first_reply"]

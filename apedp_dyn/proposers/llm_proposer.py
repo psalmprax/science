@@ -105,12 +105,31 @@ def fit_constants(expr: sp.Expr, X: np.ndarray, y: np.ndarray, seed: int = 0) ->
     return {str(s): float(v) for s, v in zip(consts, best[1], strict=True)}, best[0]
 
 
+_SUBSCRIPT = re.compile(r"\b([xc])_\{?(\d+)\}?")
+_LABEL = re.compile(r"^\s*(?:[A-Za-z]\w*\s*(?:\([^()=]*\))?\s*=|[A-Za-z ]{0,24}:)\s*")
+_WORD = re.compile(r"[A-Za-z]{3,}")
+
+
 def _replies(text: str) -> list[str]:
+    """Candidate expression lines from a model's reply.
+
+    Models decorate their answers: code fences, backticks, dollar signs, list
+    markers, ``y =`` or ``f(x0, x1) =`` in front, ``x_0`` for ``x0``, a full stop
+    at the end. Those are removed. A sentence (three or more words that are not
+    function names) is dropped as prose. Anything else that mentions a variable
+    or calls something goes on to :func:`parse_skeleton`, which decides whether
+    it is an allowed expression and counts it as rejected if it is not.
+    """
     out = []
     for line in text.splitlines():
-        match = _LINE.match(line)
-        if match and match.group(1):
-            out.append(match.group(1))
+        match = _LINE.match(line.replace("`", "").replace("$", "").replace("\\(", "").replace("\\)", ""))
+        if not match or not match.group(1):
+            continue
+        cleaned = match.group(1).replace("\u00d7", "*").replace("\u00b7", "*").replace("\u2212", "-")
+        cleaned = _SUBSCRIPT.sub(r"\1\2", _LABEL.sub("", cleaned)).strip().rstrip(".;,").strip()
+        prose = sum(word not in FUNCTIONS for word in _WORD.findall(cleaned)) >= 3
+        if cleaned and not prose and (re.search(r"x\d", cleaned) or "(" in cleaned):
+            out.append(cleaned)
     return out
 
 
@@ -126,6 +145,8 @@ class LlmEquationProposer(ProposerBase):
         self._description = description
         self._max_proposals = int(max_proposals)
         self._strategy_archetype = strategy_archetype
+        #: what the last call saw, kept even when nothing could be proposed
+        self.last_run: dict[str, Any] = {}
 
     @property
     def proposer_id(self) -> str:
@@ -175,6 +196,8 @@ class LlmEquationProposer(ProposerBase):
                 constants, error = fit_constants(expr, X, y)
                 tried[key] = {"skeleton": str(expr), "expr": expr, "constants": constants, "error": error, "key": key}
 
+        self.last_run = {"skeletons_tried": len(tried), "replies_rejected": rejected, "recited_before_data": len(recited),
+                         "first_reply": reply[:300] if self._rounds > 0 else ""}
         proposals = []
         for item in sorted(tried.values(), key=lambda t: t["error"])[: self._max_proposals]:
             fitted = item["expr"].xreplace({sp.Symbol(k): sp.Float(v) for k, v in item["constants"].items()})
