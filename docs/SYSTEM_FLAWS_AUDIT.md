@@ -63,6 +63,16 @@ three preregistered expectations missed.
   freeze guard file, so `APEDPX_FROZEN_v1_18.json` is re-minted for it with a
   `remint_log` entry (the first push missed this and CI's freeze guard
   caught it); the governance digest awaiting trustee signatures is unchanged.
+- **M-05 a RIME result was published as RIME-AD's — FIXED.**
+  `benchmarks/run_population_extrapolation_rime_ad_vs_ga.py` constructed
+  `RimeProposer` and stored its numbers under `rime_ad`; its report and
+  `docs/DOCUMENTATION.md` credited RIME-AD with exact recovery and a ~246x
+  speed advantage over GA. RIME-AD was never run. Re-run with both engines:
+  RIME recovers the law exactly in 7 ms; RIME-AD reaches A-test R² −0.28 in
+  19 s, because it builds features from contemporaneous columns and this law
+  is lagged. The "GA" arms are a genetic search over columns of a hand-built
+  library that contains the true interaction, now named as such. Tests pin
+  that each row's `engine_class` is the engine the script constructed.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

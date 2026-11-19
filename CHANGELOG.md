@@ -454,6 +454,9 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **A RIME result had been published as RIME-AD's (M-05).** The population extrapolation
+  benchmark ran `RimeProposer` under RIME-AD's name. Each engine now runs under its own; RIME-AD
+  does not recover the lagged law (A-test R² −0.28). The GA arms are renamed to term selection.
 - **User strings no longer reach file paths (M-04).** Fixes four CodeQL findings: the volume
   sandbox's sidecar name, the external-60 scratch file names, the pipeline route's path check,
   and an exception message returned to API clients.
