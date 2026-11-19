@@ -66,3 +66,37 @@ def test_nonuniform_times_are_refused():
     t[50:] += 0.004
     with pytest.raises(ValueError, match="uniformly"):
         weak_form.weak_system(t, S, _library)
+
+
+def test_the_proposer_can_refit_its_selected_terms_with_the_weak_form():
+    """Same terms as the kernel chose, better coefficients under noise; opt-in, and the default is unchanged."""
+    pd = pytest.importorskip("pandas")
+    from apedp.rust_bridge import is_rust_kernel_available
+    from apedp_dyn.ode.proposer import CoupledOdeProposer
+
+    if not is_rust_kernel_available():
+        pytest.skip("native kernel is not built")
+    errors = {"kernel": [], "weak_form": []}
+    for seed in range(6):
+        _t, S = _oscillator(0.10, seed)
+        frame = pd.DataFrame({"x0": S[:, 0], "x1": S[:, 1]})
+        chosen = {}
+        for estimator in errors:
+            proposals = CoupledOdeProposer(dt=0.01, coefficient_estimator=estimator).fit_and_propose(frame)
+            eq = next(p for p in proposals if p.metadata["state_variable"] == "x1")
+            assert eq.metadata["coefficient_estimator"] == estimator
+            chosen[estimator] = set(eq.parameters)
+            errors[estimator].append(max(abs(eq.parameters.get("x0", 0.0) + 4.0), abs(eq.parameters.get("x1", 0.0) + 0.3)))
+            if estimator == "weak_form":
+                assert "dx1/dt = " in eq.formula and f"{eq.parameters['x0']:.4f}" in eq.formula
+        assert chosen["kernel"] == chosen["weak_form"]  # selection is untouched
+    assert np.median(errors["weak_form"]) < 0.5 * np.median(errors["kernel"])
+    assert CoupledOdeProposer()._coefficient_estimator == "kernel"
+    with pytest.raises(ValueError, match="coefficient_estimator"):
+        CoupledOdeProposer(coefficient_estimator="spline")
+
+
+def test_refit_returns_none_when_there_is_too_little_data():
+    series = {"x0": np.arange(4.0), "x1": np.arange(4.0)}
+    assert weak_form.refit_coefficients(series, "x0", ["x1"], 0.1) is None
+    assert weak_form.refit_coefficients({"x0": np.arange(50.0), "x1": np.arange(50.0)}, "x0", [], 0.1) is None

@@ -106,7 +106,9 @@ three preregistered expectations missed.
   weak form does no better. Term selection, not the derivative, is what limits
   ODE discovery there; the expectation that the weak form alone would lift the
   ODE engine was wrong. Candidates for selection: contrast confirmation on a
-  second trajectory, or longer data. Not yet wired into the proposer.
+  second trajectory, or longer data. Wired in as an opt-in coefficient
+  estimator of `CoupledOdeProposer` (the kernel still selects the terms); the
+  PDE path is not done.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

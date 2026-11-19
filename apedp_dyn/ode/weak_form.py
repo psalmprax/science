@@ -86,3 +86,41 @@ def identify(
     """Sparse coefficients (terms, d) of dX/dt = library(X) @ w from the weak form."""
     G, b = weak_system(t, X, library, window=window, stride=stride, order=order)
     return stlsq(G, b, threshold)
+
+
+def term_column(term: str, series: dict[str, np.ndarray]) -> np.ndarray:
+    """A library term in the coupled-system kernel's encoding: ``1``, ``a``, ``a^2``, ``a^3``, ``a*b``."""
+    if term == "1":
+        return np.ones(len(next(iter(series.values()))))
+    if "*" in term:
+        left, right = term.split("*", 1)
+        product: np.ndarray = series[left] * series[right]
+        return product
+    if term.endswith(("^2", "^3")):
+        out: np.ndarray = series[term[:-2]] ** int(term[-1])
+        return out
+    return series[term]
+
+
+def refit_coefficients(
+    series: dict[str, np.ndarray], state: str, terms: list[str], dt: float, *, window: int = 201, stride: int = 5,
+) -> np.ndarray | None:
+    """Weak-form coefficients of ``d state/dt`` on terms already selected; ``None`` if the series is too short.
+
+    Selection stays with whoever chose ``terms``. Measured on the Lorenz system
+    (scripts/study_weak_form_lorenz.py), the weak form improves the coefficient
+    estimate, not which terms are chosen.
+    """
+    n = len(series[state])
+    window = min(window, n if n % 2 else n - 1)
+    if window < 5 or not terms:
+        return None
+    names = list(series)
+    X = np.column_stack([series[k] for k in names])
+    G, b = weak_system(np.arange(n) * dt, X,
+                       lambda S: np.column_stack([term_column(t, dict(zip(names, S.T, strict=True))) for t in terms]),
+                       window=window, stride=stride)
+    if len(G) < len(terms):
+        return None
+    coef: np.ndarray = np.linalg.lstsq(G, b[:, names.index(state)], rcond=None)[0]
+    return coef

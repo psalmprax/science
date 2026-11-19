@@ -454,6 +454,10 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **Wiring.** `discovery_l2/contrast_resolution.py` takes a referee abstention to contrast confirmation and
+  returns the next action; its ladder climbs to a larger space only when no candidate survives.
+  `CoupledOdeProposer(coefficient_estimator="weak_form")` refits the kernel's selected terms by the weak
+  form (opt-in; coefficient error at 10 % noise falls about eightfold on a damped oscillator).
 - **Contrast confirmation tested on fresh laws: PREREG-CONTRAST-2026-11 (2026-11-19).** Frozen, then
   run once: true law uniquely confirmed in 63 of 80 runs (random-rows control 54, paired p = 0.002;
   the referee promoted it in 28), no wrong law named, 2 true laws refuted. Three expectations held.
