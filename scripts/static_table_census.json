@@ -64,6 +64,9 @@
     "apedp_dyn/pde/weak_form.py": [
       "LIBRARY"
     ],
+    "apedp_dyn/pde/weak_form_2d.py": [
+      "LIBRARY_2D"
+    ],
     "apedp_dyn/problems/__init__.py": [
       "ALL_PROBLEMS"
     ],

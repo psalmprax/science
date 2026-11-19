@@ -1032,7 +1032,8 @@ def test_every_census_module_in_apedp_dyn_is_named_in_the_inventory():
     recorded = _recorded_tables("apedp_dyn")
     # 20 since 2026-11-19: `discovery_l2/contrast_resolution.py::ACTIONS` (verdict -> next action) and
     # `pde/weak_form.py::LIBRARY` (the weak form's seven terms) were added and recorded with their rows.
-    assert len(recorded) == 20
+    # 21 since PREREG-PDE-2D: `pde/weak_form_2d.py::LIBRARY_2D` (the two-dimensional weak form's eleven terms).
+    assert len(recorded) == 21
 
     for module_path in recorded:
         # The census table writes paths relative to the package root.

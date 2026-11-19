@@ -289,6 +289,7 @@ measured records or step ladders, and none answers a question about the world:
 | `cuda/batch_physics_steppers.py` | `_TRITON_KERNELS` | The explicit (empty) kernel registry the availability check is gated on; see the sweep row above |
 | `discovery_l2/contrast_resolution.py` | `ACTIONS` (`resolve`) | Names the next action for each contrast-confirmation verdict (`unique` → `confirmed`, `no_survivor` → `widen_search`, …); a relabelling of a verdict computed from measurements, not a stored answer |
 | `pde/weak_form.py` | `LIBRARY` (`identify`) | The seven divergence-form terms the weak form can express, used to name the fitted coefficients; the coefficients themselves are computed from the field |
+| `pde/weak_form_2d.py` | `LIBRARY_2D` (`identify`) | The eleven divergence-form terms the two-dimensional weak form can express, used to name the fitted coefficients; the coefficients themselves are computed from the field |
 | `quantum_compilation/dqi_gluzdov_v6.py` | `RECYCLING_MEASUREMENT`, `WIDTH_LEVERS_MEASURED` | Measured register-recycling records; the projection's own numbers are computed from `GluzdovV6Config` |
 | `fitting/parameter_fit.py` | `MULTISTART_SCALES` | Scale ladder for the multi-start search |
 | `grammar/candidate_ir.py` | `parent_candidates` | See the false positive below |
