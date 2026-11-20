@@ -299,6 +299,20 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-25 a test whose result depended on the machine's speed — FOUND BY CI
+  2026-11-20, FIXED THE SAME DAY.** `tests/test_mmlm_transformer_expert.py`
+  trains a tiny transformer for five seconds of wall clock and required a
+  validation score under 4.0 bits per byte. How many steps fit in five seconds
+  depends on the machine and on what else runs on it: 1,050 steps and 2.2 bits
+  on an idle core, 4.03 bits on a CI runner that was running other tests on its
+  second worker (run 44810331348, job `test (3.11)`, commit `4b4bac6`, which
+  changed nothing in that module). The suite stops at the first failure, so
+  the remaining third of it did not run on that commit. The test now compares
+  the trained model with the same model untrained (8 bits), which holds at any
+  speed, and checks that the validation curve falls. The training function is
+  unchanged: a wall-clock budget is what it is for. The one other test that
+  trains for a time budget (`tests/test_mmlm_context_mixing.py`) asks only
+  for one step.
 - **M-24 a candidate that cannot be fitted ends the whole run — FOUND
   2026-11-20; GUARDED FOR THE DEFAULT SEARCH STAGE THE SAME DAY, NOT YET
   MEASURED.** `proposers/fit_guard.py` now screens every proposal with the

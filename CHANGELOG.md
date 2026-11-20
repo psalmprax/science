@@ -647,6 +647,10 @@ inferred releases.
 
 ### Fixed
 
+- **A test that depended on the machine's speed (2026-11-20, audit M-25).** The MMLM transformer
+  test trained for five seconds and required a fixed score; on a loaded CI runner it reached 4.03
+  bits per byte against a limit of 4.0 and stopped the suite. It now compares the trained model
+  with the same model untrained.
 - **CI: the arm64 macOS wheel was not being built (2026-11-20).** `wheels.yml` asked for the
   `macos-14` runner image, which GitHub retired on 2026-11-02. Since then the job was cancelled
   before any step ran, with no log, on every pull request. It now runs on `macos-15`, as the Intel
