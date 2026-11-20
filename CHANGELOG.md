@@ -13,6 +13,14 @@ inferred releases.
 
 ## [Unreleased]
 
+### Security
+
+- **The language-model client and its API key (2026-11-20, audit M-21).** CI's security scan
+  flagged `proposers/llm_clients.py`: the service address is a parameter and the key goes to
+  whatever it names. Nothing leaked (every caller uses the https default). New
+  `proposers/llm_https.py` refuses any address that is not https; the frozen file is unchanged and
+  its finding is listed in `scripts/bandit_baseline.json`, which the scan reads and a test pins.
+
 ### Changed
 
 - **The structure guard is the template engine's default where its test is valid (2026-11-20).**

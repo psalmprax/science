@@ -366,7 +366,9 @@ jobs:
       - name: Security scan with bandit
         run: |
           source .venv/bin/activate
-          bandit -r apedp/ apedp_dyn/ -ll \
+          # scripts/bandit_baseline.json lists the findings that are accepted, each with an audit entry
+          # (tests/test_security_scan_baseline.py pins what is in it). Anything else fails the step.
+          bandit -r apedp/ apedp_dyn/ -ll -b scripts/bandit_baseline.json \
             --exclude apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src
 
       - name: Classify test-job failure

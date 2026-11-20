@@ -284,6 +284,19 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-21 the language-model client would send the API key to any address
+  it is given — CLOSED FOR NEW CALLERS 2026-11-20; accepted in the frozen
+  file.** Found by the CI security scan (bandit B310) once the test suite got
+  far enough to reach it. `proposers/llm_clients.py` passes its `base_url`
+  parameter to `urllib.request.urlopen` with the key in a header. The default
+  is NVIDIA's https endpoint and every caller uses it, so nothing leaked; an
+  `http://` address would have sent the key in clear text and a `file://`
+  address would have read a local file. The file is frozen by two
+  preregistrations' digests, so it is not edited:
+  `proposers/llm_https.py` wraps the client and refuses any address that is
+  not https before a request is made, and the finding is listed as accepted
+  in `scripts/bandit_baseline.json`, which the scan now reads. A test pins
+  that the baseline holds this one finding and nothing else.
 - **M-20 a search that cannot express the law yields a wrong law that the
   later stages pass — OPEN.** Found in PREREG-LLM-CONTROLLER's run. On
   `feynman_III_8_54` (`sin(E t/ħ)²`, noise 0) the language model allowed the
