@@ -98,3 +98,14 @@ are not a like-for-like comparison with 69 and 70 or 73 and 68.
 in `apedp_dyn/discovery_l2/route.py`, which is frozen by PREREG-LLM-PROPOSER's digest, and a
 preregistration that missed one of its expectations is not the occasion to move a default by
 itself. The evidence for moving it is in the tables above.
+
+## Note (2026-11-20, after the result was recorded)
+
+The paragraph "Consequence" above was written before the repository owner decided, on this result,
+to make the refined path the default route. That is now done in
+`apedp_dyn/discovery_l2/default_route.py`, around the frozen `route.py`. The decision does not
+change anything recorded here: expectation 2 is still a miss, and the default was moved by a
+decision, not by a rule this preregistration fixed. While making the change it was found that the
+path, called with no search stage, marks a law as reported on the strength of the first pass and
+the polynomial library alone (audit M-19); the default route returns such a law as tentative. In
+this run PySR ran on every problem.

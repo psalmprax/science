@@ -40,8 +40,8 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 
 | Part | Benchmark | Result |
 | :--- | :--- | :--- |
-| Main search, the default discovery route (first pass, PySR, contrast confirmation, adequacy) | SRBench, 133 laws | 186 laws reported in 266 runs, 4 not accurate (2.2 %); 69 and 70 of 119 Feynman laws at noise 0 and 1 % |
-| Refined path (the main search with physical units, a polynomial library and term pruning; not the default) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law |
+| Main search (first pass, PySR, contrast confirmation, adequacy); the default until 2026-11-20 | SRBench, 133 laws | 186 laws reported in 266 runs, 4 not accurate (2.2 %); 69 and 70 of 119 Feynman laws at noise 0 and 1 % |
+| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law |
 | ODE route | ODEBench, 117 components | 80 and 69 recovered; 4.9 % of reported laws wrong |
 | Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
 | Language model in PySR's place | SRBench | 78 laws recovered against 152 with PySR; optional |
@@ -49,8 +49,8 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 | Template engine with the referee | SRBench | 160 of 268 promotions not accurate; kept for replication, guard under test (audit M-10) |
 | Promotion referee on crypto returns | 500 placebo signals; one test claim | 0 placebos passed; the claim (order-flow imbalance) was refused |
 
-For tabular data `apedp_dyn/discovery_l2/route.py` chooses between the main search (the default) and
-the template engine; trajectories and return-like series have their own entry points
+For tabular data `apedp_dyn/discovery_l2/default_route.py` runs the refined path unless the main
+search or the template engine is named; trajectories and return-like series have their own entry points
 (`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the
 default route beside the template engine's verdict (`apedp_dyn/ui/route_endpoint.py`).
 

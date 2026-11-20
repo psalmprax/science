@@ -1840,7 +1840,7 @@
         if (reading.reported && law) {
           line(isSeries ? 'law (passed the forecast test):' : 'law (confirmed against rivals):', law, 'text-emerald-400');
         } else if (reading.tentative && law) {
-          line('tentative law (nothing challenged it):', law, 'text-amber-400');
+          line('tentative law (' + (reading.tentative_reason || 'nothing challenged it') + '):', law, 'text-amber-400');
         } else {
           line('law:', 'none reported', 'text-slate-400');
         }
@@ -1853,7 +1853,7 @@
         }
         if (reading.search_stage) line('search stage:', reading.search_stage, 'text-slate-400');
         if (reading.complete === false) {
-          line('partial reading:', 'the search stage did not run, so this is the first pass only and not the measured route', 'text-amber-400');
+          line('partial reading:', 'PySR did not run, so this is not the measured route', 'text-amber-400');
         }
       }
       if (reading.evidence) line('measured in:', reading.evidence, 'text-slate-500');

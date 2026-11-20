@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 from fastapi.testclient import TestClient
 
-from apedp_dyn.discovery_l2 import route
+from apedp_dyn.discovery_l2 import default_route
 from apedp_dyn.ui import route_endpoint
 from apedp_dyn.ui.server import app
 
@@ -27,21 +27,25 @@ def _kinetic(n: int = 240, seed: int = 0) -> tuple[dict[str, list[float]], list[
 def test_the_reading_runs_the_default_route_and_finds_the_law():
     columns, target = _kinetic()
     reading = route_endpoint.route_reading(columns, target)
-    assert reading["route"] == route.DEFAULT_ROUTE == "main_search"
+    assert reading["route"] == default_route.DEFAULT_ROUTE == "refined"
     assert reading["action"] in ("confirmed", "equivalent_class", "unchallenged")
     assert "m*v**2" in reading["law_as_confirmed"]
     assert reading["search_stage"].startswith("off")
-    assert reading["complete"] is False          # first pass only: a partial reading, and the record says so
-    assert reading["evidence"].endswith("RESULT-MAIN-SEARCH-2026-11.md")
+    assert reading["complete"] is False          # PySR did not run: a partial reading, and the record says so
+    assert reading["evidence"].endswith("RESULT-REFINED-SEARCH-2026-11.md")
+    earlier = route_endpoint.route_reading(columns, target, route_name="main_search")
+    assert earlier["route"] == "main_search" and earlier["evidence"].endswith("RESULT-MAIN-SEARCH-2026-11.md")
 
 
-def test_an_unchallenged_law_is_tentative_and_not_reported():
+def test_a_law_found_without_the_search_stage_is_tentative_and_not_reported():
+    """Without PySR the refined path's only rivals are the first pass and the polynomial library (and M-14)."""
     columns, target = _kinetic()
     reading = route_endpoint.route_reading(columns, target)
-    # exactly one of the two, and they follow from the action alone
-    assert reading["reported"] == (reading["action"] in ("confirmed", "equivalent_class"))
-    assert reading["tentative"] == (reading["action"] == "unchallenged")
-    assert not (reading["reported"] and reading["tentative"])
+    assert reading["reported"] is False and reading["tentative"] is True
+    assert reading["tentative_reason"] in (default_route.NO_SEARCH_STAGE, default_route.NOTHING_CHALLENGED)
+    earlier = route_endpoint.route_reading(columns, target, route_name="main_search")
+    assert earlier["tentative"] == (earlier["action"] == "unchallenged")
+    assert not (earlier["reported"] and earlier["tentative"])
 
 
 def test_bad_data_gives_a_record_with_the_reason_and_no_law():
@@ -75,8 +79,9 @@ def test_the_status_page_names_the_default_route_and_the_retired_engines():
     r = client.get("/api/status")
     assert r.status_code == 200, r.text[:200]
     discovery = r.json()["discovery"]
-    assert discovery["default_route"] == "main_search"
-    assert {entry["name"] for entry in discovery["routes"]} >= {"main_search", "ode", "series_route", "l2"}
+    assert discovery["default_route"] == "refined"
+    assert discovery["routes"][0]["name"] == "refined"
+    assert {entry["name"] for entry in discovery["routes"]} >= {"refined", "main_search", "ode", "series_route", "l2"}
     assert "gagp" in discovery["retired_engines"]
     for entry in discovery["routes"]:
         assert entry["evidence"].startswith("preregistration/RESULT-")
@@ -87,8 +92,9 @@ def test_the_physics_endpoint_carries_the_route_reading():
     r = client.post("/api/discover/physics", json={"system": "kinetic", "noise": 0.01, "multiterm": False})
     assert r.status_code == 200, r.text[:200]
     reading = r.json()["route_reading"]
-    assert reading["route"] == "main_search" and reading["action"] != "not_run", reading
+    assert reading["route"] == "refined" and reading["action"] != "not_run", reading
     assert "m*v**2" in (reading["law_as_confirmed"] or "")
+    assert reading["reported"] is False          # no PySR in this request: shown as tentative
 
 
 def test_the_route_endpoint_takes_a_table_of_the_callers_own():

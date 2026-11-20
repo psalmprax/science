@@ -57,10 +57,12 @@ flowchart TD
 
 The pipeline above is the promotion lifecycle for a market hypothesis. Discovering a law from a
 table of measurements goes through a discovery route. For tabular data
-`apedp_dyn/discovery_l2/route.py` chooses between the main search (the default since 2026-11-19) and
-the template engine; trajectories and return-like series have their own entry points, listed below.
+`apedp_dyn/discovery_l2/default_route.py` runs the refined path (the default since 2026-11-20) unless
+the main search or the template engine is named; `discovery_l2/route.py`, which held the earlier
+default, is frozen by a preregistration and is wrapped, not edited. Trajectories and return-like
+series have their own entry points, listed below.
 The routes keep the same separation: a proposer emits candidates and never decides its own
-acceptance. The diagram is the main search.
+acceptance. The diagram is the main search, which the refined path runs inside.
 
 ```mermaid
 flowchart LR
@@ -75,10 +77,10 @@ flowchart LR
 
 | Route | Module | Use |
 | :--- | :--- | :--- |
-| `main_search` (default) | `discovery_l2/main_search.py` | Tabular data |
+| `main_search` | `discovery_l2/main_search.py` | Tabular data; the default until 2026-11-20 and the core of the routes below |
 | ODE | `ode/main_search_ode.py`, `ode/window_rows.py` | Trajectories: one state and one rate per disjoint window, then the main search per component |
 | Series | `discovery_l2/series_route.py` | Return-like series: the main search supplies candidates only; one is chosen inside the development period and must pass one forecast test on later rows |
-| Refined | `discovery_l2/refined_search.py`, `proposers/composed.py` | The main search with physical units, a polynomial library and term pruning added around it; measured, not the default |
+| `refined` (default) | `discovery_l2/default_route.py`, `discovery_l2/refined_search.py`, `proposers/composed.py` | The main search with physical units, a polynomial library and term pruning added around it. Without a search stage it reports nothing: a law is returned as tentative |
 | `l2` | `discovery_l2/l2_engine.py`, `epistemic/adjudicate.py` | The template engine and the referee's verdict; kept for replication |
 
 The measured result behind each route, and its limits, are in

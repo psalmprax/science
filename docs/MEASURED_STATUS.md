@@ -9,16 +9,18 @@ and so does this page. The register of known defects is
 
 ## The discovery routes
 
-For tabular data `apedp_dyn/discovery_l2/route.py` chooses between the main search (the default) and
-the template engine. Trajectories and return-like series have their own entry points
-(`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`).
+For tabular data the default is the **refined path** since 2026-11-20
+(`apedp_dyn/discovery_l2/default_route.py`; the owner's decision on the result below, one of whose
+three expectations was missed by one law). The main search was the default from 2026-11-19 and can
+still be chosen, as can the template engine. Trajectories and return-like series have their own
+entry points (`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`).
 
 | Route | For | What it does | Measured | Result file |
 | :--- | :--- | :--- | :--- | :--- |
-| **Main search** (default since 2026-11-19) | Tabular data where a law explains nearly all of the target | Exhaustive first pass, then PySR, then confirmation on rows chosen to tell rivals apart, then an adequacy check | SRBench, 133 laws at noise 0 and 1 %: a law reported in 186 of 266 runs, **4 not accurate (2.2 %**, interval 0.6–5.4 %), 152 the law. Feynman 69 and 70 of 119; PySR alone 73 and 68 | [`RESULT-MAIN-SEARCH`](../preregistration/RESULT-MAIN-SEARCH-2026-11.md) |
+| **Refined** (the default since 2026-11-20; `discovery_l2/refined_search.py`) | Tabular data, with physical units where the problem has them | The main search with the units' dimensionless products, a polynomial library, a report in the confirmed form with unnoticed terms dropped, and the search stage on every problem | SRBench: a law reported in 212 of 266 runs, **none inaccurate** (interval 0–1.7 %), **174 the law**. Feynman 78 and 77 of 119; Strogatz 19 of 28. On 103 held-out problems 61 and 61 against the main search's 55 and 52: one short of the 62 expected at noise 0. It uses units, which the other rows were not given | [`RESULT-REFINED-SEARCH`](../preregistration/RESULT-REFINED-SEARCH-2026-11.md) |
+| Main search (the default from 2026-11-19 to 2026-11-20) | Tabular data where a law explains nearly all of the target | Exhaustive first pass, then PySR, then confirmation on rows chosen to tell rivals apart, then an adequacy check | SRBench, 133 laws at noise 0 and 1 %: a law reported in 186 of 266 runs, **4 not accurate (2.2 %**, interval 0.6–5.4 %), 152 the law. Feynman 69 and 70 of 119; PySR alone 73 and 68 | [`RESULT-MAIN-SEARCH`](../preregistration/RESULT-MAIN-SEARCH-2026-11.md) |
 | **ODE** | Trajectories of a dynamical system | One state and one rate per disjoint window, then the main search per component | ODEBench, 63 systems, 117 components: **80 and 69 recovered** (noise 0, 1 %); 9 of 184 reported laws wrong (4.9 %). The sparse polynomial reference: 78 and 53, 29.1 % wrong | [`RESULT-ODE-MAIN-SEARCH`](../preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md) |
 | **Series** | Noisy series in time order (return-like data) | Candidates from the main search, one chosen inside the development period, one forecast test on later rows | Simulated series with a planted law (not market findings): a law reported in **0 of 40** series that contain none (the main search alone: 28 of 40); 31 of 40 where the law explains 5 or 20 % of the variance; 3 of 20 at 2 %; 0 of 20 at 0.5 % | [`RESULT-MARKET-PLANTED`](../preregistration/RESULT-MARKET-PLANTED-2026-11.md) |
-| **Refined** (`discovery_l2/refined_search.py`; not the default) | Tabular data, with physical units where the problem has them | The main search with the units' dimensionless products, a polynomial library, a report in the confirmed form with unnoticed terms dropped, and the search stage on every problem | SRBench: a law reported in 212 of 266 runs, **none inaccurate** (interval 0–1.7 %), **174 the law**. Feynman 78 and 77 of 119; Strogatz 19 of 28. On 103 held-out problems 61 and 61 against the main search's 55 and 52: one short of the 62 expected at noise 0. It uses units, which the other rows were not given | [`RESULT-REFINED-SEARCH`](../preregistration/RESULT-REFINED-SEARCH-2026-11.md) |
 | Template engine with the referee (`l2`) | Kept for replication, and for laws inside its grammar | Enumerates dimensionally valid expressions; the referee promotes one | SRBench: 268 promotions, **160 not accurate**. On laws its grammar can express (blind benchmark): 7 false in 288 | [`RESULT-SRBENCH-BASELINE`](../preregistration/RESULT-SRBENCH-BASELINE-2026-11.md), [`RESULT-BLIND-L2`](../preregistration/RESULT-BLIND-L2-2026-11.md) |
 
 Other measured engines: partial differential equations in two space dimensions, 117 of 120 runs exact
@@ -72,19 +74,20 @@ a tradeable effect.
 - **The default referee still promotes a sole survivor that does not fit** (audit M-10). Guard 3
   closes this behind a switch that is off until its run is recorded. The default route does not use
   that rule.
-- **The adequacy check is weak on rows taken from one trajectory** (M-14): in the default route a
-  law that nothing challenged is returned as `unchallenged`, and the UI shows it apart from
-  confirmed laws. The refined path does not report such a law.
+- **The adequacy check is weak on rows taken from one trajectory** (M-14): the main search returns
+  a law that nothing challenged as `unchallenged`. The refined path, now the default, does not
+  report such a law, and reports nothing at all when no search stage was given.
 - **The main search alone reports laws in pure noise on return-like data** (M-16). Use the series
   route there.
-- **An exact fit can carry a term that contributes nothing** (M-15) in the default and ODE routes;
-  the refined path drops such terms. A proposal that is not finite
+- **An exact fit can carry a term that contributes nothing** (M-15) in the main search and the ODE
+  route; the refined path drops such terms. A proposal that is not finite
   on the data can crash a run when a proposer is used directly (M-17); the composed proposer of the
   refined path contains and records such a failure.
 - **Memorisation.** SRBench's laws are textbook formulas a language model may have seen. LLM-SRBench
   was built against that; its dataset is gated and has not been run here.
 - **The UI** shows the default route beside the template engine's verdict, runs the PySR stage only
-  when asked and only where PySR is installed, and labels a reading without it as partial. The
+  when asked and only where PySR is installed, and shows a law found without it as tentative. It has
+  no physical units for a table, so the refined path runs there without its units reduction. The
   registry endpoint still shows the template engine alone (M-18).
 - **Governance.** The signed certification covers an earlier revision of the canonical specification;
   re-signing needs the registered trustees. The CI job that checks this fails until they sign.

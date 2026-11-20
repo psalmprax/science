@@ -15,13 +15,22 @@ inferred releases.
 
 ### Changed
 
+- **The refined path is the default route (2026-11-20, the owner's decision).** New
+  `apedp_dyn/discovery_l2/default_route.py`: `discover_law` runs the refined path unless the main
+  search or the template ladder is named or set in `APEDP_LAW_DISCOVERY_ROUTE`. `route.py`, which
+  held the earlier default, is frozen by PREREG-LLM-PROPOSER's digest and is wrapped, not edited.
+  The evidence is PREREG-REFINED-SEARCH (0 of 212 reported laws inaccurate, 174 recovered against
+  152); the same run missed one of its three expectations by one law, and it fixed no rule for
+  moving the default, so the move is recorded as a decision. With no search stage the route
+  reports nothing and returns a law as tentative with the reason (audit M-19). The UI reads the
+  new default; `ui/dashboard.html` re-minted for two strings.
 - **The refined path, measured (2026-11-20, PREREG-REFINED-SEARCH-2026-11, run once).** The main
   search with physical units, a polynomial library, the confirmed-and-pruned report and the search
   stage on every problem (`apedp_dyn/discovery_l2/refined_search.py`): 212 laws reported in 266
   SRBench runs, **none inaccurate**, 174 recovered (the main path: 186, 4 and 152). Feynman 78 and
   77 of 119 (69 and 70); Strogatz 19 of 28 (13). On the 103 held-out problems 61 and 61 against 55
   and 52. Expectations: reported laws accurate, held; `strogatz_lv1`, held; held-out recovery at
-  least 62 and 58, **missed at noise 0 by one law** and held at 1 %. The default route is unchanged.
+  least 62 and 58, **missed at noise 0 by one law** and held at 1 %.
   Audit M-13, M-14 and M-15 are addressed in this path.
   `preregistration/RESULT-REFINED-SEARCH-2026-11.md`.
 - **The UI shows the measured discovery routes; the referee gains a guard behind a switch

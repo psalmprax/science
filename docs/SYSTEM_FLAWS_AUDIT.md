@@ -254,6 +254,19 @@ three preregistered expectations missed.
   in it.
   **Still open until that run:** the default referee still promotes a sole
   survivor that does not fit.
+- **M-19 the refined path reports a law without a search stage — CLOSED AT
+  THE DEFAULT ROUTE 2026-11-20; `discover_refined` itself is unchanged.**
+  Found while making the refined path the default. Its measured result (0 of
+  212 reported laws inaccurate) had PySR on every problem. Called with no
+  proposer, `refined_search.discover_refined` still marks a law as reported
+  when it is confirmed against the first pass and the polynomial library
+  alone; on 80 rows at 5 % noise that confirmed `-0.40*omega + 0.69*theta**3
+  - 4.93*theta` for a damped pendulum (the law has `sin(theta)`), and on the
+  Duffing system a form with `x*exp(sin(x)**2)`. `refined_search.py` is
+  frozen, so the rule is in `discovery_l2/default_route.discover_law`: with no
+  proposer the law is returned as `tentative_law` with the reason and
+  `reported` is false. A caller of `discover_refined` directly does not get
+  that.
 - **M-18 the UI showed the template engine's verdict only — ADDRESSED
   2026-11-20 for the demo, market and caller-data endpoints; the registry
   endpoint is unchanged.** Every discovery endpoint of the UI called the
@@ -271,9 +284,12 @@ three preregistered expectations missed.
   none. **Limits, stated on the page:** the measured route is the first pass
   and the PySR search together; the search stage runs only when asked for
   (a toggle, 30 s) and only where PySR is installed, and a reading without it
-  is labelled partial. With the first pass alone the reading finds the kinetic
-  and Duffing laws and returns `widen_search` on the pendulum and the damped
-  oscillator, which need the search stage. `/api/discover/registry` still
+  is labelled partial. Since the refined path became the default the reading
+  is its first pass and polynomial library, and a law found that way is shown
+  as tentative with the reason, never as confirmed: on the demo pendulum at
+  5 % noise it "confirmed" a cubic in the angle for the sine, which is what a
+  rival set without a real search allows. The UI has no physical units for a
+  table, so the units reduction does not run there. `/api/discover/registry` still
   shows the template engine alone: its data is one trajectory of a driven
   system, which the ODE route was not measured on. The template engine's
   verdict is still displayed everywhere it was. `apedp_dyn/ui/route_endpoint.py`,
@@ -291,7 +307,7 @@ three preregistered expectations missed.
   the confirmed form only (PREREG-REFINED-SEARCH-2026-11: 0 of 212 reported
   laws inaccurate).
 - **M-14 the adequacy check is weak on trajectory rows — ADDRESSED IN THE
-  REFINED PATH 2026-11-20; open in the default route.** In the same
+  DEFAULT ROUTE 2026-11-20 (the refined path); open in the main search.** In the same
   run it passed `sin(exp(x0*x1))` on `strogatz_lv1` (test R² 0.35) at both
   noise levels: unchallenged by any rival, no structure found in the residuals,
   and an error 83 % of a nearest-neighbour smoother's, which on clustered
@@ -302,8 +318,9 @@ three preregistered expectations missed.
   The refined path runs the search stage on every problem and returns a law
   that nothing challenged as tentative, not reported. In
   PREREG-REFINED-SEARCH-2026-11 no law was left unchallenged, and
-  `strogatz_lv1` was recovered at both noise levels. The default route still
-  returns `unchallenged`; the UI shows it as tentative.
+  `strogatz_lv1` was recovered at both noise levels. The refined path is the
+  default route since 2026-11-20 (`discovery_l2/default_route.py`); the main
+  search still returns `unchallenged`, and the UI shows it as tentative.
 - **M-11 the in-house search is dominated by an outside engine — DECIDED
   AND IMPLEMENTED 2026-11-19; the UI is not moved yet.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
   both expectations held): on the 119 Feynman problems PySR recovers 73 at zero

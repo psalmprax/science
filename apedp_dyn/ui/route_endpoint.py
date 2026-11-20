@@ -5,14 +5,17 @@ Status: experimental
 Until 2026-11-20 every discovery endpoint of the UI called the template engines
 (``L2DiscoveryEngine``, ``MultiTermL2Engine``) and showed the referee's verdict
 on their candidates. The benchmarks since then changed what should be shown
-first: the main search path is the default route (PREREG-MAIN-SEARCH), the
+first: the default route is the refined path (``discovery_l2/default_route.py``,
+PREREG-REFINED-SEARCH; the main search before it, PREREG-MAIN-SEARCH), the
 template engine's promotions were wrong in 60 % of cases on SRBench (audit
 M-10), and return-like series need their own route (PREREG-MARKET-PLANTED).
 
 This module is what the endpoints call for that. It decides nothing itself:
 
-* ``route_reading`` runs ``discovery_l2.route.discover_law`` on tabular rows
-  (the default route unless one is named) and returns a JSON-safe record.
+* ``route_reading`` runs ``discovery_l2.default_route.discover_law`` on tabular
+  rows (the default route unless one is named) and returns a JSON-safe record.
+  The UI has no physical units for a table, so the refined path runs without
+  its units reduction here.
 * ``series_reading`` runs ``discovery_l2.series_route`` on rows in time order;
   ``market_series_reading`` does that on a market window's train slice.
 * ``status_block`` is the list the status page shows: the default route, the
@@ -29,10 +32,10 @@ and should not grow; it calls ``mount`` and the two functions.
 
 **The search stage.** PySR needs a Julia runtime and its first call in a
 process can take minutes, which an interactive request should not spend by
-surprise. So the search stage runs only when a budget is given
-(``search_seconds`` in the request, or the environment variable
-``APEDP_UI_SEARCH_SECONDS``); without one the route runs its exhaustive first
-pass alone and the record says so. With a budget and no PySR installed, the
+surprise. So PySR runs only when a budget is given (``search_seconds`` in the
+request, or the environment variable ``APEDP_UI_SEARCH_SECONDS``); without one
+the route runs its exhaustive first pass and, on the refined path, the
+polynomial library, and the record says the reading is partial. With a budget and no PySR installed, the
 record says that too.
 """
 from __future__ import annotations
@@ -45,7 +48,7 @@ from typing import Any
 import numpy as np
 from fastapi import Depends, FastAPI
 
-from apedp_dyn.discovery_l2 import route, series_route
+from apedp_dyn.discovery_l2 import default_route, series_route
 from apedp_dyn.market.assets import compute_strictly_causal_features, load_series_with_dates
 from apedp_dyn.orchestration.competition import RETIRED_ENGINES
 from apedp_dyn.ui.helpers import _audit, _json_obj, _require_api_key
@@ -92,31 +95,34 @@ def route_reading(X: Mapping[str, Any], y: Any, *, route_name: str | None = None
                   search_seconds: float | None = None, seed: int = 0) -> dict[str, Any]:
     """What the discovery route concludes on tabular rows. Never raises on bad data: the record carries the reason."""
     started = time.perf_counter()
-    chosen = route_name or route.default_route()
-    record: dict[str, Any] = {"route": chosen, "default_route": route.DEFAULT_ROUTE, "action": "not_run", "law": None,
-                              "law_as_confirmed": None, "reported": False}
+    record: dict[str, Any] = {"route": route_name, "default_route": default_route.DEFAULT_ROUTE, "action": "not_run",
+                              "law": None, "law_as_confirmed": None, "reported": False}
     try:
         names, columns, target = _clean(X, y)
         if len(target) < MIN_ROWS:
             raise ValueError(f"{len(target)} usable rows; the route needs at least {MIN_ROWS}")
-        if chosen != "main_search":
-            raise ValueError(f"route {chosen!r} needs physical dimensions; this reading runs the main search only")
+        chosen = record["route"] = route_name or default_route.default_route()
+        if chosen == "l2":
+            raise ValueError("route 'l2' needs physical dimensions; this reading runs the refined path or the main search")
         order = np.random.default_rng(seed).permutation(len(target))
         cut = round((1.0 - POOL_SHARE) * len(target))
         dev, pool = order[:cut], order[cut:]
         pool_y = target[pool]
         proposer, stage = _proposer(_search_budget(search_seconds))
-        out = route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
-                                 lambda rows: pool_y[rows], ledger=None, search_id="ui", route="main_search",
-                                 proposer=proposer, noise=noise, seed=seed)
+        out = default_route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
+                                         lambda rows: pool_y[rows], ledger=None, search_id="ui", route_name=chosen,
+                                         proposer=proposer, noise=noise, seed=seed)
         result = out["main_search"]
         record.update({
             "route": out["route"], "action": out["action"], "law": out["law"], "law_as_confirmed": out["law_as_confirmed"],
-            # an unchallenged law had no rival to contradict it: weaker evidence, shown apart (audit M-14)
-            "reported": out["action"] in ("confirmed", "equivalent_class"),
-            "tentative": out["action"] == "unchallenged",
+            # a law that is not reported is shown apart, with the reason: nothing challenged it (audit M-14),
+            # or the search stage did not run
+            "reported": bool(out["reported"]),
+            "tentative": out.get("tentative_law") is not None,
+            "tentative_reason": out.get("tentative_reason"),
+            "dropped_terms": [str(t) for t in out.get("dropped_terms", [])],
             "found_by": result.found_by, "search_stage": stage, "candidates": len(result.candidates),
-            # the measured route is first pass AND search; a reading without the search is partial
+            # the measured route is first pass AND PySR; a reading without PySR is partial
             "complete": proposer is not None,
             "rows_development": len(dev), "rows_pool": len(pool), "rows_read_from_pool": int(result.rows_read),
             "rejected_law": result.rejected_law,
@@ -126,7 +132,8 @@ def route_reading(X: Mapping[str, Any], y: Any, *, route_name: str | None = None
     except Exception as exc:  # noqa: BLE001 - a reading that cannot be made is reported in the record, not raised into the page
         record.update({"action": "not_run", "error": f"{type(exc).__name__}: {exc}"[:300]})
     record["seconds"] = round(time.perf_counter() - started, 2)
-    record["evidence"] = "preregistration/RESULT-MAIN-SEARCH-2026-11.md"
+    record["evidence"] = (default_route.EVIDENCE if record["route"] == default_route.REFINED
+                          else "preregistration/RESULT-MAIN-SEARCH-2026-11.md")
     return record
 
 
@@ -220,9 +227,15 @@ def status_fields() -> dict[str, Any]:
 def status_block() -> dict[str, Any]:
     """What the status page says about routes and engines, each line with the recorded result behind it."""
     return {
-        "default_route": route.DEFAULT_ROUTE,
+        "default_route": default_route.DEFAULT_ROUTE,
         "routes": [
-            {"name": "main_search", "for": "tabular data where a law explains nearly all of the target",
+            {"name": "refined", "for": "tabular data where a law explains nearly all of the target; the default since 2026-11-20",
+             "what": ("the main search with the units' dimensionless products where units are given, a polynomial library, "
+                      "PySR on every problem, and the law written in its confirmed form with unnoticed terms dropped"),
+             "measured": ("SRBench: 0 of 212 reported laws not accurate; 78 and 77 of 119 Feynman laws recovered; "
+                          "one of three expectations missed by one law"),
+             "evidence": default_route.EVIDENCE},
+            {"name": "main_search", "for": "the default until 2026-11-20; set APEDP_LAW_DISCOVERY_ROUTE=main_search to use it",
              "what": "exhaustive first pass, PySR, contrast confirmation, adequacy check",
              "measured": "SRBench: 4 of 186 reported laws not accurate; 69 and 70 of 119 Feynman laws recovered",
              "evidence": "preregistration/RESULT-MAIN-SEARCH-2026-11.md"},
@@ -253,5 +266,6 @@ def status_block() -> dict[str, Any]:
                                        "which the ODE route was not measured on (ODEBench systems are autonomous, several trajectories)"),
         },
         "caution": ("A law marked tentative was not challenged by any rival. On return-like data use the series route; "
-                    "the main search path alone reports laws in pure noise there."),
+                    "the search alone reports laws in pure noise there. The UI passes no physical units, so the "
+                    "refined path runs here without its units reduction."),
     }
