@@ -23,6 +23,16 @@ inferred releases.
 
 ### Changed
 
+- **Four different searches as the default search stage, measured and adopted (2026-11-20,
+  PREREG-PORTFOLIO-SEARCH-2026-11, run once, all four expectations held).** On SRBench's 103
+  held-out problems: 73 and 63 recovered by form against 61 and 61 for one search (expected at
+  least 63 and 59); 118 of its 122 recoveries kept (expected at least 116); 1 of 224 reported laws
+  not accurate (expected at most 2 %); no recovery passes the tolerance narrowly. 189 of 266 runs
+  recovered in all, against 174. As fixed before the run, new
+  `apedp_dyn/discovery_l2/search_stage.py` makes the portfolio the default route's search stage
+  where four cores are available, and one PySR search elsewhere; the UI's discovery endpoint uses
+  it. One run ended on an unfittable candidate (audit M-24).
+  `preregistration/RESULT-PORTFOLIO-SEARCH-2026-11.md`.
 - **ODE systems through the refined path with four searches, measured: not adopted (2026-11-20,
   PREREG-ODE-REFINED-2026-11, run once).** 92 and 73 of ODEBench's 117 components recovered
   against 80 and 69 for the recorded route. On the 86 components it was not built on: 63 and 50

@@ -41,7 +41,7 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 | Part | Benchmark | Result |
 | :--- | :--- | :--- |
 | Main search (first pass, PySR, contrast confirmation, adequacy); the default until 2026-11-20 | SRBench, 133 laws | 186 laws reported in 266 runs, 4 not accurate (2.2 %); 69 and 70 of 119 Feynman laws at noise 0 and 1 % |
-| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law |
+| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law. With four different searches side by side (where four cores are free): 189 recovered, 1 of 224 not accurate |
 | ODE route | ODEBench, 117 components | 80 and 69 recovered; 4.9 % of reported laws wrong. With the refined path and four searches side by side: 92 and 73 recovered, 5.1 % wrong against a limit of 5 %, so not adopted |
 | Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
 | Language model in PySR's place, and configuring PySR | SRBench | Writing the laws: 78 recovered against 152. Configuring the search: 173 against 174 without it. Optional |

@@ -304,7 +304,8 @@ three preregistered expectations missed.
   any whose fit raises or is not finite, so the path never sees it. The
   tables run with four searches (PREREG-PORTFOLIO-SEARCH-2026-11) was frozen
   before this was known and runs without that wrapper; errors there are
-  counted as they fall.
+  counted as they fall: one run of 266 ended that way there
+  (`feynman_III_15_12`, a held-out recovery of the single search).
 - **M-23 the recovery criterion can pass a form that is not the law —
   FOUND 2026-11-20, OPEN.** `symbolic_recovery` in
   `scripts/run_srbench_baseline.py` (frozen by every SRBench preregistration)
@@ -358,7 +359,12 @@ three preregistered expectations missed.
   54 reported laws inaccurate; no member failed. Read by form, two of the
   three gains are the law and the third is not (M-23): 28 and 25.
   Preregistered on the 103 held-out problems, judged by form
-  (PREREG-PORTFOLIO-SEARCH-2026-11, frozen 2026-11-20, no result yet).
+  (PREREG-PORTFOLIO-SEARCH-2026-11). **Result, 2026-11-20, all four
+  expectations held:** 73 and 63 recovered against 61 and 61, 118 of 122
+  recoveries kept, 1 of 224 reported laws not accurate, no narrow pass. It is
+  the default search stage where four cores are free
+  (`discovery_l2/search_stage.py`). **Still open:** which member does the work;
+  the ODE route (four seeds there, not adopted).
 - **M-21 the language-model client would send the API key to any address
   it is given — CLOSED FOR NEW CALLERS 2026-11-20; accepted in the frozen
   file.** Found by the CI security scan (bandit B310) once the test suite got

@@ -69,16 +69,18 @@ def _search_budget(requested: float | None) -> float:
 
 
 def _proposer(budget: float) -> tuple[Any, str]:
-    """PySR with the budget, or ``None`` with the reason there is no search stage."""
+    """The default search stage with the budget (four searches where four cores are free, else PySR),
+    or ``None`` with the reason there is no search stage."""
     if budget <= 0.0:
         return None, f"off: first pass alone (give search_seconds, or set {SEARCH_SECONDS_VARIABLE}, to run PySR)"
     try:
         import pysr  # noqa: F401 - only to learn whether the search can run at all
 
-        from apedp_dyn.proposers.pysr_proposer import PySRProposer
     except Exception as exc:  # noqa: BLE001 - a missing package and a failed Julia start are the same answer here
         return None, f"unavailable: PySR could not be loaded ({type(exc).__name__}); first pass alone"
-    return PySRProposer(budget_seconds=budget), f"PySR, {budget:g} s"
+    from apedp_dyn.discovery_l2.search_stage import default_search_stage
+
+    return default_search_stage(budget)
 
 
 def _clean(X: Mapping[str, Any], y: Any) -> tuple[list[str], np.ndarray, np.ndarray]:
