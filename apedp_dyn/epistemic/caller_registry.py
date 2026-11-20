@@ -216,6 +216,8 @@ def publish_compliance_record(
     """
     reg = caller_registration(caller_id)
     ds_id = dataset_id or reg.dataset_family
+    if ledger is None:
+        raise ValueError("a REG-F14b record is ledger-derived; a ledger is required")
     n_variants = derive_nominal_variants(ledger, ds_id) if nominal_variants is None else int(nominal_variants)
     multiplicity = multiplicity_from_ledger(
         ledger=ledger,
@@ -377,16 +379,17 @@ def validate_census_compliance(records: Iterable[dict[str, Any]]) -> dict[str, t
         by_id[cid] = rec
     verdicts: dict[str, tuple[bool, str]] = {}
     for reg in PRODUCTION_CALLERS:
-        rec = by_id.get(reg.caller_id)
-        if rec is None:
+        published = by_id.get(reg.caller_id)
+        if published is None:
             verdicts[reg.caller_id] = (
                 False,
                 "no published compliance record — REG-F14b requires every production "
                 "caller to certify mode (a) or (b)",
             )
             continue
-        ok, why = validate_caller_compliance(rec)
-        verdicts[reg.caller_id] = (ok, f"{why} (dataset family {rec.get('dataset_id', '?')})")
+        ok, why = validate_caller_compliance(published)
+        verdicts[reg.caller_id] = (
+            ok, f"{why} (dataset family {published.get('dataset_id', '?')})")
     return verdicts
 
 
@@ -395,7 +398,7 @@ def census_is_compliant(records: Iterable[dict[str, Any]]) -> bool:
     return all(ok for ok, _ in validate_census_compliance(records).values())
 
 
-def module_publisher(registration: CallerRegistration):
+def module_publisher(registration: CallerRegistration) -> Any:
     """Import-time helper for pins: fetch the wired publisher from the caller module."""
     mod = import_module(registration.module)
     publisher = getattr(mod, "publish_caller_compliance_record", None)

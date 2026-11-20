@@ -5,6 +5,7 @@ Stage 1 discovery only; confirmation/trading gated behind it.
 """
 import sys
 import warnings
+from collections.abc import Callable, Iterable
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -17,11 +18,11 @@ W, L, LAM = 200, 6, 1.0
 EPS = 1e-8
 
 
-def gen_F(seed):
+def gen_F(seed: int) -> np.ndarray:
     rng = np.random.RandomState(int(seed))
     n = 3000
     beta = rng.uniform(0.5, 1.5, N)
-    slow = np.zeros(N, dtype=bool)
+    slow: np.ndarray = np.zeros(N, dtype=bool)
     slow[rng.choice(N, 5, replace=False)] = True
     w = np.array([0.3, 0.15, 0.05])
     F = rng.normal(0, 0.01, n)
@@ -33,7 +34,7 @@ def gen_F(seed):
     return R
 
 
-def hlik_forecast(R):
+def hlik_forecast(R: np.ndarray) -> np.ndarray:
     n = len(R)
     sig = trailing_std(R)
     Z = R / (sig + EPS)
@@ -56,7 +57,7 @@ def hlik_forecast(R):
     return fc
 
 
-def stage1(tag, seeds, genfn):
+def stage1(tag: str, seeds: Iterable[int], genfn: Callable[[int], np.ndarray]) -> list[float]:
     print(f"--- {tag} ---")
     ps = []
     for sd in seeds:
@@ -69,7 +70,7 @@ def stage1(tag, seeds, genfn):
     return ps
 
 
-def run():
+def run() -> None:
     from cpmd_hdar import gen_panel as gp
     pD = stage1("gen-D discovery (140000+)",
                 range(140000, 140010), lambda sd: gp(sd, True))

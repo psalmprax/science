@@ -91,7 +91,10 @@ def _record_ledger(candidate_id: str, outcome: str) -> None:
         FullLineageExperimentLedger,
     )
 
-    ledger = FullLineageExperimentLedger(persistence_path=LEDGER)
+    # head_marker=False: this ledger is a committed fixture that every run appends
+    # to and `git checkout` rewinds, so a shorter file is expected here and must
+    # not read as truncation. Entries are still hash-chained.
+    ledger = FullLineageExperimentLedger(persistence_path=LEDGER, head_marker=False)
     ledger.register_candidate(candidate_id=candidate_id,
                               proposer_id="lorenz_public_benchmark",
                               formula=f"run::{candidate_id}")
@@ -283,7 +286,20 @@ def divergence_horizon(model_w: dict | None, chimera: bool = False) -> float:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument(
+        "--out-dir",
+        type=Path,
+        default=None,
+        help="write the results file and the ledger here instead of benchmarks/. A smoke run "
+        "is a wiring check; pointing it elsewhere keeps it out of the registered run's "
+        "results file and out of the registered ledger.",
+    )
     args = ap.parse_args()
+    if args.out_dir is not None:
+        global RESULTS, LEDGER  # the two output paths are module constants
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        RESULTS = args.out_dir / RESULTS.name
+        LEDGER = args.out_dir / LEDGER.name
     seeds = SEEDS[:1] if args.smoke else SEEDS
     noises = NOISE_SWEEP[2:3] if args.smoke else NOISE_SWEEP
     n_boot = 100 if args.smoke else REF_BOOT

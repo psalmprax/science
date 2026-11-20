@@ -12,6 +12,7 @@ LP bounds, isostatic rigidity Hessian audits, and adversarial traps are develope
 `sphere_packing_sandbox.py`.
 """
 from __future__ import annotations
+from typing import Any
 
 import sys
 
@@ -19,7 +20,7 @@ import numpy as np
 
 sys.path.insert(0, '.')
 
-GROUND_TRUTH: dict[tuple[str, int], dict] = {
+GROUND_TRUTH: dict[tuple[str, int], dict[str, Any]] = {
     ("interval", 5): {"r_star": 1.0 / 10.0, "phi_star": 1.0,
                       "note": "n equal segments tile [0,1] exactly"},
     ("square", 1): {"r_star": 0.5, "phi_star": np.pi / 4.0,
@@ -97,7 +98,7 @@ def _density(family: str, n: int, r: float) -> float:
 
 def run_eso_case(family: str, n: int, budget: int = 2000,
                  tau: float = 0.01, seeds: tuple[int, ...] = (0, 1),
-                 perturb_trials: int = 200) -> dict:
+                 perturb_trials: int = 200) -> dict[str, Any]:
     """Run one ground-truth case; return verdict + audit trail."""
     key = (family, n)
     if key not in GROUND_TRUTH:

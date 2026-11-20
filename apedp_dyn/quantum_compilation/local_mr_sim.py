@@ -42,8 +42,8 @@ from __future__ import annotations
 
 import contextlib
 from collections import Counter
-from collections.abc import Iterable, Sequence
-from typing import Any, ClassVar
+from collections.abc import Generator, Iterable, Sequence
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 
@@ -60,7 +60,7 @@ class Field:
 
     _cache: ClassVar[dict[int, Field]] = {}
 
-    def __new__(cls, degree: int):
+    def __new__(cls, degree: int) -> Any:
         cached = cls._cache.get(degree)
         if cached is not None:
             return cached
@@ -81,8 +81,8 @@ class Field:
         self.primitive_element = 2
         poly = _PRIMITIVE_POLYNOMIALS[degree]
         order = self.size - 1
-        self._exp = np.zeros(2 * order, dtype=np.int64)
-        self._log = np.zeros(self.size, dtype=np.int64)
+        self._exp: np.ndarray = np.zeros(2 * order, dtype=np.int64)
+        self._log: np.ndarray = np.zeros(self.size, dtype=np.int64)
         value = 1
         for exponent in range(order):
             self._exp[exponent] = value
@@ -128,16 +128,19 @@ class Field:
         la = np.where(nz, self._log[np.where(nz, a, 0)], 0)
         lb = np.where(nz, self._log[np.where(nz, b, 0)], 0)
         out[nz] = self._exp[(la[nz] + lb[nz]) % (self.size - 1)]
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def mul_constant(self, constant: int, values: np.ndarray) -> np.ndarray:
         values = np.asarray(values, dtype=np.int64)
         if constant == 0:
-            return np.zeros_like(values)
+            _out: np.ndarray = np.zeros_like(values)
+            return _out
         out = np.zeros_like(values)
         nz = values != 0
         out[nz] = self._exp[(int(self._log[constant]) + self._log[values[nz]]) % (self.size - 1)]
-        return out
+        _out = out
+        return _out
 
     def div_constant(self, constant: int, values: np.ndarray) -> np.ndarray:
         values = np.asarray(values, dtype=np.int64)
@@ -147,17 +150,20 @@ class Field:
         nz = values != 0
         shift = int(self._log[constant])
         out[nz] = self._exp[(self._log[values[nz]] - shift) % (self.size - 1)]
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def inverse_values(self, values: np.ndarray) -> np.ndarray:
         values = np.asarray(values, dtype=np.int64)
         out = np.zeros_like(values)
         nz = values != 0
         out[nz] = self._exp[(self.size - 1 - self._log[values[nz]]) % (self.size - 1)]
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def parity(self, values: np.ndarray) -> np.ndarray:
-        return self._popcount[np.asarray(values, dtype=np.int64)] & 1
+        _out: np.ndarray = self._popcount[np.asarray(values, dtype=np.int64)] & 1
+        return _out
 
 
 class Q:
@@ -186,7 +192,7 @@ class B:
         return f"b{self.id}"
 
 
-class array(list):
+class array(list[Any]):
     """List of qubits or bits, matching ``kickmix.array``'s role."""
 
     def __init__(self, values: Iterable[Any] = ()):
@@ -256,14 +262,14 @@ class _Mark:
     def __enter__(self) -> _Mark:
         return self
 
-    def __exit__(self, *_exc: Any) -> bool:
+    def __exit__(self, *_exc: Any) -> Literal[False]:
         return False
 
 
 class Op:
     __slots__ = ("args", "cond", "name")
 
-    def __init__(self, name: str, args: tuple, cond: tuple):
+    def __init__(self, name: str, args: tuple[Any, ...], cond: tuple[Any, ...]):
         self.name = name
         self.args = args
         self.cond = cond
@@ -277,7 +283,7 @@ class Circuit:
         self.num_qubits = num_qubits
         self.num_bits = num_bits
 
-    def operation_counts(self) -> Counter:
+    def operation_counts(self) -> Counter[str]:
         """Instructions by name.
 
         This is **not** the competition's Toffoli accounting: a high-level op here
@@ -293,7 +299,7 @@ class Circuit:
 class Builder:
     """Records the subset of ``kickmix.CircuitBuilder`` the DQI decoder uses, plus ``mr``."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._ops: list[Op] = []
         self._next_qubit = 0
         self._next_bit = 0
@@ -334,7 +340,7 @@ class Builder:
         return _Mark(name)
 
     @contextlib.contextmanager
-    def unary_iteration(self, register: Sequence[Q], control: Any = True):
+    def unary_iteration(self, register: Sequence[Q], control: Any = True) -> Generator[Any, None, None]:
         cursor = Cursor(register, control)
         cursor.active = True
         self._cursors.append(cursor)
@@ -500,9 +506,9 @@ class Simulator:
         self._reset_state()
 
     def _reset_state(self) -> None:
-        self.q = np.zeros((self._num_qubits, self.batch_size), dtype=np.uint8)
-        self.b = np.zeros((self._num_bits, self.batch_size), dtype=np.uint8)
-        self.phase = np.zeros(self.batch_size, dtype=np.uint8)
+        self.q: np.ndarray = np.zeros((self._num_qubits, self.batch_size), dtype=np.uint8)
+        self.b: np.ndarray = np.zeros((self._num_bits, self.batch_size), dtype=np.uint8)
+        self.phase: np.ndarray = np.zeros(self.batch_size, dtype=np.uint8)
 
     def use_same_registers_as(self, circuit: Circuit) -> None:
         self._circuits.append(circuit)
@@ -546,7 +552,8 @@ class Simulator:
             matched = self._reg_value(cursor.register) == obj.address
             if cursor.control is not True:
                 matched = matched & self._mask(cursor.control)
-            return matched
+            _out: np.ndarray = matched
+            return _out
         if isinstance(obj, Q):
             return self.q[obj.id, :].astype(bool)
         if isinstance(obj, B):
@@ -556,7 +563,7 @@ class Simulator:
         if isinstance(obj, (list, tuple, array)):
             if not obj:
                 return np.ones(self.batch_size, dtype=bool)
-            mask = np.ones(self.batch_size, dtype=bool)
+            mask: np.ndarray = np.ones(self.batch_size, dtype=bool)
             for item in obj:
                 mask &= self._mask(item)
             return mask
@@ -572,7 +579,7 @@ class Simulator:
         """Truth of a register: nonzero (any bit set), as ``bit_store`` control uses."""
         targets = _flatten(obj)
         if targets and isinstance(targets[0], (Q, B)):
-            mask = np.zeros(self.batch_size, dtype=bool)
+            mask: np.ndarray = np.zeros(self.batch_size, dtype=bool)
             for target in targets:
                 mask |= self._mask(target)
             return mask
@@ -581,7 +588,7 @@ class Simulator:
     # -- register values -------------------------------------------------
     def _reg_value(self, register: Sequence[Any]) -> np.ndarray:
         items = _flatten(register)
-        value = np.zeros(self.batch_size, dtype=np.int64)
+        value: np.ndarray = np.zeros(self.batch_size, dtype=np.int64)
         if not items:
             return value
         store = self.q if isinstance(items[0], Q) else self.b
@@ -646,7 +653,7 @@ class Simulator:
         if not targets:
             return
         if len(targets) == 1 and len(sources) >= 1:
-            parity = np.zeros(self.batch_size, dtype=bool)
+            parity: np.ndarray = np.zeros(self.batch_size, dtype=bool)
             for source in sources:
                 parity ^= self._mask(source)
             self.q[targets[0].id, :] ^= (parity & mask).astype(np.uint8)
@@ -695,7 +702,7 @@ class Simulator:
         qubits, bits = _flatten(target), _flatten(output)
         mask = self._cond_mask(op)
         for qubit, bit in zip(qubits, bits, strict=False):
-            value = self.q[qubit.id, :].astype(bool)
+            value: np.ndarray = self.q[qubit.id, :].astype(bool)
             outcome = value & (self._rng.random(self.batch_size) < 0.5)
             self._write_bit(bit, outcome.astype(np.uint8), mask)
             self.q[qubit.id, :] = np.where(mask, 0, self.q[qubit.id, :]).astype(np.uint8)
@@ -791,7 +798,7 @@ class Simulator:
             if len(controls) == 1 and len(targets) > 1:
                 controls.extend(controls * (len(targets) - 1))
         for index, target in enumerate(targets):
-            conjunction = np.ones(self.batch_size, dtype=bool)
+            conjunction: np.ndarray = np.ones(self.batch_size, dtype=bool)
             for controls in control_lists:
                 conjunction &= self._mask(controls[index])
             self.q[target.id, :] ^= (conjunction & mask).astype(np.uint8)

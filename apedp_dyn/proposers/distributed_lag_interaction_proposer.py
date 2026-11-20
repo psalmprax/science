@@ -10,8 +10,12 @@ Emits standardized CandidateProposal instances conforming to ProposerBase.
 """
 from __future__ import annotations
 
+import warnings
+from typing import Any
+
 import numpy as np
 import pandas as pd
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import ElasticNetCV
 from sklearn.model_selection import TimeSeriesSplit
 
@@ -59,7 +63,7 @@ class DistributedLagInteractionProposer(ProposerBase):
         # never has to re-parse names by substring (feature names may themselves
         # contain "_X_" / "_lag").
         feature_matrix: dict[str, np.ndarray] = {}
-        column_spec: dict[str, tuple] = {}
+        column_spec: dict[str, tuple[Any, ...]] = {}
         for col in feature_cols:
             if col not in df.columns:
                 continue
@@ -111,9 +115,12 @@ class DistributedLagInteractionProposer(ProposerBase):
             l1_ratio=[0.2, 0.5, 0.8],
             cv=TimeSeriesSplit(n_splits=self.cv_folds),
             random_state=self.random_seed,
-            max_iter=1000,
+            max_iter=5000,
+            tol=1e-3,
         )
-        model.fit(X_norm, y_clean)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            model.fit(X_norm, y_clean)
 
         coefs = model.coef_
         non_zero_idx = np.where(np.abs(coefs) > 1e-4)[0]
@@ -125,7 +132,9 @@ class DistributedLagInteractionProposer(ProposerBase):
         # exactly the fitted model: y = bias + sum(w_raw * raw_feature).
         raw_weights = {X_df.columns[i]: float(coefs[i] / x_std[i]) for i in non_zero_idx}
         bias = float(model.intercept_ - np.sum(coefs[non_zero_idx] * x_mean[non_zero_idx] / x_std[non_zero_idx]))
-        formula_terms = [f"{raw_weights[name]:+.4f} * {name}" for name in selected_names]
+        from apedp_dyn.grammar.term_format import atom
+        formula_terms = [f"{raw_weights[name]:+.4f}*{atom(name)}"
+                         for name in selected_names]
         formula_str = f"intercept({bias:.4f}) " + " ".join(formula_terms)
 
         max_lag = max((spec[2] for spec in column_spec.values() if spec[0] == "lag"), default=0)
@@ -136,7 +145,7 @@ class DistributedLagInteractionProposer(ProposerBase):
         lag_state: dict[str, dict[str, np.ndarray]] = {"buffers": {}}
 
         def compute_score(d: pd.DataFrame) -> np.ndarray:
-            sig = np.full(len(d), bias, dtype=float)
+            sig: np.ndarray = np.full(len(d), bias, dtype=float)
             # FLAW-A09 (2026-10-21 external audit): the persistent buffer used
             # to be WRITTEN by the first lag term of a call, so a SECOND lag
             # term on the same base column (e.g. lag_1_x and lag_2_x both
@@ -146,7 +155,7 @@ class DistributedLagInteractionProposer(ProposerBase):
             # — snapshotting the pre-call value — and written once per (call,
             # base column), after the term that first touches it.
             seen_base: set[str] = set()
-            call_buffers: dict[str, np.ndarray] = {}
+            call_buffers: dict[str, np.ndarray | None] = {}
             for name, w in raw_weights.items():
                 spec = column_spec[name]
                 if spec[0] == "interaction":
@@ -169,7 +178,7 @@ class DistributedLagInteractionProposer(ProposerBase):
                             l_prev = 0
                         # lagged[t] = series value lag_n steps before frame position t.
                         # Rows whose predecessor lies before available history stay NaN.
-                        lagged = np.full(len(s_raw), np.nan, dtype=float)
+                        lagged: np.ndarray = np.full(len(s_raw), np.nan, dtype=float)
                         shift_pos = l_prev - lag_n
                         if shift_pos >= 0:
                             lagged[:] = history[shift_pos : shift_pos + len(s_raw)]

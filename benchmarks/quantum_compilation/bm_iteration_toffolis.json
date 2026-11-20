@@ -1,0 +1,55 @@
+{
+  "script": "scripts/emit_bm_iteration.py",
+  "module": "apedp_dyn/quantum_compilation/inplace_bm.py",
+  "class": "measured gate stream for one iteration; the loop is a projection",
+  "what_is_counted": "discrepancy dot product + update accumulate, i.e. the key-equation stage only (no Chien, Forney or uncompute)",
+  "rows": [
+    {
+      "degree": 4,
+      "t": 5,
+      "cells": 13,
+      "array_qubits": 52,
+      "syndrome_qubits": 40,
+      "gf_multiplies": 11,
+      "toffolis": 99,
+      "qubits": 92,
+      "iterations": 10,
+      "key_equation_toffolis": 990,
+      "toffolis_per_gf_multiply": 9.0
+    },
+    {
+      "degree": 8,
+      "t": 10,
+      "cells": 23,
+      "array_qubits": 184,
+      "syndrome_qubits": 160,
+      "gf_multiplies": 21,
+      "toffolis": 567,
+      "qubits": 344,
+      "iterations": 20,
+      "key_equation_toffolis": 11340,
+      "toffolis_per_gf_multiply": 27.0
+    },
+    {
+      "degree": 12,
+      "t": 35,
+      "cells": 73,
+      "array_qubits": 876,
+      "syndrome_qubits": 840,
+      "gf_multiplies": 71,
+      "toffolis": 4473,
+      "qubits": 1716,
+      "iterations": 70,
+      "key_equation_toffolis": 313110,
+      "toffolis_per_gf_multiply": 63.0,
+      "archive_toffolis": 396919.33,
+      "key_equation_vs_archive": 0.7888504699430989
+    }
+  ],
+  "against_the_archive": {
+    "archive_toffolis": 396919.33,
+    "key_equation_toffolis": 313110,
+    "ratio": 0.7888504699430989,
+    "conclusion": "the key-equation stage alone costs 0.79x the archive's complete decoder, so the packed algorithm is not cheaper at GF(2^12) without the uncompute savings the archive's 396,919 Toffolis must contain"
+  }
+}

@@ -2,7 +2,7 @@
 
 **Status:** Authoritative  
 **Version:** 2.0.0 (Post-Audit Discovery Engine Architecture)  
-**Last Updated:** 2026-10-12
+**Last Updated:** 2026-11-20
 
 ---
 
@@ -53,6 +53,41 @@ flowchart TD
 
 ---
 
+## 2.1 Discovery routes (law discovery from data)
+
+The pipeline above is the promotion lifecycle for a market hypothesis. Discovering a law from a
+table of measurements goes through a discovery route. For tabular data
+`apedp_dyn/discovery_l2/default_route.py` runs the refined path (the default since 2026-11-20) unless
+the main search or the template engine is named; `discovery_l2/route.py`, which held the earlier
+default, is frozen by a preregistration and is wrapped, not edited. Trajectories and return-like
+series have their own entry points, listed below.
+The routes keep the same separation: a proposer emits candidates and never decides its own
+acceptance. The diagram is the main search, which the refined path runs inside.
+
+```mermaid
+flowchart LR
+    D["Rows: development and a pool of unread rows"] --> F["First pass\n(exhaustive, small formulas)"]
+    F --> S["Search stage\n(PySR; optionally a language model)"]
+    S --> C["Contrast confirmation\n(reads pool rows chosen to tell rivals apart)"]
+    C --> A["Adequacy check\n(no structure left; as good as a smoother)"]
+    A -->|confirmed or equivalent class| R["Law reported, in its confirmed form"]
+    A -->|nothing challenged it| T["Tentative law"]
+    A -->|fails| W["widen_search: no law"]
+```
+
+| Route | Module | Use |
+| :--- | :--- | :--- |
+| `main_search` | `discovery_l2/main_search.py` | Tabular data; the default until 2026-11-20 and the core of the routes below |
+| ODE | `ode/main_search_ode.py`, `ode/window_rows.py` | Trajectories: one state and one rate per disjoint window, then the main search per component |
+| Series | `discovery_l2/series_route.py` | Return-like series: the main search supplies candidates only; one is chosen inside the development period and must pass one forecast test on later rows |
+| `refined` (default) | `discovery_l2/default_route.py`, `discovery_l2/refined_search.py`, `proposers/composed.py` | The main search with physical units, a polynomial library and term pruning added around it. Without a search stage it reports nothing: a law is returned as tentative |
+| `l2` | `discovery_l2/l2_engine.py`, `epistemic/adjudicate.py` | The template engine and the referee's verdict; kept for replication |
+
+The measured result behind each route, and its limits, are in
+[`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
+
+---
+
 ## 3. Data Firewalls & Holdout Burning Mechanics
 
 ### 3.1 The Failure Mode: Iterative Snooping
@@ -74,7 +109,7 @@ To prevent holdout contamination:
 Preregistered settings cannot be scattered as independent literals across code and documentation. 
 
 - **Canonical Specification:** Stored at `specifications/canonical_preregistered_spec_v1.json`.
-- **Runtime Guard:** `apedp_dyn.conf.canonical_spec` computes the SHA-256 hash of the JSON file upon import. If the hash does not match `a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47`, import halts with `SpecificationIntegrityError`.
+- **Runtime Guard:** `apedp_dyn.conf.canonical_spec` computes the SHA-256 hash of the JSON file upon import. If the hash does not match `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329`, import halts with `SpecificationIntegrityError`.
 - **Consumption:**
   - `canonical_ledger.py` consumes `TACTICAL_ACTIVE_MIN` (5%) and `TACTICAL_ACTIVE_MAX` (90%), `CONTINUOUS_FACTOR_ACTIVE_MIN` (85%), `TAIL_RISK_MIN_EVENTS` (30).
   - `trial_ledger.py` consumes `DSR_THRESHOLD`.
@@ -89,8 +124,8 @@ Earlier scientific generations were sealed as immutable benchmark records rather
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1.json` — original sealed generation.
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_1.json` — first revision.
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_2.json` — second revision.
-- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_10.json` — current sealed generation (the one consumed by `blind_benchmark.py` via `FROZEN_RECORD`; supersedes v1_9 after the grammar-space expansion: `H-SQRTV` + `sqrt`/`tanh`/`min`/`max` operator declarations in `grammar_space.py` and saturating-rational term families in `grammar/candidate_ir.py`).
-- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_9.json`, `APEDPX_FROZEN_v1_8.json`, `APEDPX_FROZEN_v1_7.json`, `APEDPX_FROZEN_v1_6.json`, `APEDPX_FROZEN_v1_4.json`, `APEDPX_FROZEN_v1_3.json`, `APEDPX_FROZEN_v1_2.json`, `APEDPX_FROZEN_v1_1.json`, `APEDPX_FROZEN_v1.json` — superseded generations retained as immutable historical records.
+- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_18.json` — current sealed generation (the one consumed by `blind_benchmark.py` via `FROZEN_RECORD`; supersedes v1.13 after the sandbox-wide type-annotation pass, which drifted four guard files by annotations only — `eseds_dynamical.py`, `multi_asset_signals_sandbox.py`, `multi_grammar_sandbox.py`, `trading_signals_sandbox.py` — with no arithmetic, threshold, cohort or blind-case change). Its `remint_log` carries the old and new digest and the rationale for every drifted file.
+- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_13.json`, `APEDPX_FROZEN_v1_12.json`, `APEDPX_FROZEN_v1_11.json`, `APEDPX_FROZEN_v1_10.json`, `APEDPX_FROZEN_v1_8.json`, `APEDPX_FROZEN_v1_7.json`, `APEDPX_FROZEN_v1_6.json`, `APEDPX_FROZEN_v1_4.json`, `APEDPX_FROZEN_v1_3.json`, `APEDPX_FROZEN_v1_2.json`, `APEDPX_FROZEN_v1_1.json`, `APEDPX_FROZEN_v1.json` — superseded generations retained as immutable historical records.
 - `apedp_dyn/sandbox/governance_manifest.json` — manifest enumerating the sealed artifacts.
 
 The frozen generations intentionally carry **different threshold key sets** from the canonical live spec (e.g. `RESID_RHO_FLAG`, `SOLE_SURVIVOR_GAMMA`, `bootstrap_seed`). Do not "synchronize" them by editing: the canonical live thresholds are only those in `specifications/canonical_preregistered_spec_v1.json`.

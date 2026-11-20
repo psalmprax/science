@@ -2,24 +2,25 @@
 
 [![APEDP CI/CD](https://github.com/psalmprax/science/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/psalmprax/science/actions/workflows/test.yml)
 
-A scientific discovery and epistemic referee platform combining formal mathematical verification (Lean 4), multi-proposer candidate generation, dimensional analysis, rigorous multiple-testing control (Deflated Sharpe Ratio), anti-snooping holdout guards, and scoped non-fungible promotion state machines.
+A scientific discovery and epistemic referee platform combining Lean 4 transcription of candidate laws (not yet machine-checked proof; see below), multi-proposer candidate generation, dimensional analysis, rigorous multiple-testing control (Deflated Sharpe Ratio), anti-snooping holdout guards, and scoped non-fungible promotion state machines.
 
 ---
 
 ## What APEDP-X Does
 
 - **Epistemic Referee Discipline:** Enforces a strict separation between hypothesis generation and adjudication. Hypotheses cannot judge their own validity or define their own promotion criteria.
-- **Formal Mathematical Verification:** Native zero-disk Lean 4 compiler verification (`--stdin` streaming) proving algebraic identities, dimensional consistency, and mathematical bounds.
+- **Lean 4 Transcription and Kernel Check:** Candidate laws are transcribed into Lean 4 and streamed to the Lean compiler (`--stdin`, nothing written to disk). This transcription tree is **not a verification layer**: its measured machine-checked fraction is 0.0, because the generated files declare their own axioms or leave `sorry` (see [`docs/LEAN_FORMAL_STATUS.md`](docs/LEAN_FORMAL_STATUS.md)). A module that declares its own axioms is capped at `P1_CANDIDATE`; no result may be described as formally verified on that basis.
+- **Machine-Checked Lean Core (`lean_checked/`):** Separate from the transcription tree, a Lake project pinned to Lean 4.24.0 whose 39 theorems **are** elaborated by the Lean kernel: dimensional-algebra consistency and refutation of candidate law forms, the promotion lifecycle's no-shortcut and failure-halts properties, and the holdout budget's burn-permanence and single-use properties — proved on small models of the referees. The kernel checks the theorems, not the Python: `tests/test_lean_model_conformance.py` is the link, running each model beside the implementation it describes on every short operation sequence (1,884 promotion sequences; 1,554 holdout sequences under each of three budgets) and requiring the same refusals and the same state. `scripts/check_lean_checked.py` re-measures every theorem's `#print axioms` against the committed [`lean_checked/axiom_audit.json`](lean_checked/axiom_audit.json) (only `propext`, `Quot.sound`, `Classical.choice` permitted) and CI runs it with the pinned toolchain. That agreement is bounded and tested, not proved; `Dimensions.lean` has no such counterpart.
 - **Competing Multi-Proposer Architecture:** Independent proposers (e.g. `SparseMicrostructureProposer`, `OrderBookResiliencyProposer`, genetic AST regression) submit standardized `CandidateProposal` objects conforming to explicit strategy archetypes (`TAIL_RISK` $\ge 30$ events, `CONTINUOUS_FACTOR` $\ge 85\%$, and `TACTICAL` active fraction strictly in $[5\%, 90\%]$).
 - **Deflated Sharpe Ratio (DSR) Trial Accounting:** Implements Bailey & López de Prado (2014) closed-form DSR, tracking cumulative trial counts, variance, skewness, and kurtosis to penalize data dredging and search multiplicity.
-- **Full-Lineage Experiment Ledger & Anti-Snooping Guard:** Every candidate trial logs its feature set, hyperparameters, seeds, and dataset slices. Any confirmation holdout slice failed by a candidate is permanently burned; iterative replacements attempting to reuse it trigger `HoldoutContaminationError`.
-- **Six-Stage Scoped Promotion:** Enforces non-fungible sequential verification:
-  1. `MATHEMATICAL_CONSISTENCY` (Lean 4 + dimensional invariants)
+- **Full-Lineage Experiment Ledger & Anti-Snooping Guard:** Every candidate trial logs its feature set, hyperparameters, seeds, and dataset slices. A confirmation holdout slice is single-use: it may be inspected by one candidate (`max_holdout_inspections`, default 1), and a slice failed by a candidate is permanently burned. A second candidate, a respelled slice name, or a replacement after a failure triggers `HoldoutContaminationError`. The on-disk ledger is hash-chained, so an edited, removed or truncated entry raises `LedgerIntegrityError` instead of silently un-burning a slice. Pass a content fingerprint (`fingerprint_holdout_slice(data, index=...)`) with the exposure and the slice is identified by its observations as well as its name: the same rows under another name, a sub-window, reordered or dropped columns, or an overlapping date range of the same dataset are all the same holdout. The guard covers ledgers given a `persistence_path`; an in-memory ledger forgets its burns with the process.
+- **Six-Stage Scoped Promotion:** Enforces non-fungible sequential verification. Each stage is entered with its evidence (`verify_stage_N_from_*`), and the tracker computes the metrics itself; handing it finished numbers (`verify_stage_N`) is refused unless the tracker was built with `allow_reported_metrics=True`, in which case a passing stage is labelled `..._ON_REPORTED_METRICS` and `is_evidence_backed()` is False:
+  1. `MATHEMATICAL_CONSISTENCY` (Lean 4 kernel status + dimensional invariants; see the Lean caveat above)
   2. `PREDICTIVE_RECOVERY` (Cross-validated out-of-sample error reduction)
   3. `UNIQUE_IDENTIFICATION` (Diebold-Mariano test $p < 0.01$ against Kyle/Amihud/Biais/Carhart baselines; literature $R^2 < 0.85$)
-  4. `OUT_OF_SAMPLE_TRANSFER` (Un-snooped temporal regimes and cross-asset transfer)
-  5. `ECONOMIC_VALIDITY` (Net Sharpe after fees, breakeven fee hurdles, $DSR \ge 0.95$)
-  6. `REAL_MARKET_PROMOTION` (Live sandbox/prospective execution without degradation)
+  4. `OUT_OF_SAMPLE_TRANSFER` (Un-snooped temporal regimes and cross-asset transfer; the holdout is claimed in a persistent experiment ledger before it is scored)
+  5. `ECONOMIC_VALIDITY` (Net Sharpe after fees, breakeven fee hurdles, $DSR \ge 0.95$ from a persistent trial ledger; refused on a hindsight-selected or forward-filled universe)
+  6. `REAL_MARKET_PROMOTION` (Live sandbox/prospective execution without degradation; returns must be dated after the stage-5 record)
 
 ---
 
@@ -29,6 +30,29 @@ To maintain scientific integrity, the platform explicitly acknowledges its empir
 1. **No Proof of Live Trading Profitability:** While development-period hypotheses (e.g. H-LIK, H-XSC) exhibited strong in-sample statistical recovery, they failed or degraded during prospective real-market confirmation. The platform's gates are designed to catch and reject such false discoveries, not to guarantee alpha.
 2. **No Conservative Hamiltonian Physics in Economics:** Financial order flow does not conserve mechanical energy or obey Hamiltonian mechanics. Financial signals are modeled under dissipative, regime-switching microstructure dynamics, not conservative physical laws.
 3. **No Domain-Agnostic Equation Generation Without Adapters:** While the epistemic evidence and holdout-gating core is domain-general, actual hypothesis discovery requires domain-specific adapters, units, operational constraints, and realistic baseline registries.
+
+---
+
+## Measured status (2026-11)
+
+Each line is one preregistered run, made once, with its outputs committed unedited. The full page,
+with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
+
+| Part | Benchmark | Result |
+| :--- | :--- | :--- |
+| Main search (first pass, PySR, contrast confirmation, adequacy); the default until 2026-11-20 | SRBench, 133 laws | 186 laws reported in 266 runs, 4 not accurate (2.2 %); 69 and 70 of 119 Feynman laws at noise 0 and 1 % |
+| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law |
+| ODE route | ODEBench, 117 components | 80 and 69 recovered; 4.9 % of reported laws wrong |
+| Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
+| Language model in PySR's place, and configuring PySR | SRBench | Writing the laws: 78 recovered against 152. Configuring the search: 173 against 174 without it. Optional |
+| Fault-tolerant state preparation | Steane code, every fault and fault pair enumerated | 275,712 certified circuits at 11 CNOTs; none of the 22,976 shortest encoders is fault-tolerant alone |
+| Template engine with the referee | SRBench | 160 of 268 promotions not accurate. With the referee's structure guard: 3 of 113, and the correct promotions kept (103 against 100) |
+| Promotion referee on crypto returns | 500 placebo signals; one test claim | 0 placebos passed; the claim (order-flow imbalance) was refused |
+
+For tabular data `apedp_dyn/discovery_l2/default_route.py` runs the refined path unless the main
+search or the template engine is named; trajectories and return-like series have their own entry points
+(`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the
+default route beside the template engine's verdict (`apedp_dyn/ui/route_endpoint.py`).
 
 ---
 
@@ -121,15 +145,17 @@ disc_report = run_calibrated_discovery_benchmark(my_proposer_fn, trials_per_cond
 print(f"Power at IC=0.15: {disc_report.strong_signal_power:.2%}")
 ```
 
-### 3. Verifying In-Memory Lean 4 Proofs via Streaming `--stdin`
+### 3. Checking Lean 4 Code In Memory via Streaming `--stdin`
 
-Run formal verification directly through Lean 4's kernel without disk overhead:
+Stream Lean 4 source to the compiler without writing a file. This needs a `lean`
+binary on `PATH` (or in `~/.elan/bin`); without one the call fails closed and
+reports `P0`, it does not report success:
 ```python
-from apedp_dyn.epistemic.lean_universal_bridge import verify_lean4_code_stdin
+from apedp_dyn.epistemic.lean_universal_bridge import LeanUniversalBridge
 
 code = "theorem tautology (p : Prop) (h : p) : p := h"
-result = verify_lean4_code_stdin(code)
-print(f"Verified: {result.verified}, Kernel exit code: {result.exit_code}")
+result = LeanUniversalBridge().verify_raw_lean_code_in_memory(code)
+print(f"Claim status: {result.proof_claim_status.value}, kernel exit code: {result.kernel_exit_code}")
 ```
 
 ### 4. Inspecting Canonical Preregistered Settings
@@ -146,13 +172,16 @@ environment setup and scope limitations.
 
 | Check | Command / scope | Actual workflow and job |
 | --- | --- | --- |
-| Python lint | `make lint`: Ruff `E9,F` on `apedp/`, `apedp_dyn/`, `tests/`; configured rules on `apedp_dyn/conf/` | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` (Python 3.12) |
-| Type checks | `make typecheck`: strict mypy on `apedp_dyn/conf/paths.py` and `canonical_spec.py`, not the entire repository | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` |
+| Python lint | `make lint`: the full configured Ruff ruleset on `apedp/`, `apedp_referee/`, `apedp_mmlm/`, `tests/`, `apedp_dyn/conf/` and three FAROS/preflight/mutation scripts; every other path held to its pinned count by `scripts/check_quality_baseline.py`, which may only go down | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` (Python 3.12) |
+| Type checks | `make typecheck`: strict mypy on `apedp_dyn/conf/paths.py`, `apedp_referee/canonical_spec.py`, `apedp_dyn/conf/benchmark.py`, `quantum_compilation/faros_runtime.py` and `kickmix_builds.py`, and the FAROS builder and native-preflight scripts; the rest of the repository is held to its pinned mypy count by the same baseline | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` |
 | Rust quality/unit tests | `make lint-rust`; `cargo test --workspace --locked` | [APEDP CI/CD](.github/workflows/test.yml), `rust-quality` |
-| Native build and smoke | `maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml`, bridge availability assertion, `python -m pytest tests/test_smoke_imports.py -q -x`, then test collection | [APEDP CI/CD](.github/workflows/test.yml), `test` (Python 3.10/3.11/3.12) |
+| Native build and smoke | `maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml`, bridge availability assertion (`APEDP_REQUIRE_NATIVE=1`, so a missing kernel fails rather than skips), `python -m pytest tests/test_smoke_imports.py -q -x`, then test collection | [APEDP CI/CD](.github/workflows/test.yml), `test` (Python 3.10/3.11/3.12) |
+| MMLM and evidence contracts | MMLM tokenizer, tensor fitting and architecture tests; FAROS evidence and runtime tests, before the full suite | [APEDP CI/CD](.github/workflows/test.yml), `test` |
 | Scientific evidence | `python benchmarks/check_scientific_drift.py`; `python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression` | [APEDP CI/CD](.github/workflows/test.yml), `test` |
+| Referee in isolation | `apedp-referee` installed into an environment with numpy, scipy, pandas and pytest only, its tests run from outside the checkout; the governance manifest, Lean axiom audit and generated audit artefacts as separate jobs | [APEDP CI/CD](.github/workflows/test.yml), `referee-core`, `governance-manifest`, `lean-checked`, `audit-artifact-drift` |
+| Research models | Hash-pinned (`requirements-research.lock`) rounding, normalisation and parity checks, without native dependencies | [APEDP CI/CD](.github/workflows/test.yml), `research-models` |
 | Regression/integration | `python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"`; separate `-m integration` run with Redis | [APEDP CI/CD](.github/workflows/test.yml), `test` |
-| Security | `bandit -r apedp/ -ll`; CodeQL over detected repository languages | [APEDP CI/CD](.github/workflows/test.yml), `test`; [CodeQL](.github/workflows/codeql.yml), `Analyze` |
+| Security | Bandit medium+ on `apedp/` and `apedp_dyn/` (vendored Qualtran excluded); CodeQL over detected repository languages | [APEDP CI/CD](.github/workflows/test.yml), `test`; [CodeQL](.github/workflows/codeql.yml), `Analyze` |
 | Distribution builds | Locked maturin builds for Linux/macOS/Windows; `python -m build` from each `packages/<package>/` | [Cross-Platform Native Wheels](.github/workflows/wheels.yml), `linux-wheels`, `macos-wheels`, `windows-wheels`, `sdist`, `python-packages` |
 
 For pull requests, configure branch protection to require `Python quality`,
@@ -168,12 +197,11 @@ administrators select required checks in GitHub settings.
 
 ### Coverage policy
 
-There is no repository-wide numeric coverage target or coverage gate in CI today.
-Branch coverage is enabled for ad hoc Python coverage reports, and
-`tools/coverage_audit.py` is an advisory report rather than a pass/fail gate.
-Keep or add focused tests for changed behavior; coverage improvements should be
-reviewed alongside test quality rather than represented as an enforced
-percentage.
+There is no repository-wide numeric coverage target. CI enforces at least 95%
+branch coverage for the restricted expression evaluator with focused tests;
+`tools/coverage_audit.py` remains an advisory report for the wider codebase.
+Keep or add focused tests for changed behavior and review coverage alongside
+test quality rather than treating a percentage as proof of correctness.
 
 ### Flaky-test handling
 
@@ -261,6 +289,8 @@ measurements, the build log, and the reproduction commands),
 - [`docs/adr/README.md`](docs/adr/README.md): Architecture decision records and review process.
 - [`AGENTS.md`](AGENTS.md): Repository guidelines and integrity rules for AI coding assistants.
 - [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md): Complete module-by-module reference and status index.
+- [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md): What has been measured, by which preregistered run, and the known limits.
+- [`docs/SYSTEM_FLAWS_AUDIT.md`](docs/SYSTEM_FLAWS_AUDIT.md): Register of known defects and what was done about each.
 - [`docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md`](docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md): Engineering audit mapping guarantees to tests.
 - [`docs/INVSQRT_SUB62_DESIGN.md`](docs/INVSQRT_SUB62_DESIGN.md): Benchmark I width ceiling — the 62-qubit bar, where the 89 qubits are, and the three levers measured shut.
 

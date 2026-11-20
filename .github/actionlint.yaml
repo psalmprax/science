@@ -1,0 +1,6 @@
+# Runner labels newer than the label table embedded in the pinned actionlint
+# (1.7.7). Listed here so an unknown-label note cannot hide a real error;
+# `macos-15-intel` is GitHub's hosted Intel macOS image (wheels.yml).
+self-hosted-runner:
+  labels:
+    - macos-15-intel

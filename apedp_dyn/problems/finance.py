@@ -21,6 +21,8 @@ because there is no closed-form truth — the market is the truth.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from apedp_dyn.model import DynamicalEquation, InputVariable, StateVariable
@@ -35,18 +37,22 @@ def _estimate_velocity(x: np.ndarray, dt: float = 1.0, smooth: bool = True) -> n
     Mitigates O(1/dt) noise amplification from raw finite differences.
     """
     if not smooth or len(x) < 5:
-        return np.asarray(np.gradient(x, dt))
+        _out: np.ndarray = np.asarray(np.gradient(x, dt))
+        return _out
     w = min(7, len(x) if len(x) % 2 == 1 else len(x) - 1)
     if w < 5:
-        return np.asarray(np.gradient(x, dt))
+        _out = np.asarray(np.gradient(x, dt))
+        return _out
     try:
         from scipy.signal import savgol_filter
-        return np.asarray(savgol_filter(
+        _out_47: np.ndarray = np.asarray(savgol_filter(
             x, window_length=w, polyorder=2, deriv=1, delta=dt, mode="interp"))
+        return _out_47
     except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         # failure (import, window/polyorder bounds, non-finite input) falls back
         # to the raw finite difference, which is always available.
-        return np.asarray(np.gradient(x, dt))
+        _out = np.asarray(np.gradient(x, dt))
+        return _out
 
 
 def spec_from_series(prices: np.ndarray,
@@ -73,14 +79,14 @@ def spec_from_series(prices: np.ndarray,
     if not np.isfinite(sigma) or sigma <= 0:
         raise ValueError("degenerate train series")
 
-    def standardize(p):
+    def standardize(p: Any) -> Any:
         x = (np.log(np.asarray(p, dtype=float)) - mu) / sigma
         v = _estimate_velocity(x, 1.0, smooth=smooth_derivatives)
         return np.column_stack([x, v])
 
     Ytr, Yho = standardize(tr), standardize(ho)
-    t_tr = np.arange(len(tr), dtype=float)
-    t_ho = np.arange(len(ho), dtype=float)
+    t_tr: np.ndarray = np.arange(len(tr), dtype=float)
+    t_ho: np.ndarray = np.arange(len(ho), dtype=float)
 
     states = (StateVariable("x", "dimensionless", float(Ytr[0, 0])),
               StateVariable("v", "1/day", float(Ytr[0, 1])))

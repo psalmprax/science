@@ -6,6 +6,7 @@ materials discovery or first-principles prediction.
 
 from __future__ import annotations
 
+import math
 from typing import Any, ClassVar
 
 ROOM_TEMP_K = 293.0
@@ -34,6 +35,7 @@ class SuperconductorDiscovery:
             'above_liquid_nitrogen_77K': critical_temp_K > 77,
             'above_room_temperature_reference': critical_temp_K > ROOM_TEMP_K,
             'cooper_pair_mechanism_reference': 'BCS' if type_sc == 'conventional' else 'unconventional',
+            'basis': 'rule_screen',
         }
 
     @classmethod
@@ -64,6 +66,7 @@ class CatalystDiscovery:
             'target_activity': target_activity,
             'cost_flag_precious_metal': any(m.startswith(('Pt', 'Ir', 'Ru', 'Au', 'Ag')) for m in materials),
             'source': 'literature reference list, not computed',
+            'basis': 'literature_lookup',
         }
 
 
@@ -73,21 +76,36 @@ class EnergyStorageMaterials:
     @staticmethod
     def analyze_battery_material(cathode_capacity_mAh_g: float = 200.0, anode_capacity_mAh_g: float = 372.0,
                                  mean_voltage_V: float = 3.7, cycle_life: int = 1000) -> dict[str, Any]:
-        """Theoretical gravimetric energy from the cathode capacity and mean voltage.
+        """Theoretical gravimetric energy from specific capacity and mean voltage.
 
-        Energy (Wh/kg) = capacity (mAh/g) * voltage (V) / 1000. Anode capacity is
-        used only as a reported input; it does not limit the cathode-based value.
+        1 mAh/g equals 1 Ah/kg, so cathode specific energy (Wh/kg) =
+        cathode_capacity_mAh_g * mean_voltage_V. Also reports the balanced
+        two-electrode active-material pair energy from 1 / C_pair = 1 / C_c + 1 / C_a.
         """
-        if cathode_capacity_mAh_g <= 0 or mean_voltage_V <= 0:
-            raise ValueError("capacity and voltage must be positive")
-        energy_wh_kg = cathode_capacity_mAh_g * mean_voltage_V / 1000.0
+        if (
+            not math.isfinite(cathode_capacity_mAh_g)
+            or not math.isfinite(anode_capacity_mAh_g)
+            or not math.isfinite(mean_voltage_V)
+            or cathode_capacity_mAh_g <= 0
+            or anode_capacity_mAh_g <= 0
+            or mean_voltage_V <= 0
+            or cycle_life < 0
+        ):
+            raise ValueError("capacities and voltage must be finite positive numbers and cycle_life >= 0")
+        energy_wh_kg = cathode_capacity_mAh_g * mean_voltage_V
+        pair_capacity_mAh_g = (cathode_capacity_mAh_g * anode_capacity_mAh_g) / (
+            cathode_capacity_mAh_g + anode_capacity_mAh_g
+        )
+        pair_energy_wh_kg = pair_capacity_mAh_g * mean_voltage_V
         return {
             'cathode_capacity_mAh_g': cathode_capacity_mAh_g,
             'anode_capacity_mAh_g': anode_capacity_mAh_g,
             'mean_voltage_V': mean_voltage_V,
             'cathode_energy_Wh_kg': round(energy_wh_kg, 3),
+            'active_pair_energy_Wh_kg': round(pair_energy_wh_kg, 3),
             'cycle_life_input': cycle_life,
-            'note': 'Active-material energy only; excludes packaging and electrolyte.',
+            'note': 'Active-material energy only; excludes packaging, current collectors, and electrolyte.',
+            'basis': 'closed_form',
         }
 
 
@@ -107,4 +125,5 @@ class MetamaterialDesigner:
             'wavelength_m': wavelength,
             'diameter_over_wavelength': diameter_m / wavelength,
             'note': 'Geometric ratio only; cloaking performance is not modelled.',
+            'basis': 'closed_form',
         }

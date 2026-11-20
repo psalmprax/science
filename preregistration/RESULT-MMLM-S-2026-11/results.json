@@ -1,0 +1,85 @@
+{
+ "frozen": {
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_mmlm/equation_language.py": "b65cf9e8de40190f1bc87671ca9be6e4ee9c99545a0d0a42d2d541dfb119e5a9",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-MMLM-S-2026-11.md": "1dc2960961cfebd948fe5ee6d63e0505e0d3cb6625b269908ac944e21a8a3fa3",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627",
+  "scripts/run_prereg_mmlm_track_s.py": "de1ff23f59739626edb5b3f33b9ec2ecda3558864da79306c8b91d8eaae9c6b6",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd"
+ },
+ "part_a_invented": {
+  "found_earlier": 60,
+  "found_later": 10,
+  "laws": 120,
+  "median_model_order": 23.0,
+  "median_size_order": 110.0,
+  "reachable": 76,
+  "sign_test_p": 4.0024116997278234e-10
+ },
+ "part_a_other_fields": {
+  "found_earlier": 23,
+  "found_later": 1,
+  "laws": 24,
+  "median_model_order": 303.5,
+  "median_size_order": 6111.5,
+  "reachable": 24,
+  "recovered_plain": 24,
+  "recovered_with_model": 24,
+  "sign_test_p": 1.4901161193847656e-06
+ },
+ "part_a_other_fields_shape_not_in_training": {
+  "found_earlier": 18,
+  "found_later": 1,
+  "laws": 19,
+  "median_model_order": 236.0,
+  "median_size_order": 5921.0,
+  "reachable": 19,
+  "recovered_plain": 19,
+  "recovered_with_model": 19,
+  "sign_test_p": 3.814697265625e-05
+ },
+ "part_b_invented_stream": {
+  "final_state": {
+   "observed_laws": 120,
+   "seed_laws": 133,
+   "sha256": "5d2f003266cef8832e925d6a9b99fefdf032bb98809d36d030de948fc89c04f4",
+   "weights": {
+    "automaton": 0.8368108749730478,
+    "bayesian": 0.01901695787949917,
+    "tree": 0.11807475974095455,
+    "unigram": 0.02609740740649826
+   }
+  },
+  "mean_bits_first_half": {
+   "adaptive": 13.477112978016654,
+   "frozen": 19.62814530442606
+  },
+  "mean_bits_second_half": {
+   "adaptive": 9.282699860972826,
+   "frozen": 17.550425446724333
+  }
+ },
+ "part_b_other_field_stream": {
+  "final_state": {
+   "observed_laws": 24,
+   "seed_laws": 133,
+   "sha256": "defbb56c9047690f0904654aa0082de176478fe8eabbd0b05947656d62dc895b",
+   "weights": {
+    "automaton": 0.863267981761788,
+    "bayesian": 0.016546109305535735,
+    "tree": 0.09873143977992903,
+    "unigram": 0.021454469152747103
+   }
+  },
+  "mean_bits_first_half": {
+   "adaptive": 14.655334889394057,
+   "frozen": 14.813710059592163
+  },
+  "mean_bits_second_half": {
+   "adaptive": 15.309509218801177,
+   "frozen": 17.02850958462697
+  }
+ },
+ "preregistration": "PREREG-MMLM-S-2026-11"
+}

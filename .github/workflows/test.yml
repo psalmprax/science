@@ -24,19 +24,25 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - name: Install quality and test tools
+      - name: Install quality tools
+        run: python -m pip install --require-hashes -r requirements-quality.lock
+      - name: Verify quality tool setup
         run: |
-          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test,orchestration]"
           python -m pytest --version
           ruff --version
           mypy --version
       - name: Lint Python
         run: make lint
+      # Only the strict core here: the full-package baseline counts findings
+      # that depend on which libraries are installed (torch, fastapi, the
+      # scientific stack), and this job installs none of them. It runs in the
+      # test job, where they are.
       - name: Strict core type check
-        run: make typecheck
+        run: make typecheck-core
       - name: CI configuration regression checks
-        run: python -m pytest tests/test_ci_quality_contract.py -q
+        run: >-
+          python -m pytest tests/test_ci_quality_contract.py
+          tests/test_ci_rust_toolchain.py tests/test_ci_workflow_validity.py -q
 
   rust-quality:
     name: Rust quality
@@ -55,10 +61,154 @@ jobs:
       - name: Rust kernel unit tests
         run: cargo test --workspace --locked
 
-  test:
-    needs: [python-quality, rust-quality]
+  # The referee by itself. Everything this job installs is on the next ten
+  # lines: numpy, scipy, pandas, pytest, and finally apedp-referee from its
+  # own directory. No torch, no SymPy, no native kernel, and the repository is
+  # not pip-installed. If the thresholds, the promotion state machine, the
+  # ledgers or the universe audit ever need anything else, this job fails at
+  # import. tests/referee_core_manifest.py declares the boundary;
+  # tests/test_referee_core_boundary.py checks it statically, at import, under
+  # test and as a distribution.
+  referee-core:
+    name: Referee core in isolation (numpy, scipy, pandas only)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the core's requirements and nothing else
+        run: |
+          python -m venv "$RUNNER_TEMP/core"
+          "$RUNNER_TEMP/core/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/core/bin/python" -m pip install numpy scipy pandas pytest
+          "$RUNNER_TEMP/core/bin/python" -m pip list
+      # -I: isolated mode, so the checkout in the working directory does not
+      # count as "installed" and only the environment itself is inspected.
+      - name: The environment really is that small
+        run: |
+          "$RUNNER_TEMP/core/bin/python" -I - <<'PY'
+          import importlib.util
+          present = [name for name in ("torch", "sympy", "jax", "apedp_kernel", "apedp") if importlib.util.find_spec(name)]
+          assert not present, f"this job must not have {present} installed"
+          PY
+      - name: Run the referee's tests and its import boundary
+        run: make test-referee-core PYTHON="$RUNNER_TEMP/core/bin/python"
+      # Then as a distribution: build apedp-referee from its own directory,
+      # install it, and run its tests from a directory that holds nothing but
+      # those tests. APEDP_REFEREE_EXPECT_INSTALLED makes the first test assert
+      # that the module came from site-packages and that apedp_dyn, apedp,
+      # the kernel, torch and SymPy cannot be imported at all.
+      - name: Install apedp-referee as a package and test the installed copy
+        run: |
+          cp -r apedp_referee "$RUNNER_TEMP/referee-src"
+          "$RUNNER_TEMP/core/bin/python" -m pip install "$RUNNER_TEMP/referee-src"
+          cp -r apedp_referee/tests "$RUNNER_TEMP/referee-tests"
+          cd "$RUNNER_TEMP/referee-tests"
+          APEDP_REFEREE_EXPECT_INSTALLED=1 "$RUNNER_TEMP/core/bin/python" -I -m pytest -q -p no:cacheprovider
+
+  governance-manifest:
+    name: Governance manifest covers the spec pin
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      # `canonical_spec` imports only the standard library, so this gate needs
+      # no install step: the checkout and the interpreter are the environment.
+      # It is a separate job because the Python pin passing is not the same
+      # claim as the signed manifest covering the revision (FLAW-01).
+      - name: Fail if the signed manifest lags the canonical-spec pin
+        run: python scripts/check_governance_manifest_drift.py --check
+
+  audit-artifact-drift:
+    name: Generated audit artefacts match the tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      # Separate from the test job on purpose. The reports below are measurements,
+      # and a tree whose measurement tests are not selected would still look green
+      # with a stale report committed. `benchmarks/formal/lean_axiom_audit.json`
+      # shipped 0 circular proofs while the tree held 94; this job rebuilds every
+      # artefact and fails on the diff.
+      - name: Fail if any generated artefact disagrees with the tree
+        run: python scripts/check_audit_artifact_drift.py --check
+
+  lean-checked:
+    name: Machine-checked Lean core (kernel axiom audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      # Pinned toolchain, not elan: the claim recorded in
+      # lean_checked/axiom_audit.json names this exact release, and the gate
+      # must re-measure with the same kernel it names.
+      # Downloaded on every run rather than cached: a restored cache would be
+      # one more thing standing between the gate and the release it names.
+      - name: Install Lean 4.24.0
+        run: |
+          mkdir -p "${{ runner.temp }}/lean-toolchain"
+          curl -fsSL -o "${{ runner.temp }}/lean.tar.zst" \
+            https://github.com/leanprover/lean4/releases/download/v4.24.0/lean-4.24.0-linux.tar.zst
+          echo "b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec  ${{ runner.temp }}/lean.tar.zst" \
+            | sha256sum --check --strict
+          tar --zstd -xf "${{ runner.temp }}/lean.tar.zst" \
+            -C "${{ runner.temp }}/lean-toolchain" --strip-components=1
+      - name: Put lean and lake on PATH
+        run: echo "${{ runner.temp }}/lean-toolchain/bin" >> "$GITHUB_PATH"
+      # Two layers, both load-bearing: the static layer forbids sorry/axiom/
+      # native_decide and requires every theorem to be audited; the kernel
+      # layer rebuilds the project and fails unless each theorem's #print
+      # axioms output matches lean_checked/axiom_audit.json and uses nothing
+      # beyond propext, Quot.sound, Classical.choice. --require-lean makes a
+      # missing toolchain a failure here, not a silent static-only pass.
+      - name: Re-measure the axiom audit against the committed record
+        run: python scripts/check_lean_checked.py --check --require-lean
+
+  research-models:
+    name: Research model regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-research.lock
+      - name: Install hash-pinned numerical test dependencies
+        run: python -m pip install --require-hashes -r requirements-research.lock
+      - name: Check rounding, normalization, and parity models without native dependencies
+        run: |
+          python -m pytest scripts/check_normalized_invsqrt.py \
+            scripts/check_horner_invsqrt.py scripts/check_parity_phase.py \
+            -k "not native" -q
+
+
+  test:
+    needs: [python-quality, rust-quality, research-models]
+    runs-on: ubuntu-latest
+    # The suite had never run to completion here. Measured on 2026-11-16: the
+    # 3.11 leg ran 4,769 tests in 25 minutes and the 3.10 leg 3,270 in 21,
+    # so a full run takes about 32; the fitter now integrates at FIT_RTOL
+    # (apedp_dyn/fitting/parameter_fit.py), which made the full local run 38 %
+    # slower. 45 minutes would end the job before the suite does.
+    timeout-minutes: 75
     services:
       redis:
         image: redis:7-alpine
@@ -71,16 +221,88 @@ jobs:
           --health-retries 20
     env:
       APEDP_REDIS_URL: redis://localhost:6379/0
-      # Avoid component conflicts in the hosted runner's preinstalled toolchains.
-      # All Rust steps share this job-local home, including the default toolchain.
-      RUSTUP_HOME: ${{ runner.temp }}/rustup
+      # The kernel and torch are installed in this job, so a test that cannot
+      # find them is a failure here. Without this, tests/conftest.py reports
+      # such a test as skipped, which is right on a bare clone and wrong in CI.
+      APEDP_REQUIRE_NATIVE: "1"
     strategy:
       fail-fast: true
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
+      # Full history, not the default single commit: the
+      # TestAgainstTheRealRepository tests in tests/test_run_provenance.py read
+      # the last 40 to 80 commits. In a one-commit clone they saw only HEAD, and
+      # failed whenever HEAD touched apedp/ or tests/ (3.11 leg on dd46f18, after
+      # 4,769 passes). The history is 67 MB.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Avoid component conflicts in the hosted runner's preinstalled toolchains:
+      # every later Rust step in this job shares this job-local home, including
+      # the default toolchain. It is set in a step, through $GITHUB_ENV, because
+      # the `runner` context does not exist in job-level `env`. Writing
+      # `RUSTUP_HOME: ${{ runner.temp }}/rustup` there made the whole workflow
+      # file invalid, so no job in it ran on this branch from 2026-10-20 until
+      # this was moved (docs/SYSTEM_FLAWS_AUDIT.md, E-07).
+      #
+      # The home is emptied first and the toolchain is installed straight
+      # after, before any other step can run a Rust proxy against it. Twice on
+      # 2026-11-16 (stage 7a7f5b5 attempt 1, test (3.12); a46360f attempt 3,
+      # test (3.11)) rustup found a half-installed 1.99.0 here before the
+      # install step ran -- "recovering from a partially installed toolchain",
+      # with rust-docs among the removed components, which the minimal profile
+      # never installs -- and failed on "detected conflict: 'bin/cargo-clippy'".
+      # What left it, established on 2026-11-20 from the log of a407ca5's failed
+      # test (3.11): a merge had left a second copy of this step after the
+      # install step. It deleted the toolchain that had just been installed;
+      # the next Rust command (rust-cache's `rustc -vV`) made rustup install it
+      # again through the proxy, with the default profile (hence rust-docs),
+      # and that install sometimes failed on the clippy file. The copy is gone
+      # and tests/test_ci_rust_toolchain.py requires exactly one such step. If
+      # the directory is found non-empty again, the warning below lists what
+      # was in it.
+      - name: Isolate Rust toolchain home
+        run: |
+          if [ -e "$RUNNER_TEMP/rustup" ]; then
+            echo "::warning::$RUNNER_TEMP/rustup existed before isolation; contents follow and it is removed"
+            find "$RUNNER_TEMP/rustup" -maxdepth 3 | head -50
+            rm -rf "$RUNNER_TEMP/rustup"
+          fi
+          echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
+
+      # The native kernel behind `apedp/rust_bridge.py` lives in
+      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
+      # and the sixteen differential tests in
+      # `tests/test_cross_implementation_conformance.py` skip -- green, and
+      # checking nothing. So the kernel is built here, and the next step asserts
+      # it is actually importable before any test tier runs. A build that stops
+      # building fails loudly instead of turning into sixteen skips.
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+
+
+      # Three tests in tests/test_dyn_lean_universal_bridge.py compile a proof
+      # with `lean`. This job sets APEDP_REQUIRE_NATIVE, under which a missing
+      # toolchain is a failure and not a skip, so the toolchain is installed
+      # here: the same pinned, checksum-verified release the lean-checked job
+      # uses, for the same reason.
+      - name: Install Lean 4.24.0
+        run: |
+          mkdir -p "${{ runner.temp }}/lean-toolchain"
+          curl -fsSL -o "${{ runner.temp }}/lean.tar.zst" \
+            https://github.com/leanprover/lean4/releases/download/v4.24.0/lean-4.24.0-linux.tar.zst
+          echo "b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec  ${{ runner.temp }}/lean.tar.zst" \
+            | sha256sum --check --strict
+          tar --zstd -xf "${{ runner.temp }}/lean.tar.zst" \
+            -C "${{ runner.temp }}/lean-toolchain" --strip-components=1
+      - name: Put lean and lake on PATH
+        run: echo "${{ runner.temp }}/lean-toolchain/bin" >> "$GITHUB_PATH"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
@@ -98,18 +320,13 @@ jobs:
           python -m pip install -e packages/jetflow-video
           python -m pytest --version
 
-      # The native kernel behind `apedp/rust_bridge.py` lives in
-      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
-      # and the sixteen differential tests in
-      # `tests/test_cross_implementation_conformance.py` skip -- green, and
-      # checking nothing. So the kernel is built here, and the next step asserts
-      # it is actually importable before any test tier runs. A build that stops
-      # building fails loudly instead of turning into sixteen skips.
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: '1.99.0'
-          components: rustfmt, clippy
+      # The ratchet's limits were measured with the full stack installed and
+      # Python 3.12, so it runs once, on that entry, before the kernel build.
+      - name: Full-package type baseline
+        if: matrix.python-version == '3.12'
+        run: |
+          source .venv/bin/activate
+          make typecheck-baseline
 
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2
@@ -160,16 +377,39 @@ jobs:
           source .venv/bin/activate
           python -m pytest tests/test_smoke_imports.py -q -x
 
+      - name: MMLM and evidence contract regressions
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_mmlm_bpe_tokenizer.py \
+            tests/test_mmlm_two_site_sweep.py tests/test_apedp_mmlm_architecture.py \
+            tests/test_faros_evidence_pipeline.py tests/test_faros_runtime.py -q -x
+
+      - name: Guard expression evaluator branch coverage
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_expression_evaluator.py \
+            --cov --cov-branch --cov-report= -q
+          python -m coverage report \
+            --include='*/apedp/expression_evaluator.py' --fail-under=95
+
       - name: Collection smoke (import every test module)
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ --collect-only -q
+          python -m pytest tests/ apedp_referee/tests/ --collect-only -q
 
+      # One test is deselected, and it is not hidden: the signed governance
+      # manifest seals an earlier revision of the canonical spec, only the
+      # registered trustees can re-sign it (FLAW-01), and the
+      # governance-manifest job above reports exactly that and blocks `build`.
+      # Left in this command it fails on every run, and with -x it stops the
+      # matrix there, so no leg ever reports on the tests that come after it.
+      # Remove the --deselect when the manifest is re-signed.
       - name: Run regression tests
         id: regression_tests
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"
+          python -m pytest tests/ apedp_referee/tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression" \
+            --deselect tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid
 
       - name: Run live integration tests
         id: integration_tests
@@ -180,7 +420,10 @@ jobs:
       - name: Security scan with bandit
         run: |
           source .venv/bin/activate
-          bandit -r apedp/ -ll
+          # scripts/bandit_baseline.json lists the findings that are accepted, each with an audit entry
+          # (tests/test_security_scan_baseline.py pins what is in it). Anything else fails the step.
+          bandit -r apedp/ apedp_dyn/ -ll -b scripts/bandit_baseline.json \
+            --exclude apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src
 
       - name: Classify test-job failure
         if: failure()
@@ -196,7 +439,11 @@ jobs:
           fi
 
   build:
-    needs: test
+    # The image is only built (and then deployed) once every integrity gate is
+    # green, not just the test matrix. `needs: test` alone let a release ship
+    # while the governance manifest, the generated audit artefacts, or the
+    # mutation battery were red.
+    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked, referee-core]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -318,6 +565,7 @@ jobs:
   # mutant FAILS CI — this gate is the mechanism by which the register
   # requirement stays closed-by-evidence rather than closed-by-assertion.
   mutation-battery:
+    needs: build-kernel-wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -326,12 +574,39 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust/apedp-kernel -> target
+      # `maturin develop` installs into the active virtualenv and refuses to run
+      # without one, and setup-python does not create one. The first time this
+      # job ever started (2026-11-16) it stopped here for that reason.
       - name: Install dependencies
         run: |
+          python -m venv .venv
+          source .venv/bin/activate
           pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev,test]"
+      - name: Download the required native kernel
+        uses: actions/download-artifact@v8
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse
+      - name: Install and require the native kernel
+        run: |
+          source .venv/bin/activate
+          python -m pip install wheelhouse/*.whl
+          python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
       - name: Run targeted mutation battery (referee + leakage paths)
-        run: python scripts/run_mutation_battery.py
+        run: |
+          source .venv/bin/activate
+          python scripts/run_mutation_battery.py
       - name: Upload the mutation-battery report (never hidden)
         if: always()
         uses: actions/upload-artifact@v7

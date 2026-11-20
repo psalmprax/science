@@ -1,0 +1,300 @@
+{
+  "instance": {
+    "rows": 3976,
+    "angles": 75,
+    "brot": 8,
+    "batch": 5,
+    "circuits": 15,
+    "bits_per_address": 40
+  },
+  "per_circuit": [
+    {
+      "circuit": 0,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 1,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 2,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 3,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 4,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 5,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 6,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 7,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 8,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 9,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 10,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 11,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 12,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 13,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3975,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    },
+    {
+      "circuit": 14,
+      "rows": 3976,
+      "selection_bits": 12,
+      "words_per_row": 5,
+      "bits_per_address": 40,
+      "absolute_runs": 3976,
+      "absolute_runs_cost": 3974,
+      "distinct_rows": 3976,
+      "delta_runs": 3976,
+      "delta_zero_rows": 0,
+      "tree_breaks": 0,
+      "tree_cost": 3974
+    }
+  ],
+  "totals": {
+    "tree": 59610,
+    "absolute_runs": 59610,
+    "distinct_rows": 59609
+  },
+  "archive": {
+    "angle_toffolis": 8718,
+    "per_circuit": 581.2
+  },
+  "affine_check": {
+    "payload_bits": 31,
+    "unsolvable_bits_per_circuit": [
+      31,
+      33,
+      34,
+      35,
+      35,
+      35,
+      39,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ],
+    "rows_off_affine_per_circuit": [
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976,
+      3976
+    ],
+    "affine_over_gf2": false
+  },
+  "structure": {
+    "slots": 75,
+    "uniform_ramp_slots": 0,
+    "ramp_fraction": 0.0,
+    "payload_bit_address_matches": 0
+  },
+  "confirmation": {
+    "builds": [
+      {
+        "distinct_rows": 256,
+        "measured_toffolis": 254,
+        "rows_minus_two": 254,
+        "peak_qubits": 55
+      },
+      {
+        "distinct_rows": 1024,
+        "measured_toffolis": 1022,
+        "rows_minus_two": 1022,
+        "peak_qubits": 59
+      }
+    ]
+  },
+  "conclusion": {
+    "encoding_that_matches": [
+      "distinct-rows",
+      59609
+    ],
+    "run_length_vs_archive": 6.837577426015141,
+    "tree_vs_archive": 6.837577426015141,
+    "summary": "every circuit has 3,976 constant runs and 3,976 distinct rows out of 3,976, so no run-length or dedup encoding saves a node: run-length costs 59,610 and the address tree 59,610, both 6.84x the archive's 8,718. The payload is not GF(2)-affine (31 unsolvable bits), and 0 of 75 word slots are uniform ramps, so the words are not an accumulator either"
+  }
+}

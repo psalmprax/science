@@ -93,3 +93,17 @@ def test_goal_directly_behind_converges():
     result = navigate_to_goal(_START, np.array([-2.0, 0.0]), step_size=0.02, max_steps=6000)
     assert result.success, result.distances[-1]
     assert result.distances[-1] < 0.011
+
+
+def test_exact_step_avoids_small_omega_cancellation():
+    pose = np.array([1.2, -0.7, 0.43])
+    v = 3.5
+    dt = 0.25
+    for omega in (0.0, 1e-13, -1e-11, 1e-9, -1e-6, 1e-4):
+        got = exact_unicycle_step(pose, v, omega, dt)
+        # High-order Gauss/midpoint reference: integrate dx = v cos(theta+omega*t) with 1000 substeps
+        t_mid = (np.arange(1000) + 0.5) * (dt / 1000.0)
+        ref_x = pose[0] + v * (dt / 1000.0) * np.sum(np.cos(pose[2] + omega * t_mid))
+        ref_y = pose[1] + v * (dt / 1000.0) * np.sum(np.sin(pose[2] + omega * t_mid))
+        ref = np.array([ref_x, ref_y, pose[2] + omega * dt])
+        assert np.allclose(got, ref, atol=1e-12, rtol=1e-12), (omega, got, ref)

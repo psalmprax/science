@@ -64,7 +64,8 @@ def _qvec(y: np.ndarray, p: np.ndarray, floor: float) -> np.ndarray:
     y = np.maximum(np.asarray(y, dtype=float), 1e-8)
     p = np.maximum(np.asarray(p, dtype=float), floor)
     r = y / p
-    return np.asarray(r - np.log(r) - 1.0)
+    _out: np.ndarray = np.asarray(r - np.log(r) - 1.0)
+    return _out
 
 
 def incremental_vs_hp(y_ho: np.ndarray, pred_cand: np.ndarray, pred_hp: np.ndarray,

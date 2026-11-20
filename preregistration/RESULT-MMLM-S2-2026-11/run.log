@@ -1,0 +1,128 @@
+{
+ "frozen": {
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_mmlm/equation_language.py": "b65cf9e8de40190f1bc87671ca9be6e4ee9c99545a0d0a42d2d541dfb119e5a9",
+  "apedp_mmlm/ledger_learning.py": "5a52b98c06b8c9513c1f03e41b8f845d06334f809b895bbeb41c95d113a64bed",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-MMLM-S2-2026-11.md": "133570bb197d22dcde6f67c71090c728df47a7a7ab1b095b157837b5479283a5",
+  "scripts/run_prereg_mmlm_track_s.py": "de1ff23f59739626edb5b3f33b9ec2ecda3558864da79306c8b91d8eaae9c6b6",
+  "scripts/run_prereg_mmlm_track_s2.py": "da86bd6738ea075483ee8c93b6497e336fb474c7ba2e3ebca425ffca546f07e8"
+ },
+ "part_1_search": {
+  "all": {
+   "full_recovered": 123,
+   "full_seconds": 330.09932558399964,
+   "guided_recovered": 121,
+   "guided_seconds": 11.47249377299886,
+   "median_share_of_candidates_fitted": 0.0030187136563927597,
+   "runs": 128,
+   "stopped_early": 127,
+   "wrong_early_stops": 7
+  },
+  "invented|0.01": {
+   "full_recovered": 38,
+   "full_seconds": 70.18642072899911,
+   "guided_recovered": 40,
+   "guided_seconds": 0.5753441909992034,
+   "median_share_of_candidates_fitted": 0.0007322175732217573,
+   "runs": 40,
+   "stopped_early": 40,
+   "wrong_early_stops": 0
+  },
+  "invented|0.05": {
+   "full_recovered": 40,
+   "full_seconds": 70.0990019349997,
+   "guided_recovered": 37,
+   "guided_seconds": 0.5881311399996321,
+   "median_share_of_candidates_fitted": 0.0007322175732217573,
+   "runs": 40,
+   "stopped_early": 40,
+   "wrong_early_stops": 3
+  },
+  "one_time_ordering_seconds": 7.555856555999981,
+  "other_field|0.01": {
+   "full_recovered": 23,
+   "full_seconds": 95.21535630700055,
+   "guided_recovered": 22,
+   "guided_seconds": 8.242520820999744,
+   "median_share_of_candidates_fitted": 0.0063677754913557035,
+   "runs": 24,
+   "stopped_early": 23,
+   "wrong_early_stops": 2
+  },
+  "other_field|0.05": {
+   "full_recovered": 22,
+   "full_seconds": 94.59854661300028,
+   "guided_recovered": 22,
+   "guided_seconds": 2.0664976210002806,
+   "median_share_of_candidates_fitted": 0.00591409174133545,
+   "runs": 24,
+   "stopped_early": 24,
+   "wrong_early_stops": 2
+  }
+ },
+ "part_2_transfer": {
+  "bits_per_token": {
+   "mixture": 4.043010938778753,
+   "uniform": 4.700439718141091,
+   "unigram": 3.9184115234642762
+  },
+  "mean_tokens_per_law": 7.857142857142857,
+  "test_laws": 14,
+  "test_tokens": 110
+ },
+ "part_3_domains": {
+  "all_mean_bits": {
+   "dynamics": {
+    "frozen": 31.44191947633639,
+    "per_domain": 29.7676923483247,
+    "pooled": 30.566792923683177
+   },
+   "invented": {
+    "frozen": 19.45735767899068,
+    "per_domain": 13.49240244455596,
+    "pooled": 13.686690560593965
+   }
+  },
+  "final_state": {
+   "dynamics": {
+    "observed_laws": 13,
+    "seed_laws": 119,
+    "sha256": "adc4a1e1e2a9a979d848d6d17707f5f45a8cb879c4b871fbc6724b123018cabd",
+    "weights": {
+     "automaton": 0.012583469877462401,
+     "bayesian": 0.012625140215877982,
+     "tree": 0.014169379288876283,
+     "unigram": 0.9606220106177834
+    }
+   },
+   "invented": {
+    "observed_laws": 60,
+    "seed_laws": 119,
+    "sha256": "bdc147025c9427f0a89a5c2b51f52091ec5bd2bff2a25507948cd3aed0c64363",
+    "weights": {
+     "automaton": 0.9150357751813849,
+     "bayesian": 0.013400976320303506,
+     "tree": 0.058917213708929994,
+     "unigram": 0.01264603478938148
+    }
+   }
+  },
+  "second_half_mean_bits": {
+   "dynamics": {
+    "frozen": 30.993430430127784,
+    "per_domain": 28.724626335698368,
+    "pooled": 29.575888935961103
+   },
+   "invented": {
+    "frozen": 19.19373514137118,
+    "per_domain": 11.589007489570795,
+    "pooled": 11.73920042879965
+   }
+  },
+  "unparsed": 1
+ },
+ "preregistration": "PREREG-MMLM-S2-2026-11"
+}
+exit 0

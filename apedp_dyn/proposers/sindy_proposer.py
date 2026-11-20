@@ -15,18 +15,18 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-try:
-    import apedp_kernel
-    RUST_AVAILABLE = hasattr(apedp_kernel, 'compute_metrics')
-except Exception:
-    apedp_kernel = None
-    RUST_AVAILABLE = False
-
-from apedp_dyn.grammar.proposer_interface import (
+from apedp_dyn.grammar.proposer_interface import (  # noqa: E402 - must follow the logger definition; the native-extension probe below is not an import error risk
     CandidateProposal,
     ProposerBase,
     StrategyArchetype,
 )
+
+try:
+    import apedp_kernel
+    RUST_AVAILABLE = hasattr(apedp_kernel, 'compute_metrics')
+except Exception:  # noqa: BLE001 - the native extension is optional: a broken or half-installed .so raises OSError/AttributeError at import, not only ImportError; RUST_AVAILABLE records the outcome
+    apedp_kernel = None
+    RUST_AVAILABLE = False
 
 
 class SINDyProposer(ProposerBase):
@@ -88,7 +88,7 @@ class SINDyProposer(ProposerBase):
                 else:
                     active_list = list(active)
                 return Xi, active_list
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - the kernel is an accelerator; any failure falls back to the NumPy sparse regression implementing the same algorithm, and the fallback is logged
                 logger.warning("SINDy Rust sparse regression failed; falling back to NumPy: %s", exc)
         Xi = np.linalg.lstsq(Theta, dX, rcond=None)[0]
         for _ in range(self.max_iter):
@@ -126,26 +126,35 @@ class SINDyProposer(ProposerBase):
             if not terms or terms == ["1"]:
                 continue
             formula_parts = []
-            for c, t in zip(coeffs, terms):
+            from apedp_dyn.grammar.term_format import atom
+            for c, t in zip(coeffs, terms, strict=False):
                 if t == "1":
                     formula_parts.append(f"{c:.6g}")
                 elif t.startswith("x"):
-                    formula_parts.append(f"{c:.6g}*{t}")
+                    formula_parts.append(f"{c:.6g}*{atom(t)}")
                 else:
-                    formula_parts.append(f"{c:.6g}*{t}")
+                    formula_parts.append(f"{c:.6g}*{atom(t)}")
             formula = " + ".join(formula_parts) if formula_parts else "0"
-            _lib_names = names
-            _lib_matrix = Theta
-            def make_score(f=formula, terms=terms, coeffs=coeffs):
-                def score(df):
-                    cols = [np.asarray(df[n], dtype=float).ravel() for n in _lib_names]
-                    X_eval = np.column_stack(cols)
-                    idx = [i for i, nm in enumerate(_lib_names) if nm in terms]
-                    if not idx:
-                        return np.full(len(df), float(coeffs[0])) if coeffs else np.zeros(len(df))
-                    selected = X_eval[:, idx]
-                    pred = selected @ np.asarray([coeffs[i] for i in idx], dtype=float)
-                    return pred.ravel()
+
+            def make_score(terms:Any=tuple(terms), coeffs:Any=tuple(coeffs)) -> Any:
+                # Bind this candidate's own (term, coefficient) pairs at build
+                # time. The factory used to close over the loop's library names
+                # and use their positions to index the shorter coefficient list,
+                # so a later candidate scored an earlier one's terms -- or, when
+                # the first term was not in the library's first column, raised.
+                pairs = tuple((t, c) for t, c in zip(terms, coeffs, strict=False) if t != "1")
+                constants = tuple(c for t, c in zip(terms, coeffs, strict=False) if t == "1")
+
+                def score(df: Any) -> Any:
+                    rows = len(df)
+                    if not pairs:
+                        return np.full(rows, float(sum(constants)) if constants
+                                       else 0.0)
+                    pred: np.ndarray = np.zeros(rows, dtype=float)
+                    for name, weight in pairs:
+                        pred += weight * np.asarray(df[name], dtype=float).ravel()
+                    return pred
+
                 return score
             proposals.append(CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -154,7 +163,7 @@ class SINDyProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=tuple(variable_names),
-                compute_score=make_score(formula, terms, coeffs),
+                compute_score=make_score(),
                 parameters={"coefficients": coeffs, "terms": terms},
                 metadata={"method": "sindy", "active_terms": len(terms)},
             ))
@@ -170,7 +179,7 @@ try:
             self.proposer_id = "sindy-grammar-adapter"
             self._impl = SINDyProposer(degree=degree, threshold=threshold)
 
-        def propose(self, problem) -> list:
+        def propose(self, problem: Any) -> list[Any]:
             # Try to extract data from problem
             try:
                 t = getattr(problem, 'train', {}).get('truth_t')
@@ -187,10 +196,11 @@ try:
                     try:
                         # try to parse simple formula
                         results.append(p.formula)
-                    except Exception:
+                    except Exception:  # noqa: BLE001 - the grammar adapter is optional glue over a problem object whose shape is not contractual; a problem without truth_t/truth_y yields no candidate
+                        logger.debug("sindy adapter skipped an unrenderable formula", exc_info=True)
                         continue
                 return results
-            except Exception:
+            except Exception:  # noqa: BLE001 - a proposal with no renderable formula contributes no string; the remaining proposals are still returned
                 return []
-except Exception:
-    pass
+except Exception:  # noqa: BLE001 - the outer failure yields no candidate from this adapter and is now logged with exc_info, so an unparseable problem is not mistaken for an empty search
+    logger.debug("sindy grammar adapter unavailable", exc_info=True)

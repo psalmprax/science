@@ -127,7 +127,7 @@ def run_goldbach_adjudication(limit: int = 10_000_000) -> dict[str, Any]:
 
     # 7. Generate illustrative chart data: Hardy-Littlewood asymptotic curve vs empirical sample
     # Sample 100 even points up to 10,000 for visual plot
-    sample_evens = np.linspace(4, 10000, 100, dtype=int)
+    sample_evens: np.ndarray = np.linspace(4, 10000, 100, dtype=int)
     sample_evens = sample_evens + (sample_evens % 2) # ensure even
     # Hardy-Littlewood asymptotic approximation R(2n) ~ 2 * C2 * 2n / (ln(2n))^2
     c2 = 0.6601618 # twin prime constant

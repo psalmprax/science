@@ -34,6 +34,7 @@ import dataclasses
 import hashlib
 import json
 import time
+from typing import Any
 
 import numpy as np
 
@@ -85,7 +86,7 @@ def _make_ir(cid: str) -> CandidateDynamics:
                              parameter_bounds=dict(bounds))
 
 
-def _attribute_prune_reject(clean, ir: CandidateDynamics) -> tuple[str, str]:
+def _attribute_prune_reject(clean: Any, ir: CandidateDynamics) -> tuple[str, str]:
     try:
         model = materialize(clean, ir)
     except (TypeError, ValueError) as e:
@@ -96,14 +97,14 @@ def _attribute_prune_reject(clean, ir: CandidateDynamics) -> tuple[str, str]:
     return "gate2", "pruned at admissibility (see gate2 detail)"
 
 
-def _big_train_variant():
+def _big_train_variant() -> Any:
     base = duffing.spec()
     tr = dict(base.train)
     tr["u_of_t"] = make_signal({"kind": "sine", "amplitude": 2.5, "frequency": 1.0})
     return finalize(dataclasses.replace(base, train=tr))
 
 
-def run_rep(rep: int) -> dict:
+def run_rep(rep: int) -> dict[str, Any]:
     t0 = time.perf_counter()
     slate = ds.build_slates()
     clean = slate["DUFF"]["prob_clean"]
@@ -111,7 +112,7 @@ def run_rep(rep: int) -> dict:
     obs = np.asarray(prob.holdout["truth_y"], dtype=float)
     obs_rms = float(np.sqrt(np.mean(obs ** 2)))
 
-    rows: dict[str, dict] = {}
+    rows: dict[str, dict[str, Any]] = {}
     survivors = []
     for cid in SLATE:
         ir = _make_ir(cid)
@@ -178,7 +179,7 @@ def run_rep(rep: int) -> dict:
     }
 
 
-def run_tournament(reps: tuple[int, ...] = REPS) -> dict:
+def run_tournament(reps: tuple[int, ...] = REPS) -> dict[str, Any]:
     traces = [run_rep(r) for r in reps]
     return {
         "tournament": TOURNAMENT_VERSION, "pct": PCT, "reps": list(reps),

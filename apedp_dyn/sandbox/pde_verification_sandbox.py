@@ -84,7 +84,13 @@ def simulate_burgers_conservative(
         u0 = -np.sin(np.pi * x)
 
     u_max = float(np.max(np.abs(u0)))
-    dt = (cfl * dx / u_max) if u_max > 0 else 0.01
+    # `cfl` is the stability number of the explicit update, advection and
+    # diffusion together: u_max*dt/dx + 2*nu*dt/dx**2. Until 2026-11-16 the
+    # step was set from the advective part alone, and the default case sat at
+    # 0.995 by coincidence (0.5 + 0.495): doubling nu, refining the grid to
+    # 200 cells or asking for cfl = 0.8 put it past 1 and the "verified"
+    # scheme of trap 6 grew its energy by a factor of thousands.
+    dt = cfl / (u_max / dx + 2.0 * nu / dx**2) if u_max > 0 else 0.01
 
     if trap_id == 4:
         # Trap 4: CFL Courant blowup (dt set to exceed stability limit)
@@ -227,6 +233,46 @@ def audit_physical_invariants(
     }
 
 
+#: The perturbations `audit_interventional_invariance` applies, one at a time,
+#: to the default run: each sets one argument of the simulator, do(X)-style.
+#: They are chosen inside the scheme's stated domain (stability number <= 1,
+#: nu >= 0), so a failure is the scheme's and not the question's.
+PDE_INTERVENTIONS: tuple[tuple[str, dict[str, Any]], ...] = (
+    ("nu halved", {"nu": 0.005}),
+    ("nu doubled", {"nu": 0.02}),
+    ("inviscid", {"nu": 0.0}),
+    ("cfl 0.25", {"cfl": 0.25}),
+    ("cfl 0.9", {"cfl": 0.9}),
+    ("grid 50", {"n_x": 50}),
+    ("grid 200", {"n_x": 200}),
+    ("twice as long", {"n_t": 160}),
+)
+
+
+def audit_interventional_invariance(trap_id: int) -> dict[str, Any]:
+    """Do the scheme's invariants survive a change it did not choose?
+
+    The apex claim tier requires interventional evidence (FLAW-07), and the
+    other audits here read one trajectory at one setting. This one re-runs the
+    simulator under each entry of `PDE_INTERVENTIONS` and applies the same
+    invariant audit to every run. ``invariant`` is True only if all of them
+    pass; ``failed`` names the interventions that did not.
+    """
+    runs = []
+    for name, change in PDE_INTERVENTIONS:
+        audit = audit_physical_invariants(
+            simulate_burgers_conservative(trap_id=trap_id, **change), trap_id=trap_id
+        )
+        held = (
+            audit["mass_conserved"] and audit["energy_dissipative"] and audit["entropy_satisfied"]
+            and audit["tvd_satisfied"] and audit["cfl_stable"]
+        )
+        runs.append({"intervention": name, "held": bool(held),
+                     "energy_growth": audit["energy_growth"], "tv_ratio": audit["tv_ratio"]})
+    failed = [r["intervention"] for r in runs if not r["held"]]
+    return {"invariant": not failed, "failed": failed, "runs": runs}
+
+
 def run_pde_adjudication(
     trap_id: int = 6,
     proposed_claim: ClaimLevel = ClaimLevel.C6_FORMALLY_VERIFIED,
@@ -282,6 +328,11 @@ def run_pde_adjudication(
     else:
         bundle.failures.append("numerical_divergence")
 
+    # Interventional invariance: measured, never granted by trap number.
+    interventional = audit_interventional_invariance(trap_id)
+    if interventional["invariant"]:
+        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
+
     # Check Structural Invariance & Dual-Bound Proof
     if trap_id not in [3, 5]:
         bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
@@ -308,6 +359,7 @@ def run_pde_adjudication(
         "trap_desc": desc,
         "apparent_r2": audit["apparent_r2"],
         "audit": audit,
+        "interventional_audit": interventional,
         "naive_promoted": bool(naive_promoted),
         "apedp_adjudication": {
             "proposed_claim": adjudication.proposed_claim.label(),

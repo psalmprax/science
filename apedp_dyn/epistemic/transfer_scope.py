@@ -18,6 +18,7 @@ Statuses:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 class TransferStatus(str):
@@ -46,7 +47,7 @@ class TransferScope:
     error_blowup: float = field(init=False)
     status: str = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # NOTE: dataclass is frozen; use object.__setattr__ for derived fields.
         object.__setattr__(self, "leadership_reversed",
                            bool(self.extra_rmse_rival < self.extra_rmse_best))
@@ -58,7 +59,7 @@ class TransferScope:
         else:
             object.__setattr__(self, "status", TransferStatus.CROSS_DOMAIN_SUPPORTED)
 
-    def record(self) -> dict:
+    def record(self) -> dict[str, Any]:
         """Serialisable form for artifacts and the structured verdict block."""
         return {
             "structure": {"candidate": self.candidate_id, "rival": self.rival_id},

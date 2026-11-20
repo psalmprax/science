@@ -391,6 +391,25 @@ class TestAgainstTheRealRepository:
     real fc1d68d commit is known to touch exactly 5 files.
     """
 
+    @pytest.fixture(autouse=True)
+    def _history_is_present(self):
+        """These tests read history; a shallow clone has none, and must say so.
+
+        In CI's default one-commit checkout the docs-only test below reported
+        "expected at least one docs-only commit in recent history", which reads
+        as a finding about the repository. It was a finding about the clone.
+        """
+        repo = rp.resolve_repo(Path(__file__).resolve().parents[1])
+        shallow = subprocess.run(
+            ["git", "rev-parse", "--is-shallow-repository"],
+            cwd=repo, capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        if shallow == "true":
+            pytest.fail(
+                "this clone is shallow, so the repository's history is not here to test; "
+                "check out with full history (CI: actions/checkout with fetch-depth: 0)"
+            )
+
     def test_the_real_last_commit_reports_its_true_file_count(self):
         """Every commit touching scanned code must report git's own file list.
 

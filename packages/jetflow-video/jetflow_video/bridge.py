@@ -508,26 +508,14 @@ class VideoVAEBridge:
                 )
                 self.latent_channels = self.vae.latent_channels
                 self.downsample_factor = self.vae.downsample_factor
-            except Exception as e:
-                print(f"[VideoVAEBridge] Failed to load diffusers VAE: {e}. Falling back to Causal3DSpatioTemporalVAE.")
-                self.use_diffusers = False
-                self.use_causal_3d_vae = use_causal_3d_vae
-                if self.use_causal_3d_vae:
-                    self.causal_3d_vae = Causal3DSpatioTemporalVAE(
-                        in_channels=3,
-                        latent_channels=latent_channels,
-                        downsample_factor=downsample_factor,
-                        temporal_downsample=temporal_downsample,
-                    ).to(self.device)
-                    self.vae = self.causal_3d_vae
-                else:
-                    self.vae = ContinuousWaveletVAE(
-                        in_channels=3,
-                        latent_channels=latent_channels,
-                        downsample_factor=downsample_factor,
-                    )
-                self.latent_channels = latent_channels
-                self.downsample_factor = downsample_factor
+            except Exception as e:  # noqa: BLE001 -- re-raised with what was asked for
+                # Until 2026-11-17 this printed a line and substituted an untrained
+                # VAE: a caller who asked for pretrained weights got random ones.
+                raise RuntimeError(
+                    f"VideoVAEBridge: the pretrained diffusers VAE {diffusers_model!r} could not be "
+                    f"loaded ({type(e).__name__}: {e}); pass use_diffusers=False to use an untrained "
+                    "Causal3DSpatioTemporalVAE or ContinuousWaveletVAE instead"
+                ) from e
         else:
             if self.use_causal_3d_vae:
                 self.causal_3d_vae = Causal3DSpatioTemporalVAE(

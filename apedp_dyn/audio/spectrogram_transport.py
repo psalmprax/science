@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -37,11 +38,12 @@ class ChirpSpec:
 
     def instantaneous_frequency(self, t: np.ndarray) -> np.ndarray:
         t = np.asarray(t, dtype=np.float64)
-        return self.start_freq + self.linear_rate * t + 0.5 * self.quadratic_rate * t * t
+        _out: np.ndarray = self.start_freq + self.linear_rate * t + 0.5 * self.quadratic_rate * t * t
+        return _out
 
     def phase_at(self, t: np.ndarray) -> np.ndarray:
         t = np.asarray(t, dtype=np.float64)
-        return (
+        _out: np.ndarray = (
             _TWO_PI
             * (
                 self.start_freq * t
@@ -50,6 +52,7 @@ class ChirpSpec:
             )
             + self.phase
         )
+        return _out
 
 
 def synthesize_chirps(
@@ -77,17 +80,19 @@ def stft_magnitude(
     Returns ``(magnitude, frequencies_hz, frame_times_s)``; frame times mark the
     window centres.
     """
-    if window_size % 2 != 0:
-        raise ValueError("window_size must be even")
+    if window_size <= 0 or window_size % 2 != 0:
+        raise ValueError("window_size must be a positive even integer")
     if hop <= 0:
         raise ValueError("hop must be positive")
+    if sample_rate <= 0.0:
+        raise ValueError("sample_rate must be positive")
     signal = np.asarray(signal, dtype=np.float64)
     if signal.size < window_size:
         raise ValueError("signal shorter than one window")
 
     window = np.hanning(window_size)
     n_frames = 1 + (signal.size - window_size) // hop
-    magnitude = np.empty((window_size // 2 + 1, n_frames), dtype=np.float64)
+    magnitude: np.ndarray = np.empty((window_size // 2 + 1, n_frames), dtype=np.float64)
     for frame in range(n_frames):
         start = frame * hop
         segment = signal[start : start + window_size] * window
@@ -103,22 +108,33 @@ def _parabolic_peak(values: np.ndarray, index: int) -> float:
         return float(index)
     left, centre, right = values[index - 1], values[index], values[index + 1]
     denominator = left - 2.0 * centre + right
-    if abs(denominator) < 1e-15:
+    # Parabolic vertex offset is valid only at a strict concave local maximum.
+    if denominator >= -1e-15:
         return float(index)
-    return float(index) + 0.5 * (left - right) / denominator
+    offset = max(-0.5, min(0.5, 0.5 * (left - right) / denominator))
+    _out: float = float(index) + offset
+    return _out
 
 
 def ridge_instantaneous_frequency(magnitude: np.ndarray, frequencies: np.ndarray) -> np.ndarray:
     """Sub-bin dominant frequency per frame via parabolic ridge interpolation."""
     magnitude = np.asarray(magnitude, dtype=np.float64)
-    _n_freq, n_frames = magnitude.shape
+    frequencies = np.asarray(frequencies, dtype=np.float64)
+    n_freq, n_frames = magnitude.shape
+    if n_freq < 2:
+        raise ValueError("at least 2 frequency bins are required")
     bin_width = float(frequencies[1] - frequencies[0])
     ridge = np.empty(n_frames, dtype=np.float64)
     for frame in range(n_frames):
-        peak = int(np.argmax(magnitude[:, frame]))
-        refined = _parabolic_peak(magnitude[:, frame], peak)
+        col = magnitude[:, frame]
+        if not np.any(col > 0.0):
+            ridge[frame] = np.nan
+            continue
+        peak = int(np.argmax(col))
+        refined = _parabolic_peak(col, peak)
         ridge[frame] = frequencies[0] + refined * bin_width
-    return ridge
+    _out: np.ndarray = ridge
+    return _out
 
 
 @dataclass
@@ -130,11 +146,13 @@ class InstantaneousFrequencyModel:
 
     def frequency(self, t: float | np.ndarray) -> float | np.ndarray:
         t = np.asarray(t, dtype=np.float64) - self.t_origin
-        return np.polyval(self.coefficients, t)
+        _out: float | np.ndarray = np.polyval(self.coefficients, t)
+        return _out
 
     def velocity(self, t: float | np.ndarray) -> float | np.ndarray:
         t = np.asarray(t, dtype=np.float64) - self.t_origin
-        return np.polyval(np.polyder(self.coefficients), t)
+        _out: float | np.ndarray = np.polyval(np.polyder(self.coefficients), t)
+        return _out
 
 
 def fit_instantaneous_frequency_model(
@@ -152,12 +170,13 @@ def fit_instantaneous_frequency_model(
 def frequency_advection_velocity_fn(
     model: InstantaneousFrequencyModel,
     frequency_step: float,
-):
+) -> Any:
     """Velocity field ``-c(t) * d/d_f`` for spectrogram transport via JetFlowStepper."""
 
     def velocity_fn(z: np.ndarray, t: float) -> np.ndarray:
         gradient = np.gradient(np.asarray(z, dtype=np.float64), frequency_step)
-        return -float(model.velocity(t)) * gradient
+        _out: np.ndarray = -float(model.velocity(t)) * gradient
+        return _out
 
     return velocity_fn
 
@@ -200,7 +219,8 @@ def _upwind_advection_step(
     else:
         # Forward differences need u[i+1]; unavailable at i = n-1 → zero flux.
         slope[:-1] = (u[1:] - u[:-1]) / frequency_step
-    return np.maximum(u - c * dt * slope, 0.0)
+    _out: np.ndarray = np.maximum(u - c * dt * slope, 0.0)
+    return _out
 
 
 def predict_next_frame(
@@ -210,7 +230,7 @@ def predict_next_frame(
     model: InstantaneousFrequencyModel,
     frequency_step: float,
     order: int = 2,
-):
+) -> Any:
     """Transport-predict frame ``frame_index + 1`` from ``frame_index``.
 
     The spectral advection problem ``S_t = -c(t) S_f`` is integrated with a

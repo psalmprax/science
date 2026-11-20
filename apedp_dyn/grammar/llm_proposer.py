@@ -25,7 +25,7 @@ PROPOSER_VERSION = "1.1.0-llm"
 
 
 # Provider defaults
-_PROVIDER_DEFAULTS = {
+_PROVIDER_DEFAULTS: dict[str, dict[str, Any]] = {
     "openrouter": {
         "base": "https://openrouter.ai/api/v1/chat/completions",
         "key_env": ["OPENROUTER_API_KEY", "APEDP_LLM_KEY"],
@@ -71,6 +71,16 @@ _PROVIDER_DEFAULTS = {
 }
 
 
+class LLMProposerUnavailable(RuntimeError):
+    """The proposer was asked to work and could not.
+
+    Distinct from an empty result: a disabled proposer (or one the model
+    answered with nothing) returns `[]` and says so; a missing key, an
+    unreachable endpoint or a provider error raises, so a pipeline cannot
+    report a null result from a process that never ran.
+    """
+
+
 class LLMProposer:
     """Optional LLM-guided proposer. Disabled by default."""
 
@@ -86,6 +96,9 @@ class LLMProposer:
         enabled: bool = False,
         headers: dict[str, str] | None = None,
     ):
+        self.model: str | None = None
+        self.api_base: str | None = None
+        self.api_key: str | None = None
         provider = provider.lower()
         self.provider = provider
         defaults = _PROVIDER_DEFAULTS.get(provider, _PROVIDER_DEFAULTS["custom"])
@@ -119,30 +132,52 @@ class LLMProposer:
         self._proposer_id = proposer_id
         self.enabled = enabled
         self.headers = headers or {}
+        # What the last call actually did: "disabled", "no_api_key",
+        # "ok:<n>" or "failed:<detail>". A caller can tell an intentional
+        # no-op from a broken one without parsing logs.
+        self.last_outcome = "disabled" if not enabled else "idle"
+        self._key_envs = tuple(defaults["key_env"])
 
     @property
     def proposer_id(self) -> str:
         return self._proposer_id
 
-    def propose(self, problem) -> Sequence[CandidateDynamics | SystemCandidate]:
-        if not self.enabled or not self.api_key:
+    def propose(self, problem: Any) -> Sequence[CandidateDynamics | SystemCandidate]:
+        if not self.enabled:
+            self.last_outcome = "disabled"
             return []
+        if not self.api_key:
+            self.last_outcome = "no_api_key"
+            raise LLMProposerUnavailable(
+                f"LLM proposer is enabled for provider {self.provider!r} but no "
+                f"API key is set; export one of {', '.join(self._key_envs)}")
 
         try:
-            return self._propose_via_api(problem)
-        except Exception:
-            # Fail gracefully - never break the pipeline
-            return []
+            proposals = self._propose_via_api(problem)
+        except LLMProposerUnavailable:
+            raise
+        except Exception as exc:
+            self.last_outcome = f"failed:{type(exc).__name__}"
+            raise LLMProposerUnavailable(
+                f"LLM request to {self.api_base!r} failed: {exc}") from exc
+        self.last_outcome = f"ok:{len(proposals)}"
+        return proposals
 
-    def _propose_via_api(self, problem) -> Sequence[CandidateDynamics]:
+    def _propose_via_api(self, problem: Any) -> Sequence[CandidateDynamics]:
         """Call LLM API to suggest equation structures."""
         try:
             import httpx
-        except ImportError:
-            return []
+        except ImportError as exc:
+            self.last_outcome = "failed:no_httpx"
+            raise LLMProposerUnavailable(
+                "the LLM proposer needs httpx to reach the provider; install it "
+                "or leave the proposer disabled") from exc
 
-        if not self.api_key or not self.api_base:
-            return []
+        if not self.api_base:
+            self.last_outcome = "failed:no_api_base"
+            raise LLMProposerUnavailable(
+                f"provider {self.provider!r} has no request URL; pass api_base "
+                "or set APEDP_LLM_BASE")
 
         # Build context about the problem
         context = self._build_context(problem)
@@ -181,12 +216,14 @@ class LLMProposer:
             resp.raise_for_status()
             data = resp.json()
             content = data["choices"][0]["message"]["content"]
-        except Exception:
-            return []
+        except Exception as exc:
+            self.last_outcome = f"failed:{type(exc).__name__}"
+            raise LLMProposerUnavailable(
+                f"LLM request to {self.api_base!r} failed: {exc}") from exc
 
         return self._parse_suggestions(content)
 
-    def _build_context(self, problem) -> dict[str, Any]:
+    def _build_context(self, problem: Any) -> dict[str, Any]:
         states = [s.name for s in getattr(problem, "states", [])]
         inputs = [u.name for u in getattr(problem, "inputs", [])]
         return {
@@ -244,11 +281,11 @@ Return as JSON: [{{"terms": ["x", "v"], "rationale": "...", "confidence": 0.8}},
                         parameter_bounds={f"a{j}": (-1e6, 1e6) for j in range(len(valid_terms))},
                     )
                     candidates.append(cand)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - the loop builds candidates from untrusted model output; a malformed suggestion must yield the candidates built so far, and the failure is logged as a warning
             logger.warning("LLM proposer candidate construction failed; returning partial results: %s", exc)
         return candidates
 
 
-def create_llm_proposer(**kwargs) -> LLMProposer:
+def create_llm_proposer(**kwargs: Any) -> LLMProposer:
     """Factory function to create LLM proposer (disabled by default)."""
     return LLMProposer(enabled=False, **kwargs)

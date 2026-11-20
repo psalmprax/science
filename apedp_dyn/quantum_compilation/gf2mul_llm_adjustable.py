@@ -1,0 +1,1638 @@
+"""GF(2^12) Quantum Multiplier with LLM-Adjustable Model
+
+This module provides a configurable GF(2^12) multiplication tensor and decomposition
+that can be adjusted by an LLM. The key parameters (primitive element, irreducible
+polynomial, decomposition strategy) are all exposed and can be tuned.
+
+The default degree-12 decomposition is generated recursively and verified
+against the complete multiplication tensor. Its rank is an exact upper bound,
+not a proof of globally minimal bilinear complexity or compiled circuit cost.
+WSP transformations are accepted only when they preserve exact reconstruction.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field, replace
+from typing import Any
+
+import numpy as np
+
+from apedp_dyn.quantum.gf2_rank_search import search_rank as _exact_rank_search
+
+# ============================================================================
+# configurable GF(2^b) Field Model
+# ============================================================================
+
+@dataclass(frozen=True)
+class GF2FieldConfig:
+    """Configuration for GF(2^b) field, adjustable by LLM."""
+    degree: int = 12
+    primitive_element: int = 2  # u in little-endian bit representation
+    irreducible_poly: int | None = None  # If None, uses standard polys: {4:0x13, 8:0x11D, 10:0x409, 12:0x1053}
+    modulus_int: int | None = None  # Derived from prim_poly; if None, derived automatically
+
+    def __post_init__(self) -> None:
+        if self.modulus_int is None:
+            polys = {4: 0x13, 8: 0x11D, 10: 0x409, 12: 0x1053}
+            object.__setattr__(self, 'modulus_int', polys.get(self.degree, 0x1053))
+        if self.irreducible_poly is None:
+            object.__setattr__(self, 'irreducible_poly', self.modulus_int)
+
+    def validate_primitive(self) -> bool:
+        """Whether ``primitive_element`` generates the full multiplicative group.
+
+        Returns False for an out-of-range element rather than raising, because the
+        caller is asking a yes/no question.  The field model itself refuses an
+        unusable generator loudly.
+        """
+        if not (2 <= self.primitive_element < (1 << self.degree)):
+            return False
+        try:
+            GF2FieldModel(
+                degree=self.degree,
+                prim_poly=self.irreducible_poly,
+                primitive_element=self.primitive_element,
+            )
+        except ValueError:
+            return False
+        return True
+
+
+@dataclass(frozen=True)
+class GF2FieldModel:
+    """Self-contained GF(2^b) field arithmetic engine, adjustable via config."""
+    degree: int
+    order: int
+    prim_poly: int
+    primitive_element: int
+    exp_table: np.ndarray
+    log_table: np.ndarray
+
+    def __init__(
+        self,
+        degree: int = 12,
+        prim_poly: int | None = None,
+        primitive_element: int = 2,
+    ):
+        object.__setattr__(self, 'degree', degree)
+        object.__setattr__(self, 'order', (1 << degree) - 1)
+        object.__setattr__(self, 'prim_poly', prim_poly if prim_poly else (0x1053 if degree == 12 else 0x13))
+        object.__setattr__(self, 'primitive_element', primitive_element)
+
+        # Build log/exp tables from the configured generator
+        _init_tables(self)
+
+    def mul(self, a: int, b: int) -> int:
+        """Carry-less multiplication modulo irreducible polynomial."""
+        if a == 0 or b == 0:
+            return 0
+        return int(self.exp_table[int(self.log_table[a]) + int(self.log_table[b])])
+
+    def pow(self, a: int, p: int) -> int:
+        """Field exponentiation via repeated squaring."""
+        if a == 0:
+            return 0 if p > 0 else 1
+        return int(self.exp_table[(int(self.log_table[a]) * (p % self.order)) % self.order])
+
+    def inv(self, a: int) -> int:
+        """Field inversion."""
+        if a == 0:
+            raise ZeroDivisionError("GF2 inversion of zero")
+        return int(self.exp_table[(self.order - int(self.log_table[a])) % self.order])
+
+    def div(self, a: int, b: int) -> int:
+        """Field division."""
+        if b == 0:
+            raise ZeroDivisionError("GF2 division by zero")
+        if a == 0:
+            return 0
+        return int(self.exp_table[(int(self.log_table[a]) - int(self.log_table[b])) % self.order])
+
+
+def _gf2_carryless_mul(a: int, b: int) -> int:
+    """Carry-less (GF(2)[x]) product of two bit-packed polynomials."""
+    result = 0
+    while b:
+        if b & 1:
+            result ^= a
+        a <<= 1
+        b >>= 1
+    return result
+
+
+def _init_tables(model: GF2FieldModel) -> None:
+    """Initialize tables for a GF2FieldModel instance from its generator.
+
+    The primitive element decides the whole table layout: ``exp`` walks the
+    multiplicative group as ``1, g, g^2, ...``.  An element that never reaches
+    the full order leaves gaps or repeats, so it is refused here instead of
+    silently producing a table that only looks like a field.
+    """
+    degree = model.degree
+    order = model.order
+    modulus = model.prim_poly
+    generator = model.primitive_element
+
+    if not (2 <= generator < (1 << degree)):
+        raise ValueError(
+            f"primitive element {generator} is outside GF(2^{degree}); "
+            "it must be a nonzero element other than 1"
+        )
+
+    exp_table: np.ndarray = np.zeros(order * 2, dtype=np.int64)
+    log_table: np.ndarray = np.zeros(1 << degree, dtype=np.int64)
+    seen: np.ndarray = np.zeros(1 << degree, dtype=bool)
+
+    x = 1
+    for i in range(order):
+        exp_table[i] = x
+        exp_table[i + order] = x
+        log_table[x] = i
+        seen[x] = True
+        x = _gf2_poly_mod(_gf2_carryless_mul(x, generator), modulus, degree)
+        if x == 0:
+            raise ValueError(
+                f"element {generator} is not invertible in GF(2^{degree})"
+            )
+
+    if x != 1 or not seen[1:].all():
+        raise ValueError(
+            f"element {generator} does not generate GF(2^{degree})*; "
+            "it is not primitive for this modulus"
+        )
+
+    object.__setattr__(model, "exp_table", exp_table)
+    object.__setattr__(model, "log_table", log_table)
+
+
+# ============================================================================
+# GF(2^12) Multiplication Tensor
+# ============================================================================
+
+def build_multiplication_tensor(degree: int = 12, modulus_int: int = 0x1053) -> np.ndarray:
+    """Construct the exact degree×degree×degree multiplication tensor over GF(2).
+
+    Args:
+        degree: Field degree (default 12)
+        modulus_int: Irreducible polynomial as integer (default 0x1053 = u^12 + u^4 + u^3 + 1)
+
+    Returns:
+        T: (degree, degree, degree) binary tensor where T[i,j,k] = 1 iff (α^i * α^j) has α^k component
+    """
+    T: np.ndarray = np.zeros((degree, degree, degree), dtype=np.uint8)
+    for i in range(degree):
+        ei = 1 << i
+        for j in range(degree):
+            ej = 1 << j
+            prod = _gf2_poly_mod(ei * ej, modulus_int, degree)
+            for k in range(degree):
+                T[i, j, k] = (prod >> k) & 1
+
+    # Verify symmetry T_ijk == T_jik
+    if not np.array_equal(T, np.transpose(T, (1, 0, 2))):
+        raise ValueError("Multiplication tensor violates commutativity symmetry.")
+
+    return T
+
+
+def _gf2_poly_mod(a: int, mod: int, degree: int) -> int:
+    """Polynomial division remainder over GF(2)."""
+    deg_mod = mod.bit_length() - 1
+    deg_a = a.bit_length() - 1 if a > 0 else 0
+    while deg_a >= deg_mod:
+        a ^= (mod << (deg_a - deg_mod))
+        deg_a = a.bit_length() - 1 if a > 0 else 0
+    return a
+
+
+def verify_tensor_decomposition(
+    tensor: np.ndarray,
+    decomp: TensorDecomposition,
+) -> tuple[bool, list[tuple[int, int, int]]]:
+    """Reconstruct the tensor from U, V, W and verify every coefficient over GF(2)."""
+    R = decomp.rank
+    if decomp.U.shape != (R, tensor.shape[0]) or decomp.V.shape != (R, tensor.shape[0]) or decomp.W.shape != (R, tensor.shape[0]):
+        raise ValueError(f"Decomposition shape mismatch for rank {R}.")
+
+    # Reconstruct: T_hat[i, j, k] = sum_r U[r, i] * V[r, j] * W[r, k] mod 2
+    UV = np.einsum("ri,rj->rij", decomp.U, decomp.V) & 1
+    T_hat = (np.einsum("rij,rk->ijk", UV, decomp.W) % 2).astype(np.uint8)
+
+    diff = (tensor ^ T_hat) & 1
+    mismatches = [tuple(idx) for idx in np.argwhere(diff != 0)]
+    return (len(mismatches) == 0, mismatches)
+
+
+# ============================================================================
+# Tensor Decomposition Representation
+# ============================================================================
+
+@dataclass
+class TensorDecomposition:
+    """Bilinear decomposition of a multiplication tensor over GF(2).
+
+    A rank-r decomposition represents the multiplication tensor as:
+    T[i,j,k] = sum_{r=1}^{R} U[r,i] * V[r,j] * W[r,k] mod 2
+
+    Attributes:
+        rank: Number of rank-one components (atoms)
+        U: Left factors, shape (rank, degree)
+        V: Middle factors, shape (rank, degree)
+        W: Right factors, shape (rank, degree)
+        name: Descriptive name
+        metadata: Additional metadata (polynomial, primitive element, etc.)
+    """
+    rank: int
+    U: np.ndarray  # Shape (rank, degree), uint8
+    V: np.ndarray  # Shape (rank, degree), uint8
+    W: np.ndarray  # Shape (rank, degree), uint8
+    name: str = "generic"
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def reconstruct(self, tensor: np.ndarray) -> tuple[bool, list[tuple[int, int, int]]]:
+        """Reconstruct and verify against the full tensor."""
+        return verify_tensor_decomposition(tensor, self)
+
+
+# ============================================================================
+# Baseline Decompositions (References)
+# ============================================================================
+
+def build_schoolbook_decomposition(
+    degree: int = 12, modulus_int: int = 0x1053
+) -> TensorDecomposition:
+    """Build the naive 144-product schoolbook bilinear decomposition.
+
+    Rank = degree^2 = 144 for GF(2^12)
+    """
+    rank = degree * degree
+    U: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
+    V: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
+
+    r = 0
+    for i in range(degree):
+        for j in range(degree):
+            U[r, i] = 1
+            V[r, j] = 1
+            # Product of α^i * α^j = α^(i+j) reduced mod polynomial
+            prod = _gf2_poly_mod(1 << (i + j), modulus_int, degree)
+            for k in range(degree):
+                W[r, k] = (prod >> k) & 1
+            r += 1
+
+    return TensorDecomposition(
+        rank=rank,
+        U=U,
+        V=V,
+        W=W,
+        name="Schoolbook-144",
+        metadata={"category": "naive_bilinear", "nonlinear_count": 144},
+    )
+
+
+def build_karatsuba_polynomial_decomposition(
+    degree: int = 12, modulus_int: int = 0x1053
+) -> TensorDecomposition:
+    """Build and certify a recursive Karatsuba decomposition for GF(2^degree).
+
+    Inputs are polynomial-basis bit vectors. Recursive Karatsuba multiplies
+    zero-padded input polynomials, then each output coefficient is reduced
+    modulo ``modulus_int`` to produce the field-basis output factors.
+    """
+    if degree < 1 or modulus_int.bit_length() != degree + 1:
+        raise ValueError("degree and modulus_int must describe a degree-sized field")
+    padded_degree = 1 << (degree - 1).bit_length()
+
+    def recursive_atoms(size: int) -> list[tuple[int, int, int]]:
+        if size == 1:
+            return [(1, 1, 1)]
+        half = size // 2
+        low_atoms = recursive_atoms(half)
+        atoms: list[tuple[int, int, int]] = []
+        for left, right, output in low_atoms:
+            atoms.append((left, right, output ^ (output << half)))
+        for left, right, output in low_atoms:
+            atoms.append(
+                (left << half, right << half, (output << (2 * half)) ^ (output << half))
+            )
+        for left, right, output in low_atoms:
+            atoms.append(
+                (left | (left << half), right | (right << half), output << half)
+            )
+        return atoms
+
+    input_mask = (1 << degree) - 1
+    folded_atoms: dict[tuple[int, int], int] = {}
+    for left_mask, right_mask, product_mask in recursive_atoms(padded_degree):
+        left_mask &= input_mask
+        right_mask &= input_mask
+        if not left_mask or not right_mask:
+            continue
+        # Multiplication is commutative, so canonicalize input factor order and
+        # combine repeated products by XORing their output linear forms.
+        if left_mask > right_mask:
+            left_mask, right_mask = right_mask, left_mask
+        field_output = 0
+        for coefficient in range(2 * degree - 1):
+            if (product_mask >> coefficient) & 1:
+                field_output ^= _gf2_poly_mod(1 << coefficient, modulus_int, degree)
+        key = (left_mask, right_mask)
+        folded_atoms[key] = folded_atoms.get(key, 0) ^ field_output
+
+    terms = [
+        (left_mask, right_mask, output_mask)
+        for (left_mask, right_mask), output_mask in sorted(folded_atoms.items())
+        if output_mask
+    ]
+    U: np.ndarray = np.zeros((len(terms), degree), dtype=np.uint8)
+    V: np.ndarray = np.zeros((len(terms), degree), dtype=np.uint8)
+    W: np.ndarray = np.zeros((len(terms), degree), dtype=np.uint8)
+    for row, (left_mask, right_mask, output_mask) in enumerate(terms):
+        for bit in range(degree):
+            U[row, bit] = (left_mask >> bit) & 1
+            V[row, bit] = (right_mask >> bit) & 1
+            W[row, bit] = (output_mask >> bit) & 1
+
+    decomposition = TensorDecomposition(
+        rank=len(terms),
+        U=U,
+        V=V,
+        W=W,
+        name=f"Karatsuba-Polynomial-{degree}",
+        metadata={
+            "category": "recursive_polynomial_karatsuba",
+            "nonlinear_count": len(terms),
+            "padded_degree": padded_degree,
+            "modulus_int": modulus_int,
+        },
+    )
+    tensor = build_multiplication_tensor(degree, modulus_int)
+    exact, mismatches = decomposition.reconstruct(tensor)
+    if not exact:
+        raise ValueError(
+            "recursive Karatsuba decomposition failed exact tensor reconstruction "
+            f"({len(mismatches)} mismatches)"
+        )
+    return decomposition
+
+
+def build_karatsuba_decomposition(degree: int = 12) -> TensorDecomposition:
+    """Compatibility entry point for the certified recursive decomposition."""
+    return build_karatsuba_polynomial_decomposition(degree)
+
+
+def build_54_referencedecomposition(degree: int = 12) -> TensorDecomposition:
+    """Compatibility entry point for the exact degree-12 polynomial construction."""
+    decomposition = build_karatsuba_polynomial_decomposition(degree)
+    if degree == 12 and decomposition.rank != 54:
+        raise ValueError(f"expected degree-12 rank 54, got {decomposition.rank}")
+    return decomposition
+
+
+# ============================================================================
+# WSP (Weight-Space Programming) Layer
+# ============================================================================
+
+@dataclass(frozen=True)
+class WSPConfig:
+    """Weight-Space Programming configuration, adjustable by LLM.
+
+    WSP modifies the tensor decomposition by applying weighted transformations
+    to the U, V, W factors, potentially achieving different rank-performance tradeoffs.
+
+    Attributes:
+        weight_scheme: How weights are applied ('uniform', 'importance', 'llm_tuned')
+        sparsity_target: Target sparsity level for pruning (0-1, default 0, clamped at init)
+        rank_tolerance: Acceptable rank deviation from target (default 0)
+        llm_adjustable_params: Additional LLM-tunable parameters
+    """
+    weight_scheme: str = "uniform"
+    sparsity_target: float = 0.0
+    rank_tolerance: int = 0
+    llm_adjustable_params: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Validate WSP config parameters at initialization."""
+        # Validate weight_scheme
+        valid_schemes = {"uniform", "importance", "llm_tuned"}
+        if self.weight_scheme not in valid_schemes:
+            raise ValueError(
+                f"Invalid weight_scheme: {self.weight_scheme}. "
+                f"Must be one of {valid_schemes}"
+            )
+        # Validate and clamp sparsity_target to [0, 1]
+        if not (0.0 <= self.sparsity_target <= 1.0):
+            raise ValueError(
+                f"Invalid sparsity_target: {self.sparsity_target}. "
+                f"Must be in range [0, 1], will be clamped to [0, 1]."
+            )
+
+
+class WSPLayer:
+    """Weight-Space Programming layer that adjusts tensor decompositions.
+
+    This layer applies transformations to the U, V, W factors of a tensor
+    decomposition that can:
+    1. Prune redundant atoms
+    2. Reweight important atoms
+    3. Apply LLM-discovered transformations
+    4. Explore rank-performance tradeoffs
+    """
+
+    def __init__(self, config: WSPConfig | None = None):
+        self.config = config or WSPConfig()
+
+    def apply_wsp(self, decomp: TensorDecomposition, tensor: np.ndarray) -> tuple[TensorDecomposition, dict[str, Any]]:
+        """Apply WSP transformations to a tensor decomposition.
+
+        Returns:
+            (new_decomp, diagnostics) - an exact adjusted decomposition and diagnostics.
+
+        WSP never replaces a valid decomposition with an inexact candidate.
+        """
+        exact, mismatches = decomp.reconstruct(tensor)
+        diagnostics: dict[str, Any] = {
+            "input_exact": exact,
+            "input_mismatches": len(mismatches),
+            "accepted": False,
+        }
+        if not exact:
+            diagnostics["rejection_reason"] = "input decomposition is not exact"
+            return decomp, diagnostics
+
+        if self.config.weight_scheme == "uniform":
+            diagnostics.update({"accepted": True, "uniform_exact": True})
+            return decomp, diagnostics
+
+        elif self.config.weight_scheme == "importance":
+            new_decomp, diag = self._prune_by_importance(
+                decomp, tensor, sparsity_target=self.config.sparsity_target
+            )
+            diagnostics.update(diag)
+            diagnostics["accepted"] = True
+            return new_decomp, diagnostics
+
+        elif self.config.weight_scheme == "llm_tuned":
+            try:
+                candidate, transform_diag = self._apply_llm_transformations(
+                    decomp, tensor, self.config.llm_adjustable_params
+                )
+            except ValueError as exc:
+                diagnostics["rejection_reason"] = str(exc)
+                return decomp, diagnostics
+
+            candidate_exact, candidate_mismatches = candidate.reconstruct(tensor)
+            if not candidate_exact:
+                diagnostics.update(transform_diag)
+                diagnostics.update({
+                    "candidate_exact": False,
+                    "candidate_mismatches": len(candidate_mismatches),
+                    "rejection_reason": "transformation does not preserve the tensor",
+                })
+                return decomp, diagnostics
+
+            target_rank = self.config.llm_adjustable_params.get("target_rank")
+            if target_rank is not None:
+                if not isinstance(target_rank, int) or isinstance(target_rank, bool) or target_rank < 1:
+                    diagnostics["rejection_reason"] = "target_rank must be a positive integer"
+                    return decomp, diagnostics
+                candidate, rank_diag = self._prune_by_importance(
+                    candidate, tensor, target_rank=target_rank
+                )
+                transform_diag.update(rank_diag)
+
+            diagnostics.update(transform_diag)
+            diagnostics.update({"accepted": True, "candidate_exact": True})
+            new_decomp = candidate
+            return new_decomp, diagnostics
+
+        else:
+            raise ValueError(f"Unknown WSP weight scheme: {self.config.weight_scheme}")
+
+    @staticmethod
+    def _prune_by_importance(
+        decomp: TensorDecomposition,
+        tensor: np.ndarray,
+        sparsity_target: float = 0.0,
+        target_rank: int | None = None,
+    ) -> tuple[TensorDecomposition, dict[str, Any]]:
+        """Greedily remove low-support atoms only when exactness is preserved."""
+        R = decomp.rank
+        if target_rank is None:
+            target_keep = max(1, int(R * (1.0 - sparsity_target)))
+        else:
+            target_keep = min(R, max(1, target_rank))
+
+        contributions: list[tuple[int, int]] = []
+        for r in range(R):
+            support = (
+                int(np.count_nonzero(decomp.U[r]))
+                * int(np.count_nonzero(decomp.V[r]))
+                * int(np.count_nonzero(decomp.W[r]))
+            )
+            contributions.append((support, r))
+        contributions.sort()
+
+        keep_indices = list(range(R))
+        attempts = 0
+        for _, atom_index in contributions:
+            if len(keep_indices) <= target_keep:
+                break
+            candidate_indices = [i for i in keep_indices if i != atom_index]
+            candidate = TensorDecomposition(
+                rank=len(candidate_indices),
+                U=decomp.U[candidate_indices],
+                V=decomp.V[candidate_indices],
+                W=decomp.W[candidate_indices],
+                name=f"Pruned-{decomp.name}",
+                metadata={
+                    **decomp.metadata,
+                    "pruning_sparsity_requested": sparsity_target,
+                    "target_rank_requested": target_rank,
+                },
+            )
+            attempts += 1
+            candidate_exact, _ = candidate.reconstruct(tensor)
+            if candidate_exact:
+                keep_indices = candidate_indices
+
+        new_decomp = TensorDecomposition(
+            rank=len(keep_indices),
+            U=decomp.U[keep_indices],
+            V=decomp.V[keep_indices],
+            W=decomp.W[keep_indices],
+            name=f"Pruned-{decomp.name}",
+            metadata={
+                **decomp.metadata,
+                "pruning_sparsity_requested": sparsity_target,
+                "target_rank_requested": target_rank,
+            },
+        )
+        exact, mismatches = new_decomp.reconstruct(tensor)
+        diagnostics = {
+            "pruned_rank": new_decomp.rank,
+            "pruned_atoms_kept": new_decomp.rank,
+            "pruned_atoms_removed": R - new_decomp.rank,
+            "pruned_exact": exact,
+            "pruned_mismatches": len(mismatches),
+            "pruning_attempts": attempts,
+            "sparsity_target_requested": sparsity_target,
+            "sparsity_achieved": (R - new_decomp.rank) / max(1, R),
+            "target_rank_requested": target_rank,
+            "target_rank_reached": (
+                target_rank is None or new_decomp.rank <= target_rank
+            ),
+        }
+
+        return new_decomp, diagnostics
+
+    @staticmethod
+    def _apply_llm_transformations(
+        decomp: TensorDecomposition,
+        tensor: np.ndarray,
+        llm_params: dict[str, Any],
+    ) -> tuple[TensorDecomposition, dict[str, Any]]:
+        """Apply LLM-discovered transformations to the decomposition.
+
+        LLM params may include:
+        - 'transform_type': 'swap', 'scale', 'mix', 'new_atoms'
+        - 'target_rank': desired rank
+        - 'transformation_matrix': custom U/V/W transformations
+        """
+        R = decomp.rank
+        params = llm_params.copy()
+        transform_type = params.pop("transform_type", "swap")
+        target_rank = params.pop("target_rank", None)
+
+        if transform_type == "swap":
+            new_U = decomp.V.copy()
+            new_V = decomp.U.copy()
+            new_W = decomp.W.copy()
+        elif transform_type == "scale":
+            scale_u = params.get("scale_u", 1.0)
+            scale_v = params.get("scale_v", 1.0)
+            scale_w = params.get("scale_w", 1.0)
+            if any(value not in (0, 1) for value in (scale_u, scale_v, scale_w)):
+                raise ValueError("GF(2) scale factors must each be 0 or 1")
+            new_U = (decomp.U * int(scale_u)) % 2
+            new_V = (decomp.V * int(scale_v)) % 2
+            new_W = (decomp.W * int(scale_w)) % 2
+        elif transform_type == "mix":
+            mix_matrix = params.get("mix_matrix", None)
+            if mix_matrix is None:
+                raise ValueError("mix requires an explicit invertible rank-by-rank matrix")
+            mix_matrix = np.asarray(mix_matrix, dtype=np.uint8)
+            if mix_matrix.shape != (R, R) or not np.isin(mix_matrix, (0, 1)).all():
+                raise ValueError("mix_matrix must be a binary square matrix matching the rank")
+            inverse = WSPLayer._gf2_matrix_inverse(mix_matrix)
+            if inverse is None:
+                raise ValueError("mix_matrix must be invertible over GF(2)")
+            new_U = (mix_matrix @ decomp.U) % 2
+            new_V = (inverse.T @ decomp.V) % 2
+            new_W = decomp.W.copy()
+        elif transform_type == "new_atoms":
+            raise ValueError("new_atoms requires a certified algebraic search and is unsupported")
+        else:
+            raise ValueError(f"Unknown LLM transform type: {transform_type}")
+
+        new_rank = int(new_U.shape[0])
+        new_decomp = TensorDecomposition(
+            rank=new_rank,
+            U=new_U,
+            V=new_V,
+            W=new_W,
+            name=f"LLM-Tuned-{transform_type}",
+            metadata={**decomp.metadata, "llm_params": llm_params.copy()},
+        )
+        exact, mismatches = verify_tensor_decomposition(tensor, new_decomp)
+        diagnostics = {
+            "transform_type": transform_type,
+            "llm_applied": exact,
+            "target_rank": target_rank,
+            "final_rank": new_rank,
+            "llm_exact": exact,
+            "llm_mismatches": len(mismatches),
+        }
+        return new_decomp, diagnostics
+
+    @staticmethod
+    def _gf2_matrix_inverse(matrix: np.ndarray) -> np.ndarray | None:
+        """Invert a binary matrix using Gauss-Jordan elimination over GF(2)."""
+        size = matrix.shape[0]
+        augmented = np.concatenate(
+            (matrix.copy().astype(np.uint8) % 2, np.eye(size, dtype=np.uint8)), axis=1
+        )
+        for col in range(size):
+            pivots = np.flatnonzero(augmented[col:, col])
+            if not len(pivots):
+                return None
+            pivot = col + int(pivots[0])
+            augmented[[col, pivot]] = augmented[[pivot, col]]
+            for row in range(size):
+                if row != col and augmented[row, col]:
+                    augmented[row] ^= augmented[col]
+        _out: np.ndarray | None = augmented[:, size:]
+        return _out
+
+# ============================================================================
+# MMLM Integration
+# ============================================================================
+
+class MMLMMultiplier:
+    """GF(2^12) Quantum Multiplier integrated with MMLM tripartite architecture.
+
+    This combines:
+    1. The GF(2^12) field arithmetic and tensor decompositions
+    2. WSP (Weight-Space Programming) layer for LLM-adjustable transformations
+    3. Integration with MMLM Track A (NonNeural), Track B (Hybrid), Track C (AttentionFree)
+    """
+
+    def __init__(
+        self,
+        field_config: GF2FieldConfig | None = None,
+        wsp_config: WSPConfig | None = None,
+        degree: int = 12,
+        seed: int = 42,
+    ):
+        self.field_config = field_config or GF2FieldConfig()
+        self.wsp_config = wsp_config or WSPConfig()
+        self.degree = degree
+        self.seed = seed
+        # Fixed at construction so a semantic path never depends on call order.
+        self._continuous_projection = np.random.RandomState(seed).randn(degree, degree)
+
+        # Initialize field model
+        self.gf = GF2FieldModel(
+            degree=self.degree,
+            prim_poly=self.field_config.irreducible_poly,
+            primitive_element=self.field_config.primitive_element,
+        )
+
+        modulus_int = self.field_config.modulus_int
+        if modulus_int is None:
+            raise ValueError("a GF(2) field configuration requires a modulus integer")
+
+        # Build default tensor
+        self.tensor = build_multiplication_tensor(degree=self.degree, modulus_int=modulus_int)
+
+        # Prefer a recursive polynomial Karatsuba decomposition, then fail safe
+        # to schoolbook factors if the exact coefficient screen rejects it.
+        proposed_decomp = build_karatsuba_polynomial_decomposition(
+            degree=self.degree, modulus_int=modulus_int
+        )
+        proposed_exact, _ = proposed_decomp.reconstruct(self.tensor)
+        if proposed_exact:
+            self.default_decomp = proposed_decomp
+        else:
+            self.default_decomp = build_schoolbook_decomposition(
+                degree=self.degree, modulus_int=modulus_int
+            )
+            self.default_decomp.metadata["fallback_reason"] = (
+                "proposed Karatsuba factors failed exact tensor reconstruction"
+            )
+
+        # Initialize WSP layer
+        self.wsp_layer = WSPLayer(config=self.wsp_config)
+
+    def get_tensor(self) -> np.ndarray:
+        """Get the multiplication tensor."""
+        return self.tensor
+
+    def get_decomposition(
+        self, rank: int | None = None, name: str | None = None
+    ) -> TensorDecomposition:
+        """Get a tensor decomposition at the specified rank.
+
+        Args:
+            rank: Desired rank (None for default 54)
+            name: Descriptive name
+
+        Returns:
+            TensorDecomposition at the specified rank
+        """
+        requested_rank = self.default_decomp.rank if rank is None else rank
+        if not isinstance(requested_rank, int) or isinstance(requested_rank, bool) or requested_rank < 1:
+            raise ValueError("rank must be a positive integer")
+        decomp = TensorDecomposition(
+            rank=self.default_decomp.rank,
+            U=self.default_decomp.U.copy(),
+            V=self.default_decomp.V.copy(),
+            W=self.default_decomp.W.copy(),
+            name=name or self.default_decomp.name,
+            metadata={**self.default_decomp.metadata, "generated": True},
+        )
+
+        # Apply WSP if configured
+        if self.wsp_config.weight_scheme != "uniform":
+            decomp, wsp_diag = self.wsp_layer.apply_wsp(decomp, self.tensor)
+            decomp.metadata["wsp_diagnostics"] = wsp_diag
+
+        if decomp.rank > requested_rank:
+            decomp, rank_diag = WSPLayer._prune_by_importance(
+                decomp, self.tensor, target_rank=requested_rank
+            )
+            decomp.metadata["rank_request_diagnostics"] = rank_diag
+        decomp.metadata["requested_rank"] = requested_rank
+
+        # Verify
+        exact, mismatches = verify_tensor_decomposition(self.tensor, decomp)
+        if not exact:
+            raise ValueError(
+                f"WSP returned an inexact decomposition ({len(mismatches)} mismatches)"
+            )
+
+        return decomp
+
+    # --- GF(2) bilinear primitives -------------------------------------------------
+    # The decomposition is a bilinear algorithm, not a float encoder:
+    #     u_r = <U_r, a>,  v_r = <V_r, b>,  p_r = u_r & v_r,  y_k = XOR_r W[r,k] & p_r
+    # Every number the tracks report is derived from those bits, and `exact` compares
+    # the result against the field model instead of assuming it.
+
+    def _as_bits(self, operand: Any, width: int) -> np.ndarray:
+        """Bit vector of ``operand`` in the polynomial basis (length ``width``)."""
+        if isinstance(operand, (int, np.integer)) and not isinstance(operand, bool):
+            value = int(operand)
+            if value < 0 or value >= (1 << width):
+                raise ValueError(
+                    f"operand {value} does not fit in the {width} bits of GF(2^{width})"
+                )
+            _out: np.ndarray = np.array([(value >> bit) & 1 for bit in range(width)], dtype=np.uint8)
+            return _out
+        array = np.asarray(operand).ravel()
+        if array.size < width:
+            raise ValueError(
+                f"operand needs at least {width} bit entries, got {array.size}"
+            )
+        _out = (array[:width].astype(np.int64) & 1).astype(np.uint8)
+        return _out
+
+    @staticmethod
+    def _bits_to_int(bits: np.ndarray) -> int:
+        """Pack a little-endian bit vector into an integer."""
+        return int(
+            sum(int(bit) << index for index, bit in enumerate(np.asarray(bits).ravel()))
+        )
+
+    def _project(self, factors: np.ndarray, operand: Any) -> np.ndarray:
+        """``<factors[r], operand>`` over GF(2) for every atom ``r``."""
+        bits = self._as_bits(operand, int(factors.shape[1]))
+        _out: np.ndarray = (factors.astype(np.uint8) @ bits) & 1
+        return _out
+
+    def bilinear_multiply(
+        self,
+        left: Any,
+        right: Any,
+        decomp: TensorDecomposition | None = None,
+    ) -> dict[str, Any]:
+        """Run the decomposition as an actual GF(2) multiplication algorithm."""
+        decomposition = decomp if decomp is not None else self.default_decomp
+        left_bits = self._project(decomposition.U, left)
+        right_bits = self._project(decomposition.V, right)
+        products = (left_bits & right_bits).astype(np.uint8)
+        output_bits = (decomposition.W.T.astype(np.uint8) @ products) & 1
+        product = self._bits_to_int(output_bits)
+        left_int = self._bits_to_int(self._as_bits(left, self.degree))
+        right_int = self._bits_to_int(self._as_bits(right, self.degree))
+        expected = self.gf.mul(left_int, right_int)
+        return {
+            "left": left_int,
+            "right": right_int,
+            "product": product,
+            "expected": expected,
+            "exact": product == expected,
+            "bits": output_bits,
+            "state_bits": products,
+            "bilinear_products": int(products.sum()),
+            "rank": decomposition.rank,
+        }
+
+    def _as_bits_matrix(self, operands: Any) -> np.ndarray:
+        """Bit matrix ``(N, degree)`` from a sequence of field elements."""
+        rows = [self._as_bits(int(value), self.degree) for value in operands]
+        if not rows:
+            return np.zeros((0, self.degree), dtype=np.uint8)
+        _out: np.ndarray = np.asarray(rows, dtype=np.uint8)
+        return _out
+
+    def _multiply_bits_batch(
+        self, left_bits: np.ndarray, right_bits: np.ndarray, decomp: TensorDecomposition
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Multiply ``N`` bit-vector pairs through one set of factors."""
+        U = np.asarray(decomp.U, dtype=np.int64)
+        V = np.asarray(decomp.V, dtype=np.int64)
+        W = np.asarray(decomp.W, dtype=np.int64)
+        u = (np.asarray(left_bits, dtype=np.int64) @ U.T) & 1
+        v = (np.asarray(right_bits, dtype=np.int64) @ V.T) & 1
+        products = (u & v).astype(np.uint8)
+        output_bits = (products.astype(np.int64) @ W) & 1
+        return output_bits, products
+
+    def bilinear_multiply_batch(
+        self, lefts: Any, rights: Any, decomp: TensorDecomposition | None = None
+    ) -> dict[str, Any]:
+        """Multiply many operand pairs through the same decomposition.
+
+        The scalar path takes one pair per call; this one contracts a whole batch with
+        the identical U/V/W factors, which is what makes the composition below possible
+        without leaving the verified algorithm.
+        """
+        decomposition = decomp if decomp is not None else self.default_decomp
+        left_values = [int(value) for value in lefts]
+        right_values = [int(value) for value in rights]
+        if len(left_values) != len(right_values):
+            raise ValueError(
+                f"batch needs equal operands, got {len(left_values)} and {len(right_values)}"
+            )
+        output_bits, products = self._multiply_bits_batch(
+            self._as_bits_matrix(left_values),
+            self._as_bits_matrix(right_values),
+            decomposition,
+        )
+        results = [self._bits_to_int(row) for row in output_bits]
+        expected = [self.gf.mul(left, right) for left, right in zip(left_values, right_values, strict=False)]
+        return {
+            "products": results,
+            "expected": expected,
+            "exact": [result == want for result, want in zip(results, expected, strict=False)],
+            "bits": output_bits,
+            "state_bits": products,
+            "pairs": len(results),
+            "bilinear_products": int(products.sum()),
+            "rank": decomposition.rank,
+        }
+
+    def invert_batch(
+        self, elements: Any, decomp: TensorDecomposition | None = None
+    ) -> dict[str, Any]:
+        """Invert field elements as ``x**(2**degree - 2)`` through the decomposition.
+
+        Every squaring and multiplication in the square-and-multiply chain runs through
+        the same rank-54 factors as :meth:`bilinear_multiply`, so an inverse is a
+        composition of field products rather than a table lookup.  The returned record
+        carries ``x * x**-1 == 1`` for every element and the products actually executed,
+        so a wrong chain shows up as a failed identity instead of as a plausible number.
+
+        Raises:
+            ValueError: if any element is zero or outside the field.
+        """
+        decomposition = decomp if decomp is not None else self.default_decomp
+        limit = 1 << self.degree
+        values = [int(value) for value in elements]
+        bad = sorted({value for value in values if value <= 0 or value >= limit})
+        if bad:
+            raise ValueError(
+                f"cannot invert {bad[:5]} in GF(2^{self.degree}): zero has no inverse "
+                "and the rest are outside the field"
+            )
+        bits = self._as_bits_matrix(values)
+        exponent_bits = [int(character) for character in bin(limit - 2)[2:]]
+        accumulator = bits.copy()
+        squarings = 0
+        multiplications = 0
+        for bit in exponent_bits[1:]:
+            accumulator, _ = self._multiply_bits_batch(
+                accumulator, accumulator, decomposition
+            )
+            squarings += 1
+            if bit:
+                accumulator, _ = self._multiply_bits_batch(accumulator, bits, decomposition)
+                multiplications += 1
+        inverses = [self._bits_to_int(row) for row in accumulator]
+        checks = [self.gf.mul(value, inverse) for value, inverse in zip(values, inverses, strict=False)]
+        products_per_element = squarings + multiplications
+        return {
+            "inverses": inverses,
+            "checked": checks,
+            "exact": [check == 1 for check in checks],
+            "elements": len(values),
+            "squarings": squarings,
+            "multiplications": multiplications,
+            "products_per_element": products_per_element,
+            "bilinear_products": products_per_element * len(values),
+            "rank": decomposition.rank,
+        }
+
+    def gf_matvec(
+        self, matrix: Any, vector: Any, decomp: TensorDecomposition | None = None
+    ) -> dict[str, Any]:
+        """GF(2^b) matrix-vector product, one field product per non-zero entry.
+
+        This is the accumulation a decoder performs over its parity-check matrix, so it
+        is the smallest composition that exercises more than a single multiply.  The
+        result is compared entry by entry against the field model, and the executed
+        product count is reported rather than assumed.
+        """
+        decomposition = decomp if decomp is not None else self.default_decomp
+        rows = [[int(entry) for entry in row] for row in matrix]
+        values = [int(entry) for entry in vector]
+        for row in rows:
+            if len(row) != len(values):
+                raise ValueError(
+                    f"row of {len(row)} entries cannot contract a vector of {len(values)}"
+                )
+        results: list[int] = []
+        products = 0
+        zeros_skipped = 0
+        for row in rows:
+            accumulator = 0
+            for entry, value in zip(row, values, strict=False):
+                if entry == 0 or value == 0:
+                    zeros_skipped += 1
+                    continue
+                result = self.bilinear_multiply(entry, value, decomposition)
+                accumulator ^= result["product"]  # addition in characteristic 2 is XOR
+                products += 1
+            results.append(accumulator)
+        expected: list[int] = []
+        for row in rows:
+            total = 0
+            for entry, value in zip(row, values, strict=False):
+                total ^= self.gf.mul(entry, value)
+            expected.append(total)
+        return {
+            "result": results,
+            "expected": expected,
+            "exact": results == expected,
+            "entries": sum(len(row) for row in rows),
+            "products": products,
+            "zero_products_skipped": zeros_skipped,
+            "rank": decomposition.rank,
+        }
+
+    def _operand_pair(self, input_data: Any, second_operand: Any = None) -> tuple[Any, Any]:
+        """Split a packed input into two operands, or pair it with the identity.
+
+        A single operand is multiplied by 1 so the call still exercises the whole
+        bilinear path; pass ``second_operand`` or a ``2 * degree``-wide input to
+        multiply two arbitrary elements.
+        """
+        if second_operand is not None:
+            return input_data, second_operand
+        if isinstance(input_data, (int, np.integer)) and not isinstance(input_data, bool):
+            return int(input_data), 1
+        array = np.asarray(input_data).ravel()
+        if array.size >= 2 * self.degree:
+            return array[: self.degree], array[self.degree : 2 * self.degree]
+        return array, 1
+
+    def search_rank(
+        self,
+        target_rank: int | None = None,
+        max_k: int = 3,
+        start_decomp: TensorDecomposition | None = None,
+        time_limit_sec: float = 2.0,
+        seed: int = 42,
+    ) -> dict[str, Any]:
+        """Shorten the decomposition with the exact span-rewrite engine.
+
+        Delegates to :func:`apedp_dyn.quantum.gf2_rank_search.search_rank`, which
+        reports a rank only after ``U``/``V``/``W`` reconstruct every one of the
+        ``n**3`` coefficients.  Deflation and ``k -> k-1`` rewrites are exhaustive
+        over their declared families but are not a proof of global minimality, so
+        the report never claims one.
+
+        Args:
+            target_rank: Rank to stop at; ``None`` means "do not ask for a
+                reduction", so deflation still runs but no unsupported target is
+                asserted.  A target below the achievable rank is reported as
+                ``found=False`` after the budget is spent, not assumed.
+            max_k: Largest ``k`` for a ``k -> k-1`` rewrite.
+            start_decomp: Starting decomposition (defaults to the active one).
+            time_limit_sec: Search budget in seconds.
+            seed: Recorded for reproducibility of the run metadata.
+
+        Returns:
+            The engine's own summary plus the request and reconstruction facts.
+        """
+        tensor = self.tensor
+        start = start_decomp if start_decomp is not None else self.default_decomp
+        exact, mismatches = verify_tensor_decomposition(tensor, start)
+
+        requested = start.rank if target_rank is None else target_rank
+        if not isinstance(requested, int) or isinstance(requested, bool) or requested < 1:
+            raise ValueError("target_rank must be a positive integer or None")
+
+        engine = _exact_rank_search(
+            tensor,
+            target_rank=requested,
+            time_limit_sec=time_limit_sec,
+            seed=seed,
+            start=(start.U, start.V),
+            max_k=max_k,
+        )
+        payload: dict[str, Any] = dict(engine.summary())
+        payload.update(
+            {
+                "target_rank": requested,
+                "final_rank": engine.rank if engine.rank is not None else start.rank,
+                "start_exact": exact,
+                "start_mismatches": len(mismatches),
+                "exact_reconstruction": engine.U is not None,
+                "target_rank_reached": engine.rank is not None
+                and engine.rank <= requested,
+            }
+        )
+        return payload
+
+    def apply_wsp_and_report(self, decomp: TensorDecomposition) -> dict[str, Any]:
+        """Apply WSP and return comprehensive diagnostics."""
+        decomp, wsp_diag = self.wsp_layer.apply_wsp(decomp, self.tensor)
+
+        # Verify the decomposition
+        exact, mismatches = verify_tensor_decomposition(self.tensor, decomp)
+
+        return {
+            "original_rank": decomp.rank,
+            "wsp_diagnostics": wsp_diag,
+            "verifiable": exact,
+            "mismatch_count": len(mismatches) if mismatches else 0,
+        }
+
+
+# ============================================================================
+# MMLM Track Integrations
+# ============================================================================
+
+class MMLMTrackA(MMLMMultiplier):
+    """Track A: NonNeuralMMLM_A0 - Pure non-neural mathematical language modeling.
+
+    Uses weighted finite-state automata, tensor trains, tree tensor networks,
+    explicit dynamical state transitions, hypergraph/VSA associative memory,
+    symbolic rewriting, and energy-guided decoding.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.track = "A_NonNeural"
+        self.engine_type = "WeightedAutomatonEngine"
+
+    def _scope(self) -> dict[str, Any]:
+        """State the claim narrowly enough that a test can falsify it.
+
+        The class names come from the MMLM programme, but what this module does is
+        arithmetic: it computes one field product.  Anything wider (tokens, attention,
+        sequences) is not implemented here and is reported as such rather than implied.
+        """
+        return {
+            "unit": "GF(2^12) arithmetic",
+            "algorithm": "exact rank-54 bilinear decomposition",
+            "compositions": ["product", "inverse", "matvec"],
+            "models_tokens": False,
+            "implements_attention": False,
+            "claim": (
+                "computes a field product exactly through the decomposition, and composes "
+                "it for inversion and matrix-vector products"
+            ),
+        }
+
+    def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
+        """Multiply through the decomposition over GF(2) (Track A: non-neural engine).
+
+        The decomposition *is* the algorithm here: every reported number is a bit
+        produced by its U/V/W factors, and ``exact`` compares the product against the
+        field model rather than assuming the factors are correct.
+        """
+        decomp = self.get_decomposition(rank=54)
+        exact, _ = decomp.reconstruct(self.tensor)
+        left, right = self._operand_pair(input_data, second_operand)
+        result = self.bilinear_multiply(left, right, decomp)
+
+        return {
+            "track": self.track,
+            "engine": self.engine_type,
+            "operands": {"left": result["left"], "right": result["right"]},
+            "product": result["product"],
+            "expected_product": result["expected"],
+            "exact": result["exact"],
+            "product_bits": result["bits"].tolist(),
+            "bilinear_products": result["bilinear_products"],
+            "scope": self._scope(),
+            "decomposition_exact": exact,
+            "tensor_rank": decomp.rank,
+        }
+
+
+class MMLMTrackB(MMLMMultiplier):
+    """Track B: HybridMMLM_B0 - Ablation-governed mathematical hybrid.
+
+    Introduces optional continuous semantic encoders and syntax-aware Tree Tensor
+    Network hierarchy only where quantitative ablations prove net benefit.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.track = "B_Hybrid"
+        self.engine_type = "HybridAblationConfig"
+        self.use_continuous = True
+
+    def _scope(self) -> dict[str, Any]:
+        """Exact field multiplication plus a measured continuous ablation."""
+        return {
+            "unit": "GF(2^12) arithmetic",
+            "algorithm": "exact bilinear decomposition ablated against a fitted real model",
+            "compositions": ["product", "inverse", "matvec"],
+            "models_tokens": False,
+            "implements_attention": False,
+            "claim": (
+                "computes the exact product, composes it for inversion and matrix-vector "
+                "products, and reports where a real-valued model fails"
+            ),
+        }
+
+    def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
+        """Exact GF(2) path versus a float encoder, ablated on measured error.
+
+        The float path only replaces the exact one when it reproduces every output
+        bit *and* costs fewer multiplications; otherwise the exact path wins.  That
+        is a criterion the data can fail, not a fixed preference.
+        """
+        decomp = self.get_decomposition(rank=54)
+        exact, _ = decomp.reconstruct(self.tensor)
+        left, right = self._operand_pair(input_data, second_operand)
+
+        binary_result = self._binary_path(left, right, decomp)
+        continuous_result = self._continuous_path(left, right, decomp)
+        use_continuous = self.use_continuous and (
+            continuous_result["hamming_errors"] == 0
+            and continuous_result["float_macs"] < binary_result["bilinear_products"]
+        )
+        result = continuous_result if use_continuous else binary_result
+
+        return {
+            "track": self.track,
+            "engine": self.engine_type,
+            "uses_continuous": use_continuous,
+            "exact": binary_result["exact"],
+            "product": result["product"],
+            "expected_product": result["expected"],
+            "binary": binary_result,
+            "continuous": continuous_result,
+            "result": result,
+            "scope": self._scope(),
+            "decomposition_exact": exact,
+        }
+
+    def _binary_path(
+        self, left: Any, right: Any, decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """Exact GF(2) bilinear path."""
+        result = self.bilinear_multiply(left, right, decomp)
+        return {
+            "path": "gf2_bilinear",
+            "product": result["product"],
+            "expected": result["expected"],
+            "exact": result["exact"],
+            "hamming_errors": (
+                0 if result["exact"] else int(bin(result["product"] ^ result["expected"]).count("1"))
+            ),
+            "bilinear_products": result["bilinear_products"],
+        }
+
+    def _continuous_path(
+        self, left: Any, right: Any, decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """Real-valued model of the same rank, fitted rather than guessed.
+
+        The float path uses the identical U/V factors and the same number of atoms as
+        the exact path; only its reduction weights are fitted by least squares on a
+        fixed operand grid.  It is therefore the strongest real-valued model this
+        rank admits, so a loss here is a property of real arithmetic, not of the
+        comparison.
+        """
+        U, V, weights, fit_hamming = self._fit_float_model(decomp)
+        left_bits: np.ndarray = self._as_bits(left, self.degree).astype(float)
+        right_bits: np.ndarray = self._as_bits(right, self.degree).astype(float)
+        products = (U @ left_bits) * (V @ right_bits)
+        approximate = products @ weights
+        product_bits = (approximate >= 0.5).astype(np.uint8)
+        product = self._bits_to_int(product_bits)
+        expected = self.gf.mul(
+            self._bits_to_int(left_bits), self._bits_to_int(right_bits)
+        )
+        return {
+            "path": "float_fitted_bilinear",
+            "product": product,
+            "expected": expected,
+            "exact": product == expected,
+            "hamming_errors": int(bin(product ^ expected).count("1")),
+            "fit_hamming_errors": fit_hamming,
+            "fit_samples": int(self._float_fit_samples),
+            "atoms": int(decomp.rank),
+            "float_macs": int(3 * decomp.rank * self.degree),
+        }
+
+    def _fit_float_model(
+        self, decomp: TensorDecomposition
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+        """Least-squares reduction weights for the real-valued path (deterministic)."""
+        cached = getattr(self, "_float_model_cache", None)
+        if cached is not None and cached[0] is decomp:
+            _out: tuple[np.ndarray, np.ndarray, np.ndarray, int] = cached[1:]
+            return _out
+
+        U = np.asarray(decomp.U, dtype=float)
+        V = np.asarray(decomp.V, dtype=float)
+        limit = 1 << self.degree
+        stride = max(1, limit // 128)
+        grid = range(0, limit, stride)
+
+        rows: list[np.ndarray] = []
+        targets: list[np.ndarray] = []
+        for left in grid:
+            left_bits: np.ndarray = self._as_bits(left, self.degree).astype(float)
+            for right in grid:
+                right_bits: np.ndarray = self._as_bits(right, self.degree).astype(float)
+                rows.append((U @ left_bits) * (V @ right_bits))
+                targets.append(
+                    self._as_bits(self.gf.mul(left, right), self.degree).astype(float)
+                )
+
+        design = np.asarray(rows)
+        target = np.asarray(targets)
+        weights, *_ = np.linalg.lstsq(design, target, rcond=None)
+        fitted = (design @ weights >= 0.5).astype(np.uint8)
+        fit_hamming = int(np.sum(fitted != target.astype(np.uint8)))
+
+        self._float_model_cache = (decomp, U, V, weights, fit_hamming)
+        self._float_fit_samples = int(design.shape[0])
+        return U, V, weights, fit_hamming
+
+
+class MMLMTrackC(MMLMMultiplier):
+    """Track C: AttentionFreeMMLM_C0 - Attention-free Transformer replacement.
+
+    Combines selective state-space dynamics, hierarchical tensor memory, and
+    speculative energy rescoring without conventional self-attention.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.track = "C_AttentionFree"
+        self.engine_type = "SelectiveStateEngine"
+        self.use_ssm = True  # Selective state modeling
+
+    def _scope(self) -> dict[str, Any]:
+        """Exact field multiplication scored by bit-level energies."""
+        return {
+            "unit": "GF(2^12) arithmetic",
+            "algorithm": "exact bilinear decomposition with bit-level energy scoring",
+            "compositions": ["product", "inverse", "matvec"],
+            "models_tokens": False,
+            "implements_attention": False,
+            "claim": (
+                "computes the exact product, composes it for inversion and matrix-vector "
+                "products, and scores bits without attention"
+            ),
+        }
+
+    def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
+        """Multiply over GF(2) and score the result without self-attention.
+
+        Track C replaces attention with two measurements taken over the bilinear tick:
+        the live-product state and a tree contraction of the output bits.
+        """
+        decomp = self.get_decomposition(rank=54)
+        exact, _ = decomp.reconstruct(self.tensor)
+        left, right = self._operand_pair(input_data, second_operand)
+        bilinear = self.bilinear_multiply(left, right, decomp)
+
+        ssd_result = self._selective_state_dynamics(bilinear, decomp)
+        htm_result = self._hierarchical_tensor_memory(bilinear, decomp)
+        energy_result = self._speculative_energy_rescoring(ssd_result, htm_result)
+
+        return {
+            "track": self.track,
+            "engine": self.engine_type,
+            "use_ssm": self.use_ssm,
+            "product": bilinear["product"],
+            "expected_product": bilinear["expected"],
+            "exact": bilinear["exact"],
+            "ssd_result": ssd_result,
+            "htm_result": htm_result,
+            "energy_result": energy_result,
+            "scope": self._scope(),
+            "decomposition_exact": exact,
+        }
+
+    def _selective_state_dynamics(
+        self, bilinear: dict[str, Any], decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """State the algorithm carries between projection and reduction.
+
+        ``p_r = u_r & v_r`` is that state, so the energy counts live bilinear products
+        instead of measuring a float projection.
+        """
+        state = np.asarray(bilinear["state_bits"], dtype=float)
+        return {
+            "state_width": int(state.size),
+            "dynamics_applied": True,
+            "active_products": int(state.sum()),
+            "energy": float(np.sum(state**2)),
+        }
+
+    def _hierarchical_tensor_memory(
+        self, bilinear: dict[str, Any], decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """Contract the output bits pairwise up a binary tree (tree tensor network)."""
+        level = np.asarray(bilinear["bits"], dtype=float)
+        depth = 0
+        while level.size > 1:
+            pairs = level.size // 2
+            contracted = level[0 : 2 * pairs : 2] + level[1 : 2 * pairs : 2]
+            if level.size % 2:  # carry the odd trailing bit instead of dropping it
+                contracted = np.concatenate([contracted, level[-1:]])
+            level = contracted
+            depth += 1
+        return {
+            "contracted_shape": (1,),
+            "tree_depth": depth,
+            "energy": float(level[0] ** 2) if level.size else 0.0,
+            "parity": int(level[0]) & 1 if level.size else 0,
+            "memory_applied": True,
+        }
+
+    def _speculative_energy_rescoring(
+        self, ssd_result: dict[str, Any], htm_result: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Combine the two measured energies and decode speculatively."""
+        ssd_energy = float(ssd_result["energy"])
+        htm_energy = float(htm_result["energy"])
+        combined_energy = ssd_energy + htm_energy
+        return {
+            "combined_energy": combined_energy,
+            "energy_components": {
+                "selective_state": ssd_energy,
+                "tensor_memory": htm_energy,
+            },
+            "speculative_decode": f"energy={combined_energy:.4f},track={self.track}",
+            "rescoring_applied": True,
+        }
+
+
+# ============================================================================
+# LLM-Adjustable Model Interface
+# ============================================================================
+
+class LLMTunableGF2Multiplier:
+    """LLM-adjustable GF(2^12) quantum multiplier model.
+
+    This is the main interface that an LLM can use to tune the multiplier
+    parameters and explore rank-performance tradeoffs.
+
+    Adjustable parameters via LLM:
+    1. Primitive element (2, 3, 5, 7, ...)
+    2. Irreducible polynomial (0x1053, 0x13, etc.)
+    3. Decomposition rank (54 minimum, 63 Karatsuba, 144 schoolbook)
+    4. WSP weight scheme and parameters
+    5. MMLM track selection (A, B, or C)
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        # Allow LLM to specify any adjustable parameter
+        self.field_config = kwargs.get(
+            "field_config",
+            GF2FieldConfig()
+        )
+        self.wsp_config = kwargs.get(
+            "wsp_config",
+            WSPConfig()
+        )
+        self.track = kwargs.get("track", "A")  # A, B, or C
+        self.degree = kwargs.get("degree", 12)
+
+        # Retuning may swap A, B and C. Each track implements the same
+        # ``process_with_tensor`` surface, which the shared base does not declare, so
+        # the attribute is typed as the union of the three concrete tracks.
+        self.mmlm_model: MMLMTrackA | MMLMTrackB | MMLMTrackC
+        if self.track == "A":
+            self.mmlm_model = MMLMTrackA(
+                field_config=self.field_config,
+                wsp_config=self.wsp_config,
+                degree=self.degree,
+            )
+        elif self.track == "B":
+            self.mmlm_model = MMLMTrackB(
+                field_config=self.field_config,
+                wsp_config=self.wsp_config,
+                degree=self.degree,
+            )
+        elif self.track == "C":
+            self.mmlm_model = MMLMTrackC(
+                field_config=self.field_config,
+                wsp_config=self.wsp_config,
+                degree=self.degree,
+            )
+        else:
+            raise ValueError(f"Unknown MMLM track: {self.track}")
+
+    def tune(self, **kwargs: Any) -> dict[str, Any]:
+        """Tune the model with LLM-specified parameters.
+
+        LLM can pass any of:
+        - primitive_element: int
+        - irreducible_poly: int
+        - weight_scheme: str ('uniform', 'importance', 'llm_tuned')
+        - sparsity_target: float (0-1)
+        - transform_type: str (for llm_tuned scheme)
+        - target_rank: int
+        - track: str ('A', 'B', 'C')
+
+        Returns:
+            Tuning results
+        """
+        # Config dataclasses are immutable, so build a validated replacement.
+        field_updates: dict[str, Any] = {}
+        if "primitive_element" in kwargs:
+            field_updates["primitive_element"] = kwargs["primitive_element"]
+        if "degree" in kwargs:
+            field_updates["degree"] = kwargs["degree"]
+            if "irreducible_poly" not in kwargs:
+                field_updates.update({"irreducible_poly": None, "modulus_int": None})
+        if "irreducible_poly" in kwargs:
+            field_updates["irreducible_poly"] = kwargs["irreducible_poly"]
+            field_updates["modulus_int"] = kwargs["irreducible_poly"]
+        if field_updates:
+            self.field_config = replace(self.field_config, **field_updates)
+            self.degree = self.field_config.degree
+
+        wsp_params = dict(self.wsp_config.llm_adjustable_params)
+        wsp_updates: dict[str, Any] = {}
+        if "weight_scheme" in kwargs:
+            wsp_updates["weight_scheme"] = kwargs["weight_scheme"]
+        if "sparsity_target" in kwargs:
+            wsp_updates["sparsity_target"] = kwargs["sparsity_target"]
+        if "transform_type" in kwargs:
+            wsp_params["transform_type"] = kwargs["transform_type"]
+        if "target_rank" in kwargs:
+            wsp_params["target_rank"] = kwargs["target_rank"]
+        if wsp_updates or "transform_type" in kwargs or "target_rank" in kwargs:
+            wsp_updates["llm_adjustable_params"] = wsp_params
+            self.wsp_config = replace(self.wsp_config, **wsp_updates)
+
+        # Reinitialize MMLM model with new config
+        if self.track == "A":
+            self.mmlm_model = MMLMTrackA(
+                field_config=self.field_config,
+                wsp_config=self.wsp_config,
+                degree=self.degree,
+            )
+        elif self.track == "B":
+            self.mmlm_model = MMLMTrackB(
+                field_config=self.field_config,
+                wsp_config=self.wsp_config,
+                degree=self.degree,
+            )
+        elif self.track == "C":
+            self.mmlm_model = MMLMTrackC(
+                field_config=self.field_config,
+                wsp_config=self.wsp_config,
+                degree=self.degree,
+            )
+
+        # Run tuning round
+        tensor = self.mmlm_model.get_tensor()
+        decomp = self.mmlm_model.get_decomposition()
+        exact, mismatches = decomp.reconstruct(tensor)
+
+        # Search for shorter decomposition
+        search_results = self.mmlm_model.search_rank(
+            target_rank=self.wsp_config.llm_adjustable_params.get("target_rank"),
+        )
+
+        return {
+            "field_config": {
+                "degree": self.field_config.degree,
+                "primitive_element": self.field_config.primitive_element,
+                "irreducible_poly": hex(self.field_config.modulus_int),
+            },
+            "wsp_config": {
+                "weight_scheme": self.wsp_config.weight_scheme,
+                "sparsity_target": self.wsp_config.sparsity_target,
+            },
+            "track": self.track,
+            "decomposition_rank": decomp.rank,
+            "reconstruction_exact": exact,
+            "mismatch_count": len(mismatches) if mismatches else 0,
+            "search_results": search_results,
+        }
+
+    def process(self, input_data: np.ndarray) -> dict[str, Any]:
+        """Process input data through the current model configuration."""
+        return self.mmlm_model.process_with_tensor(input_data)
+
+
+# ============================================================================
+# Demo / Example Usage
+# ============================================================================
+
+def demo_llm_adjustable_multiplier() -> None:
+    """Demonstrate the LLM-adjustable GF(2^12) multiplier."""
+
+    print("=" * 70)
+    print("LLM-ADJUSTABLE GF(2^12) QUANTUM MULTIPLIER")
+    print("=" * 70)
+
+    # 1. Default configuration (Track A, exact recursive rank-54 factors)
+    print("\n1. DEFAULT CONFIGURATION (Track A, Rank 54)")
+    print("-" * 70)
+    multiplier = LLMTunableGF2Multiplier(track="A")
+    r = multiplier.tune()
+    print(f"   Field: GF(2^{r['field_config']['degree']}), pe={r['field_config']['primitive_element']}")
+    print(f"   Polynomial: 0x{r['field_config']['irreducible_poly']:04x}")
+    print(f"   Decomposition rank: {r['decomposition_rank']}")
+    print(f"   Reconstruction exact: {r['reconstruction_exact']}")
+
+    # 2. LLM can tune primitive element
+    print("\n2. LLM TUNING: Change primitive element to 3")
+    print("-" * 70)
+    multiplier2 = LLMTunableGF2Multiplier(
+        track="A",
+        primitive_element=3,
+        irreducible_poly=0x1053,  # Keep same poly, just change pe
+    )
+    r2 = multiplier2.tune()
+    print(f"   Field: GF(2^{r2['field_config']['degree']}), pe={r2['field_config']['primitive_element']}")
+    print(f"   Reconstruction exact: {r2['reconstruction_exact']}")
+
+    # 3. LLM can try different WSP schemes
+    print("\n3. LLM TUNING: WSP with importance pruning (sparsity 0.1)")
+    print("-" * 70)
+    multiplier3 = LLMTunableGF2Multiplier(
+        track="A",
+        weight_scheme="importance",
+        sparsity_target=0.1,
+    )
+    r3 = multiplier3.tune()
+    print(f"   WSP scheme: {r3['wsp_config']['weight_scheme']}")
+    print(f"   Sparsity target: {r3['wsp_config']['sparsity_target']}")
+    print(f"   Rank after pruning: {r3['decomposition_rank']}")
+    print(f"   Exact after pruning: {r3['reconstruction_exact']}")
+
+    # 4. LLM can try different MMLM tracks
+    print("\n4. LLM TUNING: Try Track C (AttentionFree)")
+    print("-" * 70)
+    multiplier4 = LLMTunableGF2Multiplier(track="C")
+    r4 = multiplier4.tune()
+    print(f"   Track: {r4['track']}")
+    print(f"   Decomposition rank: {r4['decomposition_rank']}")
+    print(f"   Reconstruction exact: {r4['reconstruction_exact']}")
+
+    # 5. Process sample input
+    print("\n5. SAMPLE PROCESSING")
+    print("-" * 70)
+    sample_input = np.random.randint(0, 2, size=(10, 12))  # 10 samples, 12-bit each
+    processed = multiplier.process(sample_input)
+    print(f"   Track: {processed['track']}")
+    print(f"   Decomposition rank: {processed['decomposition_rank']}")
+    print(f"   Decomposition exact: {processed['decomposition_exact']}")
+
+    print("\n" + "=" * 70)
+    print("DEMO COMPLETE")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    demo_llm_adjustable_multiplier()

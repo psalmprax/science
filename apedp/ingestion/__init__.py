@@ -25,10 +25,10 @@ from apedp.ingestion.ingestion_web_equations import harvest_wikipedia_equations
 
 __all__ = [
     "INSTITUTIONAL_TARGETS",
-    "LiteratureRecord",
-    "LiteratureSearchResult",
     "AIFeynmanBenchmarkSuite",
     "FeynmanBenchmarkCase",
+    "LiteratureRecord",
+    "LiteratureSearchResult",
     "NACA0012TransonicBenchmark",
     "NISTWebBookAdapter",
     "NISTWebBookCase",

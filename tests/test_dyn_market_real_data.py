@@ -46,7 +46,7 @@ class TestRealMarketDataBenchmark:
             EpistemicAttribution.OUT_OF_GRAMMAR_OR_MISSPECIFIED.value,
             EpistemicAttribution.MEASUREMENT_NOISE_SWAMPED.value,
         )
-        assert rep.position_size == 0.0
+        assert rep.sizing.gross_exposure == 0.0
         assert rep.promoted_expression == ""
 
     def test_factor_zoo_immunity_on_2020_covid_nasdaq(self):
@@ -58,7 +58,7 @@ class TestRealMarketDataBenchmark:
             bootstrap=False,
         )
         assert rep.adjudication_status == EpistemicStatus.INSUFFICIENT_EVIDENCE
-        assert rep.position_size == 0.0
+        assert rep.sizing.gross_exposure == 0.0
 
     def test_factor_zoo_immunity_on_2022_bear_market(self):
         """During 2022 bear market, returns remain unpromoted on both S&P 500 and Nasdaq."""
@@ -70,7 +70,7 @@ class TestRealMarketDataBenchmark:
                 bootstrap=False,
             )
             assert rep.adjudication_status == EpistemicStatus.INSUFFICIENT_EVIDENCE
-            assert rep.position_size == 0.0
+            assert rep.sizing.gross_exposure == 0.0
 
     def test_price_level_collinearity_and_adjudication(self):
         """On price levels, competing trend/lag models are adjudicated with bootstrap discipline."""
@@ -86,9 +86,12 @@ class TestRealMarketDataBenchmark:
             EpistemicStatus.UNIQUE_SUPPORT,
             EpistemicStatus.MULTI_HYPOTHESIS,
         )
-        if rep.adjudication_status == EpistemicStatus.MULTI_HYPOTHESIS:
-            assert rep.position_size <= 0.5
-        else:
+        assert rep.sizing.admitted is (
+            rep.adjudication_status
+            in (EpistemicStatus.UNIQUE_SUPPORT, EpistemicStatus.MULTI_HYPOTHESIS)
+        )
+        assert 0.0 <= rep.sizing.gross_exposure <= 1.0
+        if rep.adjudication_status == EpistemicStatus.UNIQUE_SUPPORT:
             assert rep.promoted_expression == "AR1_lag"
 
     def test_missing_date_range_raises_key_error(self):

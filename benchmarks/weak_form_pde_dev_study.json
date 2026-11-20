@@ -1,0 +1,64 @@
+{
+ "status": "development study, not preregistered",
+ "summary": {
+  "burgers": {
+   "0.0": {
+    "of": 10,
+    "weak_exact_terms": 10,
+    "weak_median_worst_rel_coef_error": 0.00018958061741139454
+   },
+   "0.01": {
+    "of": 10,
+    "weak_exact_terms": 10,
+    "weak_median_worst_rel_coef_error": 0.0012732719652804592
+   },
+   "0.05": {
+    "of": 10,
+    "weak_exact_terms": 9,
+    "weak_median_worst_rel_coef_error": 0.014268004001668638
+   },
+   "0.1": {
+    "of": 10,
+    "weak_exact_terms": 9,
+    "weak_median_worst_rel_coef_error": 0.05848699072715895
+   },
+   "0.2": {
+    "of": 10,
+    "weak_exact_terms": 0,
+    "weak_median_worst_rel_coef_error": 1.0
+   }
+  },
+  "heat": {
+   "0.0": {
+    "kernel_median_rel_error_of_diffusion": 2.9924452811386226e-05,
+    "of": 10,
+    "weak_exact_terms": 10,
+    "weak_median_worst_rel_coef_error": 8.955859823883694e-06
+   },
+   "0.01": {
+    "kernel_median_rel_error_of_diffusion": 0.9627419102478869,
+    "of": 10,
+    "weak_exact_terms": 10,
+    "weak_median_worst_rel_coef_error": 0.0006287567642319913
+   },
+   "0.05": {
+    "kernel_median_rel_error_of_diffusion": 1.0004035374620022,
+    "of": 10,
+    "weak_exact_terms": 10,
+    "weak_median_worst_rel_coef_error": 0.0036267538718473546
+   },
+   "0.1": {
+    "kernel_median_rel_error_of_diffusion": 1.0019222632692675,
+    "of": 10,
+    "weak_exact_terms": 10,
+    "weak_median_worst_rel_coef_error": 0.008915824551506343
+   },
+   "0.2": {
+    "kernel_median_rel_error_of_diffusion": 1.002445867597023,
+    "of": 10,
+    "weak_exact_terms": 6,
+    "weak_median_worst_rel_coef_error": 0.02994817523103384
+   }
+  }
+ }
+}

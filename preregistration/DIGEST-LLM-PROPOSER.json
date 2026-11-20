@@ -1,0 +1,16 @@
+{
+ "preregistration": "PREREG-LLM-PROPOSER-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/contrast_resolution.py": "6c6001b7285295c8f1121bd48743b69fe6ff96b4f86a8cd37e3a17366562ee2b",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/route.py": "f19f8451f844431c09b14229bb8f02e3daafe2badda84f387f5957ce6a42e3eb",
+  "apedp_dyn/proposers/llm_clients.py": "6b492e77c4204b7e71fb1d2224afb81cb6d93033f1e6c7ff446a6a02a888dbdf",
+  "apedp_dyn/proposers/llm_proposer.py": "dbe12c1e799b8780d8b1764427a7a0a03d4c2defdf31046b6e3e922816c4bf3d",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-LLM-PROPOSER-2026-11.md": "3530cb02a5d53ba1701a8e0c40fff9be4aa4f058e01949cf23b8123b3308314b",
+  "scripts/run_llm_proposer_benchmark.py": "667595ea6060996eb60d7a82950e4f2435c783fab0efc22c5aaf96dbf0dbc303",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36"
+ }
+}

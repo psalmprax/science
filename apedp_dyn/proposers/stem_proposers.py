@@ -116,7 +116,8 @@ class HamiltonianProposer(ProposerBase):
 
         def compute_score(test_df: pd.DataFrame) -> np.ndarray:
             tq = test_df[q_col].to_numpy(dtype=float) if q_col in test_df.columns else np.zeros(len(test_df))
-            return -k * tq - alpha * (tq ** 3)
+            _out: np.ndarray = -k * tq - alpha * (tq ** 3)
+            return _out
 
         proposal = CandidateProposal(
             proposer_id=self.proposer_id,
@@ -233,7 +234,8 @@ class SolenoidalFluidProposer(ProposerBase):
         def compute_score(test_df: pd.DataFrame) -> np.ndarray:
             tx = test_df[x_col].to_numpy(dtype=float) if x_col in test_df.columns else np.zeros(len(test_df))
             ty = test_df[y_col].to_numpy(dtype=float) if y_col in test_df.columns else np.zeros(len(test_df))
-            return c1 * tx + c2 * ty + 2 * c4 * tx * ty + c5 * (tx ** 2)
+            _out: np.ndarray = c1 * tx + c2 * ty + 2 * c4 * tx * ty + c5 * (tx ** 2)
+            return _out
 
         proposal = CandidateProposal(
             proposer_id=self.proposer_id,
@@ -337,7 +339,8 @@ class CompartmentalSirProposer(ProposerBase):
         def compute_score(test_df: pd.DataFrame) -> np.ndarray:
             tS = test_df[s_col].to_numpy(dtype=float) if s_col in test_df.columns else np.zeros(len(test_df))
             tI = test_df[i_col].to_numpy(dtype=float) if i_col in test_df.columns else np.zeros(len(test_df))
-            return beta * (tS * tI / N0) - gamma * tI
+            _out: np.ndarray = beta * (tS * tI / N0) - gamma * tI
+            return _out
 
         proposal = CandidateProposal(
             proposer_id=self.proposer_id,

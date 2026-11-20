@@ -1,0 +1,299 @@
+{
+  "question": "does an 8-bit coarse phase accumulator keep the champion inside its 0.9996227434818049 tolerance?",
+  "answer": "no",
+  "measured": "every supported x, 1..3133452, against the verifier's own target and tolerance (verify_submission_invsqrt.reference_values)",
+  "configuration": {
+    "f2": 8,
+    "f1": 19,
+    "fyr": 27,
+    "gy": 1,
+    "drop2": [
+      5
+    ],
+    "rows": [
+      13,
+      12,
+      11,
+      10,
+      9,
+      8,
+      7,
+      6
+    ],
+    "address_bits": 8,
+    "correction_bits": 14
+  },
+  "accumulator_bits": 21,
+  "gate": {
+    "built_ratio": 0.9996227434818049,
+    "model_ratio": 0.9628198889674466,
+    "uplift": 1.0382240281241246,
+    "criterion": "model ratio <= the champion's own model ratio, so the built ratio is its 0.9996227 or better"
+  },
+  "control": {
+    "worst_ratio": 0.9628198916787619,
+    "worst_x": 1034666,
+    "residual_bits": 18,
+    "delta_from_published": 2.711315283399074e-09
+  },
+  "sweep": [
+    {
+      "keep_bits": 21,
+      "saved_bits": 0,
+      "quantum_turns": 3.637978807091713e-12,
+      "as_shipped": {
+        "worst_ratio": 0.9628198916787619,
+        "worst_x": 1034666,
+        "over_tolerance": 0
+      },
+      "re_laid_out": {
+        "worst_ratio": 0.9628198916787619,
+        "worst_x": 1034666,
+        "over_tolerance": 0
+      },
+      "verdict": "PASS"
+    },
+    {
+      "keep_bits": 20,
+      "saved_bits": 1,
+      "quantum_turns": 7.275957614183426e-12,
+      "as_shipped": {
+        "worst_ratio": 0.9628198916787619,
+        "worst_x": 1034666,
+        "over_tolerance": 0
+      },
+      "re_laid_out": {
+        "worst_ratio": 0.9628198916787619,
+        "worst_x": 1034666,
+        "over_tolerance": 0
+      },
+      "verdict": "PASS"
+    },
+    {
+      "keep_bits": 19,
+      "saved_bits": 2,
+      "quantum_turns": 1.4551915228366852e-11,
+      "as_shipped": {
+        "worst_ratio": 1.0769744395139342,
+        "worst_x": 3063163,
+        "over_tolerance": 78
+      },
+      "re_laid_out": {
+        "worst_ratio": 1.0769744395139342,
+        "worst_x": 3063163,
+        "over_tolerance": 78
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 18,
+      "saved_bits": 3,
+      "quantum_turns": 2.9103830456733704e-11,
+      "as_shipped": {
+        "worst_ratio": 1.549741961237779,
+        "worst_x": 1030067,
+        "over_tolerance": 39696
+      },
+      "re_laid_out": {
+        "worst_ratio": 1.3244337011584688,
+        "worst_x": 878493,
+        "over_tolerance": 3983
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 17,
+      "saved_bits": 4,
+      "quantum_turns": 5.820766091346741e-11,
+      "as_shipped": {
+        "worst_ratio": 2.5231453668551276,
+        "worst_x": 1027221,
+        "over_tolerance": 777259
+      },
+      "re_laid_out": {
+        "worst_ratio": 1.8150346502400443,
+        "worst_x": 1030075,
+        "over_tolerance": 104003
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 16,
+      "saved_bits": 5,
+      "quantum_turns": 1.1641532182693481e-10,
+      "as_shipped": {
+        "worst_ratio": 4.497045925383092,
+        "worst_x": 1027229,
+        "over_tolerance": 1930213
+      },
+      "re_laid_out": {
+        "worst_ratio": 2.8310141111109712,
+        "worst_x": 1034656,
+        "over_tolerance": 936956
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 15,
+      "saved_bits": 6,
+      "quantum_turns": 2.3283064365386963e-10,
+      "as_shipped": {
+        "worst_ratio": 8.439215555584422,
+        "worst_x": 1031355,
+        "over_tolerance": 2530444
+      },
+      "re_laid_out": {
+        "worst_ratio": 4.849476969034977,
+        "worst_x": 995358,
+        "over_tolerance": 2017949
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 14,
+      "saved_bits": 7,
+      "quantum_turns": 4.656612873077393e-10,
+      "as_shipped": {
+        "worst_ratio": 16.37325069818563,
+        "worst_x": 1031355,
+        "over_tolerance": 2831802
+      },
+      "re_laid_out": {
+        "worst_ratio": 8.793212668211524,
+        "worst_x": 1033946,
+        "over_tolerance": 2575637
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 13,
+      "saved_bits": 8,
+      "quantum_turns": 9.313225746154785e-10,
+      "as_shipped": {
+        "worst_ratio": 32.24636313121725,
+        "worst_x": 1040578,
+        "over_tolerance": 2982654
+      },
+      "re_laid_out": {
+        "worst_ratio": 16.704618387865942,
+        "worst_x": 1034968,
+        "over_tolerance": 2854204
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 12,
+      "saved_bits": 9,
+      "quantum_turns": 1.862645149230957e-09,
+      "as_shipped": {
+        "worst_ratio": 63.951475657899216,
+        "worst_x": 1032296,
+        "over_tolerance": 3058290
+      },
+      "re_laid_out": {
+        "worst_ratio": 32.655072824595585,
+        "worst_x": 1034570,
+        "over_tolerance": 2994244
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 11,
+      "saved_bits": 10,
+      "quantum_turns": 3.725290298461914e-09,
+      "as_shipped": {
+        "worst_ratio": 127.64581891550684,
+        "worst_x": 261310,
+        "over_tolerance": 3095931
+      },
+      "re_laid_out": {
+        "worst_ratio": 64.40652013914661,
+        "worst_x": 1034472,
+        "over_tolerance": 3064003
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 10,
+      "saved_bits": 11,
+      "quantum_turns": 7.450580596923828e-09,
+      "as_shipped": {
+        "worst_ratio": 255.44719807795735,
+        "worst_x": 1047425,
+        "over_tolerance": 3114779
+      },
+      "re_laid_out": {
+        "worst_ratio": 128.12861503457975,
+        "worst_x": 1047409,
+        "over_tolerance": 3098806
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 9,
+      "saved_bits": 12,
+      "quantum_turns": 1.4901161193847656e-08,
+      "as_shipped": {
+        "worst_ratio": 511.3066567134023,
+        "worst_x": 1047425,
+        "over_tolerance": 3124232
+      },
+      "re_laid_out": {
+        "worst_ratio": 255.990234375,
+        "worst_x": 262136,
+        "over_tolerance": 3116196
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 8,
+      "saved_bits": 13,
+      "quantum_turns": 2.9802322387695312e-08,
+      "as_shipped": {
+        "worst_ratio": 1023.0255739842921,
+        "worst_x": 1047425,
+        "over_tolerance": 3128815
+      },
+      "re_laid_out": {
+        "worst_ratio": 511.9609370232138,
+        "worst_x": 1048512,
+        "over_tolerance": 3124819
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 7,
+      "saved_bits": 14,
+      "quantum_turns": 5.960464477539063e-08,
+      "as_shipped": {
+        "worst_ratio": 2044.9948726869443,
+        "worst_x": 1047553,
+        "over_tolerance": 3131183
+      },
+      "re_laid_out": {
+        "worst_ratio": 1023.8437442782451,
+        "worst_x": 65528,
+        "over_tolerance": 3129172
+      },
+      "verdict": "fail"
+    },
+    {
+      "keep_bits": 6,
+      "saved_bits": 15,
+      "quantum_turns": 1.1920928955078125e-07,
+      "as_shipped": {
+        "worst_ratio": 4091.9956065377896,
+        "worst_x": 1047553,
+        "over_tolerance": 3132309
+      },
+      "re_laid_out": {
+        "worst_ratio": 2047.3749542268931,
+        "worst_x": 4095,
+        "over_tolerance": 3131264
+      },
+      "verdict": "fail"
+    }
+  ],
+  "narrowest_admissible_bits": 20,
+  "finding": "An 8-bit accumulator reads 1,023.026x tolerance as shipped and 511.961x with K0 re-laid-out, against a gate of 0.999622743: the route is closed on correctness before any cost is counted. Widening the accumulator is admissible, narrowing it is not: one bit is free because `gy` already discards it, and two bits take the worst case to 1.076974 with 78 inputs outside tolerance"
+}

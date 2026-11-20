@@ -26,6 +26,7 @@ competition verifier directory exposed by scripts/sweep_dqi_eea_bound.py.
 """
 from __future__ import annotations
 
+import importlib
 from typing import Any
 
 #: Architectures this adapter can build, in descending order of evidentiary
@@ -67,9 +68,9 @@ def build_candidate(*, n_iters: int, architecture: str = DEFAULT_ARCHITECTURE) -
     # Prefer the project's own reference generator when it exists. The fallback
     # supports checkouts where the generator is supplied by the official bundle.
     try:
-        from apedp_dyn.quantum_compilation import dqi_reference_circuit as DR
+        DR: Any = importlib.import_module("apedp_dyn.quantum_compilation.dqi_reference_circuit")
     except (ImportError, ModuleNotFoundError):
-        from dqi import dqi_reference_circuit as DR
+        DR = importlib.import_module("dqi.dqi_reference_circuit")
 
     field = km.GF2Field(12)
     builder = km.CircuitBuilder()

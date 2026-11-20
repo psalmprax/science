@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -126,7 +127,7 @@ class OriginRow:
     e5_signature: str
 
 
-def _fit_predict(panel: pd.DataFrame, idx: np.ndarray, target: np.ndarray) -> tuple[dict, dict]:
+def _fit_predict(panel: pd.DataFrame, idx: np.ndarray, target: np.ndarray) -> tuple[dict[str, Any], dict[str, Any]]:
     coefs = {}
     for h in HIDS:
         f = panel[FEATS[h]].to_numpy()[idx]

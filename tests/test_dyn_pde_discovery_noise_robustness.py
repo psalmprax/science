@@ -14,7 +14,6 @@ import json
 import numpy as np
 import pytest
 
-import apedp_kernel as ak
 from apedp_dyn.epistemic.pde_discovery import discover_pde
 
 BASE_CFG = {
@@ -99,7 +98,7 @@ def _add_noise(u, noise):
 
 
 def _coef_error(res, target):
-    mapping = {name: c for name, c in zip(res.active_terms, res.coefficients)}
+    mapping = dict(zip(res.active_terms, res.coefficients, strict=True))
     errs = []
     for name, true_c in target.items():
         if name in mapping:
@@ -130,7 +129,8 @@ def robustness_matrix():
                 dx = 0.1
                 try:
                     res = discover_pde(u, dt, dx, holdout_ratio=0.25)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - a discovery failure of
+                    # any type is recorded as this case's error row.
                     rows.append(
                         {
                             "case": case_name,

@@ -1,0 +1,318 @@
+/home/claude/science/apedp_dyn/conf/canonical_spec.py:12: RuntimeWarning: Governance manifest is sealed to a different canonical-spec hash (a6d026f303a7…) than the one on disk (a8177b252d81…). The Python pin passes, but the signed certification does not cover this spec revision; re-signing requires the registered trustees (AGENTS.md §1.3, FLAW-01).
+  from apedp_referee import canonical_spec as _module
+/home/claude/science/apedp_dyn/discovery_l2/exhaustive_search.py:88: RuntimeWarning: overflow encountered in square
+  scale = float(np.sqrt(np.mean(centred ** 2)))
+{
+ "fresh_laws": {
+  "components": 117,
+  "kept": 56,
+  "same_as_a_training_law": 27,
+  "same_as_an_earlier_component": 34
+ },
+ "frozen": {
+  "apedp_dyn/discovery_l2/confirmed_stop.py": "ce13a721d801c6db81d9bd2618b1aa252fba30ef5353100aadac145366148e66",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_mmlm/equation_language.py": "b65cf9e8de40190f1bc87671ca9be6e4ee9c99545a0d0a42d2d541dfb119e5a9",
+  "apedp_mmlm/law_corpora.py": "c389632c0d9140f592721c476ef4fec4e40acc7dd7c4f641fb441f78df847e95",
+  "apedp_mmlm/law_language.py": "b453e7d3ac042a57a2dc00409a5386a172e3eaee3dc1e1327f2f5bffcb201875",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-MMLM-L-2026-11.md": "a595413692d3de176cbd51225f43d76e7064985d9106e88f0c8c3334b5ed9144",
+  "scripts/run_prereg_mmlm_law.py": "891fe61332187957db92f0739ab64d58d638e751c4a56e65f23a1cd4f8d766a8",
+  "scripts/run_prereg_mmlm_track_s.py": "de1ff23f59739626edb5b3f33b9ec2ecda3558864da79306c8b91d8eaae9c6b6",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd"
+ },
+ "odebench_sha256": "06bbb9dae2886a82f0a1d4b0cd062d063241bcfed56c01ef2a3a01d863bcf8b4",
+ "part_1_language": {
+  "law_model_state_after_learning": {
+   "observed_laws": 56,
+   "seed_laws": 133,
+   "sha256": "891155146c9b1a6b9b7663ccb1e6ef0af5e0cf7fb97fa76753e06c81a47e1232",
+   "weights": {
+    "established_domain": {
+     "group0": {
+      "depth": 0.012022,
+      "gpar": 0.012022,
+      "par": 0.012022,
+      "par@domain": 0.365853,
+      "seq1": 0.012022,
+      "seq2": 0.012022,
+      "sib": 0.012022,
+      "sib@domain": 0.365853,
+      "uni": 0.0,
+      "uni@domain": 0.169178,
+      "vars": 0.012022,
+      "vars@domain": 0.365853
+     },
+     "group1": {
+      "depth": 0.026572,
+      "gpar": 0.064521,
+      "par": 0.0,
+      "par@domain": 0.079306,
+      "seq1": 0.0,
+      "seq2": 0.255857,
+      "sib": 0.0,
+      "sib@domain": 0.079306,
+      "uni": 0.066929,
+      "uni@domain": 0.202608,
+      "vars": 0.158751,
+      "vars@domain": 0.158549
+     },
+     "group2": {
+      "depth": 0.087347,
+      "gpar": 0.053767,
+      "par": 0.024818,
+      "par@domain": 0.061238,
+      "seq1": 0.024818,
+      "seq2": 0.053767,
+      "sib": 0.024818,
+      "sib@domain": 0.061238,
+      "uni": 0.013379,
+      "uni@domain": 0.025068,
+      "vars": 0.163415,
+      "vars@domain": 0.300481
+     },
+     "group3": {
+      "depth": 0.107928,
+      "gpar": 0.24807,
+      "par": 0.0,
+      "par@domain": 0.063679,
+      "seq1": 0.08405,
+      "seq2": 0.210528,
+      "sib": 0.072896,
+      "sib@domain": 0.313797,
+      "uni": 0.004824,
+      "uni@domain": 0.085566,
+      "vars": 0.064572,
+      "vars@domain": 0.096778
+     }
+    },
+    "new_domain": {
+     "group0": {
+      "depth": 0.033027,
+      "gpar": 0.033027,
+      "par": 0.033027,
+      "par@domain": 0.125832,
+      "seq1": 0.033027,
+      "seq2": 0.033027,
+      "sib": 0.033027,
+      "sib@domain": 0.125832,
+      "uni": 0.004136,
+      "uni@domain": 0.075043,
+      "vars": 0.033027,
+      "vars@domain": 0.125832
+     },
+     "group1": {
+      "depth": 0.009829,
+      "gpar": 0.024533,
+      "par": 0.014622,
+      "par@domain": 0.067786,
+      "seq1": 0.014622,
+      "seq2": 0.171342,
+      "sib": 0.014622,
+      "sib@domain": 0.067786,
+      "uni": 0.025503,
+      "uni@domain": 0.075807,
+      "vars": 0.20979,
+      "vars@domain": 0.2445
+     },
+     "group2": {
+      "depth": 0.049861,
+      "gpar": 0.152721,
+      "par": 0.002877,
+      "par@domain": 0.015721,
+      "seq1": 0.002877,
+      "seq2": 0.038531,
+      "sib": 0.002877,
+      "sib@domain": 0.015721,
+      "uni": 0.001551,
+      "uni@domain": 0.033554,
+      "vars": 0.118049,
+      "vars@domain": 0.121172
+     },
+     "group3": {
+      "depth": 0.015838,
+      "gpar": 0.146984,
+      "par": 0.0,
+      "par@domain": 0.034396,
+      "seq1": 0.009969,
+      "seq2": 0.058046,
+      "sib": 0.016394,
+      "sib@domain": 0.055121,
+      "uni": 0.002237,
+      "uni@domain": 0.029049,
+      "vars": 0.007689,
+      "vars@domain": 0.025266
+     }
+    }
+   }
+  },
+  "laws": 56,
+  "mean_bits_per_law": {
+   "all|frozen|earlier_model": 27.943963120384247,
+   "all|frozen|law_model": 22.608483454534728,
+   "all|frozen|unigram": 29.285338037746588,
+   "all|learning|earlier_model": 24.869988532301843,
+   "all|learning|law_model": 19.2652521534867,
+   "all|learning|unigram": 28.321939481245806,
+   "feynman_only|frozen|earlier_model": 30.97138549811044,
+   "feynman_only|frozen|law_model": 31.512034558929404,
+   "feynman_only|frozen|unigram": 29.969287016811244,
+   "feynman_only|learning|earlier_model": 26.21881932438855,
+   "feynman_only|learning|law_model": 20.078077197872084,
+   "feynman_only|learning|unigram": 28.74559771359341
+  },
+  "sign_test|all|frozen|law_model_vs_earlier_model": {
+   "higher": 4,
+   "lower": 52,
+   "p_value": 1.1008055578187737e-11
+  },
+  "sign_test|all|frozen|law_model_vs_unigram": {
+   "higher": 3,
+   "lower": 53,
+   "p_value": 8.137102103233929e-13
+  },
+  "sign_test|all|learning|law_model_vs_earlier_model": {
+   "higher": 5,
+   "lower": 51,
+   "p_value": 1.170292474039769e-10
+  },
+  "sign_test|all|learning|law_model_vs_unigram": {
+   "higher": 2,
+   "lower": 54,
+   "p_value": 4.4325654258159375e-14
+  },
+  "sign_test|feynman_only|frozen|law_model_vs_earlier_model": {
+   "higher": 35,
+   "lower": 21,
+   "p_value": 0.08142681460950618
+  },
+  "sign_test|feynman_only|frozen|law_model_vs_unigram": {
+   "higher": 37,
+   "lower": 19,
+   "p_value": 0.022241389472860106
+  },
+  "sign_test|feynman_only|learning|law_model_vs_earlier_model": {
+   "higher": 5,
+   "lower": 51,
+   "p_value": 1.170292474039769e-10
+  },
+  "sign_test|feynman_only|learning|law_model_vs_unigram": {
+   "higher": 5,
+   "lower": 51,
+   "p_value": 1.170292474039769e-10
+  }
+ },
+ "part_2_search": {
+  "all": {
+   "earlier_prior_confirmed": {
+    "median_share_of_candidates_fitted": 0.031799163179916316,
+    "recovered": 97,
+    "seconds": 8.555435533000491,
+    "stopped_early": 99,
+    "wrong_early_stops": 3
+   },
+   "earlier_prior_first_stop": {
+    "median_share_of_candidates_fitted": 0.0016220052039333625,
+    "recovered": 95,
+    "seconds": 3.585236060997886,
+    "stopped_early": 99,
+    "wrong_early_stops": 5
+   },
+   "full_recovered": 93,
+   "full_seconds": 192.13846792200093,
+   "law_prior_confirmed": {
+    "median_share_of_candidates_fitted": 0.03185146443514644,
+    "recovered": 96,
+    "seconds": 8.23535342300147,
+    "stopped_early": 99,
+    "wrong_early_stops": 4
+   },
+   "law_prior_first_stop": {
+    "median_share_of_candidates_fitted": 0.0011827121278680768,
+    "recovered": 95,
+    "seconds": 3.629649865999909,
+    "stopped_early": 99,
+    "wrong_early_stops": 5
+   },
+   "runs": 100
+  },
+  "invented": {
+   "earlier_prior_confirmed": {
+    "median_share_of_candidates_fitted": 0.03200836820083682,
+    "recovered": 79,
+    "seconds": 7.742943644000206,
+    "stopped_early": 79,
+    "wrong_early_stops": 1
+   },
+   "earlier_prior_first_stop": {
+    "median_share_of_candidates_fitted": 0.002405857740585774,
+    "recovered": 77,
+    "seconds": 3.3553526870000496,
+    "stopped_early": 79,
+    "wrong_early_stops": 3
+   },
+   "full_recovered": 75,
+   "full_seconds": 146.42895753600078,
+   "law_prior_confirmed": {
+    "median_share_of_candidates_fitted": 0.03211297071129707,
+    "recovered": 78,
+    "seconds": 7.861554783001793,
+    "stopped_early": 79,
+    "wrong_early_stops": 2
+   },
+   "law_prior_first_stop": {
+    "median_share_of_candidates_fitted": 0.0011827121278680768,
+    "recovered": 77,
+    "seconds": 3.5529128850002962,
+    "stopped_early": 79,
+    "wrong_early_stops": 3
+   },
+   "runs": 80
+  },
+  "odebench": {
+   "earlier_prior_confirmed": {
+    "median_share_of_candidates_fitted": 0.031485355648535565,
+    "recovered": 18,
+    "seconds": 0.8124918890002846,
+    "stopped_early": 20,
+    "wrong_early_stops": 2
+   },
+   "earlier_prior_first_stop": {
+    "median_share_of_candidates_fitted": 0.0005753138075313808,
+    "recovered": 18,
+    "seconds": 0.22988337399783632,
+    "stopped_early": 20,
+    "wrong_early_stops": 2
+   },
+   "full_recovered": 18,
+   "full_seconds": 45.70951038600015,
+   "law_prior_confirmed": {
+    "median_share_of_candidates_fitted": 0.022906534141640133,
+    "recovered": 18,
+    "seconds": 0.3737986399996771,
+    "stopped_early": 20,
+    "wrong_early_stops": 2
+   },
+   "law_prior_first_stop": {
+    "median_share_of_candidates_fitted": 0.0008823460819235433,
+    "recovered": 18,
+    "seconds": 0.07673698099961257,
+    "stopped_early": 20,
+    "wrong_early_stops": 2
+   },
+   "runs": 20
+  },
+  "ranks": {
+   "laws": 50,
+   "median_rank_earlier_prior": 24.5,
+   "median_rank_law_prior": 20.0,
+   "sign_test": {
+    "higher": 21,
+    "lower": 18,
+    "p_value": 0.7492586247608418
+   }
+  }
+ },
+ "preregistration": "PREREG-MMLM-L-2026-11"
+}

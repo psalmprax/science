@@ -23,10 +23,10 @@ import pytest
 from apedp_dyn.quantum_compilation import contracts
 from apedp_dyn.quantum_compilation import kickmix_builds as pins
 from apedp_dyn.quantum_compilation.contracts import ContractIntegrityError, load_contract
+from tests.kickmix_availability import SHIPPED_EXTENSION, require_shipped_extension
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BUNDLE = REPO_ROOT / "apedp_dyn" / "sandbox" / "google-verifiable-quantum-circuit-compilation"
-SHIPPED_EXTENSION = BUNDLE / "kickmix" / "kickmix.so"
 VENDOR_TREE = BUNDLE / "kickmix" / "_qualtran_src" / "kickmix"
 PATCH = REPO_ROOT / "scripts" / "kickmix_mr_opcode.patch"
 BUILD_DIR = REPO_ROOT / "build" / "kickmix_mr" / "lib"
@@ -40,6 +40,7 @@ def _built_extension() -> Path | None:
 
 def test_the_shipped_build_is_pinned_to_the_bytes_on_disk():
     """The name in the registry is the file the verifier imports, not a remembered hash."""
+    require_shipped_extension()
     assert pins.sha256_file(SHIPPED_EXTENSION) == pins.SHIPPED_BUILD.sha256
     build = pins.assert_allowed(SHIPPED_EXTENSION)
     assert build.name == "shipped"
@@ -51,7 +52,7 @@ def test_the_mr_pin_names_the_commit_and_patch_it_was_built_from():
     """A pin without its inputs cannot be reproduced; the inputs are pinned too."""
     assert pins.sha256_file(PATCH) == pins.MR_BUILD.provenance["patch_sha256"]
     if shutil.which("git") and (VENDOR_TREE / ".git").exists():
-        head = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        head = subprocess.run(
             ["git", "-C", str(VENDOR_TREE), "rev-parse", "HEAD"],
             capture_output=True, text=True, check=True).stdout.strip()
         assert head == pins.MR_BUILD.provenance["source_commit"]
@@ -82,6 +83,7 @@ def test_an_unpinned_extension_is_refused(tmp_path, monkeypatch):
 
 
 def test_the_contract_binds_the_extension_bytes_not_just_the_tree():
+    require_shipped_extension()  # the lock reads the extension's bytes
     contract = load_contract("dqi")
     assert contract.kickmix_build == "shipped"
     assert contract.kickmix_extension_sha256 == pins.SHIPPED_BUILD.sha256
@@ -90,6 +92,7 @@ def test_the_contract_binds_the_extension_bytes_not_just_the_tree():
 
 def test_a_substituted_extension_is_rejected(monkeypatch):
     """The tree hash would not notice a swap; the extension pin must."""
+    require_shipped_extension()  # load_contract locks against the real file first
     contract = load_contract("dqi")
     monkeypatch.setattr(contracts, "_pinned_extension", lambda root: pins.MR_BUILD)
     with pytest.raises(ContractIntegrityError, match="kickmix extension changed"):
@@ -116,6 +119,7 @@ def test_the_repository_reproduces_the_mr_pin():
 
 def test_a_contract_without_the_build_fields_cannot_be_asserted():
     """Fields added with the pin must actually be covered by the contract digest."""
+    require_shipped_extension()  # assert_locked reads the extension's bytes
     contract = load_contract("invsqrt")
     stripped = dataclasses.replace(contract, kickmix_build="shipped")
     # Same values, so the metadata digest still holds -- the point is that the field is

@@ -45,9 +45,11 @@ def estimate_time_derivative(
 
     if method == "spline":
         cs = CubicSpline(t_arr, x_arr)
-        return np.asarray(cs.derivative()(t_arr))
+        _out: np.ndarray = np.asarray(cs.derivative()(t_arr))
+        return _out
     elif method == "central_diff":
-        return np.asarray(np.gradient(x_arr, t_arr))
+        _out = np.asarray(np.gradient(x_arr, t_arr))
+        return _out
     else:
         raise ValueError(f"Unknown derivative estimation method: {method}")
 

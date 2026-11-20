@@ -105,7 +105,7 @@ def calibrate_flag(
     n = y.size
     block_size = int(min(block_size, max(4, n // 4)))
     n_blocks = int(np.ceil(n / block_size))
-    rhos = np.empty(n_draws, dtype=float)
+    rhos: np.ndarray = np.empty(n_draws, dtype=float)
     for d in range(n_draws):
         starts = rng.integers(0, max(1, n - block_size), size=n_blocks)
         pieces: list[np.ndarray] = []
@@ -170,6 +170,13 @@ def check_whiteness(
         return False, "residual series contains non-finite values"
     if not np.isfinite(flag):
         return False, "whiteness flag unresolved; refusing rather than admitting"
+    # A holdout residual of exact zeros is an exact fit: the candidate
+    # reproduced unseen data to the last bit, and there is no error left whose
+    # structure could be tested. Refusing it as "unassessable" reported a
+    # perfect fit as structured residuals (SYSTEM_FLAWS_AUDIT M-01). Only exact
+    # zeros qualify; a constant nonzero offset is a bias and is still refused.
+    if not np.any(arr):
+        return True, "residuals are exactly zero: exact fit, no error left to test"
     centred = arr - arr.mean()
     denom = float(np.dot(centred, centred))
     if denom <= 0.0:
@@ -284,7 +291,7 @@ def _structured_null(n: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
     return x, y
 
 
-def _as_frame(x: np.ndarray, y: np.ndarray):
+def _as_frame(x: np.ndarray, y: np.ndarray) -> Any:
     import pandas as pd
 
     return pd.DataFrame({"x": x, "target": y})

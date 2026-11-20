@@ -44,6 +44,8 @@ echo "== dynamic regression battery =="
   tests/test_dyn_canonical_ledger.py \
   tests/test_dyn_native_ga_best.py \
   tests/test_dyn_experiment_ledger_and_benchmarks.py \
+  tests/test_dyn_sandbox.py \
+  tests/test_dyn_ui_sandbox.py \
   tests/test_documentation_and_spec_integrity.py \
   tests/test_dyn_expanded_proposers_and_calibrated_power.py \
   tests/test_dyn_dmrg_quantum.py \

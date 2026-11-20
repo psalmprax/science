@@ -6,7 +6,6 @@ predictive ADMET modeling, or clinical efficacy estimation.
 
 from __future__ import annotations
 
-import hashlib
 import math
 from numbers import Integral
 from typing import Any, ClassVar
@@ -19,12 +18,6 @@ def _is_finite_number(value: Any) -> bool:
         return math.isfinite(value)
     except (TypeError, ValueError):
         return False
-
-
-def _stable_unit(*parts: str) -> float:
-    """Deterministic value in [-1, 1) derived from the inputs (not Python's salted hash)."""
-    digest = hashlib.sha256("|".join(parts).encode("utf-8")).digest()
-    return int.from_bytes(digest[:8], "big") / 2**63 - 1.0
 
 
 class DiseaseBiomarkerAnalyzer:
@@ -126,7 +119,9 @@ class UniversalDrugTargetDiscovery:
             'repurposing_potential': 'moderate',
             'evidence_level': 'preclinical',
             'mechanism_rationale': 'Shared pathway analysis suggests potential efficacy',
-            'clinical_trial_opportunities': ['Phase II feasibility study recommended']
+            'clinical_trial_opportunities': ['Phase II feasibility study recommended'],
+            'evidence': 'static_example',
+            'not_modelled': ['efficacy', 'safety', 'dose'],
         }
 
 
@@ -140,7 +135,12 @@ class LeadOptimizer:
             suggestions.append({'issue': 'high_mw', 'fix': 'Reduce molecular weight via scaffold hopping'})
         if logp > 4.5:
             suggestions.append({'issue': 'high_logp', 'fix': 'Add polar groups to reduce lipophilicity'})
-        return {'original': compound, 'optimization_suggestions': suggestions}
+        return {
+            'original': compound,
+            'optimization_suggestions': suggestions,
+            'evidence': 'rule_screen',
+            'not_modelled': ['admet', 'synthesis_route', 'potency'],
+        }
 
 
 class ADMETPredictor:
@@ -200,7 +200,9 @@ class ClinicalTrialDesigner:
             'sample_size_estimate': 200 if phase == 'Phase II' else 500,
             'duration_months': 6 if phase == 'Phase II' else 12,
             'biomarker_stratification': True,
-            'adaptive_features': ['Sample size re-estimation', 'Early futility stopping']
+            'adaptive_features': ['Sample size re-estimation', 'Early futility stopping'],
+            'evidence': 'planning_template',
+            'not_modelled': ['power_calculation', 'efficacy', 'randomisation'],
         }
 
 
@@ -248,29 +250,55 @@ class DrugRepurposingEngine:
             'design': 'factorial_or_platform_trial', 'arms': len(combinations) + 1,
             'sample_size': 300, 'duration_months': 12,
             'biomarker_stratification': True, 'adaptive_design': True,
-            'considerations': ['Drug-drug interactions', 'Additive toxicity']
+            'considerations': ['Drug-drug interactions', 'Additive toxicity'],
+            'evidence': 'planning_template',
+            'not_modelled': ['power_calculation', 'efficacy'],
         }
 
 
 class CombinationTrialSimulator:
-    """Toy trial simulator. Outcomes are a deterministic function of the inputs.
+    """Deterministic combination-trial planning sketch.
 
-    Response rates are assumed constants plus a reproducible, input-dependent
-    offset. This is a planning sketch, not a statistical trial simulation, and
-    no p-value is computed here.
+    Combines assumed per-agent monotherapy response rates under Bliss
+    independence and computes the two-arm binomial standard error for the
+    planned sample size. No p-value or hypothesis test is fabricated.
     """
 
     CONTROL_RESPONSE_RATE = 0.3
     MONOTHERAPY_RESPONSE_RATE = 0.45
 
     @staticmethod
-    def simulate_combination_trial(combination: list[str], disease: str,
-                                   n_patients: int = 1000, duration_months: int = 12) -> dict[str, Any]:
-        key = "+".join(sorted(combination))
-        offset = 0.05 * _stable_unit(key, disease)
+    def simulate_combination_trial(
+        combination: list[str],
+        disease: str,
+        n_patients: int = 1000,
+        duration_months: int = 12,
+        monotherapy_rates: list[float] | None = None,
+    ) -> dict[str, Any]:
+        if isinstance(n_patients, bool) or not isinstance(n_patients, Integral) or n_patients < 2:
+            raise ValueError("n_patients must be an integer >= 2")
+        if isinstance(duration_months, bool) or not isinstance(duration_months, Integral) or duration_months <= 0:
+            raise ValueError("duration_months must be a positive integer")
+        unique_agents = list(dict.fromkeys(str(agent).strip() for agent in combination if str(agent).strip()))
+        if not unique_agents:
+            raise ValueError("combination must contain at least one non-empty agent")
+        if monotherapy_rates is not None:
+            if len(monotherapy_rates) != len(combination):
+                raise ValueError("monotherapy_rates length must match combination length")
+            if any(not _is_finite_number(r) or not (0.0 <= float(r) <= 1.0) for r in monotherapy_rates):
+                raise ValueError("monotherapy_rates must be finite values in [0, 1]")
+            rates = [float(r) for r in monotherapy_rates]
+        else:
+            rates = [CombinationTrialSimulator.MONOTHERAPY_RESPONSE_RATE] * len(unique_agents)
+
+        survival_prob = 1.0
+        for rate in rates:
+            survival_prob *= 1.0 - rate
+        combo_rate = min(0.95, 1.0 - survival_prob)
         control = CombinationTrialSimulator.CONTROL_RESPONSE_RATE
-        combo_rate = min(0.95, CombinationTrialSimulator.MONOTHERAPY_RESPONSE_RATE + 0.25 + offset)
         effect_size = combo_rate - control
+        n_arm = n_patients / 2.0
+        arr_se = math.sqrt(control * (1.0 - control) / n_arm + combo_rate * (1.0 - combo_rate) / n_arm)
         return {
             'trial_design': {'combination': combination, 'disease': disease,
                              'n_patients': n_patients, 'duration_months': duration_months},
@@ -278,16 +306,20 @@ class CombinationTrialSimulator:
                 'control_response_rate': round(control, 3),
                 'combination_response_rate': round(combo_rate, 3),
                 'absolute_risk_reduction': round(effect_size, 3),
+                'planned_arr_standard_error': round(arr_se, 4),
             },
             'conclusion': 'Candidate for confirmatory trial' if effect_size > 0.1 else 'Inconclusive',
-            'note': 'Planning estimate only; requires a powered statistical analysis.',
+            'note': 'Planning estimate under Bliss independence; requires a powered statistical analysis.',
+            'basis': 'bliss_independence_assumed_monotherapy',
+            'evidence': 'assumed_response_rates',
+            'not_modelled': ['p_value', 'power', 'randomisation', 'synergy_or_antagonism'],
         }
 
     @staticmethod
     def simulate_repuposing_efficacy(drug: str, disease: str, mechanism_match: float = 0.7) -> dict[str, Any]:
-        if not 0.0 <= mechanism_match <= 1.0:
+        if not _is_finite_number(mechanism_match) or not (0.0 <= mechanism_match <= 1.0):
             raise ValueError("mechanism_match must be in [0, 1]")
-        base_efficacy = max(0.0, min(1.0, mechanism_match * 0.6 + 0.02 * _stable_unit(drug, disease)))
+        base_efficacy = max(0.0, min(1.0, float(mechanism_match) * 0.6))
         return {
             'drug': drug, 'target_disease': disease,
             'mechanism_match_score': mechanism_match,
@@ -296,7 +328,12 @@ class CombinationTrialSimulator:
             'confidence_interval': [round(max(0.0, base_efficacy - 0.15), 3), round(min(1.0, base_efficacy + 0.15), 3)],
             'translational_probability': round(mechanism_match * 0.7, 3),
             'recommendation': 'Promising for repurposing' if base_efficacy > 0.5 else 'Low priority',
+            'basis': 'linear_mechanism_scaling',
+            'evidence': 'assumed_response_rates',
+            'not_modelled': ['clinical_outcome', 'p_value'],
         }
+
+    simulate_repurposing_efficacy = simulate_repuposing_efficacy
 
 
 # Backward compatibility

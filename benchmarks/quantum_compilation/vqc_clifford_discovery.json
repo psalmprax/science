@@ -1,6 +1,6 @@
 {
   "schema": "apedp.vqc.clifford_discovery.v1",
-  "generated_utc": "2026-11-06T05:39:23Z",
+  "generated_utc": "2026-11-10T10:42:28Z",
   "command": {
     "qubits": 100,
     "shots": 64,
@@ -17,7 +17,7 @@
     "gates_saved": 122,
     "rewrites_available_at_the_reference": 77,
     "step_limit": 1000,
-    "search_seconds": 5.276675850000061,
+    "search_seconds": 3.083055829978548,
     "reference_provenance": {
       "described_as": "a GHZ chain with cancelling pairs, s/sdg algebra and Pauli-conjugation identities spliced into it",
       "deliberately_inefficient": true,
@@ -1004,8 +1004,8 @@
         },
         "passed": true
       },
-      "image_engine": "python",
-      "image_verified_by": "python",
+      "image_engine": "rust",
+      "image_verified_by": "suite",
       "compared": 200,
       "mismatched": 0,
       "mismatches": [],
@@ -1117,7 +1117,7 @@
     "support_identical": true,
     "max_count_difference": 0,
     "within_four_sigma": true,
-    "seconds": 1.166200785000001
+    "seconds": 0.4240459370194003
   },
   "state_scope_only": {
     "unitary_scope": "INVALID",
@@ -1219,7 +1219,7 @@
         "support_identical": true,
         "max_count_difference": 0,
         "within_four_sigma": true,
-        "seconds": 1.166200785000001
+        "seconds": 0.4240459370194003
       },
       "passed": true
     },
@@ -1247,11 +1247,11 @@
   ],
   "reproducibility": {
     "script_sha256": "65b71c914335db961df0b2a1afda05835a28b6ecbddf125cfc0d84fa55de9ff0",
-    "search_sha256": "ec897495443143566a0c39a890a55ce96779f43864da1c009e059a9785fc93d9",
-    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
-    "discovery_sha256": "f825dfd168704f1993f738a3ad740f6e4a044795fc19fa1339f460cdaed8b7f9",
+    "search_sha256": "91dd14d0473c0126b692e111f68a417ee1158eda8a88ff82cb689e1f28c05342",
+    "equivalence_sha256": "cd9fd5b0e42bd412c82a7ca7c8eec13643a99157cbac935f059dd2bf11504b39",
+    "discovery_sha256": "ec894610a96b94431b26258b70d507f5cb025e2c0af968958cf27cca54e96596",
     "python": "3.12.3",
-    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
     "command": "python scripts/measure_vqc_clifford_discovery.py --qubits 100 --shots 64 --seed 20261030"
   },
   "verdict": "a 100-qubit Clifford circuit was rewritten, every step certified as the same unitary without a matrix, the result promoted on sufficient evidence, and the state-only and mutated alternatives refused"

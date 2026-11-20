@@ -2,9 +2,9 @@
 //!
 //! Improved search using tree search with learned priors and value functions.
 
-use std::collections::HashMap;
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchNode {
@@ -82,8 +82,8 @@ impl NGTS {
             return f64::INFINITY;
         }
         let exploitation = node.value_sum / node.visits as f64;
-        let exploration = self.config.exploration_constant * 
-            (parent_visits as f64).sqrt() / (1.0 + node.visits as f64);
+        let exploration = self.config.exploration_constant * (parent_visits as f64).sqrt()
+            / (1.0 + node.visits as f64);
         exploitation + exploration
     }
 
@@ -92,9 +92,14 @@ impl NGTS {
             Some(n) => n,
             None => return f64::NEG_INFINITY,
         };
-        let exploitation = if node.visits == 0 { 0.0f64 } else { node.value_sum / node.visits as f64 };
-        let exploration = self.config.exploration_constant * node.prior * 
-            (parent_visits as f64).sqrt() / (1.0 + node.visits as f64);
+        let exploitation = if node.visits == 0 {
+            0.0f64
+        } else {
+            node.value_sum / node.visits as f64
+        };
+        let exploration =
+            self.config.exploration_constant * node.prior * (parent_visits as f64).sqrt()
+                / (1.0 + node.visits as f64);
         exploitation + exploration
     }
 
@@ -107,10 +112,10 @@ impl NGTS {
             return node_id;
         }
         let mut best_child = node.children[0];
-        let mut best_value = if self.config.use_puct { 
-            self.puct_value(best_child, node.visits) 
-        } else { 
-            self.uct_value(best_child, node.visits) 
+        let mut best_value = if self.config.use_puct {
+            self.puct_value(best_child, node.visits)
+        } else {
+            self.uct_value(best_child, node.visits)
         };
         for &child_id in &node.children[1..] {
             let val = if self.config.use_puct {
@@ -123,7 +128,11 @@ impl NGTS {
                 best_child = child_id;
             }
         }
-        if self.nodes.get(&best_child).map_or(false, |c| c.depth < self.config.max_depth) {
+        if self
+            .nodes
+            .get(&best_child)
+            .map_or(false, |c| c.depth < self.config.max_depth)
+        {
             self.select(best_child)
         } else {
             best_child
@@ -178,11 +187,19 @@ impl NGTS {
         }
         let mut best_id = root_children[0];
         let mut best_score = self.nodes.get(&best_id).map_or(0.0, |n| {
-            if n.visits == 0 { -1e18 } else { n.value_sum / n.visits as f64 }
+            if n.visits == 0 {
+                -1e18
+            } else {
+                n.value_sum / n.visits as f64
+            }
         });
         for &child_id in &root_children[1..] {
             if let Some(child) = self.nodes.get(&child_id) {
-                let score = if child.visits == 0 { -1e18f64 } else { child.value_sum / child.visits as f64 };
+                let score = if child.visits == 0 {
+                    -1e18f64
+                } else {
+                    child.value_sum / child.visits as f64
+                };
                 if score > best_score {
                     best_score = score;
                     best_id = child_id;
@@ -195,8 +212,14 @@ impl NGTS {
     pub fn get_statistics(&self) -> HashMap<String, f64> {
         let mut stats = HashMap::new();
         stats.insert("total_nodes".to_string(), self.nodes.len() as f64);
-        stats.insert("root_visits".to_string(), self.nodes.get(&0).map_or(0.0, |n| n.visits as f64));
-        stats.insert("num_children".to_string(), self.nodes.get(&0).map_or(0.0, |n| n.children.len() as f64));
+        stats.insert(
+            "root_visits".to_string(),
+            self.nodes.get(&0).map_or(0.0, |n| n.visits as f64),
+        );
+        stats.insert(
+            "num_children".to_string(),
+            self.nodes.get(&0).map_or(0.0, |n| n.children.len() as f64),
+        );
         stats
     }
 }
@@ -254,7 +277,11 @@ impl PyNGTSSearch {
 
     fn best_score(&self) -> f64 {
         if let Some(best) = self.ngts.best_child() {
-            if best.visits == 0 { 0.0 } else { best.value_sum / best.visits as f64 }
+            if best.visits == 0 {
+                0.0
+            } else {
+                best.value_sum / best.visits as f64
+            }
         } else {
             0.0
         }

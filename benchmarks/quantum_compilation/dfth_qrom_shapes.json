@@ -1,0 +1,100 @@
+{
+  "script": "scripts/measure_dfth_qrom_shapes.py",
+  "class": "closed-form cost model under the verifier's accounting; the tree row is pinned against a measured build",
+  "instance": {
+    "rows": 3976,
+    "angles": 75,
+    "brot": 8,
+    "batch": 5,
+    "selection_qubits": 12,
+    "qubit_cap": 128,
+    "circuits": 15
+  },
+  "measured_tree": {
+    "builder": "scripts/build_dfthcsos_sub128.py --brot 8 --batch-size 5",
+    "toffolis_per_circuit": 3974,
+    "toffolis_total": 59610,
+    "peak_qubits": 63
+  },
+  "arity_retune": {
+    "toffolis_per_circuit_by_arity": {
+      "2": 3975,
+      "3": 3974,
+      "4": 3975,
+      "8": 3969,
+      "16": 3975
+    },
+    "conclusion": "every arity costs rows - 1 per circuit: a k-ary node spends k - 1 ANDs to decode one child, so arity moves depth only"
+  },
+  "qroam_retune": {
+    "blocks": {
+      "1": {
+        "block": 1,
+        "toffolis_per_circuit": 3977,
+        "toffolis_total": 59655,
+        "qubits": 52,
+        "within_cap": true
+      },
+      "2": {
+        "block": 2,
+        "toffolis_per_circuit": 1990,
+        "toffolis_total": 29850,
+        "qubits": 93,
+        "within_cap": true
+      },
+      "3": {
+        "block": 3,
+        "toffolis_per_circuit": 1329,
+        "toffolis_total": 19935,
+        "qubits": 134,
+        "within_cap": false
+      },
+      "63": {
+        "block": 63,
+        "toffolis_per_circuit": 127,
+        "toffolis_total": 1905,
+        "qubits": 2594,
+        "within_cap": false
+      },
+      "16": {
+        "block": 16,
+        "toffolis_per_circuit": 265,
+        "toffolis_total": 3975,
+        "qubits": 667,
+        "within_cap": false
+      },
+      "32": {
+        "block": 32,
+        "toffolis_per_circuit": 157,
+        "toffolis_total": 2355,
+        "qubits": 1323,
+        "within_cap": false
+      }
+    },
+    "optimum_block": 63,
+    "best_within_cap": {
+      "block": 2,
+      "toffolis_per_circuit": 1990,
+      "toffolis_total": 29850,
+      "qubits": 93,
+      "within_cap": true
+    },
+    "best_unconstrained": {
+      "block": 63,
+      "toffolis_per_circuit": 127,
+      "toffolis_total": 1905,
+      "qubits": 2594,
+      "within_cap": false
+    },
+    "target_block_for_the_archive_rate": 6.84,
+    "conclusion": "the unconstrained optimum 1,905 beats the archive, but it needs 2,594 qubits against a 128-qubit cap; inside the cap the best block is 2 at 1,990 per circuit, worse than the segment tree"
+  },
+  "against_the_archive": {
+    "archive_angle_toffolis": 8718,
+    "archive_toffolis_per_circuit": 581.2,
+    "floor_within_cap_per_circuit": 1990,
+    "archive_ratio_below_the_floor": 3.4239504473503093,
+    "beatable_by_retuning": false,
+    "conclusion": "the archive runs at 581 Toffolis per circuit, 3.42x below the cheapest shape of this family that fits the cap, so the gap is the encoding and the table, not the tuning"
+  }
+}

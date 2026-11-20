@@ -19,6 +19,7 @@ models still pass through gates 3-4 and the fitter like any other estimate.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -29,7 +30,8 @@ def bump(tau: np.ndarray) -> np.ndarray:
     inside = np.abs(tau) < 1.0
     s = tau[inside]
     out[inside] = np.exp(-1.0 / (1.0 - s ** 2))
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def bump_deriv(tau: np.ndarray) -> np.ndarray:
@@ -38,7 +40,8 @@ def bump_deriv(tau: np.ndarray) -> np.ndarray:
     inside = np.abs(tau) < 1.0
     s = tau[inside]
     out[inside] = np.exp(-1.0 / (1.0 - s ** 2)) * (-2.0 * s / (1.0 - s ** 2) ** 2)
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 @dataclass(frozen=True)
@@ -54,7 +57,8 @@ class WeakWindows:
         return bump((np.asarray(t, dtype=float) - self.centers[j]) / self.radius)
 
     def phi_dot(self, t: np.ndarray, j: int) -> np.ndarray:
-        return bump_deriv((np.asarray(t, dtype=float) - self.centers[j]) / self.radius) / self.radius
+        _out: np.ndarray = bump_deriv((np.asarray(t, dtype=float) - self.centers[j]) / self.radius) / self.radius
+        return _out
 
 
 def make_windows(t_span: tuple[float, float], n_windows: int = 32,
@@ -72,7 +76,7 @@ def boundary_term(v_edge: tuple[float, float], phi_edge: tuple[float, float]) ->
     return vb * pb - va * pa
 
 
-def weak_coefficients(problem, candidate, t: np.ndarray, Y: np.ndarray, U: np.ndarray,
+def weak_coefficients(problem: Any, candidate: Any, t: np.ndarray, Y: np.ndarray, U: np.ndarray,
                       n_windows: int = 32, radius: float = 1.0) -> dict[str, float]:
     """Weak-form LS estimate of a candidate's parameters (structure fixed).
 

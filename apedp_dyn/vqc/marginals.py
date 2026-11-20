@@ -67,6 +67,14 @@ _X_BIT = {I: 0, X: 1, Y: 1, Z: 0}
 _Z_BIT = {I: 0, X: 0, Y: 1, Z: 1}
 
 
+def _family_verdict(family_p: float | None, valid: bool, alpha: float,
+                    agree: str, disagree: str) -> str:
+    """The family-wise verdict; UNRESOLVED when the test had too few counts."""
+    if not valid or family_p is None:
+        return "UNRESOLVED"
+    return agree if family_p >= alpha else disagree
+
+
 class MarginalUnsupported(ValueError):
     """A marginal this referee will not enumerate, with the reason."""
 
@@ -298,7 +306,7 @@ def exact_marginal(target: TargetSpecification, subset: Sequence[int], *,
     )
 
 
-def marginal_counts(counts: Mapping[Sequence[bool], int],
+def marginal_counts(counts: Mapping[Any, int],
                     subset: Sequence[int]) -> dict[tuple[bool, ...], int]:
     """Project a sample table onto `subset`, keeping the subset's wire order."""
     wires = tuple(int(wire) for wire in subset)
@@ -499,8 +507,8 @@ def adjudicate_marginal(samples: Sampling, target: TargetSpecification,
             "p_value": test["p_value"],
             "family_p_value": family_p,
             "min_expected": test["min_expected"],
-            "verdict": ("CONSISTENT" if family_p >= alpha else "INCONSISTENT")
-            if valid else "UNRESOLVED",
+            "verdict": _family_verdict(family_p, valid, alpha,
+                                       "CONSISTENT", "INCONSISTENT"),
             "reason": None if valid else (
                 f"{test['min_expected']:.2f} expected counts per supported cell, below "
                 f"the {MIN_EXPECTED_COUNT:g} a chi-square needs"),
@@ -571,8 +579,7 @@ def marginal_pair(first: Sampling, second: Sampling, target: TargetSpecification
             "p_value": test["p_value"],
             "family_p_value": family_p,
             "min_expected": test["min_expected"],
-            "verdict": ("AGREE" if family_p >= alpha else "DISAGREE")
-            if valid else "UNRESOLVED",
+            "verdict": _family_verdict(family_p, valid, alpha, "AGREE", "DISAGREE"),
             "reason": None if valid else (
                 f"{test['min_expected']:.2f} expected counts per cell, below the "
                 f"{MIN_EXPECTED_COUNT:g} a chi-square needs"),

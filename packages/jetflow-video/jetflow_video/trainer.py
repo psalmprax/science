@@ -18,11 +18,15 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
 from jetflow_video.model import JetFlowVideoModel, JetFlowModelConfig
 from jetflow_video.bridge import VideoVAEBridge
+
+#: Sent to the Hugging Face hub; it used to claim to be a browser.
+_USER_AGENT = "jetflow-video/0.1 (+https://github.com/psalmprax/science)"
 
 try:
     import lpips
@@ -102,10 +106,11 @@ class VideoDataset(Dataset):
             import json
             import io
             repos = [r.strip() for r in hf_repo.split(",")] if isinstance(hf_repo, str) else list(hf_repo)
+            hub_errors: List[str] = []
             for repo_id in repos:
                 try:
                     url = f"https://huggingface.co/api/datasets/{repo_id}"
-                    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                    req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
                     with urllib.request.urlopen(req, timeout=10) as resp:
                         data = json.loads(resp.read().decode())
                         siblings = [s["rfilename"] for s in data.get("siblings", [])]
@@ -116,7 +121,7 @@ class VideoDataset(Dataset):
                             try:
                                 import pandas as pd
                                 pq_url = f"https://huggingface.co/datasets/{repo_id}/resolve/main/{parquet_files[0]}"
-                                req_pq = urllib.request.Request(pq_url, headers={"User-Agent": "Mozilla/5.0"})
+                                req_pq = urllib.request.Request(pq_url, headers={"User-Agent": _USER_AGENT})
                                 with urllib.request.urlopen(req_pq, timeout=25) as p_resp:
                                     df = pd.read_parquet(io.BytesIO(p_resp.read()))
                                     limit = max_hf_samples or len(df)
@@ -139,8 +144,8 @@ class VideoDataset(Dataset):
                                                 "video_rgb": t_tensor,
                                                 "name": str(row.get("name", row.get("caption", f"video_{i}"))),
                                             })
-                            except Exception as pe:
-                                print(f"[VideoDataset] Failed to parse parquet from {repo_id}: {pe}")
+                            except Exception as pe:  # noqa: BLE001 -- recorded and raised below if nothing loads
+                                hub_errors.append(f"{repo_id}: could not read {parquet_files[0]}: {pe}")
 
                         if pt_files:
                             urls = [
@@ -148,8 +153,17 @@ class VideoDataset(Dataset):
                                 for f in pt_files
                             ]
                             self.hf_files.extend(urls)
-                except Exception as e:
-                    print(f"[VideoDataset] Failed to query HF repo {repo_id}: {e}")
+                except Exception as e:  # noqa: BLE001 -- recorded and raised below if nothing loads
+                    hub_errors.append(f"{repo_id}: {e}")
+
+            if not self.parquet_records and not self.hf_files:
+                # Until 2026-11-17 this printed the error and carried on, and the
+                # dataset fell back to one synthetic clip: a run asked to train on
+                # a hub dataset trained on a generated vortex instead.
+                raise RuntimeError(
+                    "VideoDataset: nothing could be loaded from "
+                    f"{', '.join(repos)}: " + ("; ".join(hub_errors) or "no .parquet or .pt files listed")
+                )
 
             if max_hf_samples and len(self.hf_files) > max_hf_samples:
                 self.hf_files = self.hf_files[:max_hf_samples]
@@ -279,11 +293,13 @@ class VideoDataset(Dataset):
             import io
             import time
             u = self.hf_files[idx]
+            last_error: Optional[BaseException] = None
             for attempt in range(3):
                 try:
-                    req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+                    req = urllib.request.Request(u, headers={"User-Agent": _USER_AGENT})
                     with urllib.request.urlopen(req, timeout=12) as resp:
-                        t = torch.load(io.BytesIO(resp.read()), map_location="cpu").float()
+                        # weights_only: a file from the network is data, never code.
+                        t = torch.load(io.BytesIO(resp.read()), map_location="cpu", weights_only=True).float()
                         if t.ndim == 4 and t.shape[0] in (4, 12, 16) and t.shape[1] > t.shape[0]:
                             t = t.permute(1, 0, 2, 3)
                         if self.frame_size and (t.shape[2] != self.frame_size[0] or t.shape[3] != self.frame_size[1]):
@@ -298,22 +314,17 @@ class VideoDataset(Dataset):
                         }
                         self._ram_cache[idx] = item
                         return item
-                except Exception:
+                except Exception as exc:  # noqa: BLE001 -- retried, then raised
+                    last_error = exc
                     if attempt < 2:
                         time.sleep(0.3)
-                    else:
-                        video_rgb, prompt_emb, prompt_seq = self._generate_synthetic_video(idx)
-                        item = {
-                            "video_rgb": video_rgb,
-                            "prompt_embedding": prompt_emb,
-                            "prompt_tokens": prompt_seq,
-                        }
-                        self._ram_cache[idx] = item
-                        return item
+            # Until 2026-11-17 a failed download became a synthetic clip, silently
+            # mixed into a batch of real latents.
+            raise RuntimeError(f"VideoDataset: could not load {u} after 3 attempts: {last_error}") from last_error
 
         if self.latent_files:
             latent_path = self.latent_files[idx]
-            data = torch.load(latent_path, map_location="cpu")
+            data = torch.load(latent_path, map_location="cpu", weights_only=True)
             lat = data["latent"]
             if self.frame_size and (lat.shape[2] != self.frame_size[0] or lat.shape[3] != self.frame_size[1]):
                 lat = torch.nn.functional.interpolate(

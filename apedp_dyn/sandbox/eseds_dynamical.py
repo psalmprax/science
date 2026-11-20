@@ -126,7 +126,8 @@ def gen_competition(r1: float = 0.5, K1: float = 100.0, r2: float = 0.4, K2: flo
 def observe(arr: np.ndarray, noise_sigma: float = 0.3, seed: int = 0) -> np.ndarray:
     """Add Gaussian noise to observations with deterministic seeding."""
     rng = np.random.RandomState(seed)
-    return arr + rng.normal(0.0, noise_sigma, size=len(arr))
+    _out: np.ndarray = arr + rng.normal(0.0, noise_sigma, size=len(arr))
+    return _out
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -134,21 +135,25 @@ def observe(arr: np.ndarray, noise_sigma: float = 0.3, seed: int = 0) -> np.ndar
 # ═══════════════════════════════════════════════════════════════════════════
 
 def _exp_form(t: np.ndarray, N0: float, r: float) -> np.ndarray:
-    return N0 * np.exp(np.clip(r * t, -50.0, 50.0))
+    _out: np.ndarray = N0 * np.exp(np.clip(r * t, -50.0, 50.0))
+    return _out
 
 
 def _logistic_form(t: np.ndarray, N0: float, r: float, K: float) -> np.ndarray:
-    return K / (1.0 + ((K - N0) / max(N0, 1e-9)) * np.exp(-np.clip(r * t, -50.0, 50.0)))
+    _out: np.ndarray = K / (1.0 + ((K - N0) / max(N0, 1e-9)) * np.exp(-np.clip(r * t, -50.0, 50.0)))
+    return _out
 
 
 def _gompertz_form(t: np.ndarray, N0: float, r: float, K: float) -> np.ndarray:
     N0_safe = np.clip(N0, 1e-9, K * 0.999)
     log_ratio = np.log(N0_safe / max(K, 1e-6))
-    return np.asarray(K * np.exp(log_ratio * np.exp(-np.clip(r * t, -50.0, 50.0))))
+    _out: np.ndarray = np.asarray(K * np.exp(log_ratio * np.exp(-np.clip(r * t, -50.0, 50.0))))
+    return _out
 
 
 def _poly3_form(t: np.ndarray, c0: float, c1: float, c2: float, c3: float) -> np.ndarray:
-    return c0 + c1 * t + c2 * (t ** 2) + c3 * (t ** 3)
+    _out: np.ndarray = c0 + c1 * t + c2 * (t ** 2) + c3 * (t ** 3)
+    return _out
 
 
 def _rho1(resid: np.ndarray) -> float:
@@ -254,14 +259,15 @@ def fit_allee(t: np.ndarray, y: np.ndarray, dt: float = 0.2) -> tuple[float, flo
     n_pts = len(t_v)
     ymax = float(np.max(y_v))
 
-    def sim_allee(params):
+    def sim_allee(params: np.ndarray) -> np.ndarray:
         N0, r, K, A = params
         sim = np.zeros(n_pts)
         sim[0] = N0
         for i in range(1, n_pts):
             dN = r * sim[i - 1] * (1.0 - sim[i - 1] / max(K, 1e-6)) * (sim[i - 1] / max(A, 1e-6) - 1.0)
             sim[i] = max(sim[i - 1] + dt * dN, 0.0)
-        return sim - y_v
+        _out: np.ndarray = sim - y_v
+        return _out
 
     p0 = [float(y_v[0]), 0.4, max(ymax * 1.2, 10.0), 10.0]
     try:
@@ -292,7 +298,8 @@ def _pade_adversary_form(t: np.ndarray, a0: float, a1: float, b1: float, b2: flo
     num = a0 + a1 * t
     den = 1.0 + b1 * t + b2 * (t**2)
     den = np.where(np.abs(den) < 1e-4, 1e-4 * np.sign(den + 1e-12), den)
-    return num / den
+    _out: np.ndarray = num / den
+    return _out
 
 
 def fit_pade_adversary(t: np.ndarray, y: np.ndarray) -> tuple[float, float, float, float] | None:
@@ -320,7 +327,8 @@ def fit_pade_adversary(t: np.ndarray, y: np.ndarray) -> tuple[float, float, floa
 def _mod_logistic_form(t: np.ndarray, N0: float, r: float, K: float) -> np.ndarray:
     """Modified logistic with quadratic capacity damping: N(t) = K / sqrt(1 + ((K/N0)^2 - 1)*exp(-2rt))."""
     c = max((K / max(N0, 1e-6)) ** 2 - 1.0, 0.0)
-    return K / np.sqrt(1.0 + c * np.exp(-2.0 * r * t))
+    _out: np.ndarray = K / np.sqrt(1.0 + c * np.exp(-2.0 * r * t))
+    return _out
 
 
 def fit_mod_logistic(t: np.ndarray, y: np.ndarray) -> tuple[float, float, float] | None:
@@ -523,6 +531,25 @@ def select_baseline_cv_only(candidates: list[ScoredCandidate]) -> str | None:
 # 6. BENCHMARK EXPERIMENT RUNNER & TRAPS MATRIX
 # ═══════════════════════════════════════════════════════════════════════════
 
+def _oracle_fn(t: np.ndarray, series: np.ndarray) -> Callable[[Any], np.ndarray]:
+    """Exact-integration candidate: the clean series sampled at the requested times.
+
+    The scorer hands a candidate the times it must predict, so a closure keyed on
+    ``len(tt)`` slices returned the *training* prefix for every extrapolation block.
+    That is what made the true mechanisms of Families C and D score holdout errors
+    of 34-58 against rivals near 1: the truth candidate was being judged on samples
+    it was never asked about, was eliminated as a survivor, and a rival was promoted
+    in its place (FPR_promo = 0.333 on the benchmark matrix).
+    """
+    grid = np.asarray(t, dtype=float)
+
+    def fn(tt: Any) -> np.ndarray:
+        idx = np.clip(np.searchsorted(grid, np.asarray(tt, dtype=float)), 0, len(series) - 1)
+        return np.asarray(series)[idx]
+
+    return fn
+
+
 def run_eseds_scenario(
     family: str = "A",
     trap_id: int = 1,
@@ -535,7 +562,7 @@ def run_eseds_scenario(
 ) -> dict[str, Any]:
     """Execute a single scenario under the ESEDS benchmark matrix."""
     ground_truth = "LOGISTIC"
-    fits: dict[str, dict] = {}
+    fits: dict[str, dict[str, Any]] = {}
 
     # Setup true trajectory according to Family & Trap
     if family == "A":  # Logistic
@@ -642,7 +669,7 @@ def run_eseds_scenario(
                 "eq": "dN/dt = r*N - a*P",
             }
         fits["LOTKA_VOLTERRA"] = {
-            "fn": lambda tt: N[:len(tt)],  # exact oracle integration
+            "fn": _oracle_fn(t, N),  # exact oracle integration
             "terms": (Term("lotka_volterra", "theta_0"), Term("coupling", "theta_1")),
             "eq": "dN/dt = r*N - a*N*P",
         }
@@ -666,7 +693,7 @@ def run_eseds_scenario(
                 "eq": "dN1/dt = -m*N1",
             }
         fits["TRUE_COMPETITION"] = {
-            "fn": lambda tt: N1[:len(tt)],
+            "fn": _oracle_fn(t, N1),
             "terms": (Term("competition", "theta_0"), Term("interaction", "theta_1")),
             "eq": "dN1/dt = r1*N1*(1 - (N1 + a12*N2)/K1)",
         }
@@ -691,7 +718,7 @@ def run_eseds_scenario(
 
     # Score Candidates on E1 (Short Extrapolation Holdout)
     candidates: list[ScoredCandidate] = []
-    cand_fns: dict[str, Callable] = {}
+    cand_fns: dict[str, Callable[..., Any]] = {}
     for key, spec in fits.items():
         fn = spec["fn"]
         cand_fns[key] = fn
@@ -776,7 +803,7 @@ def run_eseds_trap(
     noise_sigma: float = 0.3,
     seed: int = 42,
     bootstrap_n_boot: int = 500,
-) -> dict:
+) -> dict[str, Any]:
     """Backward-compatible entry point for Family A window sweep trap."""
     res = run_eseds_scenario(
         family="A", trap_id=1, train_end=train_end, noise_sigma=noise_sigma,

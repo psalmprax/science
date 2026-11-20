@@ -1,0 +1,13 @@
+{
+ "preregistration": "PREREG-MMLM-CM-2026-11",
+ "sha256": {
+  "apedp_mmlm/context_mixing.py": "94a9311ba545d719d37dabf19aa9a6b154b440952e5d87926a9f151b0d19f5e1",
+  "apedp_mmlm/neural_expert.py": "0fc6b8983e71a0a429c5e8ed97117280a1904a4de17a90eff327226f8e1b3b4e",
+  "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+  "benchmarks/mmlm/neural_expert_wikitext2.json": "6c543d497e5653e1e01aeed84888cf60bb821d26816c828cf023fe43354b1fad",
+  "benchmarks/mmlm/neural_expert_wikitext2.pt": "b5ef1acf843941127509fe66869a22df854800fb5eb11cc13e2a6e6cacaf17e6",
+  "preregistration/PREREG-MMLM-CM-2026-11.md": "cd842f931bcdf7d49f3860f6304a4efc1dbe37170496e62e4e0644af2364f4d8",
+  "scripts/run_prereg_mmlm_cm.py": "0b4194bc795f7e7894ad19a96b8a84b293b8f6c1d763f178225b0bc1a63ac7c3",
+  "scripts/study_mmlm_cm_dev.py": "ff01453acfd4bb12c8c567a96b87a0810dc13ebfded22d8bac42d51605fe0cad"
+ }
+}

@@ -153,7 +153,7 @@ def test_hmr_is_not_mr_and_h_then_hmr_is():
 
     sim = StatevectorSimulator(4)
     sim.set_basis_state(0)
-    substituted = sim.branches([("gate", "h", (CONTROL,))] + hmr)
+    substituted = sim.branches([("gate", "h", (CONTROL,)), *hmr])
     genuinely = sim.branches(mr)
     assert len(substituted) == 1 and len(genuinely) == 1
     assert substituted[0].bits == genuinely[0].bits

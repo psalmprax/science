@@ -200,7 +200,7 @@ class TestAdjudicateV2:
             SOLE_SURVIVOR_GAMMA,
         )
 
-        assert DYNAMIC_EPISTEMIC_VERSION == "bootstrap-v3+solefid-v5"
+        assert DYNAMIC_EPISTEMIC_VERSION == "bootstrap-v3+solefid-v6"
 
         assert SOLE_SURVIVOR_GAMMA == 3.0
         assert RESID_RHO_FLAG == 0.5
@@ -208,28 +208,47 @@ class TestAdjudicateV2:
 
 @needs_guards
 @needs_bootstrap
-class TestFrozenFlaggedCell:
-    def test_stab10_rep2_sole_survivor_unchanged_by_v2(self):
-        """Frozen failure STAB/10/rep2 (outputs/dyn_epistemic_freeze.json):
-        cubic truth blows up on holdout (holdout_rmse None); linear rival
-        promoted unopposed under v1. No rival pair exists, so the bootstrap
-        tiebreaker never applied; the sole-survivor guards now govern.
-        Pre-hardening baseline pinned explicitly (sole-survivor rule off)."""
-        import apedp_dyn
-        from apedp_dyn import dyn_sweep as ds
+def _stab10_rep2():
+    """The STAB/10/rep2 cell, fitted by the production fitter: (truth, rival)."""
+    import apedp_dyn
+    from apedp_dyn import dyn_sweep as ds
 
-        slate = ds.build_slates()
-        prob = ds._with_noise(slate["STAB"]["prob_clean"], 10,
-                              seed=ds.cell_seed("STAB", 2, 10))
-        rt = apedp_dyn.fit_candidate(prob, slate["STAB"]["truth"])
-        rr = apedp_dyn.fit_candidate(prob, slate["STAB"]["rival"])
-        assert rt.holdout_rmse is None  # truth collapsed: the frozen mechanism
-        v1 = adjudicate([rt, rr], sole_survivor_rule=False)
+    slate = ds.build_slates()
+    prob = ds._with_noise(slate["STAB"]["prob_clean"], 10, seed=ds.cell_seed("STAB", 2, 10))
+    return (prob, apedp_dyn.fit_candidate(prob, slate["STAB"]["truth"]),
+            apedp_dyn.fit_candidate(prob, slate["STAB"]["rival"]))
+
+
+class TestFrozenFlaggedCell:
+    def test_stab10_rep2_the_frozen_failure_was_the_fitter(self):
+        """Frozen failure STAB/10/rep2 (outputs/dyn_epistemic_freeze.json) no longer occurs.
+
+        Recorded: the cubic truth blew up on holdout (holdout_rmse None) and the
+        linear rival was promoted unopposed under v1. That collapse came from
+        where the fitter stopped. Since 2026-11-16 it converges
+        (apedp_dyn/fitting/parameter_fit.py FIT_RTOL, FIT_DIFF_STEP;
+        docs/SYSTEM_FLAWS_AUDIT.md J-18): the truth passes gate 4 (holdout
+        0.0416 against tolerance 0.0863) and is promoted over the rival, which
+        it separates by 0.0339 against a tie band of 0.0154. The guard tests
+        that used this cell as their sole-survivor case now build it
+        explicitly, from the rival alone, below.
+        """
+        _, rt, rr = _stab10_rep2()
+        assert rt.holdout_rmse is not None and rt.provenance["gate4_status"]["passed"]
+        for adj in (adjudicate([rt, rr], sole_survivor_rule=False), adjudicate([rt, rr], bootstrap=True)):
+            assert adj.status is EpistemicStatus.UNIQUE_SUPPORT, adj
+            assert adj.promoted is rt
+
+    def test_stab10_rep2_rival_alone_is_refused_by_v2(self):
+        """The case the frozen record was about: the rival as sole survivor.
+        Pre-hardening baseline pinned explicitly (sole-survivor rule off)."""
+        _, _, rr = _stab10_rep2()
+        v1 = adjudicate([rr], sole_survivor_rule=False)
         assert v1.status is EpistemicStatus.UNIQUE_SUPPORT, v1
-        assert v1.promoted is not None
+        assert v1.promoted is rr
         assert v1.delta_rmse is None  # no pair: tiebreaker inapplicable
         # Default call without residuals: Guard 2 missing-evidence row.
-        v2 = adjudicate([rt, rr], bootstrap=True)
+        v2 = adjudicate([rr], bootstrap=True)
         assert v2.status is EpistemicStatus.INSUFFICIENT_EVIDENCE, v2
         assert v2.promoted is None
         assert v2.bootstrap_branch == ""
@@ -239,35 +258,24 @@ class TestFlaggedCellGuardsLive:
     """Guard-only pins for STAB/10/rep2 (no bootstrap hook required)."""
 
     def test_v1_flag_baseline_pinned(self):
-        import apedp_dyn
-        from apedp_dyn import dyn_sweep as ds
-
-        slate = ds.build_slates()
-        prob = ds._with_noise(slate["STAB"]["prob_clean"], 10,
-                              seed=ds.cell_seed("STAB", 2, 10))
-        rt = apedp_dyn.fit_candidate(prob, slate["STAB"]["truth"])
-        rr = apedp_dyn.fit_candidate(prob, slate["STAB"]["rival"])
-        assert rt.holdout_rmse is None
-        v1 = adjudicate([rt, rr], sole_survivor_rule=False)
+        _, _, rr = _stab10_rep2()
+        v1 = adjudicate([rr], sole_survivor_rule=False)
         assert v1.status is EpistemicStatus.UNIQUE_SUPPORT, v1
         assert v1.promoted is not None
         assert v1.delta_rmse is None
 
+
 class TestFlaggedCellMeasuredGuardsLive:
     def test_measured_residuals_abstain(self):
         """Moved live out of the bootstrap-gated class: uses only guard
-        kwargs present in the live tree."""
-        import apedp_dyn
-        from apedp_dyn import dyn_sweep as ds
+        kwargs present in the live tree. The rival alone: it passes the
+        fidelity ceiling (0.0755 against 0.0958) and its holdout residuals,
+        missing the cubic term, are structured (|rho1| 0.593)."""
         from apedp_dyn.epistemic.bootstrap import holdout_se_series
 
-        slate = ds.build_slates()
-        prob = ds._with_noise(slate["STAB"]["prob_clean"], 10,
-                              seed=ds.cell_seed("STAB", 2, 10))
-        rt = apedp_dyn.fit_candidate(prob, slate["STAB"]["truth"])
-        rr = apedp_dyn.fit_candidate(prob, slate["STAB"]["rival"])
+        prob, _, rr = _stab10_rep2()
         se = holdout_se_series(prob, rr.candidate, rr.fit.param_values)
-        adj = adjudicate([rt, rr], resid_sole=se)
+        adj = adjudicate([rr], resid_sole=se)
         assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE, adj
         assert adj.promoted is None
         assert "rho1" in adj.reason

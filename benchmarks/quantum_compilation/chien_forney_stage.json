@@ -1,0 +1,124 @@
+{
+  "script": "scripts/emit_chien_forney_stage.py",
+  "module": "apedp_dyn/quantum_compilation/inplace_bm.py",
+  "reference_block": "scripts/run_mr_gated_arms.py build_forney_mbuc",
+  "class": "measured gate stream for a block of positions; the full 4,095-position sweep is a projection",
+  "positions": 4095,
+  "forney_block": [
+    {
+      "degree": 4,
+      "t": 5,
+      "positions": 8,
+      "toffolis": 144,
+      "toffolis_per_position": 18.0,
+      "qubits": 20,
+      "ops": {
+        "BIT_INVERT": 304,
+        "BIT_STORE0": 70,
+        "Z": 32,
+        "R": 128,
+        "HMR": 128,
+        "CX": 1072,
+        "CZ": 384,
+        "SWAP": 144,
+        "CCX": 144,
+        "INFO_TAG": 656,
+        "POP_CONDITION": 32,
+        "PUSH_CONDITION": 32
+      },
+      "stage": "forney block (inversion + AND + phase product)",
+      "projected_to_4095_positions": 73710.0
+    },
+    {
+      "degree": 8,
+      "t": 10,
+      "positions": 8,
+      "toffolis": 864,
+      "toffolis_per_position": 108.0,
+      "qubits": 56,
+      "ops": {
+        "BIT_INVERT": 2256,
+        "BIT_STORE0": 278,
+        "Z": 64,
+        "R": 384,
+        "HMR": 384,
+        "CX": 9264,
+        "CZ": 2560,
+        "SWAP": 880,
+        "CCX": 864,
+        "INFO_TAG": 1200,
+        "POP_CONDITION": 64,
+        "PUSH_CONDITION": 64
+      },
+      "stage": "forney block (inversion + AND + phase product)",
+      "projected_to_4095_positions": 442260.0
+    },
+    {
+      "degree": 12,
+      "t": 35,
+      "positions": 8,
+      "toffolis": 2520,
+      "toffolis_per_position": 315.0,
+      "qubits": 96,
+      "ops": {
+        "BIT_INVERT": 5008,
+        "BIT_STORE0": 526,
+        "Z": 96,
+        "R": 672,
+        "HMR": 672,
+        "CX": 25960,
+        "CZ": 6912,
+        "SWAP": 1536,
+        "CCX": 2520,
+        "INFO_TAG": 1536,
+        "POP_CONDITION": 96,
+        "PUSH_CONDITION": 96
+      },
+      "stage": "forney block (inversion + AND + phase product)",
+      "projected_to_4095_positions": 1289925.0
+    }
+  ],
+  "constant_multiply_sweep": [
+    {
+      "degree": 12,
+      "t": 35,
+      "positions": 1,
+      "steps_per_position": 71,
+      "toffolis": 0,
+      "toffolis_per_position": 0.0,
+      "qubits": 852,
+      "ops": {
+        "CX": 3982,
+        "SWAP": 323,
+        "INFO_TAG": 284
+      },
+      "stage": "constant-multiply coefficient sweep"
+    },
+    {
+      "degree": 12,
+      "t": 35,
+      "positions": 8,
+      "steps_per_position": 71,
+      "toffolis": 0,
+      "toffolis_per_position": 0.0,
+      "qubits": 852,
+      "ops": {
+        "CX": 31856,
+        "SWAP": 2584,
+        "INFO_TAG": 2272
+      },
+      "stage": "constant-multiply coefficient sweep"
+    }
+  ],
+  "accounting": {
+    "archive_toffolis": 396919.33,
+    "key_equation_toffolis": 313110,
+    "remainder_after_key_equation": 83809.33000000002,
+    "measured_forney_full_sweep": 1289925.0,
+    "complete_decoder_lower_bound": 1603035.0,
+    "ratio_vs_archive": 4.038692194708683,
+    "positions_the_remainder_affords": 266.06136507936515,
+    "fraction_of_search_the_remainder_affords": 0.06497225032463129,
+    "conclusion": "a position costs 315 Toffolis, so the 4,095-position sweep costs 1,289,925 -- 4.04x the archive's whole decoder. The 83,809 Toffolis left after the key-equation stage afford 266 positions, 6.5% of the search, so the archive cannot contain a per-position Chien/Forney sweep at all: its remaining budget buys 1/30th of one. Whatever locates the errors there, it is not a 4,095-position loop"
+  }
+}

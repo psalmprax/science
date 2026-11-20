@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -37,7 +38,10 @@ def test_the_record_identifies_itself_and_the_question_it_answers(record):
     assert record["record"] == RECORD
     assert record["schema"] == SCHEMA
     assert "same number of objective fits" in record["purpose"]
-    assert record["generated_on"] == "2026-10-30"
+    # The record is a measurement, so its date moves when it is re-run; what is
+    # pinned is that it identifies the day it was produced, not one particular day.
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", record["generated_on"]), record["generated_on"]
+    assert record["generated_on"] >= "2026-10-30"
     assert len(record["conditions"]) == 2
 
 

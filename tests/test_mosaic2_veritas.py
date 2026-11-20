@@ -17,24 +17,21 @@ Verifies the five methodological corrections and phases P0 to P3:
 from __future__ import annotations
 
 import math
-import pytest
+
 import numpy as np
+import pytest
 
 from apedp_dyn.quantum_compilation import (
     AncillaKind,
-    CandidateStatus,
     CircuitCandidate,
     ReceiptArtifactHashMismatchError,
     StructuralEquivalenceError,
-    StructureAuditReport,
     SymbolicAncillaLedger,
     TwoRegionProbeResult,
     audit_array_structure,
-    compute_distribution_entropy,
     compute_provenance_fingerprint,
     compute_spec_fingerprint,
     compute_structural_fingerprint,
-    compute_walsh_rank,
     early_exit_resource_gate,
     enforce_structural_diversity,
     probe_two_region_partition,
@@ -82,7 +79,7 @@ def test_three_fingerprints_generation_and_auto_derivation():
         benchmark="invsqrt",
         generator_id="faros_isq_v1",
         parameters={"segmentation": 128},
-        artifact_path="/tmp/mock.kmb",
+        artifact_path="/tmp/mock.kmb",  # noqa: S108 - mock path, never opened
         artifact_sha256="abc123def456",
         contract_sha256="mock_contract_hash_12345",
         screen_metrics=metrics,

@@ -1,0 +1,15 @@
+{
+  "page_title": "List of equations in classical mechanics",
+  "file": "classical_mechanics_equations.html",
+  "source": "https://en.wikipedia.org/w/api.php?action=parse&page=List%20of%20equations%20in%20classical%20mechanics&prop=text%7Crevid&format=json",
+  "field": "parse.text['*']",
+  "revision_id": 1344409255,
+  "retrieved": "2026-10-31",
+  "license": "CC-BY-SA-4.0",
+  "attribution": "Wikipedia contributors, 'List of equations in classical mechanics', Wikipedia, The Free Encyclopedia",
+  "bytes": 336393,
+  "sha256": "5454f8e2f7d633a5af49e697a70e975b5e493d573371afeec2cec891fdd6eb1e",
+  "displaystyle_runs": 402,
+  "displaystyle_runs_note": "Occurrences of the extractor's opening prefix '{\\displaystyle'. The bare word appears 550 times because the fallback markup repeats it; only the prefix marks a formula run.",
+  "why": "The harvester is a network component, so its yield could only be observed against a moving target. This revision is frozen so the extraction contract and the pipeline's parse/quarantine split can be pinned offline. It is a verbatim API payload field, not a hand-written excerpt."
+}

@@ -1,14 +1,14 @@
 {
   "metadata": {
     "title": "Population Extrapolation: RIME-AD vs GA/GP Benchmark",
-    "timestamp": "2026-10-16T14:11:17Z",
-    "git_workspace": "/home/psalmprax/ALL_PROJECTS/science",
+    "timestamp": "2026-11-19T06:16:53Z",
+    "git_workspace": "/home/claude/science",
     "generating_truth": "y[t] = 2.0*x1[t-1]*x2[t-1] + 3.0*x3[t-2] + 10.0"
   },
   "methods": {
     "ga_small": {
-      "name": "Genetic Algorithm (GA-Small, Linear + Lags)",
-      "wall_ms": 1755.8825660962611,
+      "name": "GA term selection, small library (linear + lags)",
+      "wall_ms": 502.99717900000473,
       "active_terms": [
         "1",
         "x1",
@@ -21,15 +21,15 @@
         "x3[t-1]",
         "x3[t-2]"
       ],
-      "r2_A_tr": 0.6808908557738335,
-      "r2_A_te": 0.644961587338517,
+      "r2_A_tr": 0.6808908557738336,
+      "r2_A_te": 0.6449615873385172,
       "r2_B": 0.7006247124249401,
-      "r2_C_shift": 0.4184699767531941,
+      "r2_C_shift": 0.41846997675319364,
       "r2_D_heavy": 0.32121020340752526
     },
     "ga_large": {
-      "name": "Genetic Algorithm (GA-Large, Polynomial + Interactions)",
-      "wall_ms": 2384.828753885813,
+      "name": "GA term selection, large library (squares + planted interactions)",
+      "wall_ms": 796.633443999994,
       "active_terms": [
         "1",
         "x1",
@@ -55,12 +55,13 @@
       "r2_A_tr": 0.9997806103588579,
       "r2_A_te": 0.9998033416843741,
       "r2_B": 0.9997618392447694,
-      "r2_C_shift": 0.896099993558659,
+      "r2_C_shift": 0.8960999935586588,
       "r2_D_heavy": 0.9999553885509458
     },
-    "rime_ad": {
-      "name": "RIME-AD (Native Rust Adaptive Additive Discovery)",
-      "wall_ms": 10.740307974629104,
+    "rime": {
+      "name": "RIME (RimeProposer)",
+      "engine_class": "apedp_dyn.proposers.rime_proposer.RimeProposer",
+      "wall_ms": 6.998111000001472,
       "formula": "+1 * (((2.995647 * x3[t-2]) + (1.996585 * (x1[t-1] * x2[t-1])))) +9.99877",
       "active_terms": [
         "x1",
@@ -72,10 +73,23 @@
       "r2_B": 0.9997672389390011,
       "r2_C_shift": 0.8960672761828506,
       "r2_D_heavy": 0.999980073766025
+    },
+    "rime_ad": {
+      "name": "RIME-AD (RimeAdProposer)",
+      "engine_class": "apedp_dyn.proposers.rime_ad_proposer.RimeAdProposer",
+      "wall_ms": 19085.40096300001,
+      "formula": "-0.0302 * ((1 / x3) / cos(x3)) + 10.0538",
+      "n_proposals": 8,
+      "r2_A_tr": 0.010766121667826867,
+      "r2_A_te": -0.2828668406963224,
+      "r2_B": -0.025842858746806474,
+      "r2_C_shift": -0.5292237446998476,
+      "r2_D_heavy": -0.019928724244040685
     }
   },
   "distractor_challenge": {
-    "wall_ms": 33.95870409440249,
+    "engine": "RIME (RimeProposer)",
+    "wall_ms": 10.197641000019075,
     "dev_r2": 0.999968952237157,
     "inputs_used": [
       "x1",

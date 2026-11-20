@@ -425,6 +425,8 @@ class MultiTermL2Engine:
         if adj.promoted is not None:
             best = adj.promoted
             terms_str = []
+            if not isinstance(best.candidate, CandidateDynamics):
+                raise TypeError("the multi-term engine ranks typed IR candidates")
             for t_obj in best.candidate.terms:
                 val = best.fit.param_values.get(t_obj.parameter, 1.0) if best.fit else 1.0
                 terms_str.append(f"{val:+.4g} * ({t_obj.name})")

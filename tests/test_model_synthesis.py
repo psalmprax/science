@@ -528,3 +528,62 @@ def test_class_s5_epistemic_abstentions():
     m_sparse = synth.synthesize(x_tr, y_tr, x_val, y_val)
     assert m_sparse[0].epistemic_state == EpistemicState.INSUFFICIENT_EVIDENCE
     assert m_sparse[0].epistemic_class == "C3"
+
+
+# ---------------------------------------------------------------- module split
+#
+# The module passed 2,100 lines, so the types, scoring helpers, regime detector
+# and the two static template grammars moved to `model_synthesis_helpers`. The
+# move is only worth anything if the documented import paths and the class
+# methods keep working, so those are what is pinned here.
+
+MOVED_TO_HELPERS = (
+    "SynthesizedModel",
+    "SynthesisDiagnostics",
+    "_bic_rerank",
+    "_amplitude_cap",
+    "_classify_adversarial",
+    "_abstention_rationale",
+    "_input_normalization_scale",
+    "_robust_noise_floor",
+    "_regime_identifiability",
+    "detect_regimes",
+    "s2_templates",
+    "exp_templates",
+)
+
+
+def test_the_split_keeps_every_name_on_the_original_module():
+    import apedp.model_synthesis as ms
+
+    for name in MOVED_TO_HELPERS:
+        assert hasattr(ms, name), f"apedp.model_synthesis.{name} disappeared in the split"
+
+
+def test_reexports_are_the_same_objects_not_copies():
+    """A duplicated definition would silently diverge; identity proves it cannot."""
+    import apedp.model_synthesis as ms
+    from apedp import model_synthesis_helpers as helpers
+
+    for name in MOVED_TO_HELPERS:
+        assert getattr(ms, name) is getattr(helpers, name), name
+
+
+def test_the_synthesizer_still_carries_the_detector_and_the_grammars():
+    import apedp.model_synthesis as ms
+
+    syn = ms.AutonomousModelSynthesizer
+    assert hasattr(syn, "detect_regimes")
+    # `test_scaffold_inventory` reads `_exp_templates` off the class, so the
+    # delegate has to keep returning the four-template exponential subset.
+    assert [label for _, label in syn._exp_templates()] == ["exponential_decay"] * 4
+    assert syn._s2_templates(1.0)
+
+
+def test_the_module_stays_split():
+    import inspect
+
+    import apedp.model_synthesis as ms
+
+    lines = len(inspect.getsource(ms).splitlines())
+    assert lines < 1705, f"model_synthesis.py grew back to {lines} lines; split it again"

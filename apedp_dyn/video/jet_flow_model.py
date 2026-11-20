@@ -221,7 +221,7 @@ class JetFlowVideoModel:
             z_next, _, _ = self.stepper.step(
                 velocity_fn=velocity_eval,
                 z_t=z_curr,
-                t=t_curr,
+                t=float(t_curr),
                 dt=dt,
             )
             z_curr = z_next
@@ -260,4 +260,5 @@ class JetFlowVideoModel:
             self.vae_bridge.decode_continuous_frame_rgb(tt_video, float(tau))
             for tau in timestamps
         ]
-        return np.stack(rgb_frames, axis=0)
+        _out: np.ndarray = np.stack(rgb_frames, axis=0)
+        return _out

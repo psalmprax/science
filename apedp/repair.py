@@ -43,6 +43,23 @@ PROBE_SWALLOWED_ERRORS: tuple[type[Exception], ...] = (
 )
 
 
+def _out_of_scope_pde_result(pde_expr: sp.Expr, validity_domain: str) -> dict[str, Any]:
+    """The PDE/ODE refusal record, shared by both template-match outcomes."""
+    return {
+        "status": "OUT_OF_SCOPE",
+        "anomalies": [],
+        "original_expression": pde_expr,
+        "repaired_expression": pde_expr,
+        "inferred_unit": "unknown",
+        "eps_symbols": [],
+        "distortion": {"max_distortion": None, "mean_distortion": None},
+        "validity_domain": validity_domain,
+        "probe_errors": [],
+        "probe_error_count": 0,
+        "unresolved_probe_count": 0,
+    }
+
+
 class PhysicalAnomalyRepairEngine:
     """Specialized physical anomaly auditor and regularizer for classical, relativistic, and statistical models."""
 
@@ -501,37 +518,17 @@ class AgnosticClosedLoopAssuranceSystem:
             hits = recognize_pde(pde_expr)
             if hits:
                 primary = hits[0]
-                return {
-                    "status": "OUT_OF_SCOPE",
-                    "anomalies": [],
-                    "original_expression": pde_expr,
-                    "repaired_expression": pde_expr,
-                    "inferred_unit": "unknown",
-                    "eps_symbols": [],
-                    "distortion": {"max_distortion": None, "mean_distortion": None},
-                    "validity_domain": (
-                        f"PDE template {primary}: {TEMPLATES[primary]}. "
-                        "Class-level shape only; solve with eval_extended "
-                        "(residual/manufactured-solution) or pde_solvers "
-                        "(wave/advection/heat-2D/Laplace/Poisson FD)."
-                    ),
-                    "probe_errors": [],
-                    "probe_error_count": 0,
-                    "unresolved_probe_count": 0,
-                }
-            return {
-                "status": "OUT_OF_SCOPE",
-                "anomalies": [],
-                "original_expression": pde_expr,
-                "repaired_expression": pde_expr,
-                "inferred_unit": "unknown",
-                "eps_symbols": [],
-                "distortion": {"max_distortion": None, "mean_distortion": None},
-                "validity_domain": "PDE shape matched no known template; see eval_extended.",
-                "probe_errors": [],
-                "probe_error_count": 0,
-                "unresolved_probe_count": 0,
-            }
+                return _out_of_scope_pde_result(
+                    pde_expr,
+                    f"PDE template {primary}: {TEMPLATES[primary]}. "
+                    "Class-level shape only; solve with eval_extended "
+                    "(residual/manufactured-solution) or pde_solvers "
+                    "(wave/advection/heat-2D/Laplace/Poisson FD).",
+                )
+            return _out_of_scope_pde_result(
+                pde_expr,
+                "PDE shape matched no known template; see eval_extended.",
+            )
         try:
             expr = safe_parse_expr(formula_str)
             var_units = self.infer_units_for_expression(expr, variable_units, strict=strict_units)

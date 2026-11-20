@@ -1,0 +1,47 @@
+{
+  "patent_id": "US11474159B2",
+  "source": "https://patents.google.com/patent/US11474159B2/en",
+  "retrieved_utc": "2026-11-01T00:23:12+00:00",
+  "http_status": 200,
+  "bytes": 226745,
+  "html_sha256": "bc9835989a72275611024cbb6d2d703ac5c99b0e13f9ebcfb2e832ba0758c5c0",
+  "jurisdiction": "US",
+  "title": "Estimation method of battery state of health based on standard sample and dual-embedded decoupling",
+  "abstract": "Abstract A battery State of Health estimation method based on a standard sample and a dual-embedded decoupling includes the steps of extracting significant characteristic peaks of the standard sample, mechanism parameter calibration of the standard sample, and on-line State of Health estimation of the test battery. The battery State of Health estimation method expounds the dual coupling relationship between temperature and aging on the characteristic peak voltage of Incremental Capacity curve from the perspective of impedance characteristic mechanism analysis, and proposes a method eliminating the voltage deviation caused by the most temperature-sensitive charge transfer resistance based on the “standard sample” to realize the decoupling of the first layer. Further, when the Solid Electrolyte Interface film resistance affected by the aging and temperature coupling conforms to a linear relationship as a whole, the embedded decoupling can be realized by establishing the relation function between the linear relationship coefficient and temperature.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A battery State of Health estimation method based on a standard sample and a dual-embedded decoupling, comprising the following steps: S1: extracting significant characteristic peaks of the standard sample; wherein a same type of batteries with different aging states are selected to conduct constant-current charging tests at a same temperature; any one of the above batteries is selected to carry out the constant-current charging tests at different temperatures, and battery current, voltage, and temperature in each test are collected; based on the above data, Incremental Capacity curves of batteries with different aging states and at different temperatures are drawn, and the significant characteristic peaks of the standard sample are selected by analyzing the above Incremental Capacity curves; S2: calibration of mechanism parameters of the standard sample; wherein relation functions of the standard sample are obtained based on the dual-embedded decoupling; wherein a first relation function is a relation function between a temperature and a first voltage deviation ΔU ct,T caused by a change of a charge transfer resistance R ct , when the standard sample battery is not aging; a second relation function is a linear relationship function between an aging state and a second voltage deviation ΔU SEI,cycle,T at the same temperature; wherein the second voltage deviation ΔU SEI,cycle,T is caused by a Solid Electrolyte Interface film resistance after eliminating an influence of the charge transfer resistance R ct ; a third relation function is a relationship function between a linear relationship coefficient and the temperature; S3: on-line estimation of State of Health of a test battery; wherein a constant-current charging test is carried out for the test battery, and the battery current, voltage, and temperature are collected; based on the collected data, the Incremental Capacity 11 curve of the test battery is calculated and a voltage of the significant characteristic peak corresponding to the standard sample is extracted; State of Health of the test battery is solved step by step according to the three relation functions of the double-embedded decoupling in S2."
+    },
+    {
+      "num": "2",
+      "text": "2. The battery State of Health estimation method based on the standard sample and the dual-embedded decoupling according to claim 1 , wherein the significant characteristic peak is located near a median voltage."
+    },
+    {
+      "num": "3",
+      "text": "3. The battery State of Health estimation method based on the standard sample and the dual-embedded decoupling according to claim 1 , wherein, in the first relation function in S2, a voltage deviation caused by the change of the charge transfer resistance R ct is the first voltage deviation ΔU ct,T caused by the temperature at the significant characteristic peak of the standard sample battery whose State of Health is 100%, when the battery is not aging; the relation function between the temperature T and the first voltage deviation ΔU ct,T of the standard sample battery is described by an Arrhenius function as: Δ U ct,T =a ct exp( b ct /T )+ c ct wherein, a ct , b ct and c ct are temperature fitting parameters related to the charge transfer resistance R ct ."
+    },
+    {
+      "num": "4",
+      "text": "4. The battery State of Health estimation method based on the standard sample and the dual-embedded decoupling according to claim 3 , wherein, the standard sample battery with 100% State of Health is a virtual battery after an average of at least three batteries with 100% State of Health that meet factory requirements; a fitting result is quantitatively evaluated by a coefficient of determination R 2 ; a specific evaluation formula is as follows: R 2 = 1 - ∑ i = 1 N ⁢ ( V i - V i ~ ) 2 ∑ i = 1 N ⁢ ( V i - V ^ mean ) 2 , V ^ mean = 1 N ⁢ ∑ i = 1 N ⁢ V i wherein, V i is a measured voltage, {tilde over (V)} i denotes a fitting voltage, {circumflex over (V)} mean is a mean of the measured voltage, and N denotes an amount of measured data; the closer R 2 is to 1, the better a fitting accuracy is."
+    },
+    {
+      "num": "5",
+      "text": "5. The battery State of Health estimation method based on the standard sample and the dual-embedded decoupling according to claim 1 , wherein, in the second relation function in S2, the linear relationship function between the aging state and the second voltage deviation ΔU SEI,cycle,T caused by an influence of the Solid Electrolyte Interface film resistance at the same temperature is described as: Δ U SEI,cycle,T =k SEI,T SOH+b SEI,T wherein, k SEI,T and b SEI,T are linear relationship coefficients related to the Solid Electrolyte Interface film resistance, SOH is battery State of Health."
+    },
+    {
+      "num": "6",
+      "text": "6. The battery State of Health estimation method based on the standard sample and the dual-embedded decoupling according to claim 5 , wherein, a method to obtain the linear relationship function between the aging state and the second voltage deviation after eliminating the influence of R ct is as follows: firstly, at least three test batteries with State of Health between 100% and 80% are selected; then the linear relationship function between the aging state and the second voltage deviation ΔU SEI,cycle,T is linear fitted; finally, a relationship between linear fitting parameters k SEI,T and b SEI,T is obtained; wherein k SEI,T =−0.01b SEI,T thus, the above linear relationship function between the aging state and the second voltage deviation ΔU SEI,cycle,T is further simplified as: Δ U SEI,cycle,T =−0.01 b SEI,T SOH+b SEI,T."
+    },
+    {
+      "num": "7",
+      "text": "7. The battery State of Health estimation method based on standard sample and dual-embedded decoupling according to claim 1 , wherein, in the third relation function in S3, the relationship function between the linear relationship coefficient and the temperature T is described as: k SEI,T =kb SEI,T =A SEI exp( B SEI /T )+ C SEI wherein, A SEI , B SEI and C SEI are temperature fitting parameters related to the Solid Electrolyte Interface film resistance; k represents the linear relationship coefficient between k SEI,T and b SEI,T ."
+    },
+    {
+      "num": "8",
+      "text": "8. The battery State of Health estimation method based on the standard sample and the dual-embedded decoupling according to claim 1 , wherein, a solution method of State of Health in S3 is as follows: first, a measured temperature T peak is taken as input and ΔU ct,T is obtained according to the relation function between the temperature and the first voltage deviation ΔU ct,T in S2; secondly, a measured voltage U peak is taken as input to obtain ΔU SEI,cycle,T according to ΔU SEI,cycle,T =U peak −ΔU ct,T ; thirdly, according to the third relation function between the linear relationship coefficient and the temperature at different temperatures in S2, the measured temperature T peak is taken as the input to obtain the linear relationship coefficient at a current temperature; finally, according to the linear relationship function between the aging state and the second voltage deviation ΔU SEI,cycle,T the State of Health of the test battery is obtained."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery state of health estimation"
+}

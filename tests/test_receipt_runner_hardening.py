@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import importlib.util
 import hashlib
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -21,7 +21,8 @@ def test_unconfigured_templates_are_rejected_recursively():
 def test_protected_input_hash_pins_exact_file(tmp_path):
     repo = tmp_path / "repo"
     comp = tmp_path / "competition"
-    repo.mkdir(); comp.mkdir()
+    repo.mkdir()
+    comp.mkdir()
     f = repo / "submission.npz"
     f.write_bytes(b"frozen-input")
     digest = hashlib.sha256(b"frozen-input").hexdigest()
@@ -33,19 +34,25 @@ def test_protected_input_hash_pins_exact_file(tmp_path):
 
 
 def test_protected_files_can_live_under_competition_root(tmp_path):
-    repo = tmp_path / "repo"; comp = tmp_path / "competition"
-    repo.mkdir(); comp.mkdir()
+    repo = tmp_path / "repo"
+    comp = tmp_path / "competition"
+    repo.mkdir()
+    comp.mkdir()
     f = comp / "verifiers" / "verify.py"
-    f.parent.mkdir(); f.write_text("# pinned official source\n")
+    f.parent.mkdir()
+    f.write_text("# pinned official source\n")
     digest = hashlib.sha256(f.read_bytes()).hexdigest()
     rows = rr.verify_protected_files(repo, [{"root": "competition", "path": "verifiers/verify.py", "sha256": digest}], comp)
     assert rows[0]["ok"] is True
 
 
 def test_source_files_are_snapshotted_and_optional_pin_is_enforced(tmp_path):
-    repo = tmp_path / "repo"; comp = tmp_path / "competition"
-    repo.mkdir(); comp.mkdir()
-    f = comp / "verify.py"; f.write_text("official verifier version A\n")
+    repo = tmp_path / "repo"
+    comp = tmp_path / "competition"
+    repo.mkdir()
+    comp.mkdir()
+    f = comp / "verify.py"
+    f.write_text("official verifier version A\n")
     digest = hashlib.sha256(f.read_bytes()).hexdigest()
     items = [{"root": "competition", "path": "verify.py", "sha256": digest}]
     before = rr.snapshot_source_files(repo, comp, items)

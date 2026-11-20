@@ -976,7 +976,8 @@ def _as_1d(values: np.ndarray, name: str, dataset_path: Path) -> np.ndarray:
         raise TemporalRateProtocolError(
             f"NPZ dataset '{dataset_path}' {name} has fewer than two samples"
         )
-    return array
+    _out: np.ndarray = array
+    return _out
 
 
 def _as_float_vector(
@@ -987,7 +988,8 @@ def _as_float_vector(
         raise TemporalRateProtocolError(
             f"NPZ dataset '{dataset_path}' {name} must be a non-empty 1-D array"
         )
-    return np.asarray(array, dtype=float)
+    _out: np.ndarray = np.asarray(array, dtype=float)
+    return _out
 
 
 def _as_strings(values: np.ndarray, name: str, dataset_path: Path) -> np.ndarray:
@@ -1010,7 +1012,8 @@ def _as_strings(values: np.ndarray, name: str, dataset_path: Path) -> np.ndarray
         raise TemporalRateProtocolError(
             f"NPZ dataset '{dataset_path}' {name} contains an empty string"
         )
-    return text
+    _out: np.ndarray = text
+    return _out
 
 
 def _as_string(values: np.ndarray, name: str, dataset_path: Path) -> str:

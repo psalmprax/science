@@ -1,0 +1,492 @@
+{
+  "script": "scripts/verify_assembly_local_mr_sim.py",
+  "engine": "apedp_dyn/quantum_compilation/local_mr_sim.py",
+  "class": "semantic check in the value simulator; not a gate-count receipt",
+  "instance": {
+    "degree": 4,
+    "t": 5,
+    "positions": 15,
+    "syndrome_count": 10,
+    "patterns": 8
+  },
+  "what_is_checked": [
+    "syndrome registers restored after a compute+uncompute discrepancy pass",
+    "locator roots recovered by the sweep and the all-zero mr read",
+    "error magnitudes recovered by omega = (S*sigma) mod x^{2t} evaluated by Horner and divided by the odd-coefficient derivative sum, conditioned on the live read",
+    "the classical Forney result equals the planted vector, so the convention is pinned independently of the circuit",
+    "array cleared and tracked phase untouched under mr (r randomises it)"
+  ],
+  "rows": [
+    {
+      "error": {
+        "2": 13
+      },
+      "sigma": [
+        1,
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "omega": [
+        13,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        2
+      ],
+      "planted": [
+        2
+      ],
+      "recovered": [
+        2
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "2": 13
+      },
+      "recovered_magnitudes": {
+        "2": 13
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "10": 3,
+        "12": 14
+      },
+      "sigma": [
+        1,
+        8,
+        11,
+        0,
+        0,
+        0
+      ],
+      "omega": [
+        13,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        10,
+        12
+      ],
+      "planted": [
+        10,
+        12
+      ],
+      "recovered": [
+        10,
+        12
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "10": 3,
+        "12": 14
+      },
+      "recovered_magnitudes": {
+        "10": 3,
+        "12": 14
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "1": 11,
+        "6": 3,
+        "9": 10
+      },
+      "sigma": [
+        1,
+        4,
+        13,
+        2,
+        0,
+        0
+      ],
+      "omega": [
+        2,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        1,
+        6,
+        9
+      ],
+      "planted": [
+        1,
+        6,
+        9
+      ],
+      "recovered": [
+        1,
+        6,
+        9
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "1": 11,
+        "6": 3,
+        "9": 10
+      },
+      "recovered_magnitudes": {
+        "1": 11,
+        "6": 3,
+        "9": 10
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "2": 13,
+        "4": 12,
+        "6": 11,
+        "13": 12
+      },
+      "sigma": [
+        1,
+        6,
+        8,
+        5,
+        7,
+        0
+      ],
+      "omega": [
+        6,
+        15,
+        10,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        2,
+        4,
+        6,
+        13
+      ],
+      "planted": [
+        2,
+        4,
+        6,
+        13
+      ],
+      "recovered": [
+        2,
+        4,
+        6,
+        13
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "2": 13,
+        "4": 12,
+        "6": 11,
+        "13": 12
+      },
+      "recovered_magnitudes": {
+        "2": 13,
+        "4": 12,
+        "6": 11,
+        "13": 12
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "2": 15,
+        "5": 5,
+        "7": 3,
+        "9": 1,
+        "12": 5
+      },
+      "sigma": [
+        1,
+        12,
+        9,
+        12,
+        15,
+        6
+      ],
+      "omega": [
+        13,
+        5,
+        15,
+        8,
+        12,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        2,
+        5,
+        7,
+        9,
+        12
+      ],
+      "planted": [
+        2,
+        5,
+        7,
+        9,
+        12
+      ],
+      "recovered": [
+        2,
+        5,
+        7,
+        9,
+        12
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "2": 15,
+        "5": 5,
+        "7": 3,
+        "9": 1,
+        "12": 5
+      },
+      "recovered_magnitudes": {
+        "2": 15,
+        "5": 5,
+        "7": 3,
+        "9": 1,
+        "12": 5
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "5": 14
+      },
+      "sigma": [
+        1,
+        6,
+        0,
+        0,
+        0,
+        0
+      ],
+      "omega": [
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        5
+      ],
+      "planted": [
+        5
+      ],
+      "recovered": [
+        5
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "5": 14
+      },
+      "recovered_magnitudes": {
+        "5": 14
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "0": 14,
+        "7": 2
+      },
+      "sigma": [
+        1,
+        10,
+        11,
+        0,
+        0,
+        0
+      ],
+      "omega": [
+        12,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        0,
+        7
+      ],
+      "planted": [
+        0,
+        7
+      ],
+      "recovered": [
+        0,
+        7
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "0": 14,
+        "7": 2
+      },
+      "recovered_magnitudes": {
+        "0": 14,
+        "7": 2
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    },
+    {
+      "error": {
+        "2": 14,
+        "7": 8,
+        "9": 3
+      },
+      "sigma": [
+        1,
+        5,
+        6,
+        8,
+        0,
+        0
+      ],
+      "omega": [
+        5,
+        5,
+        11,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "locator_roots": [
+        2,
+        7,
+        9
+      ],
+      "planted": [
+        2,
+        7,
+        9
+      ],
+      "recovered": [
+        2,
+        7,
+        9
+      ],
+      "algorithm_roots_match_planted": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "phase_untouched_by_mr": true,
+      "positions_recovered": true,
+      "classical_forney_matches_planted": true,
+      "classical_forney": {
+        "2": 14,
+        "7": 8,
+        "9": 3
+      },
+      "recovered_magnitudes": {
+        "2": 14,
+        "7": 8,
+        "9": 3
+      },
+      "magnitudes_recovered": true,
+      "falsifier_phase_randomised": true,
+      "verdict": "PASS"
+    }
+  ],
+  "verdict": "PASS"
+}

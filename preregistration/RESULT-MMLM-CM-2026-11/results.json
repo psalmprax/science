@@ -1,0 +1,120 @@
+{
+ "arms": {
+  "MMLM-CM (all experts)": {
+   "bits_per_byte": 1.45485432226044,
+   "bits_per_byte_on_tuning_text": 1.4585234821680018,
+   "mixer_seconds": 101.1
+  },
+  "training-text counts only": {
+   "bits_per_byte": 1.5488116334297983,
+   "bits_per_byte_on_tuning_text": 1.549350760385693,
+   "mixer_seconds": 59.1
+  },
+  "without read-so-far counts": {
+   "bits_per_byte": 1.475025340747069,
+   "bits_per_byte_on_tuning_text": 1.4767164357979388,
+   "mixer_seconds": 78.3
+  },
+  "without the match experts": {
+   "bits_per_byte": 1.4803188757232606,
+   "bits_per_byte_on_tuning_text": 1.4839622928636858,
+   "mixer_seconds": 93.4
+  },
+  "without the neural expert": {
+   "bits_per_byte": 1.4776347839217228,
+   "bits_per_byte_on_tuning_text": 1.4829617881775226,
+   "mixer_seconds": 83.3
+  },
+  "without the word experts": {
+   "bits_per_byte": 1.4756298274315784,
+   "bits_per_byte_on_tuning_text": 1.4812712379362176,
+   "mixer_seconds": 85.7
+  }
+ },
+ "bytes": {
+  "test": 1256449,
+  "train": 10797148,
+  "tuning": 1121681
+ },
+ "compressors": {
+  "PPMd (var. I) order 12": {
+   "alone": 1.737894653901591,
+   "primed_with_training_text": 1.5131851750449083
+  },
+  "PPMd (var. I) order 16": {
+   "alone": 1.737200634486557,
+   "primed_with_training_text": 1.5128668175150761
+  },
+  "PPMd (var. I) order 6": {
+   "alone": 1.7555571296566752,
+   "primed_with_training_text": 1.5865602185206085
+  },
+  "bz2 -9": {
+   "alone": 2.0170178017571745,
+   "primed_with_training_text": 2.0177945941299646
+  },
+  "gzip -9": {
+   "alone": 2.620101571969893,
+   "primed_with_training_text": 2.6140527789030834
+  },
+  "lzma -9e, 64 MB dictionary": {
+   "alone": 2.1425079728663876,
+   "primed_with_training_text": 1.857240524685045
+  },
+  "zstd -22 --long=27": {
+   "alone": 2.159883926844623,
+   "primed_with_training_text": 1.8696564683484964
+  }
+ },
+ "experts_alone": {
+  "d2": 2.7265831937777176,
+  "d3": 2.2732727779791047,
+  "d4": 2.2412701022697274,
+  "d5": 2.6002025268928177,
+  "d6": 3.176292126532172,
+  "dw1": 2.4302294489936624,
+  "dw2": 4.559388271689035,
+  "m4": 3.1997598430455745,
+  "m8": 3.1890131856329353,
+  "nn": 1.7723967745363187,
+  "o0": 7.630908268811105,
+  "o1": 4.552759888791112,
+  "o2": 3.1588144443944977,
+  "o3": 2.3244144752652454,
+  "o4": 1.9450532059004264,
+  "o5": 2.011461282107201,
+  "o6": 2.457364887616178,
+  "o8": 4.099036736389773,
+  "w1": 3.046998370215979,
+  "w2": 4.355752439598541
+ },
+ "frozen": {
+  "apedp_mmlm/context_mixing.py": "94a9311ba545d719d37dabf19aa9a6b154b440952e5d87926a9f151b0d19f5e1",
+  "apedp_mmlm/neural_expert.py": "0fc6b8983e71a0a429c5e8ed97117280a1904a4de17a90eff327226f8e1b3b4e",
+  "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+  "benchmarks/mmlm/neural_expert_wikitext2.json": "6c543d497e5653e1e01aeed84888cf60bb821d26816c828cf023fe43354b1fad",
+  "benchmarks/mmlm/neural_expert_wikitext2.pt": "b5ef1acf843941127509fe66869a22df854800fb5eb11cc13e2a6e6cacaf17e6",
+  "preregistration/PREREG-MMLM-CM-2026-11.md": "cd842f931bcdf7d49f3860f6304a4efc1dbe37170496e62e4e0644af2364f4d8",
+  "scripts/run_prereg_mmlm_cm.py": "0b4194bc795f7e7894ad19a96b8a84b293b8f6c1d763f178225b0bc1a63ac7c3",
+  "scripts/study_mmlm_cm_dev.py": "ff01453acfd4bb12c8c567a96b87a0810dc13ebfded22d8bac42d51605fe0cad"
+ },
+ "neural_expert": {
+  "batch": 64,
+  "bytes_seen": 47430400,
+  "embed": 64,
+  "hidden": 384,
+  "layers": 1,
+  "lr": 0.002,
+  "lr_floor": 0.0002,
+  "parameters": 806144,
+  "seconds": 2400.1,
+  "seed": 0,
+  "steps": 7411,
+  "steps_per_batch": 100,
+  "train_bits_per_byte_running": 1.8517269062707913,
+  "trained_on": "WikiText-2 raw, training split only",
+  "weights_sha256": "b5ef1acf843941127509fe66869a22df854800fb5eb11cc13e2a6e6cacaf17e6"
+ },
+ "preregistration": "PREREG-MMLM-CM-2026-11",
+ "seconds_before_mixer": 114.7
+}

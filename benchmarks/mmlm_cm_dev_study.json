@@ -1,0 +1,103 @@
+{
+  "MMLM-CM (all experts)": {
+    "bits_per_byte": 1.4756887442251434,
+    "bits_per_byte_on_fit_half": 1.447520644149641,
+    "mixer_seconds": 50.4
+  },
+  "compressors": {
+    "PPMd (var. I) order 12": {
+      "alone": 1.8369334249190448,
+      "primed_with_training_text": 1.536713083970419
+    },
+    "PPMd (var. I) order 16": {
+      "alone": 1.8361769507310501,
+      "primed_with_training_text": 1.536299164131705
+    },
+    "PPMd (var. I) order 6": {
+      "alone": 1.8494366586677846,
+      "primed_with_training_text": 1.610162445695323
+    },
+    "bz2 -9": {
+      "alone": 2.0707838606945645,
+      "primed_with_training_text": 2.0702414829748705
+    },
+    "gzip -9": {
+      "alone": 2.6721380208565644,
+      "primed_with_training_text": 2.658321662102249
+    },
+    "lzma -9e, 64 MB dictionary": {
+      "alone": 2.265097815323955,
+      "primed_with_training_text": 1.885918696866163
+    },
+    "zstd -22 --long=27": {
+      "alone": 2.292630621147379,
+      "primed_with_training_text": 1.8960811425614859
+    }
+  },
+  "corpus": "WikiText-2 raw: counts and network on train; calibration and mixer on the first half of valid; measured on the second half",
+  "experts alone (calibrated)": {
+    "d2": 2.7514591549363967,
+    "d3": 2.403538951670342,
+    "d4": 2.5184332429319936,
+    "d5": 3.0245206133022333,
+    "d6": 3.702494882016723,
+    "dw1": 2.5348289261397796,
+    "dw2": 4.986066172751846,
+    "m4": 3.240817541266779,
+    "m8": 3.238581613501152,
+    "nn": 1.7890112005314949,
+    "o0": 7.6367280366363675,
+    "o1": 4.573296732950826,
+    "o2": 3.1801539356996162,
+    "o3": 2.35163128302332,
+    "o4": 1.9807462120788597,
+    "o5": 2.0525976441572475,
+    "o6": 2.5141822723181253,
+    "o8": 4.180035740731977,
+    "w1": 3.0266728914080763,
+    "w2": 4.422473152780408
+  },
+  "fit_seconds_before_mixer": 67.9,
+  "neural_expert": {
+    "batch": 64,
+    "bytes_seen": 47430400,
+    "embed": 64,
+    "hidden": 384,
+    "layers": 1,
+    "lr": 0.002,
+    "lr_floor": 0.0002,
+    "parameters": 806144,
+    "seconds": 2400.1,
+    "seed": 0,
+    "steps": 7411,
+    "steps_per_batch": 100,
+    "train_bits_per_byte_running": 1.8517269062707913,
+    "trained_on": "WikiText-2 raw, training split only",
+    "weights_sha256": "b5ef1acf843941127509fe66869a22df854800fb5eb11cc13e2a6e6cacaf17e6"
+  },
+  "training-text counts only": {
+    "bits_per_byte": 1.5824067689446242,
+    "bits_per_byte_on_fit_half": 1.5443154387276055,
+    "mixer_seconds": 29.9
+  },
+  "without read-so-far counts": {
+    "bits_per_byte": 1.4972359680054483,
+    "bits_per_byte_on_fit_half": 1.4662917611526718,
+    "mixer_seconds": 38.5
+  },
+  "without the match experts": {
+    "bits_per_byte": 1.5031126382031337,
+    "bits_per_byte_on_fit_half": 1.4736771533657849,
+    "mixer_seconds": 46.6
+  },
+  "without the neural expert": {
+    "bits_per_byte": 1.4983034899173606,
+    "bits_per_byte_on_fit_half": 1.4722151785996678,
+    "mixer_seconds": 42.1
+  },
+  "without the word experts": {
+    "bits_per_byte": 1.4966631957308951,
+    "bits_per_byte_on_fit_half": 1.4710100317714336,
+    "mixer_seconds": 43.7
+  }
+}

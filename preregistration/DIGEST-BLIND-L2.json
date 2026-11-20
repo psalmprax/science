@@ -1,0 +1,7 @@
+{
+ "preregistration": "PREREG-BLIND-L2-2026-11",
+ "sha256": {
+  "preregistration/PREREG-BLIND-L2-2026-11.md": "e210afce4c10c36f6736710f8bce4afe290fecfd3fabec7b65beacf7566a8910",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627"
+ }
+}

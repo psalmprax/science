@@ -18,6 +18,7 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -39,7 +40,7 @@ from apedp_dyn.grammar.candidate_ir import (
 _VENDORED_LYNX = Path(__file__).resolve().parents[2] / "data" / "market" / "lynx_maclulich.csv"
 
 
-def load_lynx(path=None):
+def load_lynx(path: str | Path | None=None) -> tuple[np.ndarray, np.ndarray]:
     """Load the MacLulich lynx series.
 
     The series is vendored in-repo (data/market/lynx_maclulich.csv, provenance in
@@ -55,7 +56,7 @@ def load_lynx(path=None):
     return np.array(t), np.array(y)
 
 
-def run_lynx(split_year: float = 1878.0, bootstrap: bool = True):
+def run_lynx(split_year: float = 1878.0, bootstrap: bool = True) -> tuple[Any, list[ScoredCandidate]]:
     t, y = load_lynx()
     yl = np.log(y)
     tr = t < split_year
@@ -64,7 +65,7 @@ def run_lynx(split_year: float = 1878.0, bootstrap: bool = True):
     ns = float(0.02 * obs_rms)
     o = np.ones_like
 
-    def mk(cid, terms, X_tr, X_ho):
+    def mk(cid: str, terms: tuple[str, ...], X_tr: np.ndarray, X_ho: np.ndarray) -> ScoredCandidate:
         w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
         rh = y_ho - X_ho @ w
         rm = float(np.sqrt(np.mean(rh ** 2)))
@@ -117,7 +118,7 @@ def run_lynx(split_year: float = 1878.0, bootstrap: bool = True):
     scored.append(ScoredCandidate(ct, {"gate4_status": g4t, "data_origin": DataOrigin.REAL_OBSERVATIONAL},
                                   train_loss=float(np.mean((y_tr - Xt_tr @ wt) ** 2)),
                                   holdout_rmse=float(np.sqrt(np.mean(rht ** 2)))))
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     # Align residual lengths (AR(1) lag drops one holdout point)
     n_min = min(len(s.provenance["gate4_status"]["holdout_residuals"]) for s in ranked[:2])
     r_best = ranked[0].provenance["gate4_status"]["holdout_residuals"][-n_min:]
@@ -131,12 +132,12 @@ def run_lynx(split_year: float = 1878.0, bootstrap: bool = True):
     return adj, scored
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("LYNX SANDBOX (REAL DATA 1821-1934): cycle discovery, split 1878")
     print("=" * 64)
     adj, scored = run_lynx()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:10s} holdout RMSE={s.holdout_rmse:.4f}")
     print(f"  verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None} "

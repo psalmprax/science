@@ -1,0 +1,95 @@
+{
+  "patent_id": "US20250116981A1",
+  "source": "https://patents.google.com/patent/US20250116981A1/en",
+  "retrieved_utc": "2026-11-01T01:35:13+00:00",
+  "http_status": 200,
+  "bytes": 830148,
+  "html_sha256": "0c684153b1a6e808974633db777effc354b02762758687a82218e24310b9f5a1",
+  "jurisdiction": "US",
+  "title": "Foodstuff sensing appliance",
+  "abstract": "Abstract An appliance includes a cabinet, an interior cavity defined by the cabinet, a storage compartment positioned within the interior cavity that supports a temporarily stored item, a temperature control system, a gas detector, and a scanning apparatus that has at least one camera and is configured to record and store image data associated with a user's preference. The scanning apparatus conducts first and second data capturing phases. A difference between first and second data sets is analyzed to produce a current inventory manifest. The appliance also includes a weight scale and a controller. The controller evaluates a location of the temporarily stored item based on the image data and determines remaining contents of the temporarily stored item based on data from the weight scale. The controller determines a preferred air velocity for the storage compartment based upon data collected from the gas detector and the weight scale.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1 . An appliance, comprising: a cabinet; an interior cavity defined by the cabinet; a storage compartment positioned within the interior cavity and supporting a temporarily stored item; a temperature control system; a gas detector; a scanning apparatus having at least one camera and configured to record and store image data associated with a user's preference, the scanning apparatus conducting a first data capturing phase and a second data capturing phase, wherein a difference between a first data set and a second data set is analyzed to produce a current inventory manifest; a weight scale; and a controller, wherein the controller evaluates a location of the temporarily stored item based on the image data and determines remaining contents of the temporarily stored item based on data from the weight scale, and wherein the controller determines a preferred air velocity for the storage compartment based upon data collected from the gas detector and the weight scale."
+    },
+    {
+      "num": "2",
+      "text": "2 . The appliance of claim 1 , wherein the preferred air velocity for the storage compartment is provided by monitoring a speed of a fan that is associated with the temperature control system."
+    },
+    {
+      "num": "3",
+      "text": "3 . The appliance of claim 1 , wherein the preferred air velocity for the storage compartment is provided by monitoring at least one parameter chosen from a voltage and a current provided to a fan that is associated with the temperature control system."
+    },
+    {
+      "num": "4",
+      "text": "4 . The appliance of claim 1 , wherein the gas detector and the weight scale each monitor the storage compartment."
+    },
+    {
+      "num": "5",
+      "text": "5 . The appliance of claim 1 , further comprising: a spectrometer, wherein data collected from the spectrometer is employed by the controller in determining the preferred air velocity for the storage compartment."
+    },
+    {
+      "num": "6",
+      "text": "6 . The appliance of claim 1 , wherein data collected from the scanning apparatus is employed by the controller in determining the preferred air velocity for the storage compartment."
+    },
+    {
+      "num": "7",
+      "text": "7 . A refrigerator appliance, comprising: a temperature control system; a gas detector; a weight scale; a scanning apparatus having at least one camera and configured to record and store image data, the scanning apparatus conducting a first data capturing phase and a second data capturing phase, wherein a difference between a first data set and a second data set is analyzed to produce a current inventory manifest; a controller configured to evaluate a location of at least one temporarily stored item based on the image data and determine remaining contents of the temporarily stored item based on data from the weight scale, wherein the controller determines a preferred air velocity for a compartment based upon data collected from the gas detector and the weight scale; an air sensor that monitors a region of the compartment that is proximate to the at least one temporarily stored item; and a spectrometer that obtains a measured value of the at least one temporarily stored item, wherein the measured value of the at least one temporarily stored item is compared to a reference value for the at least one temporarily stored item, and wherein data collected from the camera, the air sensor, and the spectrometer is utilized to determine a preferred storage parameter."
+    },
+    {
+      "num": "8",
+      "text": "8 . The refrigerator appliance of claim 7 , wherein the air sensor detects fumes indicative of a spoiled food item."
+    },
+    {
+      "num": "9",
+      "text": "9 . The refrigerator appliance of claim 7 , wherein the scanning apparatus collects a first set of data during a first data capturing phase and the scanning apparatus collects a second set of data during a second data capturing phase, and wherein the second set of data is analyzed to determine a difference between the first set of data and the second set of data."
+    },
+    {
+      "num": "10",
+      "text": "10 . The refrigerator appliance of claim 9 , wherein the scanning apparatus determines a change in a quantity of the at least one temporarily stored item as a result of the difference between the first set of data and the second set of data."
+    },
+    {
+      "num": "11",
+      "text": "11 . The refrigerator appliance of claim 7 , wherein the scanning apparatus determines an identity of the at least one temporarily stored item based upon the image data of the at least one temporarily stored item."
+    },
+    {
+      "num": "12",
+      "text": "12 . The refrigerator appliance of claim 7 , further comprising: a cabinet, wherein the scanning apparatus is disposed on an exterior of the cabinet."
+    },
+    {
+      "num": "13",
+      "text": "13 . The refrigerator appliance of claim 7 , further comprising: a door, wherein the scanning apparatus activates upon closure of the door."
+    },
+    {
+      "num": "14",
+      "text": "14 . The refrigerator appliance of claim 12 , further comprising: lighting disposed within the cabinet which is in communication with the scanning apparatus and configured to activate when the scanning apparatus is recording image data."
+    },
+    {
+      "num": "15",
+      "text": "15 . The refrigerator appliance of claim 7 , wherein the scanning apparatus is integrated with a grocery retail store such that the current inventory manifest can be compared with an inventory of the grocery retail store."
+    },
+    {
+      "num": "16",
+      "text": "16 . The refrigerator appliance of claim 15 , wherein the current inventory manifest can be compared with data from the grocery retail store to formulate a shopping list for a user based upon at least one of retail store location, relative prices, and dates of sales."
+    },
+    {
+      "num": "17",
+      "text": "17 . The refrigerator appliance of claim 7 , wherein the scanning apparatus is in electrical communication with a portable computing device."
+    },
+    {
+      "num": "18",
+      "text": "18 . The refrigerator appliance of claim 17 , wherein the current inventory manifest can be used to generate a shopping list."
+    },
+    {
+      "num": "19",
+      "text": "19 . The refrigerator appliance of claim 7 , wherein the current inventory manifest can include information concerning at least one of: a remaining amount of the at least one temporarily stored item; a life span of the at least one temporarily stored item; and a date that the at least one temporarily stored item was disposed within said refrigerator appliance."
+    },
+    {
+      "num": "20",
+      "text": "20 . The refrigerator appliance of claim 7 , wherein the at least one camera is configured to utilize imaging techniques including at least one of bar code scanning, thermal scanning, infrared scanning, laser scanning, sonic or acoustical scanning, and echo location scanning."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "perishable food freshness prediction"
+}

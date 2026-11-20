@@ -1,0 +1,8 @@
+{
+ "preregistration": "PREREG-CRYPTO-PIT-2026-11",
+ "sha256": {
+  "preregistration/PREREG-CRYPTO-PIT-2026-11.md": "7357ba5e0bb3b41071de3abed4db2f055635f85bbb71150f53fe2fd1bb0c8e85",
+  "scripts/build_point_in_time_crypto_panel.py": "4d0b97a1abf0d9bbceb5df63349177f9f124abbe0b9da622755877a4fdc227d8",
+  "scripts/run_prereg_crypto_pit.py": "098d32fde8f957e268a01d305a824da6c18751e156cbaf6b934d8d1356ded573"
+ }
+}

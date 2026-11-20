@@ -1,0 +1,81 @@
+{
+ "by_noise": {
+  "0.01": {
+   "contrast_no_survivor": 0,
+   "contrast_truth_in_class": 40,
+   "contrast_unique_truth": 32,
+   "contrast_wrong_law_alone": 0,
+   "median_rows_read": {
+    "contrast": 60.0,
+    "random": 236.0
+   },
+   "paired_only_contrast": 1,
+   "paired_only_random": 0,
+   "paired_sign_test_p": 0.5,
+   "random_no_survivor": 2,
+   "random_truth_in_class": 38,
+   "random_unique_truth": 31,
+   "random_wrong_law_alone": 0,
+   "referee_promoted_truth": 15,
+   "runs": 40,
+   "truth_among_candidates": 40,
+   "truth_removed_equivalent_class": 0,
+   "truth_removed_no_survivor": 30,
+   "truth_removed_wrong_law_alone": 10
+  },
+  "0.05": {
+   "contrast_no_survivor": 2,
+   "contrast_truth_in_class": 38,
+   "contrast_unique_truth": 31,
+   "contrast_wrong_law_alone": 0,
+   "median_rows_read": {
+    "contrast": 60.0,
+    "random": 209.0
+   },
+   "paired_only_contrast": 8,
+   "paired_only_random": 0,
+   "paired_sign_test_p": 0.00390625,
+   "random_no_survivor": 1,
+   "random_truth_in_class": 39,
+   "random_unique_truth": 23,
+   "random_wrong_law_alone": 0,
+   "referee_promoted_truth": 13,
+   "runs": 40,
+   "truth_among_candidates": 40,
+   "truth_removed_equivalent_class": 0,
+   "truth_removed_no_survivor": 31,
+   "truth_removed_wrong_law_alone": 9
+  }
+ },
+ "frozen": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "preregistration/PREREG-CONTRAST-2026-11.md": "e255d46adbc9c4323cd526c70f9813bee8405bea6903c8e4804bc9c1f56a8a87",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627",
+  "scripts/run_prereg_contrast.py": "257c84413d9a2656946ca38e10c6bbdfbc96ed12ceabf648b08fc207fe106cd6",
+  "scripts/study_contrast_confirmation_dev.py": "7850993e52339ce675776f08da292e950051e95c7aaa91806600cc0c193dd8f3"
+ },
+ "preregistration": "PREREG-CONTRAST-2026-11",
+ "summary": {
+  "contrast_no_survivor": 2,
+  "contrast_truth_in_class": 78,
+  "contrast_unique_truth": 63,
+  "contrast_wrong_law_alone": 0,
+  "median_rows_read": {
+   "contrast": 60.0,
+   "random": 222.5
+  },
+  "paired_only_contrast": 9,
+  "paired_only_random": 0,
+  "paired_sign_test_p": 0.001953125,
+  "random_no_survivor": 3,
+  "random_truth_in_class": 77,
+  "random_unique_truth": 54,
+  "random_wrong_law_alone": 0,
+  "referee_promoted_truth": 28,
+  "runs": 80,
+  "truth_among_candidates": 80,
+  "truth_removed_equivalent_class": 0,
+  "truth_removed_no_survivor": 61,
+  "truth_removed_wrong_law_alone": 19
+ }
+}

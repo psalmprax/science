@@ -40,6 +40,19 @@ from typing import Any
 
 logger = logging.getLogger("apedp_dyn.notebook_adapter")
 
+# Where each hosted platform keeps its files. They are module-level names, and
+# every use below goes through them, so that a test can point them at a
+# temporary directory. Written inline they made the tests that simulate Kaggle,
+# Colab or Databricks create /kaggle, /content, /local_disk0 and
+# /databricks/driver on whatever machine ran the suite as root -- and once
+# /kaggle/working existed, detect_platform() reported every later run on that
+# machine as Kaggle.
+COLAB_ROOT = Path("/content")
+KAGGLE_ROOT = Path("/kaggle")
+DATABRICKS_SCRATCH_ROOT = Path("/local_disk0")
+DATABRICKS_DBFS_FILESTORE = Path("/dbfs/FileStore")
+DATABRICKS_DRIVER_ROOT = Path("/databricks/driver")
+
 
 class PlatformType(str, enum.Enum):
     """Runtime platform classification."""
@@ -159,13 +172,13 @@ def detect_platform() -> PlatformType:
         return PlatformType.COLAB
     if bool(os.environ.get("COLAB_GPU")) or bool(os.environ.get("GCS_READ_CACHE")):
         return PlatformType.COLAB
-    if os.path.exists("/content") and os.path.isdir("/content/sample_data"):
+    if COLAB_ROOT.exists() and (COLAB_ROOT / "sample_data").is_dir():
         return PlatformType.COLAB
 
     # 2. Kaggle
     if bool(os.environ.get("KAGGLE_KERNEL_RUN_TYPE")):
         return PlatformType.KAGGLE
-    if os.path.exists("/kaggle/working") and os.path.isdir("/kaggle/working"):
+    if (KAGGLE_ROOT / "working").is_dir():
         return PlatformType.KAGGLE
 
     # 3. Databricks (notebooks and clusters set DATABRICKS_RUNTIME_VERSION;
@@ -192,7 +205,7 @@ def detect_platform() -> PlatformType:
 def detect_notebook() -> bool:
     """Return True if executing within an interactive Jupyter or IPython notebook kernel."""
     try:
-        import IPython  # type: ignore[import-untyped]
+        import IPython
         shell = IPython.get_ipython()
         if shell is None:
             return False
@@ -238,7 +251,7 @@ def mount_google_drive(mount_point: str = "/content/drive", force_remount: bool 
         return True
 
     try:
-        from google.colab import drive  # type: ignore[import-untyped]
+        from google.colab import drive
         drive.mount(mount_point, force_remount=force_remount)
         return drive_root.exists()
     except Exception as exc:  # noqa: BLE001 — gdrive mounts raise heterogeneous colab/jupyter errors; bound and reported
@@ -249,7 +262,7 @@ def mount_google_drive(mount_point: str = "/content/drive", force_remount: bool 
 def check_rust_kernel_available() -> bool:
     """Check if the native `apedp_kernel` PyO3 extension is importable."""
     try:
-        import apedp_kernel  # type: ignore[import-not-found]
+        import apedp_kernel
         return bool(apedp_kernel is not None)
     except (ImportError, ModuleNotFoundError):
         return False
@@ -338,15 +351,15 @@ def configure_storage(
         t_dir = Path(os.environ["APEDP_TEMP_STORAGE"]).expanduser().resolve()
         t_dir.mkdir(parents=True, exist_ok=True)
     elif platform == PlatformType.COLAB:
-        colab_temp = Path("/content/apedp_temp")
+        colab_temp = COLAB_ROOT / "apedp_temp"
         system_temp = Path(tempfile.gettempdir()) / "apedp" / "temp"
         t_dir = _safe_mkdir_or_fallback(colab_temp, system_temp)
     elif platform == PlatformType.KAGGLE:
-        kaggle_temp = Path("/kaggle/temp")
+        kaggle_temp = KAGGLE_ROOT / "temp"
         system_temp = Path(tempfile.gettempdir()) / "apedp" / "temp"
         t_dir = _safe_mkdir_or_fallback(kaggle_temp, system_temp)
     elif platform == PlatformType.DATABRICKS:
-        driver_scratch = Path("/local_disk0/apedp_temp")
+        driver_scratch = DATABRICKS_SCRATCH_ROOT / "apedp_temp"
         system_temp = Path(tempfile.gettempdir()) / "apedp" / "temp"
         t_dir = _safe_mkdir_or_fallback(driver_scratch, system_temp)
     else:
@@ -377,7 +390,7 @@ def configure_storage(
             p_dir = _safe_mkdir_or_fallback(drive_storage, system_persist)
             tier = StorageTier.DRIVE_MOUNTED
         else:
-            colab_storage = Path("/content/apedp_storage")
+            colab_storage = COLAB_ROOT / "apedp_storage"
             system_persist = Path(tempfile.gettempdir()) / "apedp" / "storage"
             p_dir = _safe_mkdir_or_fallback(colab_storage, system_persist)
             tier = StorageTier.EPHEMERAL
@@ -390,7 +403,7 @@ def configure_storage(
                 "call `mount_google_drive()` or set `APEDP_STORAGE_DIR` to a persistent path."
             )
     elif platform == PlatformType.KAGGLE:
-        kaggle_storage = Path("/kaggle/working/apedp_storage")
+        kaggle_storage = KAGGLE_ROOT / "working" / "apedp_storage"
         system_persist = Path(tempfile.gettempdir()) / "apedp" / "storage"
         p_dir = _safe_mkdir_or_fallback(kaggle_storage, system_persist)
         tier = StorageTier.EPHEMERAL
@@ -400,13 +413,13 @@ def configure_storage(
             "uncommitted holdout ledgers will be erased."
         )
     elif platform == PlatformType.DATABRICKS:
-        dbfs_root = Path("/dbfs/FileStore")
+        dbfs_root = DATABRICKS_DBFS_FILESTORE
         system_persist = Path(tempfile.gettempdir()) / "apedp" / "storage"
         if dbfs_root.is_dir():
             p_dir = _safe_mkdir_or_fallback(dbfs_root / "apedp_storage", system_persist)
             tier = StorageTier.PERSISTENT
         else:
-            driver_storage = Path("/databricks/driver/apedp_storage")
+            driver_storage = DATABRICKS_DRIVER_ROOT / "apedp_storage"
             p_dir = _safe_mkdir_or_fallback(driver_storage, system_persist)
             tier = StorageTier.EPHEMERAL
             warnings.append(
@@ -608,7 +621,7 @@ def init_environment(
     # System memory detection
     mem_gb: float | None = None
     try:
-        import psutil  # type: ignore[import-untyped]
+        import psutil
         mem_gb = psutil.virtual_memory().total / (1024 ** 3)
     except Exception as exc:  # noqa: BLE001 — optional psutil; fallback reads /proc/meminfo below
         logger.debug("psutil unavailable (%r); falling back to /proc/meminfo", exc)

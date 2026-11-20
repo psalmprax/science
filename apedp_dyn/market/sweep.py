@@ -14,8 +14,11 @@ import numpy as np
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
-from apedp_dyn.epistemic.adjudicate import DataOrigin
-from apedp_dyn.market.assets import compute_strictly_causal_features, load_series_with_dates
+from apedp_dyn.market.assets import (
+    asset_data_origin,
+    compute_strictly_causal_features,
+    load_series_with_dates,
+)
 from apedp_dyn.market.windows import (
     WindowSpec,
     extensive_rolling_windows,
@@ -124,7 +127,7 @@ def execute_window_discovery(
             dimensions=dim_map,
             target_dimension=Dimension(),
             train_ratio=train_ratio,
-            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            data_origin=asset_data_origin(asset),
             bootstrap=bootstrap,
             seed=seed,
         )
@@ -151,7 +154,7 @@ def execute_window_discovery(
             dimensions=dim_map,
             target_dimension=Dimension(),
             train_ratio=train_ratio,
-            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            data_origin=asset_data_origin(asset),
             bootstrap=bootstrap,
             seed=seed,
         )

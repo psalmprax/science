@@ -282,9 +282,7 @@ pub fn discover_point_symmetries(
     // jacobi_eigen (itself scale-normalized since the jay fix) at unit
     // diagonal makes eps-relative accuracy meaningful at every stratum, and
     // the relative gate below then has a well-defined eps floor.
-    let diag_d: Vec<f64> = (0..k)
-        .map(|i| gram[i * k + i].sqrt().max(1e-300))
-        .collect();
+    let diag_d: Vec<f64> = (0..k).map(|i| gram[i * k + i].sqrt().max(1e-300)).collect();
     let mut corr = vec![0.0f64; k * k];
     for i in 0..k {
         for j in 0..k {
@@ -293,7 +291,11 @@ pub fn discover_point_symmetries(
             // nullspace); a zero product means both source entries are
             // structurally zero, so the normalized entry is 0 by construction.
             let div = diag_d[i] * diag_d[j];
-            corr[i * k + j] = if div > 0.0 { gram[i * k + j] / div } else { 0.0 };
+            corr[i * k + j] = if div > 0.0 {
+                gram[i * k + j] / div
+            } else {
+                0.0
+            };
         }
     }
     let (evals, evecs) = crate::rime::implicit::jacobi_eigen(&corr, k, 150, 1e-15);
@@ -318,9 +320,7 @@ pub fn discover_point_symmetries(
     let mut generators = Vec::new();
     let mut max_res = 0.0f64;
     for &idx in &null_idx {
-        let c: Vec<f64> = (0..k)
-            .map(|j| evecs[j * k + idx] / diag_d[j])
-            .collect();
+        let c: Vec<f64> = (0..k).map(|j| evecs[j * k + idx] / diag_d[j]).collect();
         let mut res_sq = 0.0f64;
         for r in &rows {
             let d: f64 = r.iter().zip(c.iter()).map(|(a, b)| a * b).sum();
@@ -450,13 +450,18 @@ mod tests {
         let f_scaled = [(0usize, 1usize, 1e6f64)];
 
         let res_unit = discover_point_symmetries(&f_unit, &LieConfig::default()).unwrap();
-        assert!(res_unit.nullity >= 1, "unscaled nullity: {}", res_unit.nullity);
+        assert!(
+            res_unit.nullity >= 1,
+            "unscaled nullity: {}",
+            res_unit.nullity
+        );
 
         let res_scaled = discover_point_symmetries(&f_scaled, &LieConfig::default()).unwrap();
         assert!(
             res_scaled.nullity >= 1,
             "scaled system lost its genuine symmetry (nullity {}, residual {})",
-            res_scaled.nullity, res_scaled.max_basis_residual
+            res_scaled.nullity,
+            res_scaled.max_basis_residual
         );
         // Residual is measured against the determining equations, which
         // carry the ODE's O(1e6) coefficient scale — the invariant is that
@@ -464,12 +469,11 @@ mod tests {
         // scale-free. (The absolute <1e-6 demand would reject a correct
         // basis; scaling by 1e6 scales the residual by the same factor.)
         assert!(
-            res_scaled.max_basis_residual
-                <= 2.0 * 1e6 * res_unit.max_basis_residual,
+            res_scaled.max_basis_residual <= 2.0 * 1e6 * res_unit.max_basis_residual,
             "scaled basis residual {} vs {} x unit residual {}",
-            res_scaled.max_basis_residual, 2.0, res_unit.max_basis_residual
+            res_scaled.max_basis_residual,
+            2.0,
+            res_unit.max_basis_residual
         );
     }
 }
-
-

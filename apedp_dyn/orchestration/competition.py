@@ -13,6 +13,7 @@ invented axes, matching the dispatcher's no-invented-axis rule.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -34,6 +35,7 @@ DYNAMIC_IDS: tuple[str, ...] = ("rime", "ode", "pde", "hawkes")
 
 # Array proposers fit on the same (X, Y) training split as the L2 engines.
 PROPOSER_IDS: tuple[str, ...] = (
+    "pysr",
     "sindy",
     "basis_regression",
     "reservoir",
@@ -48,6 +50,14 @@ PROPOSER_IDS: tuple[str, ...] = (
     "solenoidal_fluid",
     "compartmental_sir",
 )
+
+# Engines kept for replication and no longer run by default. Each entry says why,
+# with the preregistered result behind the decision.
+RETIRED_ENGINES: dict[str, str] = {
+    "rime_ad": ("retired 2026-11-19: recovered 11 of 532 SRBench runs (2.1 %) and timed out on 62 % "
+                "(PREREG-SRBENCH-BASELINE-2026-11); PySR is the main search (PREREG-SRBENCH-EXTERNAL-2026-11). "
+                "Pass include_retired=True to run it."),
+}
 
 ENGINE_IDS: tuple[str, ...] = (
     "l2_single_term",
@@ -170,7 +180,7 @@ def _proposer_result(engine: str, proposals: Any) -> EngineResult:
     )
 
 
-def _train_matrix(X: Mapping[str, np.ndarray], Y: np.ndarray, train_ratio: float):
+def _train_matrix(X: Mapping[str, np.ndarray], Y: np.ndarray, train_ratio: float) -> Any:
     names = list(X)
     n = len(Y)
     cut = max(1, int(n * train_ratio))
@@ -179,7 +189,7 @@ def _train_matrix(X: Mapping[str, np.ndarray], Y: np.ndarray, train_ratio: float
     return names, M, y
 
 
-def _sindy(X, Y, train_ratio) -> EngineResult:
+def _sindy(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.sindy_proposer import SINDyProposer
 
     names, M, y = _train_matrix(X, Y, train_ratio)
@@ -188,7 +198,7 @@ def _sindy(X, Y, train_ratio) -> EngineResult:
     return _proposer_result("sindy", props)
 
 
-def _basis(X, Y, train_ratio) -> EngineResult:
+def _basis(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.basis_regression_proposer import (
         BasisRegressionProposer,
     )
@@ -199,7 +209,7 @@ def _basis(X, Y, train_ratio) -> EngineResult:
     return _proposer_result("basis_regression", props)
 
 
-def _reservoir(X, Y, train_ratio) -> EngineResult:
+def _reservoir(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.reservoir_proposer import ReservoirProposer
 
     names, M, y = _train_matrix(X, Y, train_ratio)
@@ -225,7 +235,7 @@ def _frame_proposer(
     return _proposer_result(engine, props)
 
 
-def _distributed_lag(X, Y, train_ratio):
+def _distributed_lag(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.distributed_lag_interaction_proposer import (
         DistributedLagInteractionProposer,
     )
@@ -233,7 +243,7 @@ def _distributed_lag(X, Y, train_ratio):
                            DistributedLagInteractionProposer, X, Y, train_ratio)
 
 
-def _regime_switching(X, Y, train_ratio):
+def _regime_switching(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.regime_switching_proposer import (
         RegimeSwitchingProposer,
     )
@@ -241,7 +251,7 @@ def _regime_switching(X, Y, train_ratio):
                            RegimeSwitchingProposer, X, Y, train_ratio)
 
 
-def _ncm(X, Y, train_ratio):
+def _ncm(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.ncm_structural_proposer import (
         NCMStructuralProposer,
     )
@@ -249,7 +259,21 @@ def _ncm(X, Y, train_ratio):
                            NCMStructuralProposer, X, Y, train_ratio)
 
 
-def _rime_ad(X, Y, train_ratio):
+def _pysr(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
+    """The main search. Runs when PySR is installed; its budget is ``APEDP_PYSR_BUDGET_SECONDS`` (default 60)."""
+    from apedp_dyn.proposers.pysr_proposer import PySRProposer, PySRUnavailableError
+    names, M, y = _train_matrix(X, Y, train_ratio)
+    df = pd.DataFrame(M, columns=names)
+    df["target"] = y
+    budget = float(os.environ.get("APEDP_PYSR_BUDGET_SECONDS", "60"))
+    try:
+        props = PySRProposer(budget_seconds=budget, target_col="target").fit_and_propose(df)
+    except PySRUnavailableError as exc:
+        return EngineResult(engine="pysr", status=NOT_APPLICABLE, reason=str(exc))
+    return _proposer_result("pysr", props)
+
+
+def _rime_ad(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
     names, M, y = _train_matrix(X, Y, train_ratio)
     df = pd.DataFrame(M, columns=names)
@@ -258,7 +282,7 @@ def _rime_ad(X, Y, train_ratio):
     return _proposer_result("rime_ad", props)
 
 
-def _invariant_transfer(X, Y, train_ratio):
+def _invariant_transfer(X: Any, Y: Any, train_ratio: Any) -> Any:
     from apedp_dyn.proposers.invariant_transfer_proposer import (
         InvariantTransferProposer,
     )
@@ -286,7 +310,7 @@ def _named(
     return _proposer_result(engine, run(df))
 
 
-def _sparse_microstructure(X, Y, train_ratio) -> EngineResult:
+def _sparse_microstructure(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.sparse_microstructure_proposer import (
         SparseMicrostructureProposer,
     )
@@ -295,7 +319,7 @@ def _sparse_microstructure(X, Y, train_ratio) -> EngineResult:
                       {"train": df}, target_col="price"))
 
 
-def _order_book(X, Y, train_ratio) -> EngineResult:
+def _order_book(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.resiliency_proposer import (
         OrderBookResiliencyProposer,
     )
@@ -304,21 +328,21 @@ def _order_book(X, Y, train_ratio) -> EngineResult:
                       {"train": df}, target_col="price"))
 
 
-def _hamiltonian(X, Y, train_ratio) -> EngineResult:
+def _hamiltonian(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.stem_proposers import HamiltonianProposer
     return _named("hamiltonian", X, Y, train_ratio,
                   lambda df: HamiltonianProposer().fit_and_propose(
                       df, q_col="q", p_col="p"))
 
 
-def _solenoidal(X, Y, train_ratio) -> EngineResult:
+def _solenoidal(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.stem_proposers import SolenoidalFluidProposer
     return _named("solenoidal_fluid", X, Y, train_ratio,
                   lambda df: SolenoidalFluidProposer().fit_and_propose(
                       df, x_col="x", y_col="y", u_col="u", v_col="v"))
 
 
-def _sir(X, Y, train_ratio) -> EngineResult:
+def _sir(X: Any, Y: Any, train_ratio: Any) -> EngineResult:
     from apedp_dyn.proposers.stem_proposers import CompartmentalSirProposer
     return _named("compartmental_sir", X, Y, train_ratio,
                   lambda df: CompartmentalSirProposer().fit_and_propose(
@@ -335,6 +359,7 @@ _RUNNERS: dict[str, Callable[..., EngineResult]] = {
     "regime_switching": _regime_switching,
     "ncm_structural": _ncm,
     "rime_ad": _rime_ad,
+    "pysr": _pysr,
     "invariant_transfer": _invariant_transfer,
     "sparse_microstructure": _sparse_microstructure,
     "order_book_resiliency": _order_book,
@@ -480,8 +505,13 @@ def run_competition(
     train_ratio: float = 0.6,
     not_applicable: Mapping[str, str] | None = None,
     named_columns: Mapping[str, np.ndarray] | None = None,
+    include_retired: bool = False,
 ) -> list[EngineResult]:
     """Run every engine on the same data and return each result, unranked.
+
+    A retired engine (``RETIRED_ENGINES``) keeps its record, marked
+    ``NOT_APPLICABLE`` with the reason, and is not executed unless
+    ``include_retired`` is set.
 
     ``not_applicable`` maps an engine id to the reason it cannot run on this
     data. Those engines are recorded as ``NOT_APPLICABLE`` and not executed.
@@ -496,6 +526,9 @@ def run_competition(
         if engine in skips:
             results.append(EngineResult(engine=engine, status=NOT_APPLICABLE,
                                         reason=skips[engine]))
+            continue
+        if engine in RETIRED_ENGINES and not include_retired:
+            results.append(EngineResult(engine=engine, status=NOT_APPLICABLE, reason=RETIRED_ENGINES[engine]))
             continue
         if engine in DYNAMIC_IDS:
             # Placeholder: upload path replaces it with the sieve-routed result.

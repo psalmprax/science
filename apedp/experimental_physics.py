@@ -16,28 +16,54 @@ class TeslaInventionSimulator:
     @staticmethod
     def tesla_coil_analysis(primary_turns: int = 10, secondary_turns: int = 1000,
                            primary_capacitance_F: float = 1e-8,
-                           coupling_k: float = 0.2) -> dict[str, Any]:
+                           coupling_k: float = 0.2,
+                           primary_voltage_V: float = 1000.0) -> dict[str, Any]:
         """Analyze Tesla coil resonant transformer."""
+        if (
+            primary_turns <= 0
+            or secondary_turns <= 0
+            or not math.isfinite(primary_capacitance_F)
+            or primary_capacitance_F <= 0
+            or not math.isfinite(coupling_k)
+            or not (0.0 <= coupling_k <= 1.0)
+            or not math.isfinite(primary_voltage_V)
+        ):
+            raise ValueError("coil parameters must be finite positive numbers with coupling_k in [0, 1]")
         L1 = primary_turns**2 * 1e-6
         L2 = secondary_turns**2 * 1e-6
         f_res = 1 / (2 * math.pi * math.sqrt(L1 * primary_capacitance_F))
-        voltage_gain = coupling_k * math.sqrt(L2 / L1) * (secondary_turns / primary_turns)
+        voltage_gain = coupling_k * math.sqrt(L2 / L1)
         return {
             'resonant_frequency_hz': f_res,
             'primary_inductance_H': L1,
             'secondary_inductance_H': L2,
             'theoretical_voltage_gain': voltage_gain,
-            'output_voltage_estimate_V': 1000 * voltage_gain,
+            'output_voltage_estimate_V': primary_voltage_V * voltage_gain,
+            'primary_voltage_V': primary_voltage_V,
             'notes': 'Resonant transformer - well-established theory',
+            'assumptions': ['primary voltage is an input, not a hidden constant',
+                            'coupling_k is assumed, not measured',
+                            'gain follows ideal coupled ratio k * sqrt(L2 / L1)'],
+            'evidence': 'closed_form_textbook',
+            'basis': 'closed_form',
             'feasibility': 'high',
             'physics_basis': 'established'
         }
     
     @staticmethod
-    def polyphase_induction_motor(poles: int = 4, frequency_hz: float = 60) -> dict[str, Any]:
+    def polyphase_induction_motor(poles: int = 4, frequency_hz: float = 60,
+                                  slip: float = 0.02) -> dict[str, Any]:
         """Simulate polyphase induction motor (Tesla's AC motor)."""
+        if (
+            poles < 2
+            or poles % 2 != 0
+            or not math.isfinite(frequency_hz)
+            or frequency_hz <= 0
+            or not math.isfinite(slip)
+            or not (0.0 <= slip <= 1.0)
+        ):
+            raise ValueError("poles must be an even integer >= 2, frequency_hz > 0, and slip in [0, 1]")
         synchronous_speed_rpm = 120 * frequency_hz / poles
-        slip = 0.02
         rotor_speed_rpm = synchronous_speed_rpm * (1 - slip)
         return {
             'synchronous_speed_rpm': synchronous_speed_rpm,
@@ -47,6 +73,10 @@ class TeslaInventionSimulator:
             'frequency_hz': frequency_hz,
             'efficiency_estimate': 0.9,
             'notes': 'Rotating magnetic field principle - fully validated',
+            'assumptions': ['slip is an input, not a fixed 0.02',
+                            'efficiency is assumed, not measured'],
+            'evidence': 'closed_form_textbook',
+            'basis': 'closed_form',
             'physics_basis': 'established',
             'feasibility': 'high'
         }
@@ -56,15 +86,27 @@ class TeslaInventionSimulator:
                                              coil_diameter_m: float = 0.5,
                                              frequency_khz: float = 100) -> dict[str, Any]:
         """Analyze near-field wireless power (resonant inductive coupling)."""
+        if (
+            not math.isfinite(distance_m)
+            or distance_m < 0
+            or not math.isfinite(coil_diameter_m)
+            or coil_diameter_m <= 0
+            or not math.isfinite(frequency_khz)
+            or frequency_khz <= 0
+        ):
+            raise ValueError("distance_m >= 0, coil_diameter_m > 0, frequency_khz > 0 required")
         coupling_k = 0.1 / (1 + 2*distance_m/coil_diameter_m)**3
         efficiency = coupling_k**2 / (1 + coupling_k**2)
         return {
             'coupling_coefficient': coupling_k,
             'theoretical_efficiency': min(0.95, efficiency),
             'range_m': distance_m,
+            'frequency_khz': frequency_khz,
             'power_transfer': 'possible in near field',
             'notes': 'Resonant inductive coupling is well-established (Qi standard)',
             'limitations': ['Efficiency drops rapidly with distance', 'Misalignment sensitive'],
+            'evidence': 'closed_form_textbook',
+            'basis': 'near_field_inductive_scaling',
             'physics_basis': 'established for near field',
             'feasibility': 'moderate-high'
         }
@@ -74,14 +116,32 @@ class ExperimentalEnergyConcepts:
     """Explore unconventional energy concepts with strict documentation."""
     
     @staticmethod
-    def radiative_collection_theory(area_m2: float = 1.0, 
-                                    efficiency_theoretical: float = 0.1) -> dict[str, Any]:
-        """Explore atmospheric/radiative energy collection concepts."""
-        solar_power = 1000 * area_m2
+    def radiative_collection_theory(area_m2: float = 1.0,
+                                    efficiency_theoretical: float = 0.1,
+                                    irradiance_W_m2: float = 1000.0) -> dict[str, Any]:
+        """Explore atmospheric/radiative energy collection concepts.
+
+        ``irradiance_W_m2`` is an input: the previous body multiplied the area by
+        a hardcoded 1000 W/m2, so a dark collector reported 1000 W of available
+        power. Passing 0.0 now yields 0.0.
+        """
+        if (
+            not math.isfinite(area_m2)
+            or area_m2 < 0
+            or not math.isfinite(efficiency_theoretical)
+            or not (0.0 <= efficiency_theoretical <= 1.0)
+            or not math.isfinite(irradiance_W_m2)
+            or irradiance_W_m2 < 0
+        ):
+            raise ValueError("area_m2 >= 0, irradiance_W_m2 >= 0, efficiency_theoretical in [0, 1] required")
+        solar_power = irradiance_W_m2 * area_m2
         extracted = solar_power * efficiency_theoretical
         return {
             'concept': 'radiative_atmospheric_collection',
             'available_power_W': solar_power,
+            'irradiance_W_m2': irradiance_W_m2,
+            'evidence': 'closed_form_textbook',
+            'basis': 'closed_form',
             'theoretical_extracted_W': extracted,
             'physics_basis': 'partial - solar is established',
             'assumptions': ['Selective absorption', 'Efficient conversion'],
@@ -100,6 +160,8 @@ class ExperimentalEnergyConcepts:
                 'evaluation': 'REJECTED',
                 'reason': 'Violates conservation of energy/mass',
                 'recommendation': 'Requires extraordinary evidence',
+                'evidence': 'conservation_law_check',
+                'basis': 'rule_screen',
                 'physics_basis': 'established_laws',
                 'testability': 'difficult'
             }
@@ -108,6 +170,8 @@ class ExperimentalEnergyConcepts:
             'evaluation': 'CONDITIONAL',
             'reason': 'Needs rigorous testing',
             'recommendation': 'Design controlled experiments',
+            'evidence': 'conservation_law_check',
+            'basis': 'rule_screen',
             'physics_basis': 'uncertain',
             'testability': 'possible'
         }

@@ -1,4 +1,8 @@
 """D1 gates package. Fixed order, no short-circuit: full audit trail."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from apedp_dyn.gates.admissibility import (
@@ -22,8 +26,12 @@ from apedp_dyn.gates.intervention import (
 )
 from apedp_dyn.gates.simulation import forward_simulation_validity
 
+if TYPE_CHECKING:
+    from apedp_dyn.model.physical_model import PhysicalModel
+    from apedp_dyn.problems.base import DynProblem
 
-def run_all_gates(model, problem) -> list[GateResult]:
+
+def run_all_gates(model: PhysicalModel, problem: DynProblem) -> list[GateResult]:
     """All five gates in fixed order. No short-circuit: full audit trail."""
     t = problem.train
     return [

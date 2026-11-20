@@ -14,7 +14,8 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
-from pathlib import Path
+
+import pytest
 
 from apedp_dyn import fit_candidate, make_signal
 from apedp_dyn.conf import benchmark_v2 as v2
@@ -27,7 +28,22 @@ from apedp_dyn.epistemic.pointer import (
 from apedp_dyn.problems import duffing
 from apedp_dyn.problems.base import finalize
 
-TOURNAMENT_JSON = Path(__file__).resolve().parent.parent / "outputs" / "dyn_tournament_duff3.json"
+
+@pytest.fixture(scope="module")
+def tournament_json(tmp_path_factory):
+    """A tournament artifact written for this test.
+
+    The test used to read ``outputs/dyn_tournament_duff3.json``. ``outputs/``
+    is git-ignored and nothing in the repository writes that file, so the test
+    could only pass on a machine that still had one. The property under test
+    is that the pointer never mutates the artifact it reads, and any
+    tournament trace serves for that.
+    """
+    from apedp_dyn import dyn_tournament
+
+    path = tmp_path_factory.mktemp("tournament") / "dyn_tournament_duff3.json"
+    path.write_text(json.dumps(dyn_tournament.run_tournament(), indent=1, default=str), encoding="utf-8")
+    return path
 
 
 def _duff_pair(prob):
@@ -86,8 +102,9 @@ class TestWeakInterventionPointer:
 
 
 class TestNeverMutates:
-    def test_tournament_artifact_bit_identical(self):
-        raw_before = TOURNAMENT_JSON.read_bytes()
+    @pytest.mark.slow  # runs the three-rep tournament to have an artifact to read
+    def test_tournament_artifact_bit_identical(self, tournament_json):
+        raw_before = tournament_json.read_bytes()
         digest_before = hashlib.sha256(raw_before).hexdigest()
         data = json.loads(raw_before)
         for tr in data["traces"]:
@@ -98,8 +115,8 @@ class TestNeverMutates:
                 # No kappa/residual diagnostics travel with these traces, and
                 # the drive is already strong: honest output is unclassified.
                 assert rec.evidence_deficit == "unclassified_deficit", (tr["rep"], rec)
-        assert hashlib.sha256(TOURNAMENT_JSON.read_bytes()).hexdigest() == digest_before
-        assert TOURNAMENT_JSON.read_bytes() == raw_before
+        assert hashlib.sha256(tournament_json.read_bytes()).hexdigest() == digest_before
+        assert tournament_json.read_bytes() == raw_before
 
 
 class TestPointerContract:

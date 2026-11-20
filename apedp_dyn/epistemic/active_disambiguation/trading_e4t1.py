@@ -22,6 +22,7 @@ is generated from the observable consequences of the competing mechanisms.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -54,7 +55,7 @@ def build_asset_panel(df: pd.DataFrame, asset: str) -> pd.DataFrame:
     rank40 = pd.Series(V).rolling(40).apply(lambda w: (pd.Series(w).rank().iloc[-1] - 1) / 39, raw=False).to_numpy()
     ami = np.abs(r) / np.maximum(V, 1e-12)
     s = pd.Series
-    def z(v):
+    def z(v: Any) -> Any:
         return ((s(v) - s(v).expanding(60).mean()) / s(v).expanding(60).std()).to_numpy()
     with np.errstate(all="ignore"):
         HA = z(np.log(np.maximum(rm40, 1e-12)) + z(np.abs(r)) + z(ami))
@@ -130,7 +131,7 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     pre = [_score(h, (tgt_tr - (coefs[h][0] + coefs[h][1] * btc[feats[h]].to_numpy()))[m_tr]) for h in feats]
     pre_status, _ = _adjudicate(pre)
     # Candidate table from train fits (observable consequences only).
-    def rm(s):
+    def rm(s: Any) -> Any:
         return float(np.sqrt(np.mean(s**2))) if len(s) else float("nan")
     rows: dict[str, tuple[dict[str, float], float, float]] = {}
     ftr = {h: btc[feats[h]].to_numpy() for h in feats}
@@ -213,7 +214,7 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     return OriginResult(origin, pre_status, policy, mid, float(d), post_status, winner)
 
 
-def _forward_score(panels, coefs, feats, mid, fw_idx):
+def _forward_score(panels: Any, coefs: Any, feats: Any, mid: Any, fw_idx: Any) -> Any:
     rms, fwd = {}, {}
     if mid in ("m7", "m8"):
         asset = "ETH" if mid == "m7" else "SOL"

@@ -1,6 +1,14 @@
 """Unified dispatch and functional API for continuous PDE discovery across all dimensions."""
 from __future__ import annotations
 
+__all__ = [
+    "HighDimPdeDiscoveryResult",
+    "discover_pde_nd_cartesian",
+    "discover_pde_point_cloud_hd",
+    "discover_pde_rbf_point_cloud_hd",
+]
+
+
 from collections.abc import Sequence
 from typing import Any
 

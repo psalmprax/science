@@ -2,6 +2,12 @@
 
 Status: experimental
 
+Direction (owner, 2026-11-19): MMLM is the project's route from language to science.
+Track S (`apedp_mmlm.equation_language`) applies the engines to the language of
+equations and feeds the discovery search as a prior; it is the track with a measured
+result. Tracks A-C (text) have no committed evaluation on real text, and none of their
+language-modelling hypotheses is claimed as shown.
+
 Provides the three-track Multi-Mathematical Language Model research architecture
 and the Quantum-Reach MMLM Circuit Discovery subsystem:
   - Track A (`NonNeuralMMLM_A0`): Pure non-neural mathematical language modeling
@@ -22,6 +28,7 @@ and the Quantum-Reach MMLM Circuit Discovery subsystem:
 """
 from apedp_mmlm.engines import (
     BayesianLanguageEngine,
+    BPEMMLMTokenizer,
     DynamicalContextEngine,
     EnergyBreakdown,
     EnergyCandidateEvaluator,
@@ -64,9 +71,12 @@ from apedp_mmlm.quantum_discovery import (
     MMLMDQIScheduleOptimizer,
     MMLMInvSqrtProposer,
     MMLMQEDProposer,
+    ZXDiagram,
     build_sparse_hubo_surrogate,
     mmlm_clifford_search,
     mmlm_resource_score,
+    mmlm_zx_t_count,
+    optimize_clifford_plus_t_zx,
     place_with_dag_lookahead,
     propose_mmlm_clifford_rewrites,
     synthesize_any_target_mmlm,
@@ -77,6 +87,7 @@ from apedp_mmlm.quantum_discovery import (
 __all__ = [
     "AblationComparisonReport",
     "AttentionFreeMMLM_C0",
+    "BPEMMLMTokenizer",
     "BayesianLanguageEngine",
     "BenchmarkMetrics",
     "DQIScheduleProposal",
@@ -113,10 +124,13 @@ __all__ = [
     "TreeTensorNetworkMemoryEngine",
     "VectorSymbolicEngine",
     "WeightedAutomatonEngine",
+    "ZXDiagram",
     "build_sparse_hubo_surrogate",
     "default_frozen_hypotheses",
     "mmlm_clifford_search",
     "mmlm_resource_score",
+    "mmlm_zx_t_count",
+    "optimize_clifford_plus_t_zx",
     "place_with_dag_lookahead",
     "propose_mmlm_clifford_rewrites",
     "synthesize_any_target_mmlm",

@@ -1,0 +1,141 @@
+{
+  "measured_utc": "2026-11-01T01:35:57+00:00",
+  "measured_by": "scripts/grow_patent_corpus.py --scan-claims",
+  "extractor": "scripts/grow_patent_corpus.py::extract_expressions",
+  "why": "The strict extractor accepts an equality between tokens or the words 'ratio of X to Y'. Every claim it scans is counted, so a zero yield is a statement about claim text rather than about a single claim per record.",
+  "records_scanned": 32,
+  "claims_scanned": 501,
+  "claims_with_a_parsed_formula": 0,
+  "records_with_at_least_one_formula": 0,
+  "claims_rejected_as_prose": 0,
+  "per_record": {
+    "DE102011079469A1": {
+      "claims": 0,
+      "claims_with_formula": 0
+    },
+    "EP4334731B1": {
+      "claims": 9,
+      "claims_with_formula": 0
+    },
+    "US10209314B2": {
+      "claims": 20,
+      "claims_with_formula": 0
+    },
+    "US10718727B2": {
+      "claims": 15,
+      "claims_with_formula": 0
+    },
+    "US11050359B2": {
+      "claims": 2,
+      "claims_with_formula": 0
+    },
+    "US11084591B2": {
+      "claims": 22,
+      "claims_with_formula": 0
+    },
+    "US11474159B2": {
+      "claims": 8,
+      "claims_with_formula": 0
+    },
+    "US11488017B2": {
+      "claims": 11,
+      "claims_with_formula": 0
+    },
+    "US11496054B2": {
+      "claims": 5,
+      "claims_with_formula": 0
+    },
+    "US11921163B2": {
+      "claims": 21,
+      "claims_with_formula": 0
+    },
+    "US12021452B2": {
+      "claims": 17,
+      "claims_with_formula": 0
+    },
+    "US12130335B2": {
+      "claims": 20,
+      "claims_with_formula": 0
+    },
+    "US12142721B2": {
+      "claims": 20,
+      "claims_with_formula": 0
+    },
+    "US12191668B2": {
+      "claims": 20,
+      "claims_with_formula": 0
+    },
+    "US12372585B2": {
+      "claims": 22,
+      "claims_with_formula": 0
+    },
+    "US12401203B2": {
+      "claims": 19,
+      "claims_with_formula": 0
+    },
+    "US12529627B2": {
+      "claims": 20,
+      "claims_with_formula": 0
+    },
+    "US2017469A": {
+      "claims": 0,
+      "claims_with_formula": 0
+    },
+    "US20220156653A1": {
+      "claims": 29,
+      "claims_with_formula": 0
+    },
+    "US20220223901A1": {
+      "claims": 8,
+      "claims_with_formula": 0
+    },
+    "US20250116981A1": {
+      "claims": 20,
+      "claims_with_formula": 0
+    },
+    "US20250321289A1": {
+      "claims": 15,
+      "claims_with_formula": 0
+    },
+    "US5269149A": {
+      "claims": 8,
+      "claims_with_formula": 0
+    },
+    "US6285999B1": {
+      "claims": 29,
+      "claims_with_formula": 0
+    },
+    "US7120566B1": {
+      "claims": 19,
+      "claims_with_formula": 0
+    },
+    "US8642660B2": {
+      "claims": 1,
+      "claims_with_formula": 0
+    },
+    "US8836284B2": {
+      "claims": 10,
+      "claims_with_formula": 0
+    },
+    "US8965721B2": {
+      "claims": 19,
+      "claims_with_formula": 0
+    },
+    "US9121840B2": {
+      "claims": 8,
+      "claims_with_formula": 0
+    },
+    "US9465078B2": {
+      "claims": 49,
+      "claims_with_formula": 0
+    },
+    "US9545412B2": {
+      "claims": 15,
+      "claims_with_formula": 0
+    },
+    "US9791519B2": {
+      "claims": 20,
+      "claims_with_formula": 0
+    }
+  }
+}

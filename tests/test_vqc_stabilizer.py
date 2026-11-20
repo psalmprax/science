@@ -435,8 +435,19 @@ def test_an_exact_distribution_is_refused_past_the_enumerated_width():
         state.distribution()
     native.reset_tallies()
     assert native.distribution(circuit) is None
-    assert "distribution" in (native.last_failure() or "")
-    assert native.tallies()["fallback"] == 1
+    if native.is_available():
+        # The Rust tier refused for the same reason, and said so. Where the
+        # extension is not built (the CI test job builds the kernel, not
+        # apedp_vqc) the call never reaches Rust: it is tallied as `python`,
+        # and there is no refusal to read. Until 2026-11-16 both were asserted
+        # unconditionally, and the test failed in every environment without
+        # the extension; tests/test_vqc_native_parity.py skips its Rust-tier
+        # tests on the same condition.
+        assert "distribution" in (native.last_failure() or "")
+        assert native.tallies()["fallback"] == 1
+    else:
+        assert native.tallies()["python"] == 1
+        assert native.tallies()["rust"] == native.tallies()["fallback"] == 0
     # The two things the refusal recommends still work, exactly.
     assert state.probability_of_bitstring((True,) * 13) == 0.5
     assert state.probability_of_bitstring((True,) + (False,) * 12) == 0.0

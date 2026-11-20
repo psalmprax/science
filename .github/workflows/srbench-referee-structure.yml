@@ -1,0 +1,100 @@
+# The template engine with the referee's Guard 3 on, on the SRBench protocol
+# (preregistration/PREREG-REFEREE-STRUCTURE-2026-11.md).
+#   push to referee-structure-smoke-*  -> three development problems
+#   push to referee-structure-run-*    -> smoke, then the one preregistered run
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: SRBench referee structure guard
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['referee-structure-smoke-*', 'referee-structure-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Three development problems
+        run: python scripts/run_srbench_referee_structure.py smoke --out smoke-out
+
+  shard:
+    needs: smoke
+    if: startsWith(github.ref_name, 'referee-structure-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Run shard ${{ matrix.k }} of 32
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_srbench_referee_structure.py run --shard "$SHARD/32" --out referee-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: referee-structure-shard-${{ matrix.k }}
+          path: referee-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: referee-structure-shard-*
+          path: referee-out
+          merge-multiple: true
+      - name: Merge the shards
+        run: python scripts/run_srbench_referee_structure.py collect --out referee-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: referee-structure-results
+          path: |
+            referee-out/runs.jsonl
+            referee-out/results.json
+            referee-out/runs-shard-*.jsonl
+          if-no-files-found: error
+      # The artifact store is not reachable from every environment that has to commit the
+      # results, so they are also printed, with their checksums, for rebuilding from the log.
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd referee-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

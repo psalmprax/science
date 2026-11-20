@@ -215,8 +215,8 @@ MUTANTS: list[dict] = [
         "target": "hawkes standardization constants (Finding 10)",
         "file": "apedp_dyn/proposers/hawkes_orderflow_proposer.py",
         "description": "standardize against eval-frame mean/std (full-future leak)",
-        "find": "            if not binary_viable:\n                if fit_intens_std > 1e-8:\n                    return (intens - fit_intens_mean) / fit_intens_std",
-        "replace": "            if not binary_viable:\n                if fit_intens_std > 1e-8:\n                    return (intens - intens.mean()) / intens.std()",
+        "find": "            if not binary_viable:\n                if fit_intens_std > 1e-8:\n                    _out: np.ndarray = (intens - fit_intens_mean) / fit_intens_std",
+        "replace": "            if not binary_viable:\n                if fit_intens_std > 1e-8:\n                    _out: np.ndarray = (intens - intens.mean()) / intens.std()",
         "pins": [PIN_HAWKES, PIN_HAWKES_SHARP],
         "pin_note": "hawkes dynamic pin + sharp fit-constant standardization pin",
     },
@@ -423,7 +423,7 @@ MUTANTS: list[dict] = [
         "target": "correlation-space eigensolve (FLAW-15 v2)",
         "file": "rust/apedp-kernel/src/rime/lie_symmetry.rs",
         "description": "solve the RAW multi-stratum Gram again (extreme strata corrupt the nullspace)",
-        "find": "            corr[i * k + j] = if div > 0.0 { gram[i * k + j] / div } else { 0.0 };",
+        "find": "            corr[i * k + j] = if div > 0.0 {\n                gram[i * k + j] / div\n            } else {\n                0.0\n            };",
         "replace": "            corr[i * k + j] = gram[i * k + j];",
         "pins": [CARGO_LIB_PIN],
         "pin_note": "test_scale_dominant_ode_keeps_genuine_symmetries",
@@ -444,8 +444,8 @@ MUTANTS: list[dict] = [
         "target": "bridge kernel-failure re-raise under enforcement",
         "file": "apedp/rust_bridge.py",
         "description": "swallow the native failure even when enforcement is on (a broken kernel is measured as the Python loop)",
-        "find": "            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash\n                if native_search_enforced():",
-        "replace": "            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash\n                if False:",
+        "find": "            except Exception as e:\n                if native_search_enforced():",
+        "replace": "            except Exception as e:\n                if False:",
         "pins": [PIN_ENFORCEMENT],
         "pin_note": "test_enforcement_refuses_fallback_from_the_bridge",
     },
@@ -645,6 +645,10 @@ def _toolchain_fingerprint() -> str:
 
 def _cache_key(m: dict, pristine: str, mutated: str, pin_argv: list[list[str]],
                inputs_fp: str, toolchain: str) -> str:
+    norm_argv = [
+        ["python", *cmd[1:]] if cmd and cmd[0] != "cargo" else list(cmd)
+        for cmd in pin_argv
+    ]
     payload = {
         "schema": CACHE_SCHEMA,
         "id": m["id"],
@@ -652,7 +656,7 @@ def _cache_key(m: dict, pristine: str, mutated: str, pin_argv: list[list[str]],
         "description": m["description"],
         "pristine_sha256": _sha256_text(pristine),
         "mutated_sha256": _sha256_text(mutated),
-        "pin_argv": pin_argv,
+        "pin_argv": norm_argv,
         "pin_inputs_sha256": inputs_fp,
         "toolchain": toolchain,
     }
@@ -701,7 +705,8 @@ def main(argv: list[str] | None = None) -> int:
         # 0) pristine sanity run per pin group (a pin failing pristine means
         #    the battery is misconfigured, NOT a strong referee).
         sanity: dict[str, dict] = {}
-        for group_key, group in (("round2", PIN_ROUND2), ("hawkes", PIN_HAWKES),
+        for group_key, group in (("round2", PIN_ROUND2), ("round3", PIN_ROUND3),
+                                 ("hawkes", PIN_HAWKES),
                                  ("hawkes_sharp", PIN_HAWKES_SHARP),
                                  ("ehi_pillars", PIN_EHI_PILLARS),
                                  ("dispatch_wiring", PIN_DISPATCH_WIRING),

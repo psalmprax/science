@@ -11,6 +11,7 @@ Enforces physical conservation laws on high-dimensional generative video flows:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -91,6 +92,8 @@ class NoetherConservationEngine:
         # 2. Spectral Poisson solver via 2D FFT
         kx = 2.0 * np.pi * np.fft.fftfreq(width, d=dx)
         ky = 2.0 * np.pi * np.fft.fftfreq(height, d=dy)
+        kx_grid: np.ndarray
+        ky_grid: np.ndarray
         kx_grid, ky_grid = np.meshgrid(kx, ky)
         k_sq = kx_grid ** 2 + ky_grid ** 2
         k_sq[0, 0] = 1.0  # Avoid zero-division at DC
@@ -177,7 +180,7 @@ class NoetherConservationEngine:
         q: np.ndarray,
         p: np.ndarray,
         dt: float,
-        potential_grad_fn,
+        potential_grad_fn: Any,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Perform a symplectic Störmer-Verlet / Leapfrog step preserving Hamiltonian energy.
 

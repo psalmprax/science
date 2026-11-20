@@ -1,0 +1,99 @@
+{
+  "patent_id": "US11921163B2",
+  "source": "https://patents.google.com/patent/US11921163B2/en",
+  "retrieved_utc": "2026-11-01T00:23:09+00:00",
+  "http_status": 200,
+  "bytes": 467653,
+  "html_sha256": "8f0f739ccf4dfa128d6c78c02be9300f9016ecd9ab80e24ac4c6acce99130ff4",
+  "jurisdiction": "US",
+  "title": "Modular machine learning structure for electric vehicle battery state of health estimation",
+  "abstract": "Abstract Approaches, techniques, and mechanisms are disclosed for assessing battery states of batteries. According to one embodiment, raw sensor data are collected from a battery module. The battery module includes multiple battery cells. Input battery features are extracted from the raw sensor data collected from the battery module. The input battery features are used to update node states of a GNN. The GNN include multiple GNN nodes each of which representing a respective battery cell in the multiple battery cells. Estimation of one or more battery state of health (SoH) indicators is generated based at least in part on individual output states of individual GNN nodes in the multiple GNN nodes. The individual output states of individual GNN nodes in the multiple GNN nodes are determined based at least in part on the updated node states of the GNN.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A method comprising: collecting raw sensor data from a battery module, wherein the battery module includes a plurality of battery cells; extracting input battery features from the raw sensor data collected from the battery module; using the input battery features to update node states of a graph neural network (GNN), wherein the GNN includes a plurality of GNN nodes each of which representing a respective battery cell in the plurality of battery cells; generating, based at least in part on individual output states of individual GNN nodes in the plurality of GNN nodes, estimation of one or more battery state of health (SoH) indicators, wherein the individual output states of individual GNN nodes in the plurality of GNN nodes are determined based at least in part on the updated node states of the GNN; and performing, based at least in part on the estimation of the one or more battery SoH indicators, one of replacing the battery module, balancing the plurality of battery cells or the battery module, and distributing loads to the battery module."
+    },
+    {
+      "num": "2",
+      "text": "2. The method of claim 1 , wherein the one or more battery SoH indicators includes at least one of: one or more battery cell SoH indicators for each battery cell in the plurality of battery cells, or one or more battery module SoH indicators for the battery module."
+    },
+    {
+      "num": "3",
+      "text": "3. The method of claim 1 , wherein the one or more battery SoH indicators includes at least a estimated value of one of: battery capacity, state of charge, internal resistance, available power, available energy, maximum achievable voltage, or maximum achievable current."
+    },
+    {
+      "num": "4",
+      "text": "4. The method of claim 1 , wherein the raw sensor data includes (a) a plurality of first raw battery cell data time series for the plurality of battery cells in the battery module and (b) a second raw battery module data time series for the battery module."
+    },
+    {
+      "num": "5",
+      "text": "5. The method of claim 1 , wherein the input battery features are extracted with a neural network layer of one-dimensional convolutional neural networks and one or more dense neural network layers."
+    },
+    {
+      "num": "6",
+      "text": "6. The method of claim 1 , wherein the estimation of one or more battery state of health (SoH) indicators are predicted with one or more task specific neural network layers that receive the output states of the individual GNN nodes as input."
+    },
+    {
+      "num": "7",
+      "text": "7. The method of claim 1 , wherein a plurality of battery modules in a battery pack includes the battery module; wherein the battery pack is modeled by (a) a plurality of first GNNs with first nodes represented by battery cells and (b) a second GNN with a plurality of second GNN nodes represented by the plurality of battery modules, respectively; wherein the plurality of first GNNs include the GNN; the method further comprising: collecting, from the battery pack, a plurality of sets of cell-level raw sensor data from individual battery cells in the plurality of battery modules, a plurality of sets of module-level raw sensor data from individual battery modules in the battery pack, and a set of pack-level raw sensor data from the battery pack; extracting a plurality of sets of cell-level input battery features from the plurality of sets of cell-level raw sensor data, a plurality of sets of module-level input battery features from the plurality of sets of module-level raw sensor data, and a set of pack-level input battery features from the set of pack-level raw sensor data; using the plurality of sets of cell-level input battery features to update a plurality of sets of first node states in the plurality of first GNNs, and the plurality of sets of module-level input battery features to update a set of second node states in the second GNN; and generating, based at least in part on individual first output states of individual first GNN nodes in the plurality of sets of first GNN nodes and individual second output states of individual second GNN nodes in the set of second GNN nodes, estimation of a plurality of battery SoH indicators for individual battery cells in the battery pack, individual battery modules in the battery pack, and the battery pack itself, wherein the individual first output states of individual first GNN nodes in the plurality of sets of first GNN nodes are determined based at least in part on the plurality of sets of first node states as updated; wherein individual second output states of individual second GNN nodes in the set of second GNN nodes are determined base at least in part on the set of second node states as updated."
+    },
+    {
+      "num": "8",
+      "text": "8. One or more non-transitory computer readable media storing a program of instructions that is executable by one or more computing processors to perform: collecting raw sensor data from a battery module, wherein the battery module includes a plurality of battery cells; extracting input battery features from the raw sensor data collected from the battery module; using the input battery features to update node states of a graph neural network (GNN), wherein the GNN includes a plurality of GNN nodes each of which representing a respective battery cell in the plurality of battery cells; and generating, based at least in part on individual output states of individual GNN nodes in the plurality of GNN nodes, estimation of one or more battery state of health (SoH) indicators, wherein the individual output states of individual GNN nodes in the plurality of GNN nodes are determined based at least in part on the updated node states of the GNN, wherein, based at least in part on the estimation of the one or more battery SoH indicators, one of the following actions is performed: replacing the battery module, balancing the plurality of battery cells or the battery module, and distributing loads to the battery module."
+    },
+    {
+      "num": "9",
+      "text": "9. The media of claim 8 , wherein the one or more battery SoH indicators includes at least one of: one or more battery cell SoH indicators for each battery cell in the plurality of battery cells, or one or more battery module SoH indicators for the battery module."
+    },
+    {
+      "num": "10",
+      "text": "10. The media of claim 8 , wherein the one or more battery SoH indicators includes at least a estimated value of one of: battery capacity, state of charge, internal resistance, available power, available energy, maximum achievable voltage, or maximum achievable current."
+    },
+    {
+      "num": "11",
+      "text": "11. The media of claim 8 , wherein the raw sensor data includes (a) a plurality of first raw battery cell data time series for the plurality of battery cells in the battery module and (b) a second raw battery module data time series for the battery module."
+    },
+    {
+      "num": "12",
+      "text": "12. The media of claim 8 , wherein the input battery features are extracted with a neural network layer of one-dimensional convolutional neural networks and one or more dense neural network layers."
+    },
+    {
+      "num": "13",
+      "text": "13. The media of claim 8 , wherein the estimation of one or more battery state of health (SoH) indicators are predicted with one or more task specific neural network layers that receive the output states of the individual GNN nodes as input."
+    },
+    {
+      "num": "14",
+      "text": "14. The media of claim 8 , wherein a plurality of battery modules in a battery pack includes the battery module; wherein the battery pack is modeled by (a) a plurality of first GNNs with first nodes represented by battery cells and (b) a second GNN with a plurality of second GNN nodes represented by the plurality of battery modules, respectively; wherein the plurality of first GNNs include the GNN; the program of instructions is executable by the one or more computing processors to further perform: collecting, from the battery pack, a plurality of sets of cell-level raw sensor data from individual battery cells in the plurality of battery modules, a plurality of sets of module-level raw sensor data from individual battery modules in the battery pack, and a set of pack-level raw sensor data from the battery pack; extracting a plurality of sets of cell-level input battery features from the plurality of sets of cell-level raw sensor data, a plurality of sets of module-level input battery features from the plurality of sets of module-level raw sensor data, and a set of pack-level input battery features from the set of pack-level raw sensor data; using the plurality of sets of cell-level input battery features to update a plurality of sets of first node states in the plurality of first GNNs, and the plurality of sets of module-level input battery features to update a set of second node states in the second GNN; and generating, based at least in part on individual first output states of individual first GNN nodes in the plurality of sets of first GNN nodes and individual second output states of individual second GNN nodes in the set of second GNN nodes, estimation of a plurality of battery SoH indicators for individual battery cells in the battery pack, individual battery modules in the battery pack, and the battery pack itself, wherein the individual first output states of individual first GNN nodes in the plurality of sets of first GNN nodes are determined based at least in part on the plurality of sets of first node states as updated; wherein individual second output states of individual second GNN nodes in the set of second GNN nodes are determined base at least in part on the set of second node states as updated."
+    },
+    {
+      "num": "15",
+      "text": "15. A system comprising: one or more computing processors; one or more non-transitory computer readable media storing a program of instructions that is executable by the one or more computing processors to perform: collecting raw sensor data from a battery module, wherein the battery module includes a plurality of battery cells; extracting input battery features from the raw sensor data collected from the battery module; using the input battery features to update node states of a graph neural network (GNN), wherein the GNN includes a plurality of GNN nodes each of which representing a respective battery cell in the plurality of battery cells; and generating, based at least in part on individual output states of individual GNN nodes in the plurality of GNN nodes, estimation of one or more battery state of health (SoH) indicators, wherein the individual output states of individual GNN nodes in the plurality of GNN nodes are determined based at least in part on the updated node states of the GNN, wherein, based at least in part on the estimation of the one or more battery SoH indicators, one of the following actions is performed: replacing the battery module, balancing the plurality of battery cells or the battery module, and distributing loads to the battery module."
+    },
+    {
+      "num": "16",
+      "text": "16. The system of claim 15 , wherein the one or more battery SoH indicators includes at least one of: one or more battery cell SoH indicators for each battery cell in the plurality of battery cells, or one or more battery module SoH indicators for the battery module."
+    },
+    {
+      "num": "17",
+      "text": "17. The system of claim 15 , wherein the one or more battery SoH indicators includes at least a estimated value of one of: battery capacity, state of charge, internal resistance, available power, available energy, maximum achievable voltage, or maximum achievable current."
+    },
+    {
+      "num": "18",
+      "text": "18. The system of claim 15 , wherein the raw sensor data includes (a) a plurality of first raw battery cell data time series for the plurality of battery cells in the battery module and (b) a second raw battery module data time series for the battery module."
+    },
+    {
+      "num": "19",
+      "text": "19. The system of claim 15 , wherein the input battery features are extracted with a neural network layer of one-dimensional convolutional neural networks and one or more dense neural network layers."
+    },
+    {
+      "num": "20",
+      "text": "20. The system of claim 15 , wherein the estimation of one or more battery state of health (SoH) indicators are predicted with one or more task specific neural network layers that receive the output states of the individual GNN nodes as input."
+    },
+    {
+      "num": "21",
+      "text": "21. The system of claim 15 , wherein a plurality of battery modules in a battery pack includes the battery module; wherein the battery pack is modeled by (a) a plurality of first GNNs with first nodes represented by battery cells and (b) a second GNN with a plurality of second GNN nodes represented by the plurality of battery modules, respectively; wherein the plurality of first GNNs include the GNN; the program of instructions is executable by the one or more computing processors to further perform: collecting, from the battery pack, a plurality of sets of cell-level raw sensor data from individual battery cells in the plurality of battery modules, a plurality of sets of module-level raw sensor data from individual battery modules in the battery pack, and a set of pack-level raw sensor data from the battery pack; extracting a plurality of sets of cell-level input battery features from the plurality of sets of cell-level raw sensor data, a plurality of sets of module-level input battery features from the plurality of sets of module-level raw sensor data, and a set of pack-level input battery features from the set of pack-level raw sensor data; using the plurality of sets of cell-level input battery features to update a plurality of sets of first node states in the plurality of first GNNs, and the plurality of sets of module-level input battery features to update a set of second node states in the second GNN; and generating, based at least in part on individual first output states of individual first GNN nodes in the plurality of sets of first GNN nodes and individual second output states of individual second GNN nodes in the set of second GNN nodes, estimation of a plurality of battery SoH indicators for individual battery cells in the battery pack, individual battery modules in the battery pack, and the battery pack itself, wherein the individual first output states of individual first GNN nodes in the plurality of sets of first GNN nodes are determined based at least in part on the plurality of sets of first node states as updated; wherein individual second output states of individual second GNN nodes in the set of second GNN nodes are determined base at least in part on the set of second node states as updated."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery state of health estimation"
+}

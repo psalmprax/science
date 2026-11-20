@@ -26,17 +26,15 @@ import json
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
-from apedp_dyn.epistemic.adjudicate import (
-    DataOrigin,
-)
 from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
+from apedp_dyn.market.assets import asset_data_origin
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
@@ -112,13 +110,17 @@ class WindowDiscoveryRecord:
     full_reason: str
     # Search-size accounting: every candidate the engine scored before one was
     # promoted. A 1-of-N promotion is optimistically biased without this.
-    trial_multiplicity: dict | None = None
+    trial_multiplicity: dict[str, Any] | None = None
 
 
 def load_series_with_dates(asset: Literal["sp500", "nasdaq100"]) -> tuple[list[str], np.ndarray]:
     """Load historical dates and close prices."""
-    fname = "sp500.csv" if asset == "sp500" else "nasdaq100.csv"
-    col = "SP500" if asset == "sp500" else "NASDAQ100"
+    if asset == "sp500":
+        fname, col = "sp500.csv", "SP500"
+    elif asset == "nasdaq100":
+        fname, col = "nasdaq100.csv", "NASDAQ100"
+    else:
+        raise ValueError(f"Unsupported real-market asset {asset!r}; expected 'sp500' or 'nasdaq100'")
     fpath = DATA_DIR / fname
 
     dates, prices = [], []
@@ -239,7 +241,7 @@ def execute_window_discovery(
             dimensions=dim_map,
             target_dimension=Dimension(),
             train_ratio=train_ratio,
-            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            data_origin=asset_data_origin(asset),
             bootstrap=bootstrap,
             seed=seed,
         )
@@ -264,7 +266,7 @@ def execute_window_discovery(
             dimensions=dim_map,
             target_dimension=Dimension(),
             train_ratio=train_ratio,
-            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            data_origin=asset_data_origin(asset),
             bootstrap=bootstrap,
             seed=seed,
         )
@@ -310,7 +312,7 @@ def execute_window_discovery(
     # order statistic over that pool. DSR does not apply (the selection
     # statistic here is in-sample loss, not a Sharpe ratio), so what is recorded
     # is the pool itself plus the promoted candidate's rank within it.
-    trial_multiplicity: dict | None = None
+    trial_multiplicity: dict[str, Any] | None = None
     # MultiTermDiscoveryResult does not retain every scored candidate; it
     # reports the evaluated count and the surviving Pareto set, so the pool
     # is reconstructed from the Pareto candidates with the true evaluated
@@ -423,7 +425,9 @@ def run_partition(
             f"partition_index must be in [0, {total_partitions}), got {partition_index}"
         )
 
-    jobs = [(asset, window) for asset in ("sp500", "nasdaq100") for window in WINDOWS]
+    assets_pair: tuple[Literal["sp500", "nasdaq100"],
+                        Literal["sp500", "nasdaq100"]] = ("sp500", "nasdaq100")
+    jobs = [(asset, window) for asset in assets_pair for window in WINDOWS]
     assigned_jobs = [
         (asset, window)
         for job_index, (asset, window) in enumerate(jobs)
@@ -482,11 +486,11 @@ if __name__ == "__main__":
 # apedp_dyn/epistemic/caller_registry.py for the census and discipline.
 # --------------------------------------------------------------------------
 def publish_caller_compliance_record(
-    ledger=None,
+    ledger: Any=None,
     candidate_id: str = "",
     dataset_id: str | None = None,
     nominal_variants: int | None = None,
-):
+) -> Any:
     "Publish this caller's REG-F14b mode-(b) compliance record."
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
 

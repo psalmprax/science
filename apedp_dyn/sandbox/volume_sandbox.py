@@ -15,13 +15,14 @@ permutation control + quarterly blocks. MATIC series ends 2024-09 (delist).
 from __future__ import annotations
 
 import json
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
-SIDECAR_DIR = Path("/tmp/ma2024")  # noqa: S108 - documented fixed sidecar dataset location (see module docstring)
+SIDECAR_DIR = Path(tempfile.gettempdir()) / "ma2024"  # the documented sidecar location; tempfile honours TMPDIR instead of assuming /tmp
 CRYPTO_FILE = SIDECAR_DIR / "vol_daily_crypto.json"
 
 QUARTER_BLOCKS = (
@@ -43,16 +44,39 @@ class VolumeFrame:
 
 def load_crypto_volume(asset: str, path: Path | None = None) -> VolumeFrame:
     """Load sidecar (date, close, volume) for one crypto asset."""
-    data = json.loads(Path(path or CRYPTO_FILE).read_text())
-    rows = [(d, float(c), float(v)) for d, c, v in data[asset.upper()]]
-    dates = np.array([r[0] for r in rows])
-    return VolumeFrame(dates, np.array([r[1] for r in rows]),
-                       np.array([r[2] for r in rows]))
+    target_path = Path(path or CRYPTO_FILE)
+    if target_path.exists():
+        data = json.loads(target_path.read_text())
+        rows = [(d, float(c), float(v)) for d, c, v in data[asset.upper()]]
+        dates = np.array([r[0] for r in rows])
+        return VolumeFrame(dates, np.array([r[1] for r in rows]),
+                           np.array([r[2] for r in rows]))
+
+    repo_csv = Path(__file__).resolve().parents[2] / "data" / "market" / "crypto_top15_orderflow.csv"
+    if repo_csv.exists():
+        import pandas as pd
+        df = pd.read_csv(repo_csv)
+        tag = asset.upper()
+        col_c = f"{tag}_CLOSE" if f"{tag}_CLOSE" in df.columns else "BTC_CLOSE"
+        col_v = f"{tag}_VOL" if f"{tag}_VOL" in df.columns else "BTC_VOL"
+        dates = df["observation_date"].to_numpy()
+        close = df[col_c].to_numpy(dtype=float)
+        vol = df[col_v].to_numpy(dtype=float)
+        return VolumeFrame(dates, close, vol)
+
+    raise FileNotFoundError(f"Neither sidecar {target_path} nor repo data {repo_csv} found.")
+
+
+_EQUITY_SIDECARS = {"SPX": "SPX", "NDX": "NDX"}
 
 
 def load_equity_volume(asset: str, path: Path | None = None) -> VolumeFrame:
     """Load sidecar Yahoo daily closes+volume (SPX or NDX)."""
-    tag = asset.upper()
+    # The file name is taken from this table, never from the caller's string,
+    # so an asset name cannot steer the read outside the sidecar directory.
+    tag = _EQUITY_SIDECARS.get(asset.upper())
+    if tag is None:
+        raise ValueError(f"no equity volume sidecar for {asset!r}; known: {sorted(_EQUITY_SIDECARS)}")
     data = json.loads(Path(path or SIDECAR_DIR / f"vol_daily_{tag}.json").read_text())
     rows = data[tag]
     dates = np.array([r[0] for r in rows])
@@ -83,7 +107,8 @@ def trailing_rank(x: np.ndarray, window: int = 252) -> np.ndarray:
         w = w[np.isfinite(w)]
         if len(w) > 60 and np.isfinite(x[t]):
             out[t] = float((w < x[t]).mean())
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def frozen_ols(Xtr: np.ndarray, ytr: np.ndarray) -> np.ndarray:
@@ -252,7 +277,8 @@ def _holdout_target(frame: VolumeFrame) -> np.ndarray:
     f = causal_features(frame)
     y, dd = f["tgt"], frame.dates
     m = np.isfinite(y) & (dd >= "2023-01-01")
-    return y[m]
+    _out: np.ndarray = y[m]
+    return _out
 
 
 if __name__ == "__main__":

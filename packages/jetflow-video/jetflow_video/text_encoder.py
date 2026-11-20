@@ -24,6 +24,13 @@ import torch.nn as nn
 from jetflow_video.physics import PhysicalSteeringConfig
 
 
+#: What this encoder actually computes. A hash of word and trigram keys plus a
+#: hand-written concept ontology encodes lexical overlap; it carries no learned
+#: semantics, so it is labelled as feature hashing rather than presented as a
+#: pretrained language encoder.
+EMBEDDING_METHOD = "feature_hashing+hand_written_concept_ontology"
+PRETRAINED_SEMANTICS = False
+
 _CONCEPT_GROUPS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("concept:vehicle", ("car", "automobile", "vehicle", "sedan", "coupe", "truck", "bus", "train", "bike", "spaceship")),
     ("concept:motion_fast", ("fast", "rapid", "speed", "racing", "sprinting", "swift", "accelerating", "driving", "running", "dashing")),
@@ -57,7 +64,7 @@ def _encode_single_token_base(tok: str, dim: int) -> np.ndarray:
     padded = "|^" + tok + "^|"
     grams.extend("t:" + padded[i:i + 3] for i in range(len(padded) - 2))
     for g in grams:
-        digest = hashlib.md5(g.encode("utf-8")).hexdigest()  # noqa: S324
+        digest = hashlib.blake2b(g.encode("utf-8"), digest_size=8).hexdigest()
         idx = int(digest[:8], 16) % dim
         sign = 1.0 if int(digest[8], 16) < 8 else -1.0
         t_vec[idx] += sign
@@ -65,7 +72,8 @@ def _encode_single_token_base(tok: str, dim: int) -> np.ndarray:
     for concept_tag, vocab in _CONCEPT_GROUPS:
         if tok in vocab or any(tok.startswith(v) for v in vocab if len(v) >= 4):
             for slot in range(4):
-                c_digest = hashlib.md5(f"{concept_tag}:{slot}".encode("utf-8")).hexdigest()  # noqa: S324
+                c_digest = hashlib.blake2b(
+                    f"{concept_tag}:{slot}".encode("utf-8"), digest_size=8).hexdigest()
                 c_idx = int(c_digest[:8], 16) % dim
                 c_sign = 1.0 if int(c_digest[8], 16) < 8 else -1.0
                 t_vec[c_idx] += 2.5 * c_sign

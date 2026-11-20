@@ -25,6 +25,18 @@ The statistics are deliberately simple -- a per-outcome normal approximation,
 plus the shot count required to detect `min_effect` at `sigma` -- and they are
 reported, not hidden: `checks[].measured` carries the deviations and the required
 shot count, so a reader can redo the arithmetic.
+
+Two limits of that test, both reported in the same place rather than corrected:
+
+* The threshold is applied to each outcome separately, so the chance that *some*
+  outcome of a wide circuit exceeds `sigma` by chance grows with the number of
+  outcomes. `measured["familywise_false_alarm_rate"]` gives it for the run in
+  hand (at the default `sigma = 4` it is 6.3e-5 per outcome, about 0.4 over
+  8,192 of them), and raising `sigma` is the caller's lever.
+* The normal approximation is poor for an outcome whose expected probability is
+  within a few standard errors of 0 or 1. The two exact cases are handled
+  separately: a declared certainty that did not happen on every shot, and a
+  declared impossibility that happened at all, each score `shots` sigma.
 """
 from __future__ import annotations
 
@@ -54,7 +66,7 @@ class Check:
     measured: Mapping[str, Any]
     passed: bool | None
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {"name": self.name, "requirement": self.requirement,
                 "measured": dict(self.measured), "passed": self.passed}
 
@@ -82,7 +94,7 @@ class Receipt:
     def unresolved(self) -> tuple[str, ...]:
         return tuple(check.name for check in self.checks if check.passed is None)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "identity": dict(self.identity),
             "provenance": dict(self.provenance),
@@ -121,7 +133,7 @@ def _required_shots(expected: Mapping[str, float], *, sigma: float,
 
 def _distribution_check(circuit: Circuit, result: RunResult,
                         expected: Mapping[str, float], *,
-                        sigma: float, min_effect: float) -> tuple[Check, Check, dict]:
+                        sigma: float, min_effect: float) -> tuple[Check, Check, dict[str, Any]]:
     observed = distribution(result)
     strings = sorted(set(expected) | set(observed))
     deviations = {}
@@ -137,9 +149,23 @@ def _distribution_check(circuit: Circuit, result: RunResult,
             z_scores[key] = 0.0 if got == want else float(max(1, result.shots))
         elif want > 0.0:
             z_scores[key] = (got - want) / math.sqrt(want * (1.0 - want) / result.shots)
+        elif got > 0.0:
+            # A declared impossibility has no variance either: the expectation says
+            # this outcome never happens, and it did. Until 2026-11-17 an outcome
+            # with expected probability 0 was simply not scored, so a circuit that
+            # produced forbidden strings could pass whenever the declared outcomes
+            # stayed within tolerance. Scored like a broken certainty.
+            z_scores[key] = float(max(1, result.shots))
     worst_key = max(z_scores, key=lambda key: abs(z_scores[key])) if z_scores else None
     worst = z_scores[worst_key] if worst_key is not None else 0.0
     total_variation = 0.5 * sum(abs(deviations[key]) for key in strings)
+    # The gate is per-outcome, so the chance that *some* outcome exceeds sigma
+    # grows with the number of outcomes scored. Reported, not corrected: the
+    # requirement below says what is being tested, and a reader who needs a
+    # family-wise rate can raise sigma by the stated factor.
+    scored = sum(1 for key in z_scores if 0.0 < expected.get(key, 0.0) < 1.0)
+    per_outcome_alarm = math.erfc(sigma / math.sqrt(2.0))
+    familywise = 1.0 - (1.0 - per_outcome_alarm) ** scored if scored else 0.0
 
     consistency = Check(
         name="outcome distribution matches the declared expectation",
@@ -149,7 +175,10 @@ def _distribution_check(circuit: Circuit, result: RunResult,
                   "expected": dict(sorted(expected.items())),
                   "worst_outcome": worst_key, "worst_z": worst,
                   "max_abs_deviation": max(abs(value) for value in deviations.values()),
-                  "total_variation_distance": total_variation},
+                  "total_variation_distance": total_variation,
+                  "scored_outcomes": scored,
+                  "per_outcome_false_alarm_rate": per_outcome_alarm,
+                  "familywise_false_alarm_rate": familywise},
         passed=bool(abs(worst) <= sigma),
     )
 

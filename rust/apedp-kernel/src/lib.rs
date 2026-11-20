@@ -12,11 +12,11 @@
 //! "this expression is bad"; the bridge turns it into a per-candidate fallback
 //! and keeps going.
 
-pub mod data;
 pub mod dag;
+pub mod data;
 pub mod flow_head;
-pub mod jetflow;
 pub mod genetic;
+pub mod jetflow;
 pub mod latent;
 pub mod ngts;
 pub mod numeric;
@@ -34,10 +34,10 @@ pub use data::DataCol;
 
 use ndarray::ArrayView1;
 
-use ndarray::{Array2, Array4};
+use ndarray::Array2;
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray4, PyReadonlyArray1, PyReadonlyArray2,
-    PyReadonlyArray3, PyReadonlyArray4, PyUntypedArrayMethods,
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3,
+    PyUntypedArrayMethods,
 };
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -947,6 +947,13 @@ fn rime_search_envs_json(
             }
         }
     }
+    let unique_th = cfg_raw
+        .get("unique_score_threshold")
+        .and_then(|v| v.as_f64());
+    let (referee_outcome, referee_reason) =
+        rime::referee::classify_envs_with_threshold(&outcome, unique_th);
+    packet["referee_outcome"] = serde_json::json!(referee_outcome.as_str());
+    packet["referee_reason"] = serde_json::json!(referee_reason);
     serde_json::to_string(&packet)
         .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e)))
 }
@@ -1094,8 +1101,31 @@ fn rime_search_json(
             }
         }
     }
+    let unique_th = raw.get("unique_score_threshold").and_then(|v| v.as_f64());
+    let (referee_outcome, referee_reason) = match unique_th {
+        Some(th) => rime::referee::classify_with_threshold_and_reason(&outcome, th),
+        None => rime::referee::classify_with_reason(&outcome),
+    };
+    packet["referee_outcome"] = serde_json::json!(referee_outcome.as_str());
+    packet["referee_reason"] = serde_json::json!(referee_reason);
     serde_json::to_string(&packet)
         .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e)))
+}
+
+#[pyfunction]
+#[pyo3(signature = (packet_json, unique_score_threshold=None))]
+fn rime_classify_outcome_json(
+    packet_json: &str,
+    unique_score_threshold: Option<f64>,
+) -> PyResult<String> {
+    let (outcome, reason) =
+        rime::referee::classify_packet_json(packet_json, unique_score_threshold)
+            .map_err(|e| PyValueError::new_err(format!("rime referee: {}", e)))?;
+    serde_json::to_string(&serde_json::json!({
+        "referee_outcome": outcome.as_str(),
+        "referee_reason": reason,
+    }))
+    .map_err(|e| PyValueError::new_err(format!("rime referee: serialize failed: {}", e)))
 }
 
 #[pyfunction]
@@ -2462,6 +2492,7 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rime_rewrite_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_search_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_search_envs_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_classify_outcome_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_evaluate_series_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_total_variation_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_implicit_discover_json, m)?)?;

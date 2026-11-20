@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Population Extrapolation Benchmark: RIME-AD vs GA/GP.
+"""Population Extrapolation Benchmark: RIME and RIME-AD vs a genetic term search.
+
+Until 2026-11-19 this benchmark ran ``RimeProposer`` (RIME) and reported it as
+RIME-AD; RIME-AD itself was never run (SYSTEM_FLAWS_AUDIT M-05). Each engine now
+runs under its own name, and the "GA" arms are named for what they are: a
+genetic search over which columns of a fixed term library enter a least-squares
+fit, not genetic programming over expressions.
 
 Tests multi-population generalization across:
   - Pop A-Train: Discovery partition (seed 500, rows 0:400)
@@ -21,10 +27,12 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
+from typing import Any
 import numpy as np
 import pandas as pd
 
 import apedp_kernel as ak
+from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 from apedp_dyn.epistemic.report_fidelity import render_float, render_verdict_cell, verdict_for_row
 
@@ -178,7 +186,7 @@ def run_benchmark():
     pred_D = eval_ga_on_df(df_D, 0, mask_small, w_small)
 
     results["methods"]["ga_small"] = {
-        "name": "Genetic Algorithm (GA-Small, Linear + Lags)",
+        "name": "GA term selection, small library (linear + lags)",
         "wall_ms": ga_small_ms,
         "active_terms": names_small,
         "r2_A_tr": _calc_r2(df_A_tr["target"].to_numpy()[2:], pred_A_tr[2:]),
@@ -199,7 +207,7 @@ def run_benchmark():
     pred_D_l = eval_ga_on_df(df_D, 2, mask_large, w_large)
 
     results["methods"]["ga_large"] = {
-        "name": "Genetic Algorithm (GA-Large, Polynomial + Interactions)",
+        "name": "GA term selection, large library (squares + planted interactions)",
         "wall_ms": ga_large_ms,
         "active_terms": names_large,
         "r2_A_tr": _calc_r2(df_A_tr["target"].to_numpy()[2:], pred_A_tr_l[2:]),
@@ -209,7 +217,7 @@ def run_benchmark():
         "r2_D_heavy": _calc_r2(df_D["target"].to_numpy()[2:], pred_D_l[2:]),
     }
 
-    print("Running RIME-AD (Native Rust Multi-Term Additive & Seed Engine)...")
+    print("Running RIME (RimeProposer, native Rust additive and seed engine)...")
     t0 = time.perf_counter()
     proposer = RimeProposer(
         target_col="target",
@@ -223,7 +231,7 @@ def run_benchmark():
     proposals = proposer.fit_and_propose(df_A_tr)
     rime_ms = (time.perf_counter() - t0) * 1000.0
 
-    assert len(proposals) > 0, "RIME-AD must return proposals"
+    assert len(proposals) > 0, "RIME must return proposals"
     top_p = proposals[0]
 
     def _pred_rime(df: pd.DataFrame) -> np.ndarray:
@@ -235,8 +243,9 @@ def run_benchmark():
     pred_rime_C = _pred_rime(df_C)
     pred_rime_D = _pred_rime(df_D)
 
-    results["methods"]["rime_ad"] = {
-        "name": "RIME-AD (Native Rust Adaptive Additive Discovery)",
+    results["methods"]["rime"] = {
+        "name": "RIME (RimeProposer)",
+        "engine_class": "apedp_dyn.proposers.rime_proposer.RimeProposer",
         "wall_ms": rime_ms,
         "formula": top_p.formula,
         "active_terms": top_p.metadata.get("inputs_used_names", []),
@@ -246,6 +255,30 @@ def run_benchmark():
         "r2_C_shift": _calc_r2(df_C["target"].to_numpy()[2:], pred_rime_C[2:]),
         "r2_D_heavy": _calc_r2(df_D["target"].to_numpy()[2:], pred_rime_D[2:]),
     }
+
+    print("Running RIME-AD (RimeAdProposer, default configuration)...")
+    t0 = time.perf_counter()
+    ad_proposals = list(RimeAdProposer(target_col="target").fit_and_propose(df_A_tr))
+    ad_ms = (time.perf_counter() - t0) * 1000.0
+    if ad_proposals:
+        ad_top = ad_proposals[0]
+        ad_pred = {name: ad_top.compute_score(frame) for name, frame in
+                   (("A_tr", df_A_tr), ("A_te", df_A_te), ("B", df_B), ("C", df_C), ("D", df_D))}
+        results["methods"]["rime_ad"] = {
+            "name": "RIME-AD (RimeAdProposer)",
+            "engine_class": "apedp_dyn.proposers.rime_ad_proposer.RimeAdProposer",
+            "wall_ms": ad_ms,
+            "formula": ad_top.formula,
+            "n_proposals": len(ad_proposals),
+            "r2_A_tr": _calc_r2(df_A_tr["target"].to_numpy()[2:], np.asarray(ad_pred["A_tr"], dtype=float)[2:]),
+            "r2_A_te": _calc_r2(df_A_te["target"].to_numpy()[2:], np.asarray(ad_pred["A_te"], dtype=float)[2:]),
+            "r2_B": _calc_r2(df_B["target"].to_numpy()[2:], np.asarray(ad_pred["B"], dtype=float)[2:]),
+            "r2_C_shift": _calc_r2(df_C["target"].to_numpy()[2:], np.asarray(ad_pred["C"], dtype=float)[2:]),
+            "r2_D_heavy": _calc_r2(df_D["target"].to_numpy()[2:], np.asarray(ad_pred["D"], dtype=float)[2:]),
+        }
+    else:
+        results["methods"]["rime_ad"] = {"name": "RIME-AD (RimeAdProposer)", "wall_ms": ad_ms,
+                                         "formula": None, "n_proposals": 0}
 
     # 4. Distractor Noise Robustness Challenge (7 Distractor Features)
     print("Running Distractor Challenge (7 pure noise channels)...")
@@ -265,7 +298,7 @@ def run_benchmark():
     y_dist[2:] = 2.0 * (x1_arr[1:-1] * x2_arr[1:-1]) + 3.0 * x3_arr[:-2] + 10.0 + 0.02 * rng_dist.randn(n_dist - 2)
     df_dist["target"] = y_dist
 
-    # RIME-AD on distractors
+    # RIME on distractors
     t0 = time.perf_counter()
     proposer_dist = RimeProposer(
         target_col="target",
@@ -282,6 +315,7 @@ def run_benchmark():
     inputs_used = top_dist.metadata.get("inputs_used_names", [])
 
     results["distractor_challenge"] = {
+        "engine": "RIME (RimeProposer)",
         "wall_ms": t_rime_dist,
         "dev_r2": top_dist.parameters["dev_r2"],
         "inputs_used": inputs_used,
@@ -298,67 +332,48 @@ def run_benchmark():
     return results
 
 
-def generate_markdown_report(results: dict[str, any]) -> None:
+def _row(label: str, m: dict) -> str:
+    if m.get("r2_A_tr") is None:
+        return f"| {label} | no proposal | | | | | `{m['wall_ms']:.1f} ms` |"
+    return (f"| {label} | `{m['r2_A_tr']:.4f}` | `{m['r2_A_te']:.4f}` | `{m['r2_B']:.4f}` | "
+            f"`{m['r2_C_shift']:.4f}` | `{m['r2_D_heavy']:.4f}` | `{m['wall_ms']:.1f} ms` |")
+
+
+def generate_markdown_report(results: dict[str, Any]) -> None:
+    """Write the report from the measured numbers only; no verdict is asserted that the table does not show."""
     m = results["methods"]
     dist = results["distractor_challenge"]
-
     lines = [
-        "# Multi-Population Extrapolation Benchmark: RIME-AD vs GA/GP",
-        "## Cross-Distribution Generalization, Parameter Shifts, and Noise Distractor Challenge",
+        "# Population extrapolation: RIME and RIME-AD against a genetic term search",
         "",
-        "---",
+        "> **Correction, 2026-11-19 (SYSTEM_FLAWS_AUDIT M-05).** Earlier versions of this page reported",
+        "> a result as RIME-AD's that the script had produced with `RimeProposer` (RIME); RIME-AD was",
+        "> never run. Each engine now has its own row. The \"GA\" rows are a genetic search over which",
+        "> columns of a fixed, hand-built term library enter a least-squares fit; the large library",
+        "> contains the true interaction term, so those rows measure term selection, not discovery.",
         "",
-        "### Benchmark Protocol & Data Provenance",
-        "- **Ground Truth Mechanism:** $y[t] = 2.0 \\cdot x_1[t-1] x_2[t-1] + 3.0 \\cdot x_3[t-2] + 10.0 + \\epsilon$",
-        "- **Populations Evaluated:**",
-        "  1. **Pop A-Train ($N=400$):** Discovery partition (seed 500, Gaussian inputs).",
-        "  2. **Pop A-Test ($N=200$):** In-distribution holdout slice.",
-        "  3. **Pop B ($N=600$):** Fresh realization from the same generating distribution (seed 501).",
-        "  4. **Pop C ($N=600$):** True physical parameter shift ($c_1 = 2.0 \\to 2.5$, $c_2 = 3.0 \\to 2.0$, seed 502).",
-        "  5. **Pop D ($N=600$):** Out-of-Distribution heavy-tailed inputs ($x \\sim \\text{Laplace}(0, 1.5)$).",
-        "  6. **Distractor Challenge:** Discovery under 7 irrelevant Gaussian noise channels ($x_4 \\dots x_{10}$).",
-        "- **Machine Result Artifact:** [`benchmarks/population_extrapolation_results.json`](file:///home/psalmprax/ALL_PROJECTS/science/benchmarks/population_extrapolation_results.json).",
+        "Ground truth: $y[t] = 2 x_1[t-1] x_2[t-1] + 3 x_3[t-2] + 10 + \\varepsilon$.",
+        "Populations: A-train (400 rows, seed 500), A-test (200 rows), B (fresh seed 501), C (parameter",
+        "shift, $c_1 = 2.5$, $c_2 = 2.0$), D (Laplace(0, 1.5) inputs). Machine-readable results:",
+        "[`benchmarks/population_extrapolation_results.json`](../benchmarks/population_extrapolation_results.json).",
         "",
-        "---",
+        "| Engine | A-train $R^2$ | A-test $R^2$ | B $R^2$ | C (shift) $R^2$ | D (heavy tail) $R^2$ | Wall time |",
+        "| :--- | :---: | :---: | :---: | :---: | :---: | :---: |",
+        _row("GA term selection, small library", m["ga_small"]),
+        _row("GA term selection, large library", m["ga_large"]),
+        _row("RIME (`RimeProposer`)", m["rime"]),
+        _row("RIME-AD (`RimeAdProposer`)", m["rime_ad"]),
         "",
-        "### 1. Cross-Population Extrapolation Generalization Table",
+        f"- RIME's top formula: `{m['rime']['formula']}`",
+        f"- RIME-AD's top formula: `{m['rime_ad'].get('formula')}`",
+        f"- GA large-library terms selected ({len(m['ga_large']['active_terms'])}): `{m['ga_large']['active_terms']}`",
         "",
-        "| Model / Search Architecture | In-Sample Fit (Pop A-Train $R^2$) | In-Dist Holdout (Pop A-Test $R^2$) | Fresh Seed (Pop B $R^2$) | Parameter Shift (Pop C $R^2$) | Heavy-Tail OOD (Pop D $R^2$) | Execution Time (ms) | Epistemic Status |",
-        "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
-        f"| **GA-Small** (Linear + Lags) | `{m['ga_small']['r2_A_tr']:.4f}` | `{m['ga_small']['r2_A_te']:.4f}` | `{m['ga_small']['r2_B']:.4f}` | `{m['ga_small']['r2_C_shift']:.4f}` | `{m['ga_small']['r2_D_heavy']:.4f}` | `{m['ga_small']['wall_ms']:.1f} ms` | **REFUSED** (Missing Interaction) |",
-        f"| **GA-Large** (Polynomial + Cross Basis) | `{m['ga_large']['r2_A_tr']:.4f}` | `{m['ga_large']['r2_A_te']:.4f}` | `{m['ga_large']['r2_B']:.4f}` | `{m['ga_large']['r2_C_shift']:.4f}` | `{m['ga_large']['r2_D_heavy']:.4f}` | `{m['ga_large']['wall_ms']:.1f} ms` | **PASSED** (Pre-Planted Basis) |",
-        f"| **RIME-AD** (Native Rust Additive Discovery) | `{m['rime_ad']['r2_A_tr']:.4f}` | `{m['rime_ad']['r2_A_te']:.4f}` | `{m['rime_ad']['r2_B']:.4f}` | `{m['rime_ad']['r2_C_shift']:.4f}` | `{m['rime_ad']['r2_D_heavy']:.4f}` | `{m['rime_ad']['wall_ms']:.1f} ms` | **PASSED** (Autonomous Recovery) |",
+        "## Distractor challenge (RIME, seven irrelevant inputs $x_4 \\dots x_{10}$)",
         "",
-        "---",
+        f"Inputs used: `{dist['inputs_used']}`; distractors admitted: `{dist['distractors_admitted']}`;",
+        f"development $R^2$ `{dist['dev_r2']:.6f}`; wall time `{dist['wall_ms']:.1f} ms`.",
         "",
-        "### 2. Discovered Equations & Structural Recoveries",
-        "",
-        "- **RIME-AD Discovered Formula:**",
-        f"  `{m['rime_ad']['formula']}`",
-        f"  *Active Inputs Used:* `{m['rime_ad']['active_terms']}` (Identified true parents $x_1, x_2, x_3$).",
-        "- **GA-Large Selected Features:**",
-        f"  `{m['ga_large']['active_terms']}`",
-        "",
-        "---",
-        "",
-        "### 3. Distractor Noise Feature Challenge (7 Noise Channels: $x_4 \\dots x_{10}$)",
-        "",
-        "| Metric / Property | Measured Value | Standard Ground Truth | Evaluation |",
-        "| :--- | :---: | :---: | :---: |",
-        f"| **Distractor Search Time** | `{dist['wall_ms']:.1f} ms` | $< 2500 \\text{{ ms}}$ | **Passed** |",
-        f"| **Dev Partition Fit ($R^2$)** | `{dist['dev_r2']:.6f}` | $> 0.9990$ | **Passed** |",
-        f"| **Admitted Signal Inputs** | `{dist['inputs_used']}` | `['x1', 'x2', 'x3']` | **Exact** |",
-        f"| **Admitted Distractor Channels** | `{dist['distractors_admitted']}` | `[]` (Zero noise channels) | **0% False Discovery** |",
-        "",
-        "---",
-        "",
-        "### 4. Key Analytical Takeaways",
-        f"1. **Parity on In-Distribution & Fresh Realizations:** Both RIME-AD and GA-Large achieve near-perfect recovery ($R^2 = {m['rime_ad']['r2_A_te']:.4f}$ vs ${m['ga_large']['r2_A_te']:.4f}$) on Population A and Population B.",
-        f"2. **Graceful Degradation on Parameter Shift:** When physical parameters shift ($c_1: 2.0 \\to 2.5, c_2: 3.0 \\to 2.0$), both engines transfer gracefully without catastrophic blowup ($R^2 = {m['rime_ad']['r2_C_shift']:.4f}$).",
-        "3. **Zero False Discovery on Distractors:** Under 7 pure noise distractor channels, RIME-AD's complexity-penalized additive search (`gamma=1.0`) strictly filters out all 7 noise features, admitting only the true generating variables $[x_1, x_2, x_3]$.",
-        f"4. **Execution Speed Advantage:** RIME-AD evaluates candidate mechanisms in native Rust in **`{m['rime_ad']['wall_ms']:.1f} ms`**, whereas multi-generation GA requires thousands of evaluations taking **`{m['ga_large']['wall_ms']:.1f} ms`** (~{m['ga_large']['wall_ms'] / m['rime_ad']['wall_ms']:.0f}x speedup).",
     ]
-
     MD_OUT.write_text("\n".join(lines), encoding="utf-8")
     print(f"Report written to {MD_OUT}")
 

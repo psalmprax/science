@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import torch
@@ -164,7 +165,8 @@ def warp_frames(z: torch.Tensor, vx: torch.Tensor, vy: torch.Tensor,
     nx = 2.0 * (xx + 0.5 - dt * vx) / w - 1.0
     ny = 2.0 * (yy + 0.5 - dt * vy) / h - 1.0
     grid = torch.stack([nx, ny], dim=-1)
-    return F.grid_sample(z, grid, mode="bilinear", padding_mode="border", align_corners=False)
+    return torch.as_tensor(
+        F.grid_sample(z, grid, mode="bilinear", padding_mode="border", align_corners=False))
 
 
 def _divergence(v: torch.Tensor) -> torch.Tensor:
@@ -179,7 +181,7 @@ def _advance(z_curr: torch.Tensor, v: torch.Tensor,
              dt: float, periodic: bool) -> torch.Tensor:
     """Predicted next frame: warp, then the head's per-channel affine (if any)."""
     z_pred = warp_frames(z_curr, v[:, 0], v[:, 1], dt=dt, periodic=periodic)
-    if s is not None:
+    if s is not None and b is not None:
         z_pred = s.unsqueeze(-1).unsqueeze(-1) * z_pred + b.unsqueeze(-1).unsqueeze(-1)
     return z_pred
 
@@ -293,7 +295,7 @@ def train_flow_head(model: LearnedFlowHead,
     """
     clip_lengths: list[int] | None = None
     if isinstance(clips, dict):
-        vals = [np.asarray(v, np.float64) for v in clips.values()]
+        vals: list[Any] = [np.asarray(v, np.float64) for v in clips.values()]
         clip_lengths = [int(v.shape[0]) for v in vals]
         arr = np.concatenate(vals, axis=0)
     else:
@@ -342,7 +344,7 @@ def train_flow_head(model: LearnedFlowHead,
             f"no training windows fit: need at least {k + 2} consecutive frames "
             f"(got t_total={t_total}, rollout_steps={k})"
         )
-    valid_arr = np.asarray(valid_tis, dtype=np.int64)
+    valid_arr: np.ndarray = np.asarray(valid_tis, dtype=np.int64)
     for step in range(steps):
         ti = int(valid_arr[rng.randint(0, valid_arr.shape[0])])
         z_prev = data[ti - 1: ti]
@@ -367,6 +369,7 @@ def train_flow_head(model: LearnedFlowHead,
             if j + 1 < k:
                 # advance with the graph-carrying prediction (computed in flow loss above)
                 z_prev, z_curr = z_curr, z_pred
+        assert total is not None  # the loop assigns it on the first unroll step
         total.backward()
         opt.step()
         losses.append(float(total.item()))
@@ -379,7 +382,7 @@ def train_flow_head(model: LearnedFlowHead,
 
 @torch.no_grad()
 def rollout_dcstt_head(head: LearnedFlowHead,
-                       transport,          # DecoupledSpatioTemporalTransport
+                       transport: Any,          # DecoupledSpatioTemporalTransport
                        context: np.ndarray,
                        horizon: int,
                        dt: float = 1.0,
@@ -423,7 +426,7 @@ def rollout_dcstt_head(head: LearnedFlowHead,
         z_np, _ = transport.transport_step(z_state.squeeze(0).numpy(),
                                            v[0, 0].numpy(), v[0, 1].numpy(), dt=dt)
         z_state_new = torch.from_numpy(z_np).unsqueeze(0)
-        if s is not None:
+        if s is not None and b is not None:
             z_state_new[:, ch] = (s[:, :, None, None] * z_state_new[:, ch]
                                   + b[:, :, None, None])
         if ch0_policy == "persist":
@@ -431,4 +434,5 @@ def rollout_dcstt_head(head: LearnedFlowHead,
         z_prev, z_curr = z_curr, z_state_new[:, ch]
         z_state = z_state_new
         frames.append(z_state.squeeze(0).numpy().copy())
-    return np.stack(frames, axis=0)
+    _out: np.ndarray = np.stack(frames, axis=0)
+    return _out

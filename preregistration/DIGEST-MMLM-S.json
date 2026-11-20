@@ -1,0 +1,12 @@
+{
+ "preregistration": "PREREG-MMLM-S-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_mmlm/equation_language.py": "b65cf9e8de40190f1bc87671ca9be6e4ee9c99545a0d0a42d2d541dfb119e5a9",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-MMLM-S-2026-11.md": "1dc2960961cfebd948fe5ee6d63e0505e0d3cb6625b269908ac944e21a8a3fa3",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627",
+  "scripts/run_prereg_mmlm_track_s.py": "de1ff23f59739626edb5b3f33b9ec2ecda3558864da79306c8b91d8eaae9c6b6",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd"
+ }
+}

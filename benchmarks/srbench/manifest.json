@@ -1,0 +1,6784 @@
+{
+ "problems": [
+  {
+   "data": {
+    "sha256": "e5fb0161067882da4cd9e001b3dcb41ea5ca4fd3d5a00387f0131515d65d3fd9",
+    "size": 4388155,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_10_19/feynman_III_10_19.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mom",
+    "Bx",
+    "By",
+    "Bz"
+   ],
+   "formula": "mom*sqrt(Bx**2+By**2+Bz**2)",
+   "name": "feynman_III_10_19",
+   "ranges": {
+    "Bx": [
+     1.0,
+     5.0
+    ],
+    "By": [
+     1.0,
+     5.0
+    ],
+    "Bz": [
+     1.0,
+     5.0
+    ],
+    "mom": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Bx": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "By": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "Bz": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "6b32cddc122a712c549353d32a4b5269440d9fe71d336ff393feaeba3bcea210",
+    "size": 2627452,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_12_43/feynman_III_12_43.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n",
+    "h"
+   ],
+   "formula": "n*(h/(2*pi))",
+   "name": "feynman_III_12_43",
+   "ranges": {
+    "h": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "L",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-1"
+   },
+   "units": {
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "5f123396e5bd9bf37facd88266cee4b5d8df358a5d99a91c5e0ae131d66dde06",
+    "size": 4446539,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_13_18/feynman_III_13_18.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "E_n",
+    "d",
+    "k",
+    "h"
+   ],
+   "formula": "2*E_n*d**2*k/(h/(2*pi))",
+   "name": "feynman_III_13_18",
+   "ranges": {
+    "E_n": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "k": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "v",
+   "target_units": {
+    "l": "1",
+    "t": "-1"
+   },
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "d": {
+     "l": "1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "k": {
+     "l": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "1455bdeeda4f526c7547ae7cf47e91872b7e72c1d61904fe6d463bf1a626af9f",
+    "size": 5240801,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_14_14/feynman_III_14_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "I_0",
+    "q",
+    "Volt",
+    "kb",
+    "T"
+   ],
+   "formula": "I_0*(exp(q*Volt/(kb*T))-1)",
+   "name": "feynman_III_14_14",
+   "ranges": {
+    "I_0": [
+     1.0,
+     5.0
+    ],
+    "T": [
+     1.0,
+     2.0
+    ],
+    "Volt": [
+     1.0,
+     2.0
+    ],
+    "kb": [
+     1.0,
+     2.0
+    ],
+    "q": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "I",
+   "target_units": {
+    "i": "-1",
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "I_0": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-3"
+    },
+    "T": {
+     "th": "1"
+    },
+    "Volt": {
+     "i": "1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "4c6187f4a30546bfa58b2b4f37a9ce49b9445452fb0b18b2d3d260e46646e9a4",
+    "size": 3513975,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_15_12/feynman_III_15_12.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "U",
+    "k",
+    "d"
+   ],
+   "formula": "2*U*(1-cos(k*d))",
+   "name": "feynman_III_15_12",
+   "ranges": {
+    "U": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "k": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "U": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "d": {
+     "l": "1"
+    },
+    "k": {
+     "l": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "397b064e35adc5fdf4c0e1007bf7ee0a741b2d6434835bdca5b181bf2eaca770",
+    "size": 3573749,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_15_14/feynman_III_15_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "h",
+    "E_n",
+    "d"
+   ],
+   "formula": "(h/(2*pi))**2/(2*E_n*d**2)",
+   "name": "feynman_III_15_14",
+   "ranges": {
+    "E_n": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "m",
+   "target_units": {
+    "m": "1"
+   },
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "d": {
+     "l": "1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "4f06775b5bbcae3a4208176c34ca39aa038b82f0d6f3273d66e58c53caab80b2",
+    "size": 3497827,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_15_27/feynman_III_15_27.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "alpha",
+    "n",
+    "d"
+   ],
+   "formula": "2*pi*alpha/(n*d)",
+   "name": "feynman_III_15_27",
+   "ranges": {
+    "alpha": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "k",
+   "target_units": {
+    "l": "-1"
+   },
+   "units": {
+    "alpha": {},
+    "d": {
+     "l": "1"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "f872451188e95b8ed0c32e2f250c8ed80205e66f828b8aca8bc34ee17b0a929a",
+    "size": 3537109,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_17_37/feynman_III_17_37.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "beta",
+    "alpha",
+    "theta"
+   ],
+   "formula": "beta*(1+alpha*cos(theta))",
+   "name": "feynman_III_17_37",
+   "ranges": {
+    "alpha": [
+     1.0,
+     5.0
+    ],
+    "beta": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "f",
+   "target_units": {},
+   "units": {
+    "alpha": {},
+    "beta": {},
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "fde2fbc5d0ebf03b1375d4a2d05ae4ae877e2ef72989b9aecde9b963fa004025",
+    "size": 5327064,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_19_51/feynman_III_19_51.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "q",
+    "h",
+    "n",
+    "epsilon"
+   ],
+   "formula": "-m*q**4/(2*(4*pi*epsilon)**2*(h/(2*pi))**2)*(1/n**2)",
+   "name": "feynman_III_19_51",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "n": {},
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "deb32645b7413acbfe79b9f533c4419be12ace63ccbb0d707728388cd10d1122",
+    "size": 4419230,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_21_20/feynman_III_21_20.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "rho_c_0",
+    "q",
+    "A_vec",
+    "m"
+   ],
+   "formula": "-rho_c_0*q*A_vec/m",
+   "name": "feynman_III_21_20",
+   "ranges": {
+    "A_vec": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "rho_c_0": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "j",
+   "target_units": {
+    "i": "-1",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "A_vec": {
+     "i": "1",
+     "l": "-1",
+     "t": "1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "rho_c_0": {
+     "i": "-1",
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "f385f7aca664516023d5cab78b92223e0c025b3b155e7aa5358cee097ac7f1fb",
+    "size": 4377938,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_4_32/feynman_III_4_32.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "h",
+    "omega",
+    "kb",
+    "T"
+   ],
+   "formula": "1/(exp((h/(2*pi))*omega/(kb*T))-1)",
+   "name": "feynman_III_4_32",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "n",
+   "target_units": {},
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "783d8a9237c7868a3c8408e7ec0a8ce43cbe17f8301a5929e12d2000ed37b66a",
+    "size": 4373278,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_4_33/feynman_III_4_33.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "h",
+    "omega",
+    "kb",
+    "T"
+   ],
+   "formula": "(h/(2*pi))*omega/(exp((h/(2*pi))*omega/(kb*T))-1)",
+   "name": "feynman_III_4_33",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "7e4969d622c7d14345de2a7d699d025010432416050d2a8c877d26cca58f08a5",
+    "size": 3532254,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_7_38/feynman_III_7_38.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mom",
+    "B",
+    "h"
+   ],
+   "formula": "2*mom*B/(h/(2*pi))",
+   "name": "feynman_III_7_38",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "mom": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "omega",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "49e69e07ba6bd94a37550fbee5eed107bb26dd18a88d68d5b567722df17adee7",
+    "size": 3526991,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_8_54/feynman_III_8_54.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "E_n",
+    "t",
+    "h"
+   ],
+   "formula": "sin(E_n*t/(h/(2*pi)))**2",
+   "name": "feynman_III_8_54",
+   "ranges": {
+    "E_n": [
+     1.0,
+     2.0
+    ],
+    "h": [
+     1.0,
+     4.0
+    ],
+    "t": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "prob",
+   "target_units": {},
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "t": {
+     "t": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "186bb508ecec101e1099408ffe41705b6b6ab15b977cca17e2f2a487bb37b324",
+    "size": 6145919,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_III_9_52/feynman_III_9_52.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "p_d",
+    "Ef",
+    "t",
+    "h",
+    "omega",
+    "omega_0"
+   ],
+   "formula": "(p_d*Ef*t/(h/(2*pi)))*sin((omega-omega_0)*t/2)**2/((omega-omega_0)*t/2)**2",
+   "name": "feynman_III_9_52",
+   "ranges": {
+    "Ef": [
+     1.0,
+     3.0
+    ],
+    "h": [
+     1.0,
+     3.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ],
+    "omega_0": [
+     1.0,
+     5.0
+    ],
+    "p_d": [
+     1.0,
+     3.0
+    ],
+    "t": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "prob",
+   "target_units": {},
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    },
+    "p_d": {
+     "i": "-1",
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    },
+    "t": {
+     "t": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "d38295e7c52e375c2ccbfd53e4ae560886b0d7f4e3114e6502b24d2b0d112c6a",
+    "size": 3521049,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_10_9/feynman_II_10_9.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "sigma_den",
+    "epsilon",
+    "chi"
+   ],
+   "formula": "sigma_den/epsilon*1/(1+chi)",
+   "name": "feynman_II_10_9",
+   "ranges": {
+    "chi": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "sigma_den": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Ef",
+   "target_units": {
+    "i": "1",
+    "l": "-1"
+   },
+   "units": {
+    "chi": {},
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "sigma_den": {
+     "i": "-1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b03a7734f1cbb27d1deba0168d306d8e5902038c0aa5403901ecfa1d113adefe",
+    "size": 5247398,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_11_20/feynman_II_11_20.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n_rho",
+    "p_d",
+    "Ef",
+    "kb",
+    "T"
+   ],
+   "formula": "n_rho*p_d**2*Ef/(3*kb*T)",
+   "name": "feynman_II_11_20",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "T": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "n_rho": [
+     1.0,
+     5.0
+    ],
+    "p_d": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Pol",
+   "target_units": {
+    "i": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "T": {
+     "th": "1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "n_rho": {
+     "l": "-3"
+    },
+    "p_d": {
+     "i": "-1",
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "e55c7923a65dfda6c47698f7e6b8bd7faff78c19e0d733dea610c5fd22b1dec9",
+    "size": 4425768,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_11_27/feynman_II_11_27.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n",
+    "alpha",
+    "epsilon",
+    "Ef"
+   ],
+   "formula": "n*alpha/(1-(n*alpha/3))*epsilon*Ef",
+   "name": "feynman_II_11_27",
+   "ranges": {
+    "Ef": [
+     1.0,
+     2.0
+    ],
+    "alpha": [
+     0.0,
+     1.0
+    ],
+    "epsilon": [
+     1.0,
+     2.0
+    ],
+    "n": [
+     0.0,
+     1.0
+    ]
+   },
+   "target": "Pol",
+   "target_units": {
+    "i": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "alpha": {},
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "7559334251c5d6cceb345a17981cfa0978d033db5ce1eec43af780472c476d8b",
+    "size": 2652626,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_11_28/feynman_II_11_28.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n",
+    "alpha"
+   ],
+   "formula": "1+n*alpha/(1-(n*alpha/3))",
+   "name": "feynman_II_11_28",
+   "ranges": {
+    "alpha": [
+     0.0,
+     1.0
+    ],
+    "n": [
+     0.0,
+     1.0
+    ]
+   },
+   "target": "theta",
+   "target_units": {},
+   "units": {
+    "alpha": {},
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "0baa7b708956fd05b84d47b18a86f926335db5f42d2cd7e29ca83558c139aff3",
+    "size": 5276864,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_11_3/feynman_II_11_3.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "Ef",
+    "m",
+    "omega_0",
+    "omega"
+   ],
+   "formula": "q*Ef/(m*(omega_0**2-omega**2))",
+   "name": "feynman_II_11_3",
+   "ranges": {
+    "Ef": [
+     1.0,
+     3.0
+    ],
+    "m": [
+     1.0,
+     3.0
+    ],
+    "omega": [
+     1.0,
+     2.0
+    ],
+    "omega_0": [
+     3.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "x",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "657f2ead43fc0665a13ad881cc1faf73d1fac1925b5c8a7bc0abfb1033ebc838",
+    "size": 4438318,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_13_17/feynman_II_13_17.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "c",
+    "I",
+    "r"
+   ],
+   "formula": "1/(4*pi*epsilon*c**2)*2*I/r",
+   "name": "feynman_II_13_17",
+   "ranges": {
+    "I": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "B",
+   "target_units": {
+    "i": "1",
+    "l": "-2",
+    "t": "1"
+   },
+   "units": {
+    "I": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-3"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "6ddc8e14afb27313a9ea0e6e578ff9c9cf844a00ea5e638132c37e78a93c9abd",
+    "size": 3492883,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_13_23/feynman_II_13_23.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "rho_c_0",
+    "v",
+    "c"
+   ],
+   "formula": "rho_c_0/sqrt(1-v**2/c**2)",
+   "name": "feynman_II_13_23",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "rho_c_0": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "rho_c",
+   "target_units": {
+    "i": "-1",
+    "l": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "rho_c_0": {
+     "i": "-1",
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "0c342ef5d61bbcf43180a3b71d407b9d994942ce43e8960052201daf88dd095d",
+    "size": 3488235,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_13_34/feynman_II_13_34.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "rho_c_0",
+    "v",
+    "c"
+   ],
+   "formula": "rho_c_0*v/sqrt(1-v**2/c**2)",
+   "name": "feynman_II_13_34",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "rho_c_0": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "j",
+   "target_units": {
+    "i": "-1",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "rho_c_0": {
+     "i": "-1",
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "5e53471367d15f6bfecdee9ac34641dbd8d76a2e6f1e64946e9aafb4b09debcd",
+    "size": 3522949,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_15_4/feynman_II_15_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mom",
+    "B",
+    "theta"
+   ],
+   "formula": "-mom*B*cos(theta)",
+   "name": "feynman_II_15_4",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "mom": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "ac83526849bcbb5267116b3560a2314d0b065d5c5307297854681a1f03682495",
+    "size": 3522527,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_15_5/feynman_II_15_5.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "p_d",
+    "Ef",
+    "theta"
+   ],
+   "formula": "-p_d*Ef*cos(theta)",
+   "name": "feynman_II_15_5",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "p_d": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "p_d": {
+     "i": "-1",
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "96344d1513665657fd29493c766ba59461a09f3c7c1d67805344bf303cfdd4fe",
+    "size": 5309338,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_21_32/feynman_II_21_32.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "epsilon",
+    "r",
+    "v",
+    "c"
+   ],
+   "formula": "q/(4*pi*epsilon*r*(1-v/c))",
+   "name": "feynman_II_21_32",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "Volt",
+   "target_units": {
+    "i": "1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "0730f158523c6fbc1358036291ed43df9a4d2f4ff53c8c0ddf8926ab91d6fcdf",
+    "size": 3457031,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_24_17/feynman_II_24_17.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "omega",
+    "c",
+    "d"
+   ],
+   "formula": "sqrt(omega**2/c**2-pi**2/d**2)",
+   "name": "feynman_II_24_17",
+   "ranges": {
+    "c": [
+     1.0,
+     2.0
+    ],
+    "d": [
+     2.0,
+     4.0
+    ],
+    "omega": [
+     4.0,
+     6.0
+    ]
+   },
+   "target": "k",
+   "target_units": {
+    "l": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "d": {
+     "l": "1"
+    },
+    "omega": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "e27b0fb50977dbe0c5e8b3e4dc50490e52dabfe9b8a0f6ad7f9ec5e4a87e043e",
+    "size": 3545000,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_27_16/feynman_II_27_16.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "c",
+    "Ef"
+   ],
+   "formula": "epsilon*c*Ef**2",
+   "name": "feynman_II_27_16",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "flux",
+   "target_units": {
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "f6a4579c6f7dcee7a0277e9e53b7df965191a3f80a30521a750dc9223d93f561",
+    "size": 2649670,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_27_18/feynman_II_27_18.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "Ef"
+   ],
+   "formula": "epsilon*Ef**2",
+   "name": "feynman_II_27_18",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_den",
+   "target_units": {
+    "l": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b8d94f002408f850933b1539a7fa8530dcb68f0dccae47cd8658909e6dbe1146",
+    "size": 5280864,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_2_42/feynman_II_2_42.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "kappa",
+    "T1",
+    "T2",
+    "A",
+    "d"
+   ],
+   "formula": "kappa*(T2-T1)*A/d",
+   "name": "feynman_II_2_42",
+   "ranges": {
+    "A": [
+     1.0,
+     5.0
+    ],
+    "T1": [
+     1.0,
+     5.0
+    ],
+    "T2": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "kappa": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Pwr",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "A": {
+     "l": "2"
+    },
+    "T1": {
+     "th": "1"
+    },
+    "T2": {
+     "th": "1"
+    },
+    "d": {
+     "l": "1"
+    },
+    "kappa": {
+     "l": "1",
+     "m": "1",
+     "t": "-3",
+     "th": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "ff51a5d8383ddfbe99bbbfda07d227c1ca7dc6e9104988b6ea50c8b0116dd244",
+    "size": 4369691,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_34_11/feynman_II_34_11.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "g_",
+    "q",
+    "B",
+    "m"
+   ],
+   "formula": "g_*q*B/(2*m)",
+   "name": "feynman_II_34_11",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "g_": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "omega",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "g_": {},
+    "m": {
+     "m": "1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "2588044f47a5fd80b2bacc4ae4c19cd32565dd9b53d3e00deae385016e2ed4f9",
+    "size": 3512355,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_34_2/feynman_II_34_2.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "v",
+    "r"
+   ],
+   "formula": "q*v*r/2",
+   "name": "feynman_II_34_2",
+   "ranges": {
+    "q": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "mom",
+   "target_units": {
+    "i": "-1",
+    "l": "4",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "efe8cec1c28bdc92461bb828d2d0a1336c6d34526c6e9133ab23baa644ebaa0a",
+    "size": 3524876,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_34_29a/feynman_II_34_29a.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "h",
+    "m"
+   ],
+   "formula": "q*h/(4*pi*m)",
+   "name": "feynman_II_34_29a",
+   "ranges": {
+    "h": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "mom",
+   "target_units": {
+    "i": "-1",
+    "l": "4",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "79195038d724bbf94f690771086f9c2586a3af67d559f6471d2a49e71c1b8195",
+    "size": 5304965,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_34_29b/feynman_II_34_29b.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "g_",
+    "h",
+    "Jz",
+    "mom",
+    "B"
+   ],
+   "formula": "g_*mom*B*Jz/(h/(2*pi))",
+   "name": "feynman_II_34_29b",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "Jz": [
+     1.0,
+     5.0
+    ],
+    "g_": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "mom": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "Jz": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "g_": {},
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "632db80d5234bef1da36937c1c853ce969ad270e3acad7772f7ec49575b176fb",
+    "size": 3513450,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_34_2a/feynman_II_34_2a.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "v",
+    "r"
+   ],
+   "formula": "q*v/(2*pi*r)",
+   "name": "feynman_II_34_2a",
+   "ranges": {
+    "q": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "I",
+   "target_units": {
+    "i": "-1",
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "274f055cd8d8ff53fe0a97124e4a8eab9f54c0b9cb966c3f8759a6a41726b536",
+    "size": 5241782,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_35_18/feynman_II_35_18.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n_0",
+    "kb",
+    "T",
+    "mom",
+    "B"
+   ],
+   "formula": "n_0/(exp(mom*B/(kb*T))+exp(-mom*B/(kb*T)))",
+   "name": "feynman_II_35_18",
+   "ranges": {
+    "B": [
+     1.0,
+     3.0
+    ],
+    "T": [
+     1.0,
+     3.0
+    ],
+    "kb": [
+     1.0,
+     3.0
+    ],
+    "mom": [
+     1.0,
+     3.0
+    ],
+    "n_0": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "n",
+   "target_units": {},
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "T": {
+     "th": "1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    },
+    "n_0": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "7c733eff7309fd3164e82c437d6f5b8aaf4e1d9d2bdd297188cf864d9a944c73",
+    "size": 5243222,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_35_21/feynman_II_35_21.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n_rho",
+    "mom",
+    "B",
+    "kb",
+    "T"
+   ],
+   "formula": "n_rho*mom*tanh(mom*B/(kb*T))",
+   "name": "feynman_II_35_21",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "T": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "mom": [
+     1.0,
+     5.0
+    ],
+    "n_rho": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "M",
+   "target_units": {
+    "i": "-1",
+    "l": "1",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "T": {
+     "th": "1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    },
+    "n_rho": {
+     "l": "-3"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "46e26ab2e17e1e92728b1a27ebcad5fc8319b4195414746064da34d95f27280e",
+    "size": 7817032,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_36_38/feynman_II_36_38.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mom",
+    "H",
+    "kb",
+    "T",
+    "alpha",
+    "epsilon",
+    "c",
+    "M"
+   ],
+   "formula": "mom*H/(kb*T)+(mom*alpha)/(epsilon*c**2*kb*T)*M",
+   "name": "feynman_II_36_38",
+   "ranges": {
+    "H": [
+     1.0,
+     3.0
+    ],
+    "M": [
+     1.0,
+     3.0
+    ],
+    "T": [
+     1.0,
+     3.0
+    ],
+    "alpha": [
+     1.0,
+     3.0
+    ],
+    "c": [
+     1.0,
+     3.0
+    ],
+    "epsilon": [
+     1.0,
+     3.0
+    ],
+    "kb": [
+     1.0,
+     3.0
+    ],
+    "mom": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "f",
+   "target_units": {},
+   "units": {
+    "H": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "M": {
+     "i": "-1",
+     "l": "1",
+     "m": "1",
+     "t": "-3"
+    },
+    "T": {
+     "th": "1"
+    },
+    "alpha": {},
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "fc2232345c7145c1181090555d7a76918dde6464239a04cc7b36b98674212245",
+    "size": 3528032,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_37_1/feynman_II_37_1.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mom",
+    "B",
+    "chi"
+   ],
+   "formula": "mom*(1+chi)*B",
+   "name": "feynman_II_37_1",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "chi": [
+     1.0,
+     5.0
+    ],
+    "mom": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "chi": {},
+    "mom": {
+     "i": "-1",
+     "l": "4",
+     "m": "1",
+     "t": "-3"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "cf43c33f24c1defbdfa241ffcc4e573bf548208ebb1bf05b54256d191c5dba46",
+    "size": 2641735,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_38_14/feynman_II_38_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "Y",
+    "sigma"
+   ],
+   "formula": "Y/(2*(1+sigma))",
+   "name": "feynman_II_38_14",
+   "ranges": {
+    "Y": [
+     1.0,
+     5.0
+    ],
+    "sigma": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "mu_S",
+   "target_units": {
+    "l": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Y": {
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    },
+    "sigma": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "6f78849094e49f3f4d9b84a7bb76c50e1c86cecd9f558a12f7698b31efbdfd79",
+    "size": 4379346,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_38_3/feynman_II_38_3.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "Y",
+    "A",
+    "d",
+    "x"
+   ],
+   "formula": "Y*A*x/d",
+   "name": "feynman_II_38_3",
+   "ranges": {
+    "A": [
+     1.0,
+     5.0
+    ],
+    "Y": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "x": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "A": {
+     "l": "2"
+    },
+    "Y": {
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    },
+    "d": {
+     "l": "1"
+    },
+    "x": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "56f25ef2fcadcd25cc5ccdc721663194ead75bcd90c4d5c1b806d72ea193948f",
+    "size": 2679491,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_3_24/feynman_II_3_24.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "Pwr",
+    "r"
+   ],
+   "formula": "Pwr/(4*pi*r**2)",
+   "name": "feynman_II_3_24",
+   "ranges": {
+    "Pwr": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "flux",
+   "target_units": {
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "Pwr": {
+     "l": "2",
+     "m": "1",
+     "t": "-3"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b51ab4333dc1c5a1893ef09c7cad75b97c0873648cfef1902e5b5d67c5774330",
+    "size": 3550006,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_4_23/feynman_II_4_23.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "epsilon",
+    "r"
+   ],
+   "formula": "q/(4*pi*epsilon*r)",
+   "name": "feynman_II_4_23",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Volt",
+   "target_units": {
+    "i": "1"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "2b6d9f0c83c4e8e724b1e1b314c527b96184962ed8f846502a5f5a88cbfae29f",
+    "size": 4458532,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_6_11/feynman_II_6_11.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "p_d",
+    "theta",
+    "r"
+   ],
+   "formula": "1/(4*pi*epsilon)*p_d*cos(theta)/r**2",
+   "name": "feynman_II_6_11",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     3.0
+    ],
+    "p_d": [
+     1.0,
+     3.0
+    ],
+    "r": [
+     1.0,
+     3.0
+    ],
+    "theta": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "Volt",
+   "target_units": {
+    "i": "1"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "p_d": {
+     "i": "-1",
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "793d81b86d0b3b67e05e3575e95484eda204b4bba0692b576ab45bee59dbd386",
+    "size": 6146738,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_6_15a/feynman_II_6_15a.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "p_d",
+    "r",
+    "x",
+    "y",
+    "z"
+   ],
+   "formula": "p_d/(4*pi*epsilon)*3*z/r**5*sqrt(x**2+y**2)",
+   "name": "feynman_II_6_15a",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     3.0
+    ],
+    "p_d": [
+     1.0,
+     3.0
+    ],
+    "r": [
+     1.0,
+     3.0
+    ],
+    "x": [
+     1.0,
+     3.0
+    ],
+    "y": [
+     1.0,
+     3.0
+    ],
+    "z": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "Ef",
+   "target_units": {
+    "i": "1",
+    "l": "-1"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "p_d": {
+     "i": "-1",
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "x": {
+     "l": "1"
+    },
+    "y": {
+     "l": "1"
+    },
+    "z": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "36609074ecb55d64eed1faddc9e05446a38daf1db2b127ecfdb1d34205b99738",
+    "size": 4458111,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_6_15b/feynman_II_6_15b.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "p_d",
+    "theta",
+    "r"
+   ],
+   "formula": "p_d/(4*pi*epsilon)*3*cos(theta)*sin(theta)/r**3",
+   "name": "feynman_II_6_15b",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     3.0
+    ],
+    "p_d": [
+     1.0,
+     3.0
+    ],
+    "r": [
+     1.0,
+     3.0
+    ],
+    "theta": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "Ef",
+   "target_units": {
+    "i": "1",
+    "l": "-1"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "p_d": {
+     "i": "-1",
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "75cd156b20a8f5e1cca2a536c0a50c28efc8d146e0f94d9c14a7a037726ad61e",
+    "size": 2642592,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_8_31/feynman_II_8_31.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "Ef"
+   ],
+   "formula": "epsilon*Ef**2/2",
+   "name": "feynman_II_8_31",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_den",
+   "target_units": {
+    "l": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "ced18f246d507c049241f107d4e07e77a1d0afa4ae2154e099b9a3c286cb7141",
+    "size": 3547356,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_II_8_7/feynman_II_8_7.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "epsilon",
+    "d"
+   ],
+   "formula": "3/5*q**2/(4*pi*epsilon*d)",
+   "name": "feynman_II_8_7",
+   "ranges": {
+    "d": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "d": {
+     "l": "1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "56afdc436cd0b0a1ed510c2bd780fbeda80daa7006676d1d982f924a350cbe73",
+    "size": 3492271,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_10_7/feynman_I_10_7.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m_0",
+    "v",
+    "c"
+   ],
+   "formula": "m_0/sqrt(1-v**2/c**2)",
+   "name": "feynman_I_10_7",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "m_0": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "m",
+   "target_units": {
+    "m": "1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "m_0": {
+     "m": "1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "52570e7b3d0066899283c3ef1fbb4241f64ad3d0a1bd6c9cc179ebe2262c8e86",
+    "size": 6124119,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_11_19/feynman_I_11_19.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "x1",
+    "x2",
+    "x3",
+    "y1",
+    "y2",
+    "y3"
+   ],
+   "formula": "x1*y1+x2*y2+x3*y3",
+   "name": "feynman_I_11_19",
+   "ranges": {
+    "x1": [
+     1.0,
+     5.0
+    ],
+    "x2": [
+     1.0,
+     5.0
+    ],
+    "x3": [
+     1.0,
+     5.0
+    ],
+    "y1": [
+     1.0,
+     5.0
+    ],
+    "y2": [
+     1.0,
+     5.0
+    ],
+    "y3": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "A",
+   "target_units": {
+    "l": "2"
+   },
+   "units": {
+    "x1": {
+     "l": "1"
+    },
+    "x2": {
+     "l": "1"
+    },
+    "x3": {
+     "l": "1"
+    },
+    "y1": {
+     "l": "1"
+    },
+    "y2": {
+     "l": "1"
+    },
+    "y3": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "9e1ec477e8af8356c3b731f8815f19b57bb404bd7c1629a2020bc9d90b0c028a",
+    "size": 2630211,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_12_1/feynman_I_12_1.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mu",
+    "Nn"
+   ],
+   "formula": "mu*Nn",
+   "name": "feynman_I_12_1",
+   "ranges": {
+    "Nn": [
+     1.0,
+     5.0
+    ],
+    "mu": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Nn": {
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "mu": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "4f3e3e20b8bbb92e7f35d7eb0bb80dcfdf28bafc48a7fb51f0fd868d8ba64ed6",
+    "size": 5292426,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_12_11/feynman_I_12_11.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "Ef",
+    "B",
+    "v",
+    "theta"
+   ],
+   "formula": "q*(Ef+B*v*sin(theta))",
+   "name": "feynman_I_12_11",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "theta": {},
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "6fe281722cd1cf4da63248e09b84f5c11ddf73f13ef29e03e955cae8036548e3",
+    "size": 4423080,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_12_2/feynman_I_12_2.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q1",
+    "q2",
+    "epsilon",
+    "r"
+   ],
+   "formula": "q1*q2*r/(4*pi*epsilon*r**3)",
+   "name": "feynman_I_12_2",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q1": [
+     1.0,
+     5.0
+    ],
+    "q2": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q1": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "q2": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "5576935381b138bee157c44f39b203aa2e77860a32003494044771c582add97b",
+    "size": 3564012,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_12_4/feynman_I_12_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q1",
+    "epsilon",
+    "r"
+   ],
+   "formula": "q1*r/(4*pi*epsilon*r**3)",
+   "name": "feynman_I_12_4",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q1": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Ef",
+   "target_units": {
+    "i": "1",
+    "l": "-1"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q1": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "6c6a0b512bf672fe9b19b18b4054a16ff4a6fa09a8583a51fc7872a9a33a706c",
+    "size": 2630044,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_12_5/feynman_I_12_5.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q2",
+    "Ef"
+   ],
+   "formula": "q2*Ef",
+   "name": "feynman_I_12_5",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "q2": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "q2": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "76f7da5887312e52fdf5c412b82f47eeadba34a9bea06b9c72379eed76ef5029",
+    "size": 5285639,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_13_12/feynman_I_13_12.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m1",
+    "m2",
+    "r1",
+    "r2",
+    "G"
+   ],
+   "formula": "G*m1*m2*(1/r2-1/r1)",
+   "name": "feynman_I_13_12",
+   "ranges": {
+    "G": [
+     1.0,
+     5.0
+    ],
+    "m1": [
+     1.0,
+     5.0
+    ],
+    "m2": [
+     1.0,
+     5.0
+    ],
+    "r1": [
+     1.0,
+     5.0
+    ],
+    "r2": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "U",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "m1": {
+     "m": "1"
+    },
+    "m2": {
+     "m": "1"
+    },
+    "r1": {
+     "l": "1"
+    },
+    "r2": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "87faf7a849af1ea4ca8caef0f3c16718484be30694d26af188db20ac56322222",
+    "size": 4399665,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_13_4/feynman_I_13_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "v",
+    "u",
+    "w"
+   ],
+   "formula": "1/2*m*(v**2+u**2+w**2)",
+   "name": "feynman_I_13_4",
+   "ranges": {
+    "m": [
+     1.0,
+     5.0
+    ],
+    "u": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ],
+    "w": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "K",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "m": {
+     "m": "1"
+    },
+    "u": {
+     "l": "1",
+     "t": "-1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    },
+    "w": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "d6a9c6f2c19c66e4ab076aab84afd303f32378b3ee71e02e5eac5842040d0aaf",
+    "size": 3525438,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_14_3/feynman_I_14_3.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "g",
+    "z"
+   ],
+   "formula": "m*g*z",
+   "name": "feynman_I_14_3",
+   "ranges": {
+    "g": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "z": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "U",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "g": {
+     "l": "1",
+     "t": "-2"
+    },
+    "m": {
+     "m": "1"
+    },
+    "z": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "2a8209403837a778f223cc54beb7be3fa7ae68520e8eb7bed82187342b6a5bfd",
+    "size": 2642227,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_14_4/feynman_I_14_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "k_spring",
+    "x"
+   ],
+   "formula": "1/2*k_spring*x**2",
+   "name": "feynman_I_14_4",
+   "ranges": {
+    "k_spring": [
+     1.0,
+     5.0
+    ],
+    "x": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "U",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "k_spring": {
+     "m": "1",
+     "t": "-2"
+    },
+    "x": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "83186c96a711adb18b47de7e67ae12da09b10e0c1d24825fc204034811454f1a",
+    "size": 3488171,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_15_10/feynman_I_15_10.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m_0",
+    "v",
+    "c"
+   ],
+   "formula": "m_0*v/sqrt(1-v**2/c**2)",
+   "name": "feynman_I_15_10",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "m_0": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "p",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "m_0": {
+     "m": "1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "26ff82e69dc4e24a0566cfc378b56534b129cc4a9ebc40fe962de656cc631df7",
+    "size": 4365968,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_15_3t/feynman_I_15_3t.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "x",
+    "c",
+    "u",
+    "t"
+   ],
+   "formula": "(t-u*x/c**2)/sqrt(1-u**2/c**2)",
+   "name": "feynman_I_15_3t",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "t": [
+     1.0,
+     5.0
+    ],
+    "u": [
+     1.0,
+     2.0
+    ],
+    "x": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "t1",
+   "target_units": {
+    "t": "1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "t": {
+     "t": "1"
+    },
+    "u": {
+     "l": "1",
+     "t": "-1"
+    },
+    "x": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "8e3c41342e6bcbcc1b8f12cb36d12cb6aa41fa49221e366370b8b0534bef2fcb",
+    "size": 4367209,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_15_3x/feynman_I_15_3x.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "x",
+    "u",
+    "c",
+    "t"
+   ],
+   "formula": "(x-u*t)/sqrt(1-u**2/c**2)",
+   "name": "feynman_I_15_3x",
+   "ranges": {
+    "c": [
+     3.0,
+     20.0
+    ],
+    "t": [
+     1.0,
+     2.0
+    ],
+    "u": [
+     1.0,
+     2.0
+    ],
+    "x": [
+     5.0,
+     10.0
+    ]
+   },
+   "target": "x1",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "t": {
+     "t": "1"
+    },
+    "u": {
+     "l": "1",
+     "t": "-1"
+    },
+    "x": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "7b7c49adfe9e525ddc6b657e87ba05ee89c252cd4996cddda630884cd3753f93",
+    "size": 3480576,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_16_6/feynman_I_16_6.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "c",
+    "v",
+    "u"
+   ],
+   "formula": "(u+v)/(1+u*v/c**2)",
+   "name": "feynman_I_16_6",
+   "ranges": {
+    "c": [
+     1.0,
+     5.0
+    ],
+    "u": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "v1",
+   "target_units": {
+    "l": "1",
+    "t": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "u": {
+     "l": "1",
+     "t": "-1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "c3ec35cae636c06027ad625bae4ac778b1f8ff40f09e91dd439fc79119d9f272",
+    "size": 3539566,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_18_12/feynman_I_18_12.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "r",
+    "F",
+    "theta"
+   ],
+   "formula": "r*F*sin(theta)",
+   "name": "feynman_I_18_12",
+   "ranges": {
+    "F": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     0.0,
+     5.0
+    ]
+   },
+   "target": "tau",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "F": {
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "68295a280bca1dfad98dc36594f7079cdc59f9567db8dbdf71c450ab67e39574",
+    "size": 4423089,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_18_14/feynman_I_18_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "r",
+    "v",
+    "theta"
+   ],
+   "formula": "m*r*v*sin(theta)",
+   "name": "feynman_I_18_14",
+   "ranges": {
+    "m": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "L",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-1"
+   },
+   "units": {
+    "m": {
+     "m": "1"
+    },
+    "r": {
+     "l": "1"
+    },
+    "theta": {},
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "a857a458b0621f46b60f326d5760f7d3d39d6ba1fe87db1a7f1114bdfeb99862",
+    "size": 4342371,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_18_4/feynman_I_18_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m1",
+    "m2",
+    "r1",
+    "r2"
+   ],
+   "formula": "(m1*r1+m2*r2)/(m1+m2)",
+   "name": "feynman_I_18_4",
+   "ranges": {
+    "m1": [
+     1.0,
+     5.0
+    ],
+    "m2": [
+     1.0,
+     5.0
+    ],
+    "r1": [
+     1.0,
+     5.0
+    ],
+    "r2": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "r",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "m1": {
+     "m": "1"
+    },
+    "m2": {
+     "m": "1"
+    },
+    "r1": {
+     "l": "1"
+    },
+    "r2": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "81191762ed19538b3cf2a2a83ac808c041fa5142e5288980c9b1b114081a14a0",
+    "size": 4395394,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_24_6/feynman_I_24_6.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "omega",
+    "omega_0",
+    "x"
+   ],
+   "formula": "1/2*m*(omega**2+omega_0**2)*1/2*x**2",
+   "name": "feynman_I_24_6",
+   "ranges": {
+    "m": [
+     1.0,
+     3.0
+    ],
+    "omega": [
+     1.0,
+     3.0
+    ],
+    "omega_0": [
+     1.0,
+     3.0
+    ],
+    "x": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "m": {
+     "m": "1"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    },
+    "x": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "a15ad0797f0d445cafcf5afb14f26df0aee2417181a2081ad26b1c10e0aaf79c",
+    "size": 2629013,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_25_13/feynman_I_25_13.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "C"
+   ],
+   "formula": "q/C",
+   "name": "feynman_I_25_13",
+   "ranges": {
+    "C": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Volt",
+   "target_units": {
+    "i": "1"
+   },
+   "units": {
+    "C": {
+     "i": "-2",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "4f8aaeefb1885b1f0ff918e75a0bc63fc2f900fbb44a0bd24e15387a69f008d3",
+    "size": 2694311,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_26_2/feynman_I_26_2.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n",
+    "theta2"
+   ],
+   "formula": "arcsin(n*sin(theta2))",
+   "name": "feynman_I_26_2",
+   "ranges": {
+    "n": [
+     0.0,
+     1.0
+    ],
+    "theta2": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "theta1",
+   "target_units": {},
+   "units": {
+    "n": {},
+    "theta2": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "fc5d76439885e717a9f0c4e445cdb9de9b566416200b131e63ba99a9f0fcb3cd",
+    "size": 3503847,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_27_6/feynman_I_27_6.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "d1",
+    "d2",
+    "n"
+   ],
+   "formula": "1/(1/d1+n/d2)",
+   "name": "feynman_I_27_6",
+   "ranges": {
+    "d1": [
+     1.0,
+     5.0
+    ],
+    "d2": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "foc",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "d1": {
+     "l": "1"
+    },
+    "d2": {
+     "l": "1"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "1d084f8e92e5f97662e14f9e8bb266584e3502927371061694552b0c8bb95d9d",
+    "size": 4357236,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_29_16/feynman_I_29_16.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "x1",
+    "x2",
+    "theta1",
+    "theta2"
+   ],
+   "formula": "sqrt(x1**2+x2**2-2*x1*x2*cos(theta1-theta2))",
+   "name": "feynman_I_29_16",
+   "ranges": {
+    "theta1": [
+     1.0,
+     5.0
+    ],
+    "theta2": [
+     1.0,
+     5.0
+    ],
+    "x1": [
+     1.0,
+     5.0
+    ],
+    "x2": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "x",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "theta1": {},
+    "theta2": {},
+    "x1": {
+     "l": "1"
+    },
+    "x2": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "e16f03ac7b43eaed3f92a56c21a3a9b72bb35565cb304dc92d9f3a10941962da",
+    "size": 2636079,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_29_4/feynman_I_29_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "omega",
+    "c"
+   ],
+   "formula": "omega/c",
+   "name": "feynman_I_29_4",
+   "ranges": {
+    "c": [
+     1.0,
+     10.0
+    ],
+    "omega": [
+     1.0,
+     10.0
+    ]
+   },
+   "target": "k",
+   "target_units": {
+    "l": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b3e7072ef46bb1cdf57d4d9189fbffd3980fa968296a6c58f66e0a11f552d8de",
+    "size": 3512654,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_30_3/feynman_I_30_3.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "Int_0",
+    "theta",
+    "n"
+   ],
+   "formula": "Int_0*sin(n*theta/2)**2/sin(theta/2)**2",
+   "name": "feynman_I_30_3",
+   "ranges": {
+    "Int_0": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Int",
+   "target_units": {
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "Int_0": {
+     "m": "1",
+     "t": "-3"
+    },
+    "n": {},
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "6cfb4533b46291945eed960a0e6da8227494c1ba720aa13e64ae87b442bb364a",
+    "size": 3512203,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_30_5/feynman_I_30_5.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "lambd",
+    "d",
+    "n"
+   ],
+   "formula": "arcsin(lambd/(n*d))",
+   "name": "feynman_I_30_5",
+   "ranges": {
+    "d": [
+     2.0,
+     5.0
+    ],
+    "lambd": [
+     1.0,
+     2.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "theta",
+   "target_units": {},
+   "units": {
+    "d": {
+     "l": "1"
+    },
+    "lambd": {
+     "l": "1"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "4d45a3d28d0792097d19c85a399c491c5c9881a3b5d10f28d56ab7f4f47e588c",
+    "size": 6114954,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_32_17/feynman_I_32_17.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "c",
+    "Ef",
+    "r",
+    "omega",
+    "omega_0"
+   ],
+   "formula": "(1/2*epsilon*c*Ef**2)*(8*pi*r**2/3)*(omega**4/(omega**2-omega_0**2)**2)",
+   "name": "feynman_I_32_17",
+   "ranges": {
+    "Ef": [
+     1.0,
+     2.0
+    ],
+    "c": [
+     1.0,
+     2.0
+    ],
+    "epsilon": [
+     1.0,
+     2.0
+    ],
+    "omega": [
+     1.0,
+     2.0
+    ],
+    "omega_0": [
+     3.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "Pwr",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "0fb9badfe474d0dbc5a23e83ed56dfc8cbd8ae6201f959f3ba0dd147fff89f09",
+    "size": 4418338,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_32_5/feynman_I_32_5.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "a",
+    "epsilon",
+    "c"
+   ],
+   "formula": "q**2*a**2/(6*pi*epsilon*c**3)",
+   "name": "feynman_I_32_5",
+   "ranges": {
+    "a": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Pwr",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "a": {
+     "l": "1",
+     "t": "-2"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "e08766a5d86b7bf751ec0a0d214bc50489268e86e3f084f88e5e7faf58f4f842",
+    "size": 3485273,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_34_1/feynman_I_34_1.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "c",
+    "v",
+    "omega_0"
+   ],
+   "formula": "omega_0/(1-v/c)",
+   "name": "feynman_I_34_1",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "omega_0": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "omega",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "eab25b9268b751b4a9dca3d7e39353ec1d5d21a955cca4ec44d3a2f464873961",
+    "size": 3483302,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_34_14/feynman_I_34_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "c",
+    "v",
+    "omega_0"
+   ],
+   "formula": "(1+v/c)/sqrt(1-v**2/c**2)*omega_0",
+   "name": "feynman_I_34_14",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "omega_0": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "omega",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "993395db05db2b9ae7e7954a44b4f7a867ff445ba89dd1f0638946f5e82157d0",
+    "size": 2627754,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_34_27/feynman_I_34_27.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "omega",
+    "h"
+   ],
+   "formula": "(h/(2*pi))*omega",
+   "name": "feynman_I_34_27",
+   "ranges": {
+    "h": [
+     1.0,
+     5.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b258b43c18558bfcd7f68e77c68125c1ccb6b3f17556273a1abdaab712f92e21",
+    "size": 4379716,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_34_8/feynman_I_34_8.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "v",
+    "B",
+    "p"
+   ],
+   "formula": "q*v*B/p",
+   "name": "feynman_I_34_8",
+   "ranges": {
+    "B": [
+     1.0,
+     5.0
+    ],
+    "p": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "omega",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "B": {
+     "i": "1",
+     "l": "-2",
+     "t": "1"
+    },
+    "p": {
+     "l": "1",
+     "m": "1",
+     "t": "-1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "31c35b5371b5de5362467716deff7717420e1c9d8e236971ba293541d0ba3df1",
+    "size": 3505102,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_37_4/feynman_I_37_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "I1",
+    "I2",
+    "delta"
+   ],
+   "formula": "I1+I2+2*sqrt(I1*I2)*cos(delta)",
+   "name": "feynman_I_37_4",
+   "ranges": {
+    "I1": [
+     1.0,
+     5.0
+    ],
+    "I2": [
+     1.0,
+     5.0
+    ],
+    "delta": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "Int",
+   "target_units": {
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "I1": {
+     "m": "1",
+     "t": "-3"
+    },
+    "I2": {
+     "m": "1",
+     "t": "-3"
+    },
+    "delta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "52ac257854fadc38544098fc62402fee94e38a4688bf1c44fe34ee6cffd4784e",
+    "size": 4394330,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_38_12/feynman_I_38_12.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "q",
+    "h",
+    "epsilon"
+   ],
+   "formula": "4*pi*epsilon*(h/(2*pi))**2/(m*q**2)",
+   "name": "feynman_I_38_12",
+   "ranges": {
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "r",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "f044290716bfa54d669c70b73a5380833bc00fb0a4764659847e2fa52481199d",
+    "size": 2638623,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_39_1/feynman_I_39_1.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "pr",
+    "V"
+   ],
+   "formula": "3/2*pr*V",
+   "name": "feynman_I_39_1",
+   "ranges": {
+    "V": [
+     1.0,
+     5.0
+    ],
+    "pr": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "V": {
+     "l": "3"
+    },
+    "pr": {
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "4099588c9c85cb05367fff0427a37334445c6bc3dfc03b74da9ab0cfaf60912a",
+    "size": 3485770,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_39_11/feynman_I_39_11.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "gamma",
+    "pr",
+    "V"
+   ],
+   "formula": "1/(gamma-1)*pr*V",
+   "name": "feynman_I_39_11",
+   "ranges": {
+    "V": [
+     1.0,
+     5.0
+    ],
+    "gamma": [
+     2.0,
+     5.0
+    ],
+    "pr": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "V": {
+     "l": "3"
+    },
+    "gamma": {},
+    "pr": {
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "aad7a63c6b5fde0520e978f5993f08c45ad7da6217505bcfc8c40e2d572b4a11",
+    "size": 4379133,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_39_22/feynman_I_39_22.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n",
+    "T",
+    "V",
+    "kb"
+   ],
+   "formula": "n*kb*T/V",
+   "name": "feynman_I_39_22",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "V": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "pr",
+   "target_units": {
+    "l": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "V": {
+     "l": "3"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "b07ac2033b27854877e535651d83f36d4a24f347e77aaaf97392a273a32e1c23",
+    "size": 6160513,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_40_1/feynman_I_40_1.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n_0",
+    "m",
+    "x",
+    "T",
+    "g",
+    "kb"
+   ],
+   "formula": "n_0*exp(-m*g*x/(kb*T))",
+   "name": "feynman_I_40_1",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "g": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "n_0": [
+     1.0,
+     5.0
+    ],
+    "x": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "n",
+   "target_units": {},
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "g": {
+     "l": "1",
+     "t": "-2"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "n_0": {},
+    "x": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "736420c1e732e22236c247a1e753037e2bfec0604b5a4a7e74df4a92646625a8",
+    "size": 5255036,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_41_16/feynman_I_41_16.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "omega",
+    "T",
+    "h",
+    "kb",
+    "c"
+   ],
+   "formula": "h/(2*pi)*omega**3/(pi**2*c**2*(exp((h/(2*pi))*omega/(kb*T))-1))",
+   "name": "feynman_I_41_16",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "L_rad",
+   "target_units": {
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "d0dc748adcb66bb4d9fe36842b639065c7c545e3e7ea379680af5f54ec3c7e4e",
+    "size": 4379302,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_43_16/feynman_I_43_16.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mu_drift",
+    "q",
+    "Volt",
+    "d"
+   ],
+   "formula": "mu_drift*q*Volt/d",
+   "name": "feynman_I_43_16",
+   "ranges": {
+    "Volt": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "mu_drift": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "v",
+   "target_units": {
+    "l": "1",
+    "t": "-1"
+   },
+   "units": {
+    "Volt": {
+     "i": "1"
+    },
+    "d": {
+     "l": "1"
+    },
+    "mu_drift": {
+     "m": "1",
+     "t": "-1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "6c3dfb4c366c50b0733c6ecac55ee8e929f7eacd3b0ee1e64864f64fa1c203d7",
+    "size": 3524946,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_43_31/feynman_I_43_31.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "mob",
+    "T",
+    "kb"
+   ],
+   "formula": "mob*kb*T",
+   "name": "feynman_I_43_31",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "mob": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "D",
+   "target_units": {
+    "l": "2",
+    "t": "-1"
+   },
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "mob": {
+     "m": "-1",
+     "t": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "8712952be1bc739d221729dd94705dc67e189981a728ecc9cfe08c8df5d8b125",
+    "size": 4359464,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_43_43/feynman_I_43_43.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "gamma",
+    "kb",
+    "A",
+    "v"
+   ],
+   "formula": "1/(gamma-1)*kb*v/A",
+   "name": "feynman_I_43_43",
+   "ranges": {
+    "A": [
+     1.0,
+     5.0
+    ],
+    "gamma": [
+     2.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "kappa",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-3",
+    "th": "-1"
+   },
+   "units": {
+    "A": {
+     "l": "2"
+    },
+    "gamma": {},
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "7d430697ed86db6823783baf55c6a3d1dd0c02a1654b176204f04f1566ffd5f6",
+    "size": 5291749,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_44_4/feynman_I_44_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "n",
+    "kb",
+    "T",
+    "V1",
+    "V2"
+   ],
+   "formula": "n*kb*T*ln(V2/V1)",
+   "name": "feynman_I_44_4",
+   "ranges": {
+    "T": [
+     1.0,
+     5.0
+    ],
+    "V1": [
+     1.0,
+     5.0
+    ],
+    "V2": [
+     1.0,
+     5.0
+    ],
+    "kb": [
+     1.0,
+     5.0
+    ],
+    "n": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "T": {
+     "th": "1"
+    },
+    "V1": {
+     "l": "3"
+    },
+    "V2": {
+     "l": "3"
+    },
+    "kb": {
+     "l": "2",
+     "m": "1",
+     "t": "-2",
+     "th": "-1"
+    },
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "cd86c9748b1740e51e852419ea4da91d9a1488cdc8d890cffba3d409e3147594",
+    "size": 3487744,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_47_23/feynman_I_47_23.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "gamma",
+    "pr",
+    "rho"
+   ],
+   "formula": "sqrt(gamma*pr/rho)",
+   "name": "feynman_I_47_23",
+   "ranges": {
+    "gamma": [
+     1.0,
+     5.0
+    ],
+    "pr": [
+     1.0,
+     5.0
+    ],
+    "rho": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "c",
+   "target_units": {
+    "l": "1",
+    "t": "-1"
+   },
+   "units": {
+    "gamma": {},
+    "pr": {
+     "l": "-1",
+     "m": "1",
+     "t": "-2"
+    },
+    "rho": {
+     "l": "-3",
+     "m": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "09dc943e2cbfdf368995d5e7bc291ed5fb6f2a66ddfb8beb2720916a6ee5b9e8",
+    "size": 3553718,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_48_2/feynman_I_48_2.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "v",
+    "c"
+   ],
+   "formula": "m*c**2/sqrt(1-v**2/c**2)",
+   "name": "feynman_I_48_2",
+   "ranges": {
+    "c": [
+     3.0,
+     10.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "v": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "dbcd76c764561cfd97b6190d3e53584d599303bf38c07874af3632219b28446b",
+    "size": 4395225,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_50_26/feynman_I_50_26.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "x1",
+    "omega",
+    "t",
+    "alpha"
+   ],
+   "formula": "x1*(cos(omega*t)+alpha*cos(omega*t)**2)",
+   "name": "feynman_I_50_26",
+   "ranges": {
+    "alpha": [
+     1.0,
+     3.0
+    ],
+    "omega": [
+     1.0,
+     3.0
+    ],
+    "t": [
+     1.0,
+     3.0
+    ],
+    "x1": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "x",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "alpha": {},
+    "omega": {
+     "t": "-1"
+    },
+    "t": {
+     "t": "1"
+    },
+    "x1": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "46578097c3f1477b9f4f2eb2dc74421162fa9a14e139b0e3e791e41679e459d9",
+    "size": 2652138,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_6_2/feynman_I_6_2.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "sigma",
+    "theta"
+   ],
+   "formula": "exp(-(theta/sigma)**2/2)/(sqrt(2*pi)*sigma)",
+   "name": "feynman_I_6_2",
+   "ranges": {
+    "sigma": [
+     1.0,
+     3.0
+    ],
+    "theta": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "f",
+   "target_units": {},
+   "units": {
+    "sigma": {},
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "e6e54e08033d029d973fc68f3239a52e85d871b6beb720127fa1dc8e72da90d6",
+    "size": 1779443,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_6_2a/feynman_I_6_2a.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "theta"
+   ],
+   "formula": "exp(-theta**2/2)/sqrt(2*pi)",
+   "name": "feynman_I_6_2a",
+   "ranges": {
+    "theta": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "f",
+   "target_units": {},
+   "units": {
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "31a30c5422a12a35cf1686f2f1e31ecbd9fbab4f1276a1a9a8f5ab9a7137921b",
+    "size": 3512987,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_6_2b/feynman_I_6_2b.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "sigma",
+    "theta",
+    "theta1"
+   ],
+   "formula": "exp(-((theta-theta1)/sigma)**2/2)/(sqrt(2*pi)*sigma)",
+   "name": "feynman_I_6_2b",
+   "ranges": {
+    "sigma": [
+     1.0,
+     3.0
+    ],
+    "theta": [
+     1.0,
+     3.0
+    ],
+    "theta1": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "f",
+   "target_units": {},
+   "units": {
+    "sigma": {},
+    "theta": {},
+    "theta1": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "3a159a1d1624773ccf0bc3aa1d3b242f40a6ebcf42e6af7eb331be11d182b15d",
+    "size": 4357390,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_8_14/feynman_I_8_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "x1",
+    "x2",
+    "y1",
+    "y2"
+   ],
+   "formula": "sqrt((x2-x1)**2+(y2-y1)**2)",
+   "name": "feynman_I_8_14",
+   "ranges": {
+    "x1": [
+     1.0,
+     5.0
+    ],
+    "x2": [
+     1.0,
+     5.0
+    ],
+    "y1": [
+     1.0,
+     5.0
+    ],
+    "y2": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "d",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "x1": {
+     "l": "1"
+    },
+    "x2": {
+     "l": "1"
+    },
+    "y1": {
+     "l": "1"
+    },
+    "y2": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "840eff365b01eacb770f1e78f97bc889611362bd3bbf835f344a2792973c985a",
+    "size": 8702909,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_I_9_18/feynman_I_9_18.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m1",
+    "m2",
+    "G",
+    "x1",
+    "x2",
+    "y1",
+    "y2",
+    "z1",
+    "z2"
+   ],
+   "formula": "G*m1*m2/((x2-x1)**2+(y2-y1)**2+(z2-z1)**2)",
+   "name": "feynman_I_9_18",
+   "ranges": {
+    "G": [
+     1.0,
+     2.0
+    ],
+    "m1": [
+     1.0,
+     2.0
+    ],
+    "m2": [
+     1.0,
+     2.0
+    ],
+    "x1": [
+     3.0,
+     4.0
+    ],
+    "x2": [
+     1.0,
+     2.0
+    ],
+    "y1": [
+     3.0,
+     4.0
+    ],
+    "y2": [
+     1.0,
+     2.0
+    ],
+    "z1": [
+     3.0,
+     4.0
+    ],
+    "z2": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "m1": {
+     "m": "1"
+    },
+    "m2": {
+     "m": "1"
+    },
+    "x1": {
+     "l": "1"
+    },
+    "x2": {
+     "l": "1"
+    },
+    "y1": {
+     "l": "1"
+    },
+    "y2": {
+     "l": "1"
+    },
+    "z1": {
+     "l": "1"
+    },
+    "z2": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b41780978c344f29cc340883e41610b4f2364845625d1d1e6f6c4e4510214b60",
+    "size": 6977307,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_1/feynman_test_1.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "Z_1",
+    "Z_2",
+    "alpha",
+    "hbar",
+    "c",
+    "E_n",
+    "theta"
+   ],
+   "formula": "(Z_1*Z_2*alpha*hbar*c/(4*E_n*sin(theta/2)**2))**2",
+   "name": "feynman_test_1",
+   "ranges": {
+    "E_n": [
+     1.0,
+     3.0
+    ],
+    "Z_1": [
+     1.0,
+     2.0
+    ],
+    "Z_2": [
+     1.0,
+     2.0
+    ],
+    "alpha": [
+     1.0,
+     2.0
+    ],
+    "c": [
+     1.0,
+     2.0
+    ],
+    "hbar": [
+     1.0,
+     2.0
+    ],
+    "theta": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "A",
+   "target_units": {
+    "l": "2"
+   },
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "Z_1": {},
+    "Z_2": {},
+    "alpha": {},
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "hbar": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "64e543780687ce6bac7cdbb17b6d079bc6b98f52b2ea9f1d09ad107bbff5d824",
+    "size": 3442514,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_10/feynman_test_10.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "c",
+    "v",
+    "theta2"
+   ],
+   "formula": "arccos((cos(theta2)-v/c)/(1-v/c*cos(theta2)))",
+   "name": "feynman_test_10",
+   "ranges": {
+    "c": [
+     4.0,
+     6.0
+    ],
+    "theta2": [
+     1.0,
+     3.0
+    ],
+    "v": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "theta1",
+   "target_units": {},
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "theta2": {},
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "90cfe4e2453845df0529ae884962c3e11cc5fbb18613f26775b8f16cbe566bf8",
+    "size": 4362459,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_11/feynman_test_11.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "I_0",
+    "alpha",
+    "delta",
+    "n"
+   ],
+   "formula": "I_0*(sin(alpha/2)*sin(n*delta/2)/(alpha/2*sin(delta/2)))**2",
+   "name": "feynman_test_11",
+   "ranges": {
+    "I_0": [
+     1.0,
+     3.0
+    ],
+    "alpha": [
+     1.0,
+     3.0
+    ],
+    "delta": [
+     1.0,
+     3.0
+    ],
+    "n": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "I",
+   "target_units": {
+    "i": "-1",
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "I_0": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-3"
+    },
+    "alpha": {},
+    "delta": {},
+    "n": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "5b90ff5f7bb9ecacbd257fe3fd3cda4cdb9dc197da93385fa5db0935b0525126",
+    "size": 5250081,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_12/feynman_test_12.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "y",
+    "Volt",
+    "d",
+    "epsilon"
+   ],
+   "formula": "q/(4*pi*epsilon*y**2)*(4*pi*epsilon*Volt*d-q*d*y**3/(y**2-d**2)**2)",
+   "name": "feynman_test_12",
+   "ranges": {
+    "Volt": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     4.0,
+     6.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "y": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "F",
+   "target_units": {
+    "l": "1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "Volt": {
+     "i": "1"
+    },
+    "d": {
+     "l": "1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "y": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "e34c16c743d459d6ae9274c46d2b539e5f34c148bfdcb5e1abcfcb8794ca486a",
+    "size": 5300230,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_13/feynman_test_13.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "q",
+    "r",
+    "d",
+    "alpha",
+    "epsilon"
+   ],
+   "formula": "1/(4*pi*epsilon)*q/sqrt(r**2+d**2-2*r*d*cos(alpha))",
+   "name": "feynman_test_13",
+   "ranges": {
+    "alpha": [
+     0.0,
+     6.0
+    ],
+    "d": [
+     4.0,
+     6.0
+    ],
+    "epsilon": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "Volt",
+   "target_units": {
+    "i": "1"
+   },
+   "units": {
+    "alpha": {},
+    "d": {
+     "l": "1"
+    },
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "beedc054b8e7d974a98326db8c834843eb188cffba0f07029a8370b193ce020e",
+    "size": 5295673,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_14/feynman_test_14.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "Ef",
+    "theta",
+    "r",
+    "d",
+    "alpha"
+   ],
+   "formula": "Ef*cos(theta)*(-r+d**3/r**2*(alpha-1)/(alpha+2))",
+   "name": "feynman_test_14",
+   "ranges": {
+    "Ef": [
+     1.0,
+     5.0
+    ],
+    "alpha": [
+     1.0,
+     5.0
+    ],
+    "d": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     0.0,
+     6.0
+    ]
+   },
+   "target": "Volt",
+   "target_units": {
+    "i": "1"
+   },
+   "units": {
+    "Ef": {
+     "i": "1",
+     "l": "-1"
+    },
+    "alpha": {},
+    "d": {
+     "l": "1"
+    },
+    "r": {
+     "l": "1"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "9e69e5aa34b36b4f528c42711c7fbaf88abcda9f0b7ba4181e4f57525b6d1527",
+    "size": 4374479,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_15/feynman_test_15.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "c",
+    "v",
+    "omega",
+    "theta"
+   ],
+   "formula": "sqrt(1-v**2/c**2)*omega/(1+v/c*cos(theta))",
+   "name": "feynman_test_15",
+   "ranges": {
+    "c": [
+     5.0,
+     20.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ],
+    "theta": [
+     0.0,
+     6.0
+    ],
+    "v": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "omega_0",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "theta": {},
+    "v": {
+     "l": "1",
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "edf46fde5a137ffc264b86333ff655d7699de3d69a8bd401fc72d50a78d238c8",
+    "size": 6141833,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_16/feynman_test_16.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "c",
+    "p",
+    "q",
+    "A_vec",
+    "Volt"
+   ],
+   "formula": "sqrt((p-q*A_vec)**2*c**2+m**2*c**4)+q*Volt",
+   "name": "feynman_test_16",
+   "ranges": {
+    "A_vec": [
+     1.0,
+     5.0
+    ],
+    "Volt": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "p": [
+     1.0,
+     5.0
+    ],
+    "q": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "A_vec": {
+     "i": "1",
+     "l": "-1",
+     "t": "1"
+    },
+    "Volt": {
+     "i": "1"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "p": {
+     "l": "1",
+     "m": "1",
+     "t": "-1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "bf066d8b8431c89d3c8afd58b0bfe56f53e0aaedd8d4ec05c132268115af3f36",
+    "size": 6192488,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_17/feynman_test_17.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "omega",
+    "p",
+    "y",
+    "x",
+    "alpha"
+   ],
+   "formula": "1/(2*m)*(p**2+m**2*omega**2*x**2*(1+alpha*x/y))",
+   "name": "feynman_test_17",
+   "ranges": {
+    "alpha": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ],
+    "p": [
+     1.0,
+     5.0
+    ],
+    "x": [
+     1.0,
+     5.0
+    ],
+    "y": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "E_n",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "alpha": {},
+    "m": {
+     "m": "1"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "p": {
+     "l": "1",
+     "m": "1",
+     "t": "-1"
+    },
+    "x": {
+     "l": "1"
+    },
+    "y": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "89020a30293ea7fb454b5375e813430f6f35d21a5b864f55dd6dc6d790a5f0c1",
+    "size": 5247500,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_18/feynman_test_18.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "G",
+    "k_f",
+    "r",
+    "H_G",
+    "c"
+   ],
+   "formula": "3/(8*pi*G)*(c**2*k_f/r**2+H_G**2)",
+   "name": "feynman_test_18",
+   "ranges": {
+    "G": [
+     1.0,
+     5.0
+    ],
+    "H_G": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "k_f": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "rho_0",
+   "target_units": {
+    "l": "-3",
+    "m": "1"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "H_G": {
+     "t": "-1"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "k_f": {},
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "4219a422f166926313c02f8a9e99380801cb91a01c82240b6bb03c13ad38966d",
+    "size": 6132489,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_19/feynman_test_19.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "G",
+    "k_f",
+    "r",
+    "H_G",
+    "alpha",
+    "c"
+   ],
+   "formula": "-1/(8*pi*G)*(c**4*k_f/r**2+H_G**2*c**2*(1-2*alpha))",
+   "name": "feynman_test_19",
+   "ranges": {
+    "G": [
+     1.0,
+     5.0
+    ],
+    "H_G": [
+     1.0,
+     5.0
+    ],
+    "alpha": [
+     1.0,
+     5.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "k_f": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "pr",
+   "target_units": {
+    "l": "-1",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "H_G": {
+     "t": "-1"
+    },
+    "alpha": {},
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "k_f": {},
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "6ee4330c3b239f57b5f464c86dc3ee347e4535a3a532b0ef80631377a3dba76f",
+    "size": 6154301,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_2/feynman_test_2.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "k_G",
+    "L",
+    "E_n",
+    "theta1",
+    "theta2"
+   ],
+   "formula": "m*k_G/L**2*(1+sqrt(1+2*E_n*L**2/(m*k_G**2))*cos(theta1-theta2))",
+   "name": "feynman_test_2",
+   "ranges": {
+    "E_n": [
+     1.0,
+     3.0
+    ],
+    "L": [
+     1.0,
+     3.0
+    ],
+    "k_G": [
+     1.0,
+     3.0
+    ],
+    "m": [
+     1.0,
+     3.0
+    ],
+    "theta1": [
+     0.0,
+     6.0
+    ],
+    "theta2": [
+     0.0,
+     6.0
+    ]
+   },
+   "target": "k",
+   "target_units": {
+    "l": "-1"
+   },
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "L": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "k_G": {
+     "l": "3",
+     "m": "1",
+     "t": "-2"
+    },
+    "m": {
+     "m": "1"
+    },
+    "theta1": {},
+    "theta2": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "0fa7cb761daaf9c9bac4ead348064cdb824db9ee3c6a7c968d73ae9a459469f6",
+    "size": 7024863,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_20/feynman_test_20.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "omega",
+    "omega_0",
+    "alpha",
+    "h",
+    "m",
+    "c",
+    "beta"
+   ],
+   "formula": "1/(4*pi)*alpha**2*h**2/(m**2*c**2)*(omega_0/omega)**2*(omega_0/omega+omega/omega_0-sin(beta)**2)",
+   "name": "feynman_test_20",
+   "ranges": {
+    "alpha": [
+     1.0,
+     5.0
+    ],
+    "beta": [
+     0.0,
+     6.0
+    ],
+    "c": [
+     1.0,
+     5.0
+    ],
+    "h": [
+     1.0,
+     5.0
+    ],
+    "m": [
+     1.0,
+     5.0
+    ],
+    "omega": [
+     1.0,
+     5.0
+    ],
+    "omega_0": [
+     1.0,
+     5.0
+    ]
+   },
+   "target": "A",
+   "target_units": {
+    "l": "2"
+   },
+   "units": {
+    "alpha": {},
+    "beta": {},
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "h": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "omega": {
+     "t": "-1"
+    },
+    "omega_0": {
+     "t": "-1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b0b6b33338e507bbc056f4d746e705b3bc8f5bb4cc4449187d69997797f91a1d",
+    "size": 4343654,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_3/feynman_test_3.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "d",
+    "alpha",
+    "theta1",
+    "theta2"
+   ],
+   "formula": "d*(1-alpha**2)/(1+alpha*cos(theta1-theta2))",
+   "name": "feynman_test_3",
+   "ranges": {
+    "alpha": [
+     2.0,
+     4.0
+    ],
+    "d": [
+     1.0,
+     3.0
+    ],
+    "theta1": [
+     4.0,
+     5.0
+    ],
+    "theta2": [
+     4.0,
+     5.0
+    ]
+   },
+   "target": "r",
+   "target_units": {
+    "l": "1"
+   },
+   "units": {
+    "alpha": {},
+    "d": {
+     "l": "1"
+    },
+    "theta1": {},
+    "theta2": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "90224f445b9fd4553ec139b48b0d89c099cab5022e6b4b0783f14cc60857e336",
+    "size": 5226841,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_4/feynman_test_4.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "m",
+    "E_n",
+    "U",
+    "L",
+    "r"
+   ],
+   "formula": "sqrt(2/m*(E_n-U-L**2/(2*m*r**2)))",
+   "name": "feynman_test_4",
+   "ranges": {
+    "E_n": [
+     8.0,
+     12.0
+    ],
+    "L": [
+     1.0,
+     3.0
+    ],
+    "U": [
+     1.0,
+     3.0
+    ],
+    "m": [
+     1.0,
+     3.0
+    ],
+    "r": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "v",
+   "target_units": {
+    "l": "1",
+    "t": "-1"
+   },
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "L": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "U": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "m": {
+     "m": "1"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "8350536f5824712b6e9c4244d426f936db981fda215af39f73f6486fd0fc874a",
+    "size": 4369462,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_5/feynman_test_5.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "d",
+    "G",
+    "m1",
+    "m2"
+   ],
+   "formula": "2*pi*d**(3/2)/sqrt(G*(m1+m2))",
+   "name": "feynman_test_5",
+   "ranges": {
+    "G": [
+     1.0,
+     3.0
+    ],
+    "d": [
+     1.0,
+     3.0
+    ],
+    "m1": [
+     1.0,
+     3.0
+    ],
+    "m2": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "t",
+   "target_units": {
+    "t": "1"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "d": {
+     "l": "1"
+    },
+    "m1": {
+     "m": "1"
+    },
+    "m2": {
+     "m": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "9a01dfeadf8fbc8679b9be7635900dae664bad008309d2fdf18570cb9b17f75d",
+    "size": 6922705,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_6/feynman_test_6.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "epsilon",
+    "L",
+    "m",
+    "Z_1",
+    "Z_2",
+    "q",
+    "E_n"
+   ],
+   "formula": "sqrt(1+2*epsilon**2*E_n*L**2/(m*(Z_1*Z_2*q**2)**2))",
+   "name": "feynman_test_6",
+   "ranges": {
+    "E_n": [
+     1.0,
+     3.0
+    ],
+    "L": [
+     1.0,
+     3.0
+    ],
+    "Z_1": [
+     1.0,
+     3.0
+    ],
+    "Z_2": [
+     1.0,
+     3.0
+    ],
+    "epsilon": [
+     1.0,
+     3.0
+    ],
+    "m": [
+     1.0,
+     3.0
+    ],
+    "q": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "alpha",
+   "target_units": {},
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "L": {
+     "l": "2",
+     "m": "1",
+     "t": "-1"
+    },
+    "Z_1": {},
+    "Z_2": {},
+    "epsilon": {
+     "i": "-2",
+     "l": "1",
+     "m": "1",
+     "t": "-2"
+    },
+    "m": {
+     "m": "1"
+    },
+    "q": {
+     "i": "-1",
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "ffe9fcb1a17929da12e63492b695247d73ba42e8f4fca03b02ef7241bd0009f0",
+    "size": 5230768,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_7/feynman_test_7.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "G",
+    "rho",
+    "alpha",
+    "c",
+    "d"
+   ],
+   "formula": "sqrt(8*pi*G*rho/3-alpha*c**2/d**2)",
+   "name": "feynman_test_7",
+   "ranges": {
+    "G": [
+     1.0,
+     3.0
+    ],
+    "alpha": [
+     1.0,
+     2.0
+    ],
+    "c": [
+     1.0,
+     2.0
+    ],
+    "d": [
+     1.0,
+     3.0
+    ],
+    "rho": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "H_G",
+   "target_units": {
+    "t": "-1"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "alpha": {},
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "d": {
+     "l": "1"
+    },
+    "rho": {
+     "l": "-3",
+     "m": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "b5fdb11c3369fde285ace853a95a88ad87eefef0d86b0426d1ad9560aa6f4e9b",
+    "size": 4349649,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_8/feynman_test_8.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "E_n",
+    "m",
+    "c",
+    "theta"
+   ],
+   "formula": "E_n/(1+E_n/(m*c**2)*(1-cos(theta)))",
+   "name": "feynman_test_8",
+   "ranges": {
+    "E_n": [
+     1.0,
+     3.0
+    ],
+    "c": [
+     1.0,
+     3.0
+    ],
+    "m": [
+     1.0,
+     3.0
+    ],
+    "theta": [
+     1.0,
+     3.0
+    ]
+   },
+   "target": "K",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-2"
+   },
+   "units": {
+    "E_n": {
+     "l": "2",
+     "m": "1",
+     "t": "-2"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "m": {
+     "m": "1"
+    },
+    "theta": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "f14fd01559b154384ecd57147159be294e4dbc29a1a0f037d65405b1a66fd056",
+    "size": 5344746,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/feynman_test_9/feynman_test_9.tsv.gz"
+   },
+   "family": "feynman",
+   "features": [
+    "G",
+    "c",
+    "m1",
+    "m2",
+    "r"
+   ],
+   "formula": "-32/5*G**4/c**5*(m1*m2)**2*(m1+m2)/r**5",
+   "name": "feynman_test_9",
+   "ranges": {
+    "G": [
+     1.0,
+     2.0
+    ],
+    "c": [
+     1.0,
+     2.0
+    ],
+    "m1": [
+     1.0,
+     5.0
+    ],
+    "m2": [
+     1.0,
+     5.0
+    ],
+    "r": [
+     1.0,
+     2.0
+    ]
+   },
+   "target": "Pwr",
+   "target_units": {
+    "l": "2",
+    "m": "1",
+    "t": "-3"
+   },
+   "units": {
+    "G": {
+     "l": "3",
+     "m": "-1",
+     "t": "-2"
+    },
+    "c": {
+     "l": "1",
+     "t": "-1"
+    },
+    "m1": {
+     "m": "1"
+    },
+    "m2": {
+     "m": "1"
+    },
+    "r": {
+     "l": "1"
+    }
+   }
+  },
+  {
+   "data": {
+    "sha256": "f7d87339bd5bdb369062a4f658e4d9f6ee015ad7fa7b84c45a00412f10cb2199",
+    "size": 10839,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_bacres1/strogatz_bacres1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "20 - x - (x * y)/(1+0.5 * x**2)",
+   "name": "strogatz_bacres1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "c05520ed4bf8006852111ab68e7286b8bee59f4f9ab42735c4e81ea1bb86acca",
+    "size": 10687,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_bacres2/strogatz_bacres2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "10 - (x * y)/(1+0.5 * x**2)",
+   "name": "strogatz_bacres2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "5ebd813b1e30817354b31d0f51e4ad3a31dea6fa2f1eb85680112bea6ec63e9b",
+    "size": 10670,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_barmag1/strogatz_barmag1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "0.5 * sin(x - y) - sin(x)",
+   "name": "strogatz_barmag1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "8035290734d43191c1667a085688cb2578c3a2e76e3fa21406b850dda80bc497",
+    "size": 10724,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_barmag2/strogatz_barmag2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "0.5 * sin(y - x) - sin(y)",
+   "name": "strogatz_barmag2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "7c4569a2a96861c3cd072b0914286c14a22057f81d1c2ff158a29e5dbc06e749",
+    "size": 10829,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_glider1/strogatz_glider1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "-0.05 * x**2 - sin(y)",
+   "name": "strogatz_glider1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "9a3bd7573b3d0379ccf288c6284298a71f9a351d70b996ede69b5a97e883d94d",
+    "size": 10604,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_glider2/strogatz_glider2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "x - cos(y)/x",
+   "name": "strogatz_glider2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "3617c04bc9113a437fdf8650b14878935e7feafc0785d75da2227646e337756b",
+    "size": 10921,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_lv1/strogatz_lv1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "3  * x - 2  * x * y - x**2",
+   "name": "strogatz_lv1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "610a94a55c4ffbd15e1c33063b48ee19f4e1501fe941358417e4add861f6b2c9",
+    "size": 10843,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_lv2/strogatz_lv2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "2 * y - x * y - y**2",
+   "name": "strogatz_lv2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "8d7f414e24783d53a20842e667b271a05930ec101a0f5202f04216c516bdb811",
+    "size": 11129,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_predprey1/strogatz_predprey1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "x  * ( 4 - x - (y)/(1+x) )",
+   "name": "strogatz_predprey1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "a8a1931c568c9637e3671aa4919cc6a1a3acfa26358fd3f81ca89e4b01f96a72",
+    "size": 10904,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_predprey2/strogatz_predprey2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "y * ( (x)/(1+x) - 0.075 * y )",
+   "name": "strogatz_predprey2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "a71c05581e59bc83a6e500c66ea94ff9e355d5e457f0b094e10a61e7f13fdecc",
+    "size": 10722,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_shearflow1/strogatz_shearflow1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "cot(y) * cos(x)",
+   "name": "strogatz_shearflow1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "1d1044351977e97152308049736d1414e38d8167b7499121cb44fcd562f41fc1",
+    "size": 10633,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_shearflow2/strogatz_shearflow2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "(cos(y)**2 + 0.1 *  sin(y)**2) * sin(x)",
+   "name": "strogatz_shearflow2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "fe71082adec0b48fe905dfc0d34b92e1d5560ad5ed9da80f9f6edd3ab924ff88",
+    "size": 11001,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_vdp1/strogatz_vdp1.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "10 *  (y - (1)/(3) * (x**3-x))",
+   "name": "strogatz_vdp1",
+   "ranges": {},
+   "target": "x'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  },
+  {
+   "data": {
+    "sha256": "789b632ebe707dd1acfbb9ab41641f028bb594677aa620ba76ef71662a514793",
+    "size": 8977,
+    "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/strogatz_vdp2/strogatz_vdp2.tsv.gz"
+   },
+   "family": "strogatz",
+   "features": [
+    "x",
+    "y"
+   ],
+   "formula": "-(1)/(10) * x",
+   "name": "strogatz_vdp2",
+   "ranges": {},
+   "target": "y'",
+   "target_units": {},
+   "units": {
+    "x": {},
+    "y": {}
+   }
+  }
+ ],
+ "source": "PMLB (github.com/EpistasisLab/pmlb), SRBench ground-truth track",
+ "unit_basis": "kg->m, m->l, s->t, T->th, V->i (see module docstring)"
+}

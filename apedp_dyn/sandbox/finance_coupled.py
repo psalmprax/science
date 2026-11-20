@@ -15,6 +15,7 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 
@@ -24,6 +25,7 @@ if _REPO_ROOT not in sys.path:
 
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.candidate_ir import SystemCandidate
 from apedp_dyn.grammar.coupled import enumerate_coupled
 from apedp_dyn.grammar.mechanical_grammar import prune_admissible
 from apedp_dyn.model import (
@@ -36,7 +38,7 @@ from apedp_dyn.problems.base import DynProblem, make_signal
 COUP_TERMS = ("x", "v", "xr")
 
 
-def load(path, col):
+def load(path: str, col: str) -> tuple[list[str], np.ndarray]:
     dates, px = [], []
     with open(path) as f:
         for row in csv.DictReader(f):
@@ -50,15 +52,16 @@ def load(path, col):
     return dates, np.array(px)
 
 
-def _standardize(tr, ho):
+def _standardize(tr: np.ndarray, ho: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     mu, sg = float(np.log(tr).mean()), float(np.log(tr).std())
-    def conv(p):
+    def conv(p: np.ndarray) -> np.ndarray:
         x = (np.log(np.asarray(p, dtype=float)) - mu) / sg
-        return np.column_stack([x, np.gradient(x, 1.0)])
+        out: np.ndarray = np.column_stack([x, np.gradient(x, 1.0)])
+        return out
     return conv(tr), conv(ho)
 
 
-def build_joint_problem(px_s, px_n, tr, ho, problem_id="FIN-COUPLED"):
+def build_joint_problem(px_s: np.ndarray, px_n: np.ndarray, tr: tuple[int, int], ho: tuple[int, int], problem_id: str="FIN-COUPLED") -> DynProblem:
     """Joint 4-state problem: (x_s, v_s, x_n, v_n), two zero drives."""
     Ys_tr, Ys_ho = _standardize(px_s[tr[0]:tr[1]], px_s[ho[0]:ho[1]])
     Yn_tr, Yn_ho = _standardize(px_n[tr[0]:tr[1]], px_n[ho[0]:ho[1]],
@@ -91,7 +94,7 @@ def build_joint_problem(px_s, px_n, tr, ho, problem_id="FIN-COUPLED"):
                       (), truth, train, holdout)
 
 
-def run_coupled():
+def run_coupled() -> Any:
     import tempfile
     cache = tempfile.gettempdir()
     ds, px_s = load(f"{cache}/sp500.csv", "SP500")
@@ -116,17 +119,17 @@ def run_coupled():
     print(f"gate-4 survivors: {len(g4)} / {len(fitted)}")
     ranked = sorted(
         [s for s in g4 if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: float(s.train_loss))
+        key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(ranked, bootstrap=False, data_origin="experimental")
     print(f"verdict: {adj.status.value} "
           f"contract={getattr(adj, 'contract', '')}")
     if adj.promoted is not None:
-        for i, eq in enumerate(adj.promoted.candidate.equations):
+        for i, eq in enumerate(cast(SystemCandidate, adj.promoted.candidate).equations):
             print(f"  promoted eq{i}: {eq}")
     print("reason:", adj.reason[:150])
     # Coupling census regardless of verdict: how many survivors use xr?
     xr_n = sum(1 for s in g4
-               if any("xr" in t.name for e in s.candidate.equations
+               if any("xr" in t.name for e in cast(SystemCandidate, s.candidate).equations
                       for t in e.terms))
     print(f"coupled (xr-bearing) survivors: {xr_n} / {len(g4)}")
     return adj

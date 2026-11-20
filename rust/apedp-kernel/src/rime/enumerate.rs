@@ -665,6 +665,13 @@ pub fn search_rational_pairs(
                 children: vec![num, den],
             });
             let out = dag.eval_node(root, vars, &mut memo);
+            // `eval_node` caches every node it evaluates, which is what makes
+            // the shared numerators and denominators cheap. The quotient
+            // itself is scored once, here, and never read again; left in the
+            // cache, each (numerator, denominator) pair kept an n-vector for
+            // the life of the search. Measured on a 200-row, one-feature
+            // problem: 2.7 GB, which killed the test worker on an 8 GB machine.
+            memo.remove(&root);
             if out.iter().any(|v| !v.is_finite()) {
                 continue;
             }
@@ -718,12 +725,7 @@ pub fn search_rational_pairs(
     // costs one O(n) pass; the search is 1-D and stays inside the same heap.
     let mut formula_overrides: HashMap<usize, String> = HashMap::new();
 
-    fn saturating_fit(
-        x: &[f64],
-        y: &[f64],
-        c: f64,
-        mean_y: f64,
-    ) -> Option<(f64, f64, f64)> {
+    fn saturating_fit(x: &[f64], y: &[f64], c: f64, mean_y: f64) -> Option<(f64, f64, f64)> {
         if !(c.is_finite() && c > 0.0) {
             return None;
         }
@@ -731,8 +733,7 @@ pub fn search_rational_pairs(
         let mut mean_b = 0.0f64;
         for i in 0..n {
             let den = c + x[i];
-            if !x[i].is_finite() || !y[i].is_finite() || !den.is_finite() || den.abs() <= 1e-12
-            {
+            if !x[i].is_finite() || !y[i].is_finite() || !den.is_finite() || den.abs() <= 1e-12 {
                 return None;
             }
             let b = x[i] / den;
@@ -773,7 +774,11 @@ pub fn search_rational_pairs(
         if x.len() != n {
             continue;
         }
-        let mut abs: Vec<f64> = x.iter().filter(|v| v.is_finite()).map(|v| v.abs()).collect();
+        let mut abs: Vec<f64> = x
+            .iter()
+            .filter(|v| v.is_finite())
+            .map(|v| v.abs())
+            .collect();
         if abs.len() < 6 {
             continue;
         }
@@ -843,7 +848,10 @@ pub fn search_rational_pairs(
             op: Op::Var(vi),
             children: vec![],
         });
-        let name = var_names.get(vi).cloned().unwrap_or_else(|| format!("v{vi}"));
+        let name = var_names
+            .get(vi)
+            .cloned()
+            .unwrap_or_else(|| format!("v{vi}"));
         formula_overrides.insert(
             var_node,
             format!("{slope:.6} * ({name} / ({c_best:.6} + {name})) + {intercept:.6}"),
@@ -1095,7 +1103,10 @@ mod tests {
         let x: Vec<f64> = (0..n)
             .map(|i| 0.1 + 2.4 * (i as f64) / ((n - 1) as f64))
             .collect();
-        let y: Vec<f64> = x.iter().map(|&p| 40.0 * 1.6 * p / (1.0 + 1.6 * p)).collect();
+        let y: Vec<f64> = x
+            .iter()
+            .map(|&p| 40.0 * 1.6 * p / (1.0 + 1.6 * p))
+            .collect();
         let res = search_rational_pairs(
             &[x],
             &y,

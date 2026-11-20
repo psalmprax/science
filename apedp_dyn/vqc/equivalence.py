@@ -124,7 +124,7 @@ def unitary(circuit: Circuit, *, tolerance_qubits: int = MAX_UNITARY_QUBITS) -> 
             raise NotAUnitaryCircuitError(
                 "a classically conditioned gate makes the circuit a channel")
     dim = 1 << circuit.num_qubits
-    matrix = np.zeros((dim, dim), dtype=np.complex128)
+    matrix: np.ndarray = np.zeros((dim, dim), dtype=np.complex128)
     for column in range(dim):
         sim = StatevectorSimulator(circuit.num_qubits)
         sim.set_basis_state(column)
@@ -171,6 +171,7 @@ def _prepared_state(circuit: Circuit) -> StabilizerState:
     """The stabilizer state the circuit prepares from ``|0...0>``."""
     state = StabilizerState(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # callers reject non-unitary ops first
         state.apply_gate(op.name, op.targets, op.params)
     return state
 
@@ -237,10 +238,10 @@ def _image_table(circuit: Circuit, *, engine: str = "auto") -> ImageTable:
 
 
 def _differences(reference: Mapping[str, str], candidate: Mapping[str, str], *,
-                 limit: int = 4) -> tuple[list[dict], int]:
+                 limit: int = 4) -> tuple[list[dict[str, Any]], int]:
     """The first few entries where two tables of signed Pauli strings differ."""
     mismatched = 0
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for name, expected in reference.items():
         actual = candidate[name]
         if actual == expected:
@@ -305,7 +306,8 @@ def controlled_lift(matrix: np.ndarray) -> np.ndarray:
     lifted = np.zeros((2 * dimension, 2 * dimension), dtype=np.complex128)
     lifted[:dimension, :dimension] = np.eye(dimension, dtype=np.complex128)
     lifted[dimension:, dimension:] = matrix
-    return lifted
+    _out: np.ndarray = lifted
+    return _out
 
 @dataclasses.dataclass(frozen=True)
 class EquivalenceReport:
@@ -342,7 +344,7 @@ class EquivalenceReport:
         """
         return self.verdict == "VALID" and self.claim_verdict != "UNMET"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "reference_sha256": self.reference_sha256,
             "candidate_sha256": self.candidate_sha256,
@@ -532,7 +534,7 @@ class CliffordEquivalenceReport:
         """Semantically VALID *and* no unmet resource claim (see the dense report)."""
         return self.verdict == "VALID" and self.claim_verdict != "UNMET"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "tier": "stabilizer",
             "scope": self.scope,
@@ -629,7 +631,7 @@ def adjudicate_clifford_equivalence(reference: Circuit, candidate: Circuit, *,
         measured={"reference": reference.num_qubits, "candidate": candidate.num_qubits},
         passed=qubits is not None))
 
-    mismatches: list[Mapping[str, Any]] = []
+    mismatches: list[dict[str, Any]] = []
     mismatched = 0
     compared = 0
     reference_images: dict[str, str] | None = None

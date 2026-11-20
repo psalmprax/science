@@ -83,6 +83,24 @@ from apedp_dyn.quantum_compilation.referee import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# `kickmix.so` is a compiled artifact, not source: the index carries the directory's
+# LICENSE and the vendored tree, never the binary. A fresh clone therefore cannot load
+# the pinned contract, so these tests skip with the build command instead of failing 18
+# times for a file the repository was never meant to ship.
+_KICKMIX_ROOT = (
+    REPO_ROOT
+    / "apedp_dyn"
+    / "sandbox"
+    / "google-verifiable-quantum-circuit-compilation"
+    / "kickmix"
+)
+if not (_KICKMIX_ROOT / "kickmix.so").is_file():
+    pytest.skip(
+        f"kickmix extension not built at {_KICKMIX_ROOT / 'kickmix.so'}; "
+        "run `python scripts/setup_verifier_env.py` to build it",
+        allow_module_level=True,
+    )
 COMPETITION_ROOT = default_competition_root()
 KICKMIX_PYTHON = os.environ.get("APEDP_Q_KICKMIX_PYTHON")
 
@@ -679,6 +697,29 @@ print(json.dumps({
     assert payload["matches_sample"] is True
 
 
+def test_kickmix_screen_skips_without_configured_interpreter():
+    """An unset APEDP_Q_KICKMIX_PYTHON must report a skip, not a silent pass."""
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    env = dict(os.environ)
+    env.pop("APEDP_Q_KICKMIX_PYTHON", None)
+    completed = subprocess.run(
+        [sys.executable, "-m", "pytest", str(Path(__file__).resolve()),
+         "-q", "--no-header", "-p", "no:cacheprovider",
+         "-k", "test_kickmix_screen_runs_in_the_matching_interpreter"],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "1 skipped" in completed.stdout, completed.stdout
+
+
 def test_invsqrt_signed_digit_canonical_and_truth_table():
     from apedp_dyn.quantum_compilation import invsqrt_signed_digit as sd
 
@@ -697,11 +738,11 @@ def test_invsqrt_signed_digit_canonical_and_truth_table():
 
 def test_faros_isq_portfolio_and_sable_profiler():
     from apedp_dyn.quantum_compilation.faros_isq import (
-        FarosParetoTournament,
-        REFERENCE_COST_90Q,
-        REFERENCE_COST_90Q_AFFINE_OPT,
         R1_NONUNIFORM_CONFIGS,
         R2_PREFIX_RESIDUAL_CONFIGS,
+        REFERENCE_COST_90Q,
+        REFERENCE_COST_90Q_AFFINE_OPT,
+        FarosParetoTournament,
         Sable90Profiler,
         generate_evaluation_subset,
     )

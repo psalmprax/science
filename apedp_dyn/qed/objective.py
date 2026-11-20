@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -44,7 +45,7 @@ class Fit:
     def complexity(self) -> int:
         return len(self.support)
 
-    def as_dict(self, names: Sequence[str]) -> dict:
+    def as_dict(self, names: Sequence[str]) -> dict[str, Any]:
         return {
             "support": [names[index] for index in self.support],
             "coefficients": [float(value) for value in self.coefficients],
@@ -106,7 +107,8 @@ class SupportObjective:
 
     @property
     def size(self) -> int:
-        return 2 ** len(self.library)
+        _out: int = 2 ** len(self.library)
+        return _out
 
     def cached(self, support: Sequence[int]) -> Fit | None:
         return self._cache.get(tuple(sorted(int(index) for index in support)))

@@ -927,7 +927,13 @@ def _check_memory(row: dict, engine: str) -> None:
     assert memory["growth_mib"] == pytest.approx(memory["growth_bytes"] / 2 ** 20)
     # The floor is the interpreter and numpy, not the engine: it must dwarf nothing and
     # must be reported beside the growth so a reader cannot mistake one for the other.
-    assert memory["floor_bytes"] > 64 * 2 ** 20
+    # The floor is the child interpreter after its imports, and this checks the
+    # child loaded the engines rather than measuring an empty process. It was
+    # 167 MiB when `apedp_dyn/__init__.py` imported everything eagerly; since the
+    # package inits became lazy (PR #64) importing the sampler loads numpy, stim
+    # and the vqc modules only, and the re-measurement of 2026-11-19 reads 38 MiB.
+    # 25 MiB still rules out an empty interpreter (about 10 MiB).
+    assert memory["floor_bytes"] > 25 * 2 ** 20
 
 
 def _check_memory_summary(block: dict, rows: list[dict]) -> None:
@@ -975,11 +981,17 @@ def test_the_memory_claim_is_bounded_where_it_is_read(record):
     verdict = record["verdict"]["sampling_memory"]
     assert "outcome table" in verdict
     assert "MiB" in verdict
-    # The growth is small beside the import floor it is reported against, in every row.
+    # What the verdict claims: the two samplers differ by a few megabytes of
+    # implementation, not an order of magnitude, on every row. Until 2026-11-19
+    # this asserted growth < floor / 4 instead, which encoded the 167 MiB floor of
+    # the eager-import era rather than anything the record says; with the lazy
+    # floor of 38 MiB a 32-qubit random state's 13 MiB is a third of it, and the
+    # comparison between the engines is unchanged (13.0 against 12.1 MiB).
     for row in [*record["sampling"]["rows"], *record["wide_sampling"]["rows"]]:
-        for engine in ("grammar", "stim"):
-            memory = row["memory"][engine]
-            assert memory["growth_bytes"] < memory["floor_bytes"] / 4
+        ours = row["memory"]["grammar"]["growth_bytes"]
+        theirs = row["memory"]["stim"]["growth_bytes"]
+        assert abs(ours - theirs) < 4 * 2 ** 20, row["label"]
+        assert max(ours, theirs) < 10 * max(min(ours, theirs), 2 ** 20), row["label"]  # "not an order of magnitude"
 
 
 def test_the_record_lists_all_three_tools_as_compared(record):

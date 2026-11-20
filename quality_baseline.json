@@ -1,0 +1,22 @@
+{
+  "measured_at": "2026-11-16",
+  "measured_in": "GitHub Actions run 43813711672, job 'Python quality' (Python 3.12, torch 2.9.1 CPU, .[dev,test,orchestration]); the same counts reproduce locally",
+  "policy": "Counts may only move down. Raising a limit requires a written reason in docs/QUALITY_BASELINE.md first.",
+  "commands": {
+    "ruff": "python -m ruff check <path> --output-format json",
+    "mypy": "python -m mypy <path> --ignore-missing-imports"
+  },
+  "ruff": {
+    "apedp": 0,
+    "tests": 0,
+    "apedp_dyn": 0,
+    "apedp_referee": 0,
+    "scripts": 603,
+    "benchmarks": 202
+  },
+  "mypy": {
+    "apedp": 897,
+    "apedp_dyn": 25,
+    "apedp_referee": 0
+  }
+}
