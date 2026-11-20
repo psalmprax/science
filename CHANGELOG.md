@@ -15,6 +15,13 @@ inferred releases.
 
 ### Changed
 
+- **A language model configuring the search, measured (2026-11-20, PREREG-LLM-CONTROLLER-2026-11,
+  run once, all three expectations held).** `nemotron-3-ultra` chooses PySR's operators, extra
+  features and guesses inside the refined path: 207 laws reported in 266 SRBench runs, 1 not
+  accurate, 173 recovered against 174 without the model; held-out 123 against 122; every reply
+  readable. The model adds nothing by itself here. The one inaccurate law came from a
+  configuration that left out the operator the law needs (audit M-20). The two runs recover
+  different laws, 191 of 266 between them. `preregistration/RESULT-LLM-CONTROLLER-2026-11.md`.
 - **The refined path is the default route (2026-11-20, the owner's decision).** New
   `apedp_dyn/discovery_l2/default_route.py`: `discover_law` runs the refined path unless the main
   search or the template ladder is named or set in `APEDP_LAW_DISCOVERY_ROUTE`. `route.py`, which

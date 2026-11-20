@@ -39,6 +39,7 @@ for PySR). In the same baseline the extended hierarchical engine recovered 36 of
 | What | Measured | Result file |
 | :--- | :--- | :--- |
 | A language model writing the candidate laws, in the place PySR has (`nemotron-3-ultra` on NVIDIA's free API, given numbers only) | 92 laws reported in 266 runs, 2 not accurate, **78 recovered against 152 with PySR**; 12 found by the model. It stays an optional proposer | [`RESULT-LLM-PROPOSER`](../preregistration/RESULT-LLM-PROPOSER-2026-11.md) |
+| A language model configuring the search (operators, features, guesses) inside the refined path, same model | 207 laws reported, 1 not accurate, **173 recovered against 174 without the model**; held-out 123 against 122. All three expectations held, and the finding is that the model adds nothing by itself. The two runs recover different laws: 191 of 266 by one or the other | [`RESULT-LLM-CONTROLLER`](../preregistration/RESULT-LLM-CONTROLLER-2026-11.md) |
 | A learned prior over formulas ordering the exhaustive search (MMLM) | The true law is reached after about a twentieth of the candidates; with a confirmed early stop, 96 of 100 laws recovered while fitting a median 3.2 % of the candidates | [`RESULT-MMLM-S`](../preregistration/RESULT-MMLM-S-2026-11.md), [`-S2`](../preregistration/RESULT-MMLM-S2-2026-11.md), [`-L`](../preregistration/RESULT-MMLM-L-2026-11.md) |
 | The mixture language model as a compressor (MMLM-CM) | 1.455 bits per byte on the WikiText-2 test split against 1.513 for the best reference compressor | [`RESULT-MMLM-CM`](../preregistration/RESULT-MMLM-CM-2026-11.md) |
 
@@ -66,7 +67,6 @@ a tradeable effect.
 
 | Preregistration | Question | State on 2026-11-20 |
 | :--- | :--- | :--- |
-| [`PREREG-LLM-CONTROLLER`](../preregistration/PREREG-LLM-CONTROLLER-2026-11.md) | Does a language model that configures PySR, instead of writing the laws, match the refined path? | Run in progress |
 | [`PREREG-REFEREE-STRUCTURE`](../preregistration/PREREG-REFEREE-STRUCTURE-2026-11.md) | With Guard 3 on, does the referee stop promoting laws that do not fit (at most 5 % of promotions inaccurate on 103 held-out problems, against 60 %), and keep the correct ones (at least 65 of 72)? On the 30 development problems: 23 correct promotions and no wrong one, against 21 and 29 | Frozen 2026-11-20; run started |
 
 ## Known limits

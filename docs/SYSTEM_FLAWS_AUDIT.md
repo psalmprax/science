@@ -254,6 +254,18 @@ three preregistered expectations missed.
   in it.
   **Still open until that run:** the default referee still promotes a sole
   survivor that does not fit.
+- **M-20 a search that cannot express the law yields a wrong law that the
+  later stages pass — OPEN.** Found in PREREG-LLM-CONTROLLER's run. On
+  `feynman_III_8_54` (`sin(E t/ħ)²`, noise 0) the language model allowed the
+  search `sqrt`, `exp`, `log` and `square` and no sine. PySR returned a formula
+  in powers of a logarithm with test R² 0.91; it was reported as an
+  equivalence class. The adequacy check passed it: no structure found in the
+  residuals, and an error 47 % of a nearest-neighbour smoother's. One case in
+  207 reports, and the only inaccurate one in 419 laws the refined path has
+  reported. Two things follow: a controller should widen a search and not be
+  allowed to narrow it below the default operator set, and the adequacy
+  check's smoother comparison is too lenient when the smoother itself is poor
+  (the same weakness as M-14). Neither is changed yet; both files are frozen.
 - **M-19 the refined path reports a law without a search stage — CLOSED AT
   THE DEFAULT ROUTE 2026-11-20; `discover_refined` itself is unchanged.**
   Found while making the refined path the default. Its measured result (0 of

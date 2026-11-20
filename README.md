@@ -44,7 +44,7 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 | **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law |
 | ODE route | ODEBench, 117 components | 80 and 69 recovered; 4.9 % of reported laws wrong |
 | Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
-| Language model in PySR's place | SRBench | 78 laws recovered against 152 with PySR; optional |
+| Language model in PySR's place, and configuring PySR | SRBench | Writing the laws: 78 recovered against 152. Configuring the search: 173 against 174 without it. Optional |
 | Fault-tolerant state preparation | Steane code, every fault and fault pair enumerated | 275,712 certified circuits at 11 CNOTs; none of the 22,976 shortest encoders is fault-tolerant alone |
 | Template engine with the referee | SRBench | 160 of 268 promotions not accurate; kept for replication, guard under test (audit M-10) |
 | Promotion referee on crypto returns | 500 placebo signals; one test claim | 0 placebos passed; the claim (order-flow imbalance) was refused |
