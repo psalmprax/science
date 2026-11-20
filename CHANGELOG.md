@@ -23,6 +23,20 @@ inferred releases.
 
 ### Changed
 
+- **An audit of five published laws of asset returns, power-checked and frozen; not run
+  (2026-11-20, PREREG-LAW-AUDIT-FINANCE-2026-11).** The first step towards a finding on real data
+  is not a search: `apedp_dyn/market/law_audit.py` states Cont's stylised facts 1, 2, 8, 9 and 10
+  and the inverse cubic law each as one number with its published range, and gives it `fails`,
+  `survives` or `not_rejected` on the point-in-time crypto panel from an interval that allows for
+  market-wide days and wandering volatility. Built on simulated panels only
+  (`law_audit_worlds.py`); no price of the real panel was read. On those panels the
+  block-resampling interval covered 92 to 99.7 % where it claims 99 %, so each is widened by a
+  measured factor (1,500 panels); with that, 10 of 2,700 further panels failed a law that was
+  true. The audit can tell the sign of leverage, a variance ratio 0.09 from one, and a tail index
+  reading of 2.0 or less from the inverse cubic range; it cannot tell a tail index of 1.7 from 2,
+  nor measure the decay exponent to the published precision on five years of data.
+  `scripts/run_law_audit_finance.py`, `.github/workflows/law-audit-finance.yml`,
+  `preregistration/POWER-LAW-AUDIT-FINANCE-2026-11/`. The run waits for the repository owner.
 - **Why the pruning kept noise terms on trajectory rows, and a repair (2026-11-20, audit M-15).**
   The kept terms are about as large as the standard error of the rows' rate estimates: they fit
   that error. New `discovery_l2/precision_pruning.py` floors the mean square at the rows' own

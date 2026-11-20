@@ -49,6 +49,10 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 | Template engine with the referee | SRBench | 160 of 268 promotions not accurate. With the referee's structure guard: 3 of 113, and the correct promotions kept (103 against 100) |
 | Promotion referee on crypto returns | 500 placebo signals; one test claim | 0 placebos passed; the claim (order-flow imbalance) was refused |
 
+Frozen and not yet run: an audit of five published laws of asset returns on the crypto panel
+([`PREREG-LAW-AUDIT-FINANCE-2026-11`](preregistration/PREREG-LAW-AUDIT-FINANCE-2026-11.md)). What
+it can and cannot tell was measured first, on simulated panels, and is on the full page.
+
 For tabular data `apedp_dyn/discovery_l2/default_route.py` runs the refined path unless the main
 search or the template engine is named; trajectories and return-like series have their own entry points
 (`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the

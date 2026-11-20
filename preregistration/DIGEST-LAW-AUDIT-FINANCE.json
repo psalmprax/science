@@ -1,0 +1,11 @@
+{
+ "preregistration": "PREREG-LAW-AUDIT-FINANCE-2026-11",
+ "sha256": {
+  "apedp_dyn/market/law_audit.py": "082e3f2959e4f3196932ea0a4862387dfd7081af086b242668db809a7250327b",
+  "apedp_dyn/market/law_audit_worlds.py": "bebeb1574b31551755eb57701ffe910f6534e3b01c91e2df8c3660472b9eff8a",
+  "preregistration/POWER-LAW-AUDIT-FINANCE-2026-11/calibration.json": "85b322edb9ccff0280062468ab4c12dece5e350a5abf5f5f4498c65f148df3f8",
+  "preregistration/POWER-LAW-AUDIT-FINANCE-2026-11/summary.json": "f76331a50b4879275403b78c115eeda2dd50f4cf9fe38d0a8e7cc143ce88a27d",
+  "preregistration/PREREG-LAW-AUDIT-FINANCE-2026-11.md": "2f485e328ad50dd1f066a77baebd70958458df5a993a6890319169a56d14aafb",
+  "scripts/run_law_audit_finance.py": "b80450bcd531eb8e7b180bfb36a5682867dbf3d0f58ea1201853574b9b862837"
+ }
+}

@@ -278,7 +278,7 @@ subclass, and each subclass implements the terms its own formula has. Reading th
 implementations against their docstring formulas is what turned "unused parameter" into
 "a caller cannot tell which arguments bind".
 
-**Static-table census for `apedp_dyn`.** Eighteen modules outside the vendored
+**Static-table census for `apedp_dyn`.** Twenty-two modules outside the vendored
 trees read a container literal on a return path. All are catalogues, registries,
 measured records or step ladders, and none answers a question about the world:
 
@@ -293,6 +293,7 @@ measured records or step ladders, and none answers a question about the world:
 | `quantum_compilation/dqi_gluzdov_v6.py` | `RECYCLING_MEASUREMENT`, `WIDTH_LEVERS_MEASURED` | Measured register-recycling records; the projection's own numbers are computed from `GluzdovV6Config` |
 | `fitting/parameter_fit.py` | `MULTISTART_SCALES` | Scale ladder for the multi-start search |
 | `grammar/candidate_ir.py` | `parent_candidates` | See the false positive below |
+| `market/law_audit.py` | `STRETCH` (`audit_settings`) | How far each number's resampling interval is widened about its estimate. Measured on simulated panels (`preregistration/POWER-LAW-AUDIT-FINANCE-2026-11/calibration.json`) and pinned to that file by `tests/test_market_law_audit.py`; the numbers themselves are computed from the panel |
 | `orchestration/modality_sieve.py` | `DYNAMIC_ENGINES`, `STATIC_ENGINES` | Which engine a classified modality routes to |
 | `problems/__init__.py` | `ALL_PROBLEMS` | The problem catalogue |
 | `qed/library.py` | `OSCILLATOR_TERMS` | The hypothesis library offered to the search |

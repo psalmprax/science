@@ -63,6 +63,34 @@ the positive control passed stage 4, the null control was refused at stage 2, an
 ([`RESULT-CRYPTO-PIT`](../preregistration/RESULT-CRYPTO-PIT-2026-11.md)). Nothing here is evidence of
 a tradeable effect.
 
+## Published laws on real data: frozen, not run
+
+[`PREREG-LAW-AUDIT-FINANCE-2026-11`](../preregistration/PREREG-LAW-AUDIT-FINANCE-2026-11.md) takes five
+published laws of asset returns (heavy tails with an index between two and five, and its strict
+reading, the inverse cubic law; no autocorrelation of returns; a slow power-law decay of the
+autocorrelation of absolute returns; the leverage effect; volume moving with volatility) and
+measures each on the point-in-time crypto panel, 2021 to 2025, as one number with an interval that
+allows for market-wide days and wandering volatility. Each gets `fails`, `survives` or
+`not_rejected`. **It is frozen and has not been run**; it waits for the repository owner.
+
+What has been measured is what the audit can tell, on 2,700 simulated panels of the real one's
+shape (`preregistration/POWER-LAW-AUDIT-FINANCE-2026-11/`):
+
+| Claim | Where it is true | Where it is false |
+| :--- | :--- | :--- |
+| Tail index between 2 and 5 | failed in 0 of 2,400 panels | a reading of 1.66 fails in 12 of 150: the panel cannot tell 1.7 from 2 |
+| Inverse cubic range | failed in 0 of 150 | fails in every panel where the number reads 2.0 or less, in none from 2.47 up |
+| Variance ratio of one | failed in 7 of 2,100 | a ratio about 0.09 from one fails in 68 and 102 of 150; about 0.05 from one, in 2 and 17 |
+| Decay exponent between 0.2 and 0.4 | failed in 3 of 1,950 | 0.71 fails in 40 of 150; 0.09, and an exponential decay, in 1 of 150 each: five years cannot measure it to the published precision |
+| Leverage negative | failed in 0 of 2,250, survives in 84 % | the opposite sign fails in 130 of 150 |
+| Volume with volatility | survives in all 2,400 | no link: `not_rejected` in 148 of 150 |
+| Control: independent returns | (1 of 150 fails) | fails in all 2,550 |
+
+10 of the 2,700 panels failed some law that was true in their world. The block-resampling
+interval alone covered 92 to 99.7 % of the time where it claims 99 %, so each interval is widened
+by a factor measured on 1,500 other simulated panels (2.3 for the tail index, 1.1 to 1.5 for the
+rest); those factors are as good as the simulated panels are like a market.
+
 ## Developed and not taken to a preregistered run
 
 | What | What development showed | Why it stopped there |

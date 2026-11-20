@@ -1,0 +1,83 @@
+# Five published laws of asset returns on the point-in-time crypto panel
+# (preregistration/PREREG-LAW-AUDIT-FINANCE-2026-11.md).
+#   push to law-audit-finance-smoke-*  -> the audit's tests and every command on a small simulated panel
+#   push to law-audit-finance-run-*    -> smoke, then the one preregistered run on the development panel
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+#
+# The run job downloads one file of the data branch, the development panel, by its path at a pinned
+# commit. The runner checks that file's SHA-256 against the preregistered one before reading a price.
+name: Law audit (finance)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['law-audit-finance-smoke-*', 'law-audit-finance-run-*']
+
+permissions:
+  contents: read
+
+env:
+  # branch market-data, built by scripts/build_point_in_time_crypto_panel.py
+  PANEL_COMMIT: a598b83c851670bc7f95a29459631fca3b91936e
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The audit's own tests
+        run: python -m pytest tests/test_market_law_audit.py -q
+      - name: Every command on a small simulated panel
+        run: |
+          python scripts/run_law_audit_finance.py calibrate --out smoke-out --replicates 2 --worlds all_hold
+          python scripts/run_law_audit_finance.py stretch --out smoke-out
+          python scripts/run_law_audit_finance.py power --out smoke-out --replicates 1 --worlds all_hold,constant_volatility
+          python scripts/run_law_audit_finance.py summarise --out smoke-out
+
+  run:
+    needs: smoke
+    if: startsWith(github.ref_name, 'law-audit-finance-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Fetch the development panel, and no other file of the data branch
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/panel"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/panel/panel_development.csv.gz" \
+            "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${PANEL_COMMIT}/crypto_usdt_daily/panel_development.csv.gz"
+          sha256sum "$RUNNER_TEMP/panel/panel_development.csv.gz"
+      - name: The one preregistered run
+        run: python scripts/run_law_audit_finance.py run --panel-dir "$RUNNER_TEMP/panel" --out law-audit-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: law-audit-finance-results
+          path: law-audit-out/results.json
+          if-no-files-found: error
+      # The artifact store is not reachable from every environment that has to commit the
+      # results, so they are also printed, with their checksums, for rebuilding from the log.
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd law-audit-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

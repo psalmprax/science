@@ -57,6 +57,9 @@
     "apedp_dyn/grammar/candidate_ir.py": [
       "parent_candidates"
     ],
+    "apedp_dyn/market/law_audit.py": [
+      "STRETCH"
+    ],
     "apedp_dyn/orchestration/modality_sieve.py": [
       "DYNAMIC_ENGINES",
       "STATIC_ENGINES"
