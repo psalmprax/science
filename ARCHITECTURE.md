@@ -78,7 +78,7 @@ flowchart LR
 | `main_search` (default) | `discovery_l2/main_search.py` | Tabular data |
 | ODE | `ode/main_search_ode.py`, `ode/window_rows.py` | Trajectories: one state and one rate per disjoint window, then the main search per component |
 | Series | `discovery_l2/series_route.py` | Return-like series: the main search supplies candidates only; one is chosen inside the development period and must pass one forecast test on later rows |
-| Refined | `discovery_l2/refined_search.py`, `proposers/composed.py` | The main search with physical units, a polynomial library and term pruning added around it; preregistered, result pending |
+| Refined | `discovery_l2/refined_search.py`, `proposers/composed.py` | The main search with physical units, a polynomial library and term pruning added around it; measured, not the default |
 | `l2` | `discovery_l2/l2_engine.py`, `epistemic/adjudicate.py` | The template engine and the referee's verdict; kept for replication |
 
 The measured result behind each route, and its limits, are in

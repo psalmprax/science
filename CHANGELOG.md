@@ -15,6 +15,15 @@ inferred releases.
 
 ### Changed
 
+- **The refined path, measured (2026-11-20, PREREG-REFINED-SEARCH-2026-11, run once).** The main
+  search with physical units, a polynomial library, the confirmed-and-pruned report and the search
+  stage on every problem (`apedp_dyn/discovery_l2/refined_search.py`): 212 laws reported in 266
+  SRBench runs, **none inaccurate**, 174 recovered (the main path: 186, 4 and 152). Feynman 78 and
+  77 of 119 (69 and 70); Strogatz 19 of 28 (13). On the 103 held-out problems 61 and 61 against 55
+  and 52. Expectations: reported laws accurate, held; `strogatz_lv1`, held; held-out recovery at
+  least 62 and 58, **missed at noise 0 by one law** and held at 1 %. The default route is unchanged.
+  Audit M-13, M-14 and M-15 are addressed in this path.
+  `preregistration/RESULT-REFINED-SEARCH-2026-11.md`.
 - **The UI shows the measured discovery routes; the referee gains a guard behind a switch
   (2026-11-20).** *UI* (audit M-18): `/api/discover/physics` returns `route_reading` (the default
   route, the main search, on the same rows), `/api/discover/market` returns `series_reading` (the

@@ -121,13 +121,17 @@ three preregistered expectations missed.
   and records it; the frozen runner and the frozen path are unchanged, so a
   proposer used directly can still do this.
 - **M-15 an exact-fit confirmation can carry a term that contributes nothing
-  — OPEN.** Found after PREREG-ODE-MAIN-SEARCH's run. For `dx/dt = -x**3` the
+  — ADDRESSED IN THE REFINED PATH 2026-11-20; the frozen path is unchanged.** Found after PREREG-ODE-MAIN-SEARCH's run. For `dx/dt = -x**3` the
   path reported `-x0**3` plus `1.7e-8*x0 - 4.4e-9*exp(exp(x0))`, confirmed
   exact on the pool. The extra terms are at the level of the numerical error
   on the confirmed states and unbounded outside them (R² -935 011 on the
   scoring states). One case in 184 reports. The frozen path does not remove
   such terms; a wrapper should drop terms whose contribution on the confirmed
   rows is below the numerical floor and confirm again.
+  `discovery_l2/refined_search.confirmed_and_pruned` does that. In
+  PREREG-REFINED-SEARCH-2026-11 it dropped terms in 13 of 266 runs and none of
+  the 212 reported laws was inaccurate. The ODE route still uses the frozen
+  path.
 - **M-07 the ODE path differentiates noisy data — ADDRESSED BY A NEW ROUTE
   2026-11-19; the older path is unchanged.** `ode/window_rows.py` turns a
   trajectory into rows with independent errors (one state and one rate per
@@ -227,21 +231,27 @@ three preregistered expectations missed.
   **The referee's own rule (2026-11-20, behind a switch, off by default):**
   Guard 3, `apedp_dyn/epistemic/structure_guard.py`. A promoted law must
   leave no structure in its holdout residuals over the input space: the
-  leave-one-out R² of each residual from its eight nearest neighbours'
-  residuals is compared with its own seeded permutation distribution at the
-  canonical level (0.01). It fails closed. It is applied to the verdict
+  leave-one-out R² of each residual from its nearest neighbours' residuals,
+  at 4 to 64 neighbours, the largest standardised value compared with the
+  seeded permutation distribution of that maximum at the canonical level
+  (0.01). It fails closed. It is applied to the verdict
   `adjudicate` returned (`guard_promotion`), so it covers every route to a
   promotion and `adjudicate.py` is unchanged; `L2DiscoveryEngine.discover`
   applies it when `structure_rule=True`, which is not the default.
-  Development (30 problems never used to score it) changed the design twice,
-  and both are recorded because they are the kind of defect a test of the
-  happy case does not show: a first version inside `adjudicate` guarded two
-  of its three promotion exits and 3 wrong promotions left through the third;
-  and at zero noise it refused 4 of 7 correct laws, because the right law's
-  rounding error follows the size of the prediction and is structured over
-  the inputs (residuals within `ABSOLUTE_EPS` of the observation RMS now pass
-  as an exact fit). Whether the guard becomes the default is the question of
-  PREREG-REFEREE-STRUCTURE-2026-11, on the 103 problems not used here.
+  Development (30 SRBench problems) changed the design three times, and all
+  three are recorded because they are the kind of defect a test of the happy
+  case does not show: a first version inside `adjudicate` guarded two of its
+  three promotion exits and 3 wrong promotions left through the third; at
+  zero noise it refused 4 of 7 correct laws, because the right law's rounding
+  error follows the size of the prediction and is structured over the inputs
+  (residuals within `ABSOLUTE_EPS` of the observation RMS now pass as an
+  exact fit); and with eight neighbours alone one wrong law passed at 10 %
+  noise, which larger neighbourhoods see. On those 30 problems at noise 0,
+  1 % and 10 % the baseline promoted 21 correct and 29 wrong laws; with the
+  guard, 23 correct and none wrong. Whether the guard becomes the default is
+  the question of PREREG-REFEREE-STRUCTURE-2026-11 (frozen 2026-11-20), on
+  the 103 problems not used here; the consequence of each outcome is fixed
+  in it.
   **Still open until that run:** the default referee still promotes a sole
   survivor that does not fit.
 - **M-18 the UI showed the template engine's verdict only — ADDRESSED
@@ -277,8 +287,11 @@ three preregistered expectations missed.
   text `x0*(x2 + x3*x4/x1)**2` was reported, and what was confirmed exact is
   its cross term alone; test R² 0.80 for the text, 1.0 for the fit). The frozen
   path is unchanged. `route.discover_law` returns `law_as_confirmed`, and the
-  ODE and series routes report the confirmed form.
-- **M-14 the adequacy check is weak on trajectory rows — OPEN.** In the same
+  ODE and series routes report the confirmed form. The refined path reports
+  the confirmed form only (PREREG-REFINED-SEARCH-2026-11: 0 of 212 reported
+  laws inaccurate).
+- **M-14 the adequacy check is weak on trajectory rows — ADDRESSED IN THE
+  REFINED PATH 2026-11-20; open in the default route.** In the same
   run it passed `sin(exp(x0*x1))` on `strogatz_lv1` (test R² 0.35) at both
   noise levels: unchallenged by any rival, no structure found in the residuals,
   and an error 83 % of a nearest-neighbour smoother's, which on clustered
@@ -286,6 +299,11 @@ three preregistered expectations missed.
   reports were wrong against none of the 162 confirmed against a rival (in the
   confirmed form). One problem at two noise levels: a suspicion, not a rate.
   An `unchallenged` law should be read as weaker than a confirmed one.
+  The refined path runs the search stage on every problem and returns a law
+  that nothing challenged as tentative, not reported. In
+  PREREG-REFINED-SEARCH-2026-11 no law was left unchallenged, and
+  `strogatz_lv1` was recovered at both noise levels. The default route still
+  returns `unchallenged`; the UI shows it as tentative.
 - **M-11 the in-house search is dominated by an outside engine — DECIDED
   AND IMPLEMENTED 2026-11-19; the UI is not moved yet.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
   both expectations held): on the 119 Feynman problems PySR recovers 73 at zero
