@@ -111,7 +111,7 @@ before the run, and a panel that keeps the pairs that stopped trading.
 | # | Gap | Size | Who can close it | State on 2026-11-21 |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | No number on a benchmark where memorising does not help (LLM-SRBench) | The largest unknown | Needs the owner's Hugging Face access and `HF_TOKEN` | Blocked |
-| 2 | ODE discovery without chosen experiments | Leading systems report 90 % and more by choosing them | Buildable here: start further trajectories where the surviving rivals disagree, and measure against equal data chosen at random | Not built |
+| 2 | ODE discovery without chosen experiments | Leading systems report 90 % and more by choosing them. On this system's own record the headroom is smaller: of the 69 runs the refined ODE run missed, in 10 the true law was proposed and could not be told from its rivals on the rows at hand; in 37 nothing was confirmed and in 17 the law was never proposed | Buildable here: start further trajectories where the surviving rivals disagree, and measure against equal data chosen at random | Not built |
 | 3 | A capable language model in the loop | The source of the field's gains on tables | Needs a paid model key | Blocked |
 | 4 | The ODE route's refined path missed its reliability limit by one law | 92 and 73 components recovered against 80 and 69, unused | A blind run | **Frozen and started today** (PREREG-ODE-BLIND) |
 | 5 | No finding on real data | The lowest-rated part of the system | The owner's word to start the frozen audit; then the dated claims | Frozen, waiting |
@@ -119,7 +119,11 @@ before the run, and a panel that keeps the pairs that stopped trading.
 | 7 | The recovery criterion can pass a form that is not the law (M-23) | Two of 173 in one run | Done today: every recorded recovery judged on a range twice as wide | **Closed for tables**; open for trajectories |
 | 8 | Outsiders have never tried to break the referee | Its error rate is self-measured | Needs a public page | Not started |
 
-Gaps 2 and 6 are the two that this pass adds and that need nothing from the owner.
+Gaps 2 and 6 are the two that this pass adds and that need nothing from the owner. The count
+under gap 2 comes from the recorded rows of PREREG-ODE-REFINED-2026-11: 69 missed runs of 234 are
+37 where the search confirmed nothing, 27 where the path reported one of several laws it could not
+separate (the true law among the recorded candidates in 10 of them), 3 confirmed and wrong, and 2
+that ended in an error. Most of what the ODE route loses is search, not the choice of experiment.
 
 ## What this pass did not cover
 
