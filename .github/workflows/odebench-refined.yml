@@ -1,6 +1,7 @@
 # ODEBench's systems through the refined path (preregistration/PREREG-ODE-REFINED-2026-11.md).
 #   push to odebench-refined-smoke-*  -> three toy systems, short budget
 #   push to odebench-refined-dev-*    -> smoke, then the development systems only, printed to the log
+#        (a development branch with "portfolio" in its name: four PySR searches side by side)
 #   push to odebench-refined-run-*    -> smoke, then the one preregistered run
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 name: ODEBench refined path
@@ -52,7 +53,11 @@ jobs:
       - name: Development systems, shard ${{ matrix.k }} of 8
         env:
           SHARD: ${{ matrix.k }}
-        run: python scripts/run_odebench_refined.py develop --shard "$SHARD/8" --out dev-out
+          # a development branch with "portfolio" in its name runs four searches side by side
+          ODE_REFINED_MEMBERS: ${{ contains(github.ref_name, 'portfolio') && '4' || '1' }}
+        run: |
+          nproc
+          python scripts/run_odebench_refined.py develop --shard "$SHARD/8" --out dev-out
 
   shard:
     needs: smoke

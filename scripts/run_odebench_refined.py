@@ -8,12 +8,13 @@ recovered; 9 of 184 reported laws wrong). One thing differs: each component goes
 nothing challenged not reported) instead of ``apedp_dyn.ode.main_search_ode``.
 
     python scripts/run_odebench_refined.py smoke   --out DIR                       # toy systems
-    python scripts/run_odebench_refined.py develop --out DIR [--budget S] [--shard k/N]   # development systems only
+    python scripts/run_odebench_refined.py develop --out DIR [--budget S] [--members M] [--shard k/N]   # development systems only
     python scripts/run_odebench_refined.py run     --out DIR --shard k/N
     python scripts/run_odebench_refined.py collect --out DIR
 
 ``--budget 0`` runs the first passes alone (no PySR), which is what can be run where Julia is not
-installed; it is not the measured path.
+installed; it is not the measured path. ``--members M`` (development only) makes the search stage a
+portfolio of M PySR searches with different seeds on separate cores (``apedp_dyn.proposers.portfolio``).
 """
 from __future__ import annotations
 
@@ -47,6 +48,7 @@ FROZEN = ("preregistration/PREREG-ODE-REFINED-2026-11.md", "scripts/run_odebench
           "apedp_dyn/discovery_l2/exhaustive_search.py", "apedp_mmlm/law_corpora.py")
 
 ENGINE = "refined_ode"
+MEMBERS = int(os.environ.get("ODE_REFINED_MEMBERS", "1"))  # searches side by side; 1 is one PySR search
 NOISE_LEVELS = ode_run.NOISE_LEVELS
 DEVELOPMENT_TAG = "dev-ode-refined|"
 GROUPS = ("all", "held_out", "development")
@@ -61,8 +63,13 @@ def run_refined(world: dict[str, Any], component: int, budget: float = ode_run.S
     from apedp_dyn.ode import refined_ode
     from apedp_dyn.ode.main_search_ode import state_names
 
-    proposer = None
-    if budget > 0:
+    proposer: Any = None
+    if budget > 0 and MEMBERS > 1:
+        from apedp_dyn.proposers.portfolio import PortfolioProposer, pysr_members
+
+        proposer = PortfolioProposer(pysr_members(budget, tuple(ode_run.SEED + k for k in range(MEMBERS))),
+                                     max_proposals=10, parallel=True, timeout=budget + 300.0)
+    elif budget > 0:
         from apedp_dyn.proposers.pysr_proposer import PySRProposer
 
         proposer = PySRProposer(budget_seconds=budget, seed=ode_run.SEED)
@@ -75,6 +82,8 @@ def run_refined(world: dict[str, Any], component: int, budget: float = ode_run.S
             "extra": {"action": result.action, "tentative_law": result.tentative_law,
                       "dropped_terms": [str(t) for t in result.dropped_terms],
                       "proposer_failures": list(result.proposer_failures), "search_stage": proposer is not None,
+                      "members": MEMBERS if proposer is not None else 0,
+                      "portfolio": dict(getattr(proposer, "last_run", {}) or {}),
                       "found_by": path.found_by if path else None, "path_law_text": path.law if path else None,
                       "rejected_law": path.rejected_law if path else None, "adequacy": path.adequacy if path else None,
                       "rows_read": path.rows_read if path else None, "search": path.search if path else None,
@@ -159,7 +168,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--shard", default="0/1", help="k/N: this shard's runs")
     parser.add_argument("--budget", type=float, default=None, help="smoke and develop only: PySR seconds; 0 = first passes alone")
+    parser.add_argument("--members", type=int, default=None, help="smoke and develop only: PySR searches side by side")
     args = parser.parse_args(argv)
+    if args.members is not None:
+        if args.command not in ("smoke", "develop"):
+            raise SystemExit("--members is for smoke and develop; the preregistered run takes its value from the frozen file")
+        global MEMBERS
+        MEMBERS = int(args.members)
     args.out.mkdir(parents=True, exist_ok=True)
     k, n = (int(v) for v in args.shard.split("/"))
     if args.command in ("smoke", "develop"):
@@ -181,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
                         continue
                     made = made if made is not None else worlds.world(system, noise, tag=tag)
                     row = run_one({"system": system["id"], "component": component, "noise": noise, "engine": ENGINE},
-                                  system, made, budget)
+                                  system, made, budget, ode_run.TIME_LIMIT_S + (120.0 if MEMBERS > 1 else 0.0))
                     print("ROW " + _printable(row), flush=True)
                     if row["status"] not in ("ok", "excluded"):
                         print(row.get("trace", ""), flush=True)
