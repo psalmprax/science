@@ -293,13 +293,17 @@ three preregistered expectations missed.
   (`proposers/portfolio.py`): 27 and 25 of 30 recovered at noise 0 and 1 %,
   the same runs as one search, none gained, none lost, no member failed. The
   search is deterministic for a seed and other seeds find the same laws, so
-  the misses are not bad luck. (b) The exhaustive pass two levels deeper,
+  the misses there are not bad luck. On ODEBench's 15 development systems,
+  where the rows are windows of trajectories, the same four seeds did gain:
+  28 and 23 of 31 components against 25 and 22 with one search, nothing lost.
+  Why the two differ is not understood. (b) The exhaustive pass two levels deeper,
   with no PySR (`proposers/deep_pass.py`), on the 18 development runs the
   first passes miss: 3 recovered, against 10 for PySR; one of the three
   (`feynman_test_5` without noise) is recovered by no PySR run recorded here.
   At 1 % noise it returned four laws that are accurate and are not the law
   (towers of exponentials that fit the noise). **Consequence:** seeds alone
-  are not preregistered; the deeper pass is never the only search and is
+  are not preregistered on tables; on ODE systems they are
+  (PREREG-ODE-REFINED-2026-11, frozen, held-out systems); the deeper pass is never the only search and is
   offered as one member of a portfolio whose candidates the confirmation
   step compares (`deep_pass.mixed_members`). **Still open:** whether that
   portfolio recovers more than one search on problems it was not built on is

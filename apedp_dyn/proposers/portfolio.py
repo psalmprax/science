@@ -26,10 +26,14 @@ the 30 development problems of SRBench at both noise levels (60 runs, GitHub's
 four-core runners): 27 and 25 recovered, exactly the runs the single search
 recovers; none gained, none lost, 0 of 54 reported laws inaccurate, no member
 failed, 265 s of wall time for a 240 s budget. The search is deterministic for
-a seed, and other seeds find the same laws or lose to the same rival. So the
-two recorded runs above differ because the search was configured differently,
-not because of chance, and a portfolio pays only if its members differ in
-kind. ``apedp_dyn.proposers.deep_pass.mixed_members`` is that portfolio.
+a seed, and on these tables other seeds find the same laws or lose to the same
+rival: the two recorded runs above differ because the search was configured
+differently, not because of chance. For tables, then, the members have to
+differ in kind; ``apedp_dyn.proposers.deep_pass.mixed_members`` is that
+portfolio. On ODEBench's 15 development systems, where the rows are windows of
+trajectories, the same four seeds did gain: 28 and 23 of 31 components against
+25 and 22 with one search, nothing lost (PREREG-ODE-REFINED-2026-11 tests that
+on the other 48 systems). Why the two cases differ is not understood.
 
 **Processes.** Members run under the ``spawn`` start method, so each child
 starts its own Julia runtime; a Julia runtime does not survive ``fork``. Each

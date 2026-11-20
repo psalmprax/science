@@ -23,12 +23,18 @@ inferred releases.
 
 ### Changed
 
+- **ODE systems through the refined path with four searches: preregistered (2026-11-20).**
+  On ODEBench's 15 development systems four PySR seeds side by side recovered 28 and 23 of 31
+  components (one search: 25 and 22; the recorded ODE route: 24 and 21), kept every run the
+  recorded route recovered, and reported 1 wrong law in 57. `PREREG-ODE-REFINED-2026-11` fixes
+  three expectations on the 48 systems not used in development and what follows from each
+  outcome; frozen by `preregistration/DIGEST-ODE-REFINED.json`, run once. No result yet.
 - **Several searches side by side, and what development showed (2026-11-20).** New
   `apedp_dyn/proposers/portfolio.py` (`PortfolioProposer`: members in separate processes, merged
   round-robin, a failing member recorded and not fatal) and `scripts/run_srbench_portfolio.py`.
   Four seeds of the same PySR search, developed on SRBench's 30 development problems (60 runs on
   four-core runners): 27 and 25 recovered, exactly what the single search recovers, none gained
-  and none lost. Seeds alone are therefore not taken to a preregistered run. New
+  and none lost. On tables, seeds alone are therefore not taken to a preregistered run. New
   `apedp_dyn/proposers/deep_pass.py`: the exhaustive pass at 8 nodes for one variable and 7 for
   two or three, which on the 18 development runs the first passes miss recovered 3 (one that no
   PySR run here has recovered) and, at 1 % noise, returned four laws that fit and are not the

@@ -41,10 +41,17 @@ recorded main-search route on the same components: one more at each level. Three
 of 52 reported laws were not accurate against two of 51. The components neither
 route recovers are the non-polynomial fields (a rational term with an offset, a
 sine of a difference, a logistic, ``x*log(x)``, ``x*|x|``), and what limits them
-is what one 240-second search finds, which this module does not change. So it
-was not taken to a preregistered run: there is no gain to predict that is larger
-than the difference between two runs. It stays as the ODE entry to the refined
-path; the place to look for a gain is the search stage.
+is what one 240-second search finds, which this module does not change. With
+one search there was no gain to predict that is larger than the difference
+between two runs.
+
+**Development with four searches side by side (CI, the same systems).** The
+search stage as a portfolio of four PySR seeds (``proposers/portfolio.py``):
+28 and 23 of 31 recovered, against 25 and 22 with one search and 24 and 21 for
+the recorded route; every one of the 45 runs the recorded route recovered was
+recovered again; 1 of 57 reported laws wrong against 1 of 51; no member failed.
+That is taken to a preregistered run on the 48 systems not used here:
+PREREG-ODE-REFINED-2026-11 (``scripts/run_odebench_refined.py``).
 """
 from __future__ import annotations
 

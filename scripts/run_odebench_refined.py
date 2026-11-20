@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""ODEBench through the refined path, for PREREG-ODE-REFINED-2026-11.
+"""ODEBench through the refined path with four searches side by side, for PREREG-ODE-REFINED-2026-11.
 
 The same systems, trajectories, noise realisations, rows, search budget and scoring as
 PREREG-ODE-MAIN-SEARCH-2026-11, whose recorded runs are the comparison (80 and 69 of 117 components
-recovered; 9 of 184 reported laws wrong). One thing differs: each component goes through
+recovered; 9 of 184 reported laws wrong). Two things differ. Each component goes through
 ``apedp_dyn.ode.refined_ode`` (polynomial library as a candidate, confirmed-and-pruned report, a law
-nothing challenged not reported) instead of ``apedp_dyn.ode.main_search_ode``.
+nothing challenged not reported) instead of ``apedp_dyn.ode.main_search_ode``; and the search stage
+is ``RUN_MEMBERS`` PySR searches with different seeds, each on its own core, merged before
+confirmation (``apedp_dyn.proposers.portfolio``).
 
     python scripts/run_odebench_refined.py smoke   --out DIR                       # toy systems
     python scripts/run_odebench_refined.py develop --out DIR [--budget S] [--members M] [--shard k/N]   # development systems only
@@ -13,8 +15,8 @@ nothing challenged not reported) instead of ``apedp_dyn.ode.main_search_ode``.
     python scripts/run_odebench_refined.py collect --out DIR
 
 ``--budget 0`` runs the first passes alone (no PySR), which is what can be run where Julia is not
-installed; it is not the measured path. ``--members M`` (development only) makes the search stage a
-portfolio of M PySR searches with different seeds on separate cores (``apedp_dyn.proposers.portfolio``).
+installed; it is not the measured path. ``--members M`` and ``ODE_REFINED_MEMBERS`` are for
+development; ``run`` always uses ``RUN_MEMBERS``.
 """
 from __future__ import annotations
 
@@ -40,7 +42,7 @@ PREREGISTRATION_ID = "PREREG-ODE-REFINED-2026-11"
 DIGEST = ROOT / "preregistration" / "DIGEST-ODE-REFINED.json"
 FROZEN = ("preregistration/PREREG-ODE-REFINED-2026-11.md", "scripts/run_odebench_refined.py",
           "scripts/run_odebench_main_search.py", "scripts/odebench_worlds.py", "apedp_dyn/ode/window_rows.py",
-          "apedp_dyn/ode/main_search_ode.py", "apedp_dyn/ode/refined_ode.py",
+          "apedp_dyn/ode/main_search_ode.py", "apedp_dyn/ode/refined_ode.py", "apedp_dyn/proposers/portfolio.py",
           "apedp_dyn/discovery_l2/refined_search.py", "apedp_dyn/proposers/composed.py",
           "apedp_dyn/discovery_l2/main_search.py", "apedp_dyn/proposers/pysr_proposer.py",
           "apedp_dyn/discovery_l2/contrast_confirmation.py", "apedp_dyn/discovery_l2/contrast_resolution.py",
@@ -48,7 +50,9 @@ FROZEN = ("preregistration/PREREG-ODE-REFINED-2026-11.md", "scripts/run_odebench
           "apedp_dyn/discovery_l2/exhaustive_search.py", "apedp_mmlm/law_corpora.py")
 
 ENGINE = "refined_ode"
-MEMBERS = int(os.environ.get("ODE_REFINED_MEMBERS", "1"))  # searches side by side; 1 is one PySR search
+RUN_MEMBERS = 4  # the preregistered run: four searches side by side, seeds SEED .. SEED + 3
+MEMBERS = int(os.environ.get("ODE_REFINED_MEMBERS", "1"))  # development; ``run`` sets it to RUN_MEMBERS
+PORTFOLIO_EXTRA_S = 120.0  # added to the recorded run's time limit: four Julia runtimes have to start
 NOISE_LEVELS = ode_run.NOISE_LEVELS
 DEVELOPMENT_TAG = "dev-ode-refined|"
 GROUPS = ("all", "held_out", "development")
@@ -140,6 +144,8 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 "tentative_not_accurate": sum(not r.get("tentative_accurate") for r in tentative),
                 "terms_dropped": sum(bool(r.get("dropped_terms")) for r in ok),
                 "proposer_failures": sum(bool(r.get("proposer_failures")) for r in ok),
+                "portfolio_ran": sum(bool(r.get("portfolio")) for r in ok),
+                "member_failures": sum(len((r.get("portfolio") or {}).get("failures", [])) for r in ok),
                 "systems": len(by_system),
                 "systems_symbolic": sum(all(r["status"] == "ok" and r["symbolic"] for r in g) for g in by_system.values()),
                 "actions": {a: sum(r.get("action") == a for r in ok)
@@ -170,10 +176,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--budget", type=float, default=None, help="smoke and develop only: PySR seconds; 0 = first passes alone")
     parser.add_argument("--members", type=int, default=None, help="smoke and develop only: PySR searches side by side")
     args = parser.parse_args(argv)
+    global MEMBERS
     if args.members is not None:
         if args.command not in ("smoke", "develop"):
             raise SystemExit("--members is for smoke and develop; the preregistered run takes its value from the frozen file")
-        global MEMBERS
         MEMBERS = int(args.members)
     args.out.mkdir(parents=True, exist_ok=True)
     k, n = (int(v) for v in args.shard.split("/"))
@@ -196,7 +202,7 @@ def main(argv: list[str] | None = None) -> int:
                         continue
                     made = made if made is not None else worlds.world(system, noise, tag=tag)
                     row = run_one({"system": system["id"], "component": component, "noise": noise, "engine": ENGINE},
-                                  system, made, budget, ode_run.TIME_LIMIT_S + (120.0 if MEMBERS > 1 else 0.0))
+                                  system, made, budget, ode_run.TIME_LIMIT_S + (PORTFOLIO_EXTRA_S if MEMBERS > 1 else 0.0))
                     print("ROW " + _printable(row), flush=True)
                     if row["status"] not in ("ok", "excluded"):
                         print(row.get("trace", ""), flush=True)
@@ -204,6 +210,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if failed and args.command == "smoke" else 0
     check_frozen()
     if args.command == "run":
+        MEMBERS = RUN_MEMBERS  # whatever the environment says
         systems_by_id = {s["id"]: s for s in worlds.systems()}
         made_worlds: dict[tuple[int, float], dict[str, Any]] = {}
         path = args.out / f"runs-shard-{k:03d}-of-{n:03d}.jsonl"
@@ -212,7 +219,9 @@ def main(argv: list[str] | None = None) -> int:
                 key = (job["system"], job["noise"])
                 if key not in made_worlds:
                     made_worlds[key] = worlds.world(systems_by_id[job["system"]], job["noise"])
-                handle.write(json.dumps(run_one(job, systems_by_id[job["system"]], made_worlds[key]), sort_keys=True, default=str) + "\n")
+                row = run_one(job, systems_by_id[job["system"]], made_worlds[key], ode_run.SEARCH_BUDGET_S,
+                              ode_run.TIME_LIMIT_S + PORTFOLIO_EXTRA_S)
+                handle.write(json.dumps(row, sort_keys=True, default=str) + "\n")
                 handle.flush()
         return 0
     rows = [json.loads(line) for path in sorted(args.out.glob("runs-shard-*.jsonl")) for line in path.read_text().splitlines()]
