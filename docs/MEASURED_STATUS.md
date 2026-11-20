@@ -21,7 +21,7 @@ entry points (`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series
 | Main search (the default from 2026-11-19 to 2026-11-20) | Tabular data where a law explains nearly all of the target | Exhaustive first pass, then PySR, then confirmation on rows chosen to tell rivals apart, then an adequacy check | SRBench, 133 laws at noise 0 and 1 %: a law reported in 186 of 266 runs, **4 not accurate (2.2 %**, interval 0.6–5.4 %), 152 the law. Feynman 69 and 70 of 119; PySR alone 73 and 68 | [`RESULT-MAIN-SEARCH`](../preregistration/RESULT-MAIN-SEARCH-2026-11.md) |
 | **ODE** | Trajectories of a dynamical system | One state and one rate per disjoint window, then the main search per component | ODEBench, 63 systems, 117 components: **80 and 69 recovered** (noise 0, 1 %); 9 of 184 reported laws wrong (4.9 %). The sparse polynomial reference: 78 and 53, 29.1 % wrong | [`RESULT-ODE-MAIN-SEARCH`](../preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md) |
 | **Series** | Noisy series in time order (return-like data) | Candidates from the main search, one chosen inside the development period, one forecast test on later rows | Simulated series with a planted law (not market findings): a law reported in **0 of 40** series that contain none (the main search alone: 28 of 40); 31 of 40 where the law explains 5 or 20 % of the variance; 3 of 20 at 2 %; 0 of 20 at 0.5 % | [`RESULT-MARKET-PLANTED`](../preregistration/RESULT-MARKET-PLANTED-2026-11.md) |
-| Template engine with the referee (`l2`) | Kept for replication, and for laws inside its grammar | Enumerates dimensionally valid expressions; the referee promotes one | SRBench: 268 promotions, **160 not accurate**. On laws its grammar can express (blind benchmark): 7 false in 288 | [`RESULT-SRBENCH-BASELINE`](../preregistration/RESULT-SRBENCH-BASELINE-2026-11.md), [`RESULT-BLIND-L2`](../preregistration/RESULT-BLIND-L2-2026-11.md) |
+| Template engine with the referee (`l2`) | Kept for replication, and for laws inside its grammar | Enumerates dimensionally valid expressions; the referee promotes one | SRBench: 268 promotions, **160 not accurate**. **With Guard 3** (`epistemic/structure_guard.py`): 113 promotions, **3 not accurate**, 103 correct against 100; on the 103 held-out problems 3 of 81 not accurate and 71 of 72 correct promotions kept. Two of three expectations held; the third (at most 10 % false by the symbolic criterion) was missed at 12 %. On laws its grammar can express (blind benchmark, no guard): 7 false in 288 | [`RESULT-SRBENCH-BASELINE`](../preregistration/RESULT-SRBENCH-BASELINE-2026-11.md), [`RESULT-REFEREE-STRUCTURE`](../preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md), [`RESULT-BLIND-L2`](../preregistration/RESULT-BLIND-L2-2026-11.md) |
 
 Other measured engines: partial differential equations in two space dimensions, 117 of 120 runs exact
 ([`RESULT-PDE-2D`](../preregistration/RESULT-PDE-2D-2026-11.md)); lagged causal graphs, precision
@@ -63,16 +63,18 @@ the positive control passed stage 4, the null control was refused at stage 2, an
 ([`RESULT-CRYPTO-PIT`](../preregistration/RESULT-CRYPTO-PIT-2026-11.md)). Nothing here is evidence of
 a tradeable effect.
 
-## Frozen and not yet recorded
+## In development, not yet frozen
 
-| Preregistration | Question | State on 2026-11-20 |
+| What | Question | State on 2026-11-20 |
 | :--- | :--- | :--- |
-| [`PREREG-REFEREE-STRUCTURE`](../preregistration/PREREG-REFEREE-STRUCTURE-2026-11.md) | With Guard 3 on, does the referee stop promoting laws that do not fit (at most 5 % of promotions inaccurate on 103 held-out problems, against 60 %), and keep the correct ones (at least 65 of 72)? On the 30 development problems: 23 correct promotions and no wrong one, against 21 and 29 | Frozen 2026-11-20; run started |
+| ODE systems through the refined path (`apedp_dyn/ode/refined_ode.py`) | Does a polynomial library as a candidate, pruning and a stricter report recover more of ODEBench's components than the ODE route's 80 and 69 of 117, without reporting more wrong laws? | Built; development on 15 of the 63 systems. First passes alone, no search engine: 24 of 31 development laws at noise 0, all correct, four seconds each |
 
 ## Known limits
 
-- **The default referee still promotes a sole survivor that does not fit** (audit M-10). Guard 3
-  closes this behind a switch that is off until its run is recorded. The default route does not use
+- **The template engine's default still promotes a sole survivor that does not fit** (audit M-10).
+  Guard 3 closes this and its run met the two expectations that decide it, so it becomes the
+  default for the template engine; moving the callers to it is in progress, and callers that work
+  on rows along one trajectory stay unguarded until the guard is measured there. The default route does not use
   that rule.
 - **The adequacy check is weak on rows taken from one trajectory** (M-14): the main search returns
   a law that nothing challenged as `unchallenged`. The refined path, now the default, does not

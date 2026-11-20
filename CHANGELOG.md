@@ -15,6 +15,15 @@ inferred releases.
 
 ### Changed
 
+- **The referee's structure guard, measured (2026-11-20, PREREG-REFEREE-STRUCTURE-2026-11, run
+  once).** The template engine on SRBench with Guard 3 on: 113 promotions, 3 not accurate, 103
+  correct (without the guard: 268, 160 and 100). On the 103 problems the guard was not built on:
+  3 of 81 promotions not accurate (expected at most 5 %; held), 71 of the baseline's 72 correct
+  promotions kept (expected at least 65; held), 10 of 81 false by the symbolic criterion (expected
+  at most 10 %; **missed** at 12 %, six of the ten being two Strogatz problems whose promoted
+  structure has the law's terms). The two expectations that decide it held, so the guard becomes
+  the template engine's default; `l2_engine.py` is frozen by this preregistration, so that is done
+  in a subclass callers are moved to (in progress). `preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md`.
 - **A language model configuring the search, measured (2026-11-20, PREREG-LLM-CONTROLLER-2026-11,
   run once, all three expectations held).** `nemotron-3-ultra` chooses PySR's operators, extra
   features and guesses inside the refined path: 207 laws reported in 266 SRBench runs, 1 not

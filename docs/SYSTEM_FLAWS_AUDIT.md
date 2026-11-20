@@ -252,8 +252,23 @@ three preregistered expectations missed.
   the question of PREREG-REFEREE-STRUCTURE-2026-11 (frozen 2026-11-20), on
   the 103 problems not used here; the consequence of each outcome is fixed
   in it.
-  **Still open until that run:** the default referee still promotes a sole
-  survivor that does not fit.
+  **Result (run once; two of three expectations held):** with the guard the
+  template engine promoted 113 laws on SRBench and 3 were not accurate
+  (without it 268 and 160); correct promotions 103 against 100. On the 103
+  held-out problems 3 of 81 promotions were not accurate (limit 5 %; the
+  interval reaches 10 %), 71 of 72 correct promotions were kept, and 10 of 81
+  were false by the symbolic criterion (limit 10 %, **missed**): six are two
+  Strogatz problems whose promoted structure has the law's terms under one
+  common coefficient, four are at 10 % noise where a small error hides in the
+  noise. `preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md`.
+  **Being done:** the preregistration fixed that the guard becomes the
+  template engine's default if the first two expectations hold. They did.
+  `l2_engine.py` is frozen by that preregistration's digest, so the default
+  changes in a subclass and callers are moved to it one at a time; a caller
+  whose rows lie along one trajectory (the UI's registry page) stays on the
+  unguarded engine until the guard has been measured on such rows.
+  **Still open until then:** the template engine's own default still promotes
+  a sole survivor that does not fit.
 - **M-20 a search that cannot express the law yields a wrong law that the
   later stages pass — OPEN.** Found in PREREG-LLM-CONTROLLER's run. On
   `feynman_III_8_54` (`sin(E t/ħ)²`, noise 0) the language model allowed the

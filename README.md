@@ -46,7 +46,7 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 | Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
 | Language model in PySR's place, and configuring PySR | SRBench | Writing the laws: 78 recovered against 152. Configuring the search: 173 against 174 without it. Optional |
 | Fault-tolerant state preparation | Steane code, every fault and fault pair enumerated | 275,712 certified circuits at 11 CNOTs; none of the 22,976 shortest encoders is fault-tolerant alone |
-| Template engine with the referee | SRBench | 160 of 268 promotions not accurate; kept for replication, guard under test (audit M-10) |
+| Template engine with the referee | SRBench | 160 of 268 promotions not accurate. With the referee's structure guard: 3 of 113, and the correct promotions kept (103 against 100) |
 | Promotion referee on crypto returns | 500 placebo signals; one test claim | 0 placebos passed; the claim (order-flow imbalance) was refused |
 
 For tabular data `apedp_dyn/discovery_l2/default_route.py` runs the refined path unless the main
