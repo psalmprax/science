@@ -129,7 +129,7 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
             group == "all" or group == r["family"]
             or (group == "development" and used_in_development(r["problem"]))
             or (group == "held_out" and not used_in_development(r["problem"])))]
-        ran = [r["portfolio"] for r in sel if r.get("portfolio")]
+        ran = [r["portfolio"] for r in sel if (r.get("portfolio") or {}).get("members")]  # the stage is skipped when no product is left
         cell["portfolio_ran"] = len(ran)
         cell["member_failures"] = sum(len(p.get("failures", [])) for p in ran)
         cell["runs_with_a_member_failure"] = sum(bool(p.get("failures")) for p in ran)
