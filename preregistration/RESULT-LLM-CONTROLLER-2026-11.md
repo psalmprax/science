@@ -95,3 +95,14 @@ as no language model, to within a law, on this benchmark, and it costs 34 second
 per run. Together with PREREG-LLM-PROPOSER (the model writing the laws: 78 recovered against 152)
 the finding so far is that this model adds nothing to the path by itself. A stronger model was not
 tried.
+
+## Note (2026-11-20, after the result was recorded)
+
+Two of the 173 recoveries pass the recovery tolerance narrowly. The criterion refits a law's
+constants to the clean truth on the test rows and accepts a relative error below 1e-8. Every
+other recovery in this run, and all 174 of PREREG-REFINED-SEARCH, has an error below 1e-12. The
+two are `feynman_I_10_7` without noise (9.9e-9: a tower of exponentials that follows
+`m0/sqrt(1 - v**2/c**2)` on the sampled range) and `feynman_III_4_33` without noise (1.3e-9). By
+form they are approximations, not the law. Counting them out, this run recovered 171 and the
+refined run 174; the three expectations above were judged by the frozen criterion and stand as
+recorded. Audit M-23.

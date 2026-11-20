@@ -23,6 +23,15 @@ inferred releases.
 
 ### Changed
 
+- **Four different searches on tables, developed; and a limit of the recovery criterion found
+  (2026-11-20, audit M-22 and M-23).** `mixed_members` on SRBench's 30 development problems: 29
+  and 25 recovered against 27 and 25, three runs gained and one lost, nothing inaccurate
+  reported. One gain is not the law: a form that follows Planck's law on the sampled range and
+  passes the 1e-8 tolerance at 9.2e-9. Checked against the record: real recoveries sit below
+  1e-12; the refined run (174), the main search and the ODE run have no narrow pass, the
+  language-model controller run has 2 in 173, now noted on its result file. Results from now on
+  give both counts. The portfolio's summary no longer counts a run whose search stage was
+  skipped.
 - **ODE systems through the refined path with four searches: preregistered (2026-11-20).**
   On ODEBench's 15 development systems four PySR seeds side by side recovered 28 and 23 of 31
   components (one search: 25 and 22; the recorded ODE route: 24 and 21), kept every run the

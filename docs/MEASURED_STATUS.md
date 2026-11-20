@@ -68,10 +68,16 @@ a tradeable effect.
 | What | What development showed | Why it stopped there |
 | :--- | :--- | :--- |
 | ODE systems through the refined path with one search (`apedp_dyn/ode/refined_ode.py`) | On 15 of ODEBench's 63 systems (31 components), with one PySR search: 25 and 22 recovered at noise 0 and 1 % against the ODE route's 24 and 21; 3 of 52 reported laws not accurate against 2 of 51. Without any search engine: 24 of 31 at noise 0, all correct, four seconds each | One more component at each level is inside the difference between two runs. With four searches side by side the same systems gave 28 and 23, and that version is preregistered (PREREG-ODE-REFINED-2026-11, frozen 2026-11-20, result not yet recorded) |
-| Four seeds of the same PySR search side by side (`apedp_dyn/proposers/portfolio.py`, `pysr_members`) | On SRBench's 30 development problems, both noise levels, on four-core runners: 27 and 25 recovered, exactly the runs one search recovers; none gained, none lost; 0 of 54 reported laws inaccurate; 265 s of wall time for a 240 s budget | A seed does not change what the search finds. A portfolio of different searches (`apedp_dyn/proposers/deep_pass.py`, `mixed_members`) is in development instead (audit M-22) |
+| Four seeds of the same PySR search side by side (`apedp_dyn/proposers/portfolio.py`, `pysr_members`) | On SRBench's 30 development problems, both noise levels, on four-core runners: 27 and 25 recovered, exactly the runs one search recovers; none gained, none lost; 0 of 54 reported laws inaccurate; 265 s of wall time for a 240 s budget | A seed does not change what the search finds. A portfolio of different searches (`apedp_dyn/proposers/deep_pass.py`, `mixed_members`) was developed instead (next row; audit M-22) |
+| Four different searches side by side: default PySR, a deeper exhaustive pass, algebraic PySR, a second seed (`mixed_members`) | Same 30 problems: 29 and 25 recovered by the benchmark's criterion against 27 and 25; three runs gained, one lost; 0 of 54 reported laws inaccurate. One of the three gains is an approximation that passes the tolerance narrowly (M-23), so by form 28 and 25 | Not stopped: a net gain of one or two runs in 60 is small, and a preregistration on the 103 held-out problems is to be frozen once it states both readings |
 
 ## Known limits
 
+- **"Recovered" is a numerical criterion with a tolerance** (audit M-23): constants are refitted
+  to the clean law on the test rows and an error below 1e-8 passes. Two of the language-model
+  controller's 173 recoveries pass only narrowly and are approximations by form; the refined
+  path's 174 and the ODE route's 149 have none. Results from now on also give the count without
+  narrow passes.
 - **The template engine still promotes a sole survivor that does not fit, except where Guard 3
   is on** (audit M-10). The guard's run met the two expectations that decide it, so it is the
   default in `discovery_l2/guarded_l2.py`, which the UI's physics page now uses. Callers whose rows

@@ -12,7 +12,9 @@ comparison.
 Development, 2026-11-20 (the 30 development problems, both noise levels, on GitHub's four-core
 runners). Four seeds of the same search (``PORTFOLIO_MEMBERS=seeds``) recovered exactly the runs the
 single search recovers, no more and no fewer, so that portfolio was not taken further; the mixed
-portfolio is what ``run`` uses.
+portfolio is what ``run`` uses. The mixed portfolio on the same problems: 29 and 25 recovered against
+27 and 25 by the benchmark's criterion; three runs gained, one lost; one of the gains passes the
+tolerance narrowly and is not the law (audit M-23), so 28 and 25 by form.
 
     python scripts/run_srbench_portfolio.py smoke   --out DIR
     python scripts/run_srbench_portfolio.py develop --out DIR [--shard k/N]   # development problems only

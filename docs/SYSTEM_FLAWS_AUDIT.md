@@ -284,6 +284,25 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-23 the recovery criterion can pass a form that is not the law —
+  FOUND 2026-11-20, OPEN.** `symbolic_recovery` in
+  `scripts/run_srbench_baseline.py` (frozen by every SRBench preregistration)
+  refits a model's constants to the clean truth on the test rows and accepts a
+  relative error below 1e-8. The test rows come from the same sample as the
+  training rows, so a flexible form that follows the law on that range can
+  pass. A development run returned, for Planck's law (`feynman_I_41_16`,
+  no noise), a cubic in the dimensionless product plus a cosine of a cosine;
+  refit, its error is 9.2e-9, and it is scored as recovered. **How much of
+  the record this touches (checked the same day):** real recoveries have an
+  error below 1e-12, three orders of magnitude apart from the narrow passes.
+  PREREG-REFINED-SEARCH: 0 narrow passes in 174. PREREG-MAIN-SEARCH: 0.
+  PREREG-ODE-MAIN-SEARCH: 0 in 149. PREREG-LLM-CONTROLLER: 2 in 173
+  (`feynman_I_10_7`, `feynman_III_4_33`, both without noise), noted on its
+  result file. The frozen criterion stays the one expectations are judged by;
+  **from now on** a result also states the count with narrow passes (error
+  above 1e-10) taken out. **Still open:** a check on rows outside the sampled
+  range would catch an approximation that happens to pass below 1e-10; it is
+  not written.
 - **M-22 more of the same search buys nothing; more depth buys a little and
   costs trust under noise — MEASURED IN DEVELOPMENT 2026-11-20, OPEN.** The
   default route's search stage is one serial PySR search on one core, and the
@@ -307,7 +326,14 @@ three preregistered expectations missed.
   offered as one member of a portfolio whose candidates the confirmation
   step compares (`deep_pass.mixed_members`). **Still open:** whether that
   portfolio recovers more than one search on problems it was not built on is
-  not measured; the default route still uses one core.
+  not measured; the default route still uses one core. (c) The mixed
+  portfolio, same 30 problems, 60 runs: 29 and 25 recovered by the benchmark's
+  criterion against 27 and 25; three runs gained (`feynman_test_5` and
+  `feynman_I_41_16` without noise, `feynman_II_11_3` at 1 %), one lost
+  (`feynman_I_6_2a` at 1 %: with more rivals the path could not settle); 0 of
+  54 reported laws inaccurate; no member failed. Read by form, two of the
+  three gains are the law and the third is not (M-23): 28 and 25. Not
+  preregistered yet.
 - **M-21 the language-model client would send the API key to any address
   it is given — CLOSED FOR NEW CALLERS 2026-11-20; accepted in the frozen
   file.** Found by the CI security scan (bandit B310) once the test suite got
