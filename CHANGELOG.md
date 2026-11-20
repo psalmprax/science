@@ -15,6 +15,15 @@ inferred releases.
 
 ### Changed
 
+- **ODE discovery measured on ODEBench (2026-11-19).** `apedp_dyn/ode/window_rows.py` and
+  `apedp_dyn/ode/main_search_ode.py` send each component of a system through the main search path.
+  PREREG-ODE-MAIN-SEARCH-2026-11, run once, all four expectations held (two narrowly): 80 of 117
+  components recovered without noise and 69 at 1 % noise, 13 of the 38 non-polynomial ones; 9 of 184
+  reported laws wrong (4.9 %). Polynomial sparse regression on the same rows: 78 and 53, none of the
+  non-polynomial ones, and 29.1 % of what it reports wrong. Found after the run: an exact-fit
+  confirmation can carry a term that contributes nothing on the confirmed states and explodes
+  outside them (audit M-15, open). `preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md`.
+
 - **The main search path is now the default route for discovering a law, and GA/GP is retired
   (2026-11-19).** PREREG-MAIN-SEARCH-2026-11 was run once on SRBench (133 problems, noise 0 and 1 %)
   and all four expectations held. The path reported a law in 186 of 266 runs; 4 were not accurate

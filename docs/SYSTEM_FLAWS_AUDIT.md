@@ -98,7 +98,27 @@ three preregistered expectations missed.
   a rival that was indistinguishable from the truth on the domain. `unique`
   is relative to the candidates given; only `no_survivor` says anything about
   the search space. `preregistration/RESULT-CONTRAST-2026-11.md`.
-- **M-07 the ODE path differentiates noisy data — PARTLY ADDRESSED.**
+- **M-15 an exact-fit confirmation can carry a term that contributes nothing
+  — OPEN.** Found after PREREG-ODE-MAIN-SEARCH's run. For `dx/dt = -x**3` the
+  path reported `-x0**3` plus `1.7e-8*x0 - 4.4e-9*exp(exp(x0))`, confirmed
+  exact on the pool. The extra terms are at the level of the numerical error
+  on the confirmed states and unbounded outside them (R² -935 011 on the
+  scoring states). One case in 184 reports. The frozen path does not remove
+  such terms; a wrapper should drop terms whose contribution on the confirmed
+  rows is below the numerical floor and confirm again.
+- **M-07 the ODE path differentiates noisy data — ADDRESSED BY A NEW ROUTE
+  2026-11-19; the older path is unchanged.** `ode/window_rows.py` turns a
+  trajectory into rows with independent errors (one state and one rate per
+  disjoint window) and `ode/main_search_ode.py` sends each component through
+  the main search path with the pool taken from another trajectory.
+  PREREG-ODE-MAIN-SEARCH-2026-11 (ODEBench, 63 systems, 117 components, run
+  once, all four expectations held, two narrowly): 80 components recovered
+  without noise and 69 at 1 %, 4.9 % of reported laws wrong (interval 2.3 to
+  9.1 %); polynomial sparse regression on the same rows: 78 and 53, and 29.1 %
+  of what it reports wrong. Without noise the regression recovers 11
+  polynomial components the path does not. Not checked: forward integration
+  of a discovered system. `preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md`.
+  Earlier entry, for the older path:
   `ode/weak_form.py` integrates instead. On the Lorenz world (20 seeds,
   development study) its coefficients are much better up to 5 % noise, but
   with the twenty-term cubic library and a 10 s trajectory it finds the exact
