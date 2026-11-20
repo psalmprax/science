@@ -23,6 +23,13 @@ inferred releases.
 
 ### Changed
 
+- **The recorded recoveries hold on a range twice as wide (2026-11-21, audit M-23).**
+  `scripts/check_recoveries_out_of_range.py` judges every recorded SRBench recovery again, by the
+  benchmark's own criterion, on rows from a range twice as wide. All 174 of the refined path, all
+  189 of the four searches and all 152 of the main search hold. The two that fail among the
+  language-model controller's 173 are the two narrow passes already known. One new one, in a
+  comparison engine and no route, is exact on the sampled range and wrong below it, which the
+  "by form" rule cannot see. `benchmarks/recoveries_out_of_range.json`.
 - **A blind test of the repaired ODE route, frozen (2026-11-21, PREREG-ODE-BLIND-2026-11).** The
   fit guard and pruning to the rows' precision were both written with ODEBench's outcomes known,
   so they are measured on systems nothing here has seen: 98 chaotic polynomial systems (310

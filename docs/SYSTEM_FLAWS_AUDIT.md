@@ -336,7 +336,8 @@ three preregistered expectations missed.
   counted as they fall: one run of 266 ended that way there
   (`feynman_III_15_12`, a held-out recovery of the single search).
 - **M-23 the recovery criterion can pass a form that is not the law —
-  FOUND 2026-11-20, OPEN.** `symbolic_recovery` in
+  FOUND 2026-11-20; THE RECORD CHECKED ON A WIDER RANGE 2026-11-21 (the
+  frozen criterion itself is unchanged).** `symbolic_recovery` in
   `scripts/run_srbench_baseline.py` (frozen by every SRBench preregistration)
   refits a model's constants to the clean truth on the test rows and accepts a
   relative error below 1e-8. The test rows come from the same sample as the
@@ -352,9 +353,23 @@ three preregistered expectations missed.
   result file. The frozen criterion stays the one expectations are judged by;
   **from now on** a result also states the count with narrow passes (error
   above 1e-10) taken out, and PREREG-PORTFOLIO-SEARCH-2026-11 is the first
-  whose expectations are judged by that count. **Still open:** a check on rows outside the sampled
-  range would catch an approximation that happens to pass below 1e-10; it is
-  not written.
+  whose expectations are judged by that count. **The check on a wider range
+  (2026-11-21):** `scripts/check_recoveries_out_of_range.py` puts every
+  recorded recovery through the same criterion on rows from a range twice as
+  wide in every variable, leaving out rows next to a pole of the true law
+  (`benchmarks/recoveries_out_of_range.json`). All 174 recoveries of
+  PREREG-REFINED-SEARCH hold there, all 189 of PREREG-PORTFOLIO-SEARCH, and
+  all 152 of the main search. Of PREREG-LLM-CONTROLLER's 173, the two that do
+  not hold are exactly the two narrow passes named above, found here by a
+  different test. One more turned up, in the comparison engine of the
+  main-search run and in no route: for `feynman_I_25_13` at 1 % noise it
+  returned a form built from `Max` and `tanh` that equals the law exactly
+  where the benchmark samples and not below, so its error on the sampled range
+  is 4e-17 and the "by form" rule cannot see it. **What follows:** "by form"
+  is not sufficient against a piecewise form; the wider range is the stronger
+  test, and later preregistrations on tables state both counts. **Still
+  open:** the frozen criterion itself; trajectory data, where a wider range
+  means other trajectories and was not checked.
 - **M-22 more of the same search buys nothing; more depth buys a little and
   costs trust under noise — MEASURED IN DEVELOPMENT 2026-11-20, OPEN.** The
   default route's search stage is one serial PySR search on one core, and the

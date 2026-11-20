@@ -115,7 +115,10 @@ the recorded route at both noise levels, it becomes the default ODE route.
   to the clean law on the test rows and an error below 1e-8 passes. Two of the language-model
   controller's 173 recoveries pass only narrowly and are approximations by form; the refined
   path's 174 and the ODE route's 149 have none. Results from now on also give the count without
-  narrow passes.
+  narrow passes. Judged again on a range twice as wide
+  (`scripts/check_recoveries_out_of_range.py`), every recovery of the refined path (174), of the
+  four searches (189) and of the main search (152) holds, and the same two of the controller's
+  fail; trajectory data has not been checked this way.
 - **The template engine still promotes a sole survivor that does not fit, except where Guard 3
   is on** (audit M-10). The guard's run met the two expectations that decide it, so it is the
   default in `discovery_l2/guarded_l2.py`, which the UI's physics page now uses. Callers whose rows

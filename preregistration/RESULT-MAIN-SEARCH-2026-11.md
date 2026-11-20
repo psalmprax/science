@@ -131,3 +131,11 @@ of the benchmark; these are mostly laws PySR does not reach in 240 s.
   importable for replication.
 - **M-10** (the referee's sole-survivor rule) is addressed for the route that is now the default.
   The rule itself is unchanged in the referee and is still what the template engine uses.
+
+## Note of 2026-11-21 (not part of the recorded result)
+
+Every recovery in this run was judged again on a range twice as wide in each variable
+(`scripts/check_recoveries_out_of_range.py`, audit M-23). All 152 recoveries of the main search
+hold there. One of the comparison engine's 63 does not: for `feynman_I_25_13` at 1 % noise it
+returned a form that equals the law only where the benchmark samples. The counts above are left as
+recorded.
