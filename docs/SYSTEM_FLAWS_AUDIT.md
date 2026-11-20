@@ -261,14 +261,29 @@ three preregistered expectations missed.
   Strogatz problems whose promoted structure has the law's terms under one
   common coefficient, four are at 10 % noise where a small error hides in the
   noise. `preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md`.
-  **Being done:** the preregistration fixed that the guard becomes the
-  template engine's default if the first two expectations hold. They did.
-  `l2_engine.py` is frozen by that preregistration's digest, so the default
-  changes in a subclass and callers are moved to it one at a time; a caller
-  whose rows lie along one trajectory (the UI's registry page) stays on the
-  unguarded engine until the guard has been measured on such rows.
-  **Still open until then:** the template engine's own default still promotes
-  a sole survivor that does not fit.
+  **The consequence, as applied (2026-11-20):** the preregistration fixed
+  that the guard becomes the template engine's default if the first two
+  expectations hold. They did. `l2_engine.py` is frozen by that
+  preregistration's digest, so the default is changed in a subclass,
+  `discovery_l2/guarded_l2.GuardedL2DiscoveryEngine`, and callers are moved
+  to it one at a time.
+  *Moved:* `ui/physics_endpoint.py` (its rows carry independent noise). All
+  twelve verdicts of the four demo systems at noise 0, 1 % and 5 % are the
+  same with and without the guard, and the UI tests pass unchanged.
+  *Not moved, and why:* `ui/registry_endpoint.py` and
+  `discovery_l2/ode_engine.py` (targets made by differencing one trajectory:
+  the rows are not exchangeable and the guard is not measured there);
+  `orchestration/competition.py` (fed by every UI data source, those two
+  included); `market/sweep.py` and the market sandboxes (rows in time order);
+  `orchestration/dispatch.py` (a caller's table of unknown row structure);
+  the stability endpoint in `ui/server.py` (pinned, and at its size ceiling);
+  `contrast_resolution.py`, `work_queue.py` and `refusal_memory.py` (they use
+  the engine to build candidates, and the verdict there is contrast
+  confirmation's); the benchmark runners under `scripts/` (records of what was
+  run); and the multi-term engine, which the preregistration did not cover.
+  **Still open:** for every caller in that list, the template engine still
+  promotes a sole survivor that does not fit; and the guard on trajectory and
+  time-ordered rows has not been measured.
 - **M-20 a search that cannot express the law yields a wrong law that the
   later stages pass — OPEN.** Found in PREREG-LLM-CONTROLLER's run. On
   `feynman_III_8_54` (`sin(E t/ħ)²`, noise 0) the language model allowed the

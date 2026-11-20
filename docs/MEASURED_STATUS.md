@@ -63,18 +63,19 @@ the positive control passed stage 4, the null control was refused at stage 2, an
 ([`RESULT-CRYPTO-PIT`](../preregistration/RESULT-CRYPTO-PIT-2026-11.md)). Nothing here is evidence of
 a tradeable effect.
 
-## In development, not yet frozen
+## Developed and not taken to a preregistered run
 
-| What | Question | State on 2026-11-20 |
+| What | What development showed | Why it stopped there |
 | :--- | :--- | :--- |
-| ODE systems through the refined path (`apedp_dyn/ode/refined_ode.py`) | Does a polynomial library as a candidate, pruning and a stricter report recover more of ODEBench's components than the ODE route's 80 and 69 of 117, without reporting more wrong laws? | Built; development on 15 of the 63 systems. First passes alone, no search engine: 24 of 31 development laws at noise 0, all correct, four seconds each |
+| ODE systems through the refined path (`apedp_dyn/ode/refined_ode.py`) | On 15 of ODEBench's 63 systems (31 components), with PySR: 25 and 22 recovered at noise 0 and 1 % against the ODE route's 24 and 21; 3 of 52 reported laws not accurate against 2 of 51. Without any search engine: 24 of 31 at noise 0, all correct, four seconds each | One more component at each level is inside the difference between two runs. What neither route recovers are the non-polynomial fields, and that is limited by what one search finds, which this does not change |
 
 ## Known limits
 
-- **The template engine's default still promotes a sole survivor that does not fit** (audit M-10).
-  Guard 3 closes this and its run met the two expectations that decide it, so it becomes the
-  default for the template engine; moving the callers to it is in progress, and callers that work
-  on rows along one trajectory stay unguarded until the guard is measured there. The default route does not use
+- **The template engine still promotes a sole survivor that does not fit, except where Guard 3
+  is on** (audit M-10). The guard's run met the two expectations that decide it, so it is the
+  default in `discovery_l2/guarded_l2.py`, which the UI's physics page now uses. Callers whose rows
+  lie along one trajectory or in time order (the registry page, the ODE engine, the market sweep)
+  and the multi-term engine are still unguarded: the guard has not been measured there. The default route does not use
   that rule.
 - **The adequacy check is weak on rows taken from one trajectory** (M-14): the main search returns
   a law that nothing challenged as `unchallenged`. The refined path, now the default, does not

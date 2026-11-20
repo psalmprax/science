@@ -34,6 +34,17 @@ found, all 24 the law, about four seconds each, against 24 for the main search
 with PySR. It was not enough at 1 % noise: 23 laws found, 16 the law, and 4
 not accurate, one of them a cubic in the wrong variable with test R² below
 -18 000. So with no proposer the law comes back as ``tentative_law``.
+
+**Development with PySR (CI, the same 15 systems, 240 s per component).** 25 and
+22 of 31 components recovered at noise 0 and 1 %, against 24 and 21 for the
+recorded main-search route on the same components: one more at each level. Three
+of 52 reported laws were not accurate against two of 51. The components neither
+route recovers are the non-polynomial fields (a rational term with an offset, a
+sine of a difference, a logistic, ``x*log(x)``, ``x*|x|``), and what limits them
+is what one 240-second search finds, which this module does not change. So it
+was not taken to a preregistered run: there is no gain to predict that is larger
+than the difference between two runs. It stays as the ODE entry to the refined
+path; the place to look for a gain is the search stage.
 """
 from __future__ import annotations
 

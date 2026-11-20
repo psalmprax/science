@@ -15,6 +15,13 @@ inferred releases.
 
 ### Changed
 
+- **The structure guard is the template engine's default where its test is valid (2026-11-20).**
+  New `apedp_dyn/discovery_l2/guarded_l2.py`: `GuardedL2DiscoveryEngine`, the engine with
+  `structure_rule=True` by default, as PREREG-REFEREE-STRUCTURE fixed for the case that its first
+  two expectations held. `l2_engine.py` is frozen by that preregistration and is not edited. The
+  UI's physics endpoint is moved to it; all twelve demo verdicts are unchanged. Callers whose rows
+  lie along one trajectory or in time order, and the multi-term engine, are not moved; the audit
+  (M-10) lists each with its reason.
 - **The referee's structure guard, measured (2026-11-20, PREREG-REFEREE-STRUCTURE-2026-11, run
   once).** The template engine on SRBench with Guard 3 on: 113 promotions, 3 not accurate, 103
   correct (without the guard: 268, 160 and 100). On the 103 problems the guard was not built on:
