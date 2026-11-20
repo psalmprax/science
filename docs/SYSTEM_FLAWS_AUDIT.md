@@ -135,9 +135,18 @@ three preregistered expectations missed.
   sent through the refined path, `dx/dt = -x**3` was again reported with
   `4.4e-9*exp(exp(x0))` (the path dropped a constant and kept that term; test
   R² -936 612), and one held-out law (`x0*x2 - 10*x1`) was lost to two terms
-  with coefficients of 1e-16 and 1e-12. Why the rule kept these terms is not
-  established; it was written and measured on tables, where it left nothing
-  inaccurate. Open.
+  with coefficients of 1e-16 and 1e-12. **Cause, established 2026-11-20:**
+  the kept terms contribute about as much as the standard error of the rows'
+  rate estimates (ratios 0.3 to 1.5). They were fitting that error; the
+  residual really fell, beneath the precision of the data, and BIC with a
+  purely numerical floor rewarded it. **Repair, not yet measured blind:**
+  `discovery_l2/precision_pruning.prune_to_precision` floors the mean square
+  at the rows' own variance and removes only terms no larger than about that
+  precision. Applied after the fact to the 195 laws that run reported: 4
+  changed, recovered 165 to 167, wrong 10 to 9 (4.6 %), none lost. Those
+  systems' outcomes were known when the rule was written, and its one setting
+  was chosen on six of their cases, so this is a development result. It is
+  not wired into a route. Open until tested on systems it has not seen.
 - **M-07 the ODE path differentiates noisy data — ADDRESSED BY A NEW ROUTE
   2026-11-19; the older path is unchanged.** `ode/window_rows.py` turns a
   trajectory into rows with independent errors (one state and one rate per

@@ -23,6 +23,12 @@ inferred releases.
 
 ### Changed
 
+- **Why the pruning kept noise terms on trajectory rows, and a repair (2026-11-20, audit M-15).**
+  The kept terms are about as large as the standard error of the rows' rate estimates: they fit
+  that error. New `discovery_l2/precision_pruning.py` floors the mean square at the rows' own
+  variance and removes only terms no larger than about that precision. Applied after the fact to
+  the laws PREREG-ODE-REFINED reported: recovered 165 to 167, wrong 10 to 9, none lost. A
+  development result on known outcomes; not wired into a route, not measured blind.
 - **A guard against unfittable candidates, a prediction ledger, and a reading of the field
   (2026-11-20).** `proposers/fit_guard.py` drops a proposal the path's least-squares fit cannot
   handle before the path sees it (audit M-24; three runs ended that way today), and the default
