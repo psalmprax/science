@@ -30,6 +30,7 @@ from apedp_dyn.epistemic.claim_ladder import (
 )
 from apedp_dyn.harness import AEH
 from apedp_dyn.orchestration.competition import competition_records
+from apedp_dyn.ui.route_endpoint import route_reading
 
 
 def run_physics_discovery(req: Any) -> dict[str, Any]:
@@ -455,6 +456,11 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
         "rival_a": rival_a,
         "rival_b": rival_b,
         "pareto_candidates": formatted_pareto,
+        # The default discovery route on the same rows (PREREG-MAIN-SEARCH). Shown first by the page;
+        # the template engine's verdict above is kept for comparison and replication.
+        "route_reading": route_reading({k: np.asarray(v, dtype=float) for k, v in state_series.items()},
+                                       np.asarray(y_obs, dtype=float), noise="absolute",
+                                       search_seconds=getattr(req, "search_seconds", None)),
         "competition": competition_records(
             {k: np.asarray(v, dtype=float) for k, v in state_series.items()},
             np.asarray(y_obs, dtype=float),

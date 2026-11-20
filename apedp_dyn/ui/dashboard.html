@@ -150,6 +150,7 @@
         oninput="localStorage.setItem('apedp_api_key', this.value)" />
       <span class="text-slate-500">sent as x-api-key header; stored only in this browser</span>
     </div>
+    <div id="discovery-status-strip" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1.5 text-xs font-mono text-slate-400"></div>
   </div>
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
@@ -212,6 +213,15 @@
               <div class="text-[10px] text-slate-400">FIM Condition Gate (κ ≤ 10³)</div>
             </div>
             <input type="checkbox" id="multiterm-toggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+          </div>
+
+          <!-- Search stage of the default discovery route -->
+          <div class="flex items-center justify-between p-3 bg-[#070b13] rounded-lg border border-[#1b2640]">
+            <div>
+              <div class="text-xs font-mono font-medium text-white">Search stage (PySR, 30 s)</div>
+              <div class="text-[10px] text-slate-400">Off: the route reading is its first pass only. Needs PySR on the server.</div>
+            </div>
+            <input type="checkbox" id="search-stage-toggle" class="w-4 h-4 accent-emerald-400 rounded cursor-pointer">
           </div>
 
           <!-- Run Discovery Action Button -->
@@ -1159,7 +1169,8 @@
               theta0: theta0,
               noise: noise,
               multiterm: multiterm,
-              n_samples: 80
+              n_samples: 80,
+              search_seconds: (document.getElementById('search-stage-toggle') || {}).checked ? 30 : null
             })
           });
         } else {
@@ -1277,6 +1288,7 @@
       // 2. Promoted equation KaTeX
       const eqBox = document.getElementById('promoted-equation-box');
       eqBox.innerText = data.promoted_equation || "No promoted equation (refusal under uncertainty)";
+      renderRouteReading('promoted-equation-box', data.route_reading);
 
       // 3. Epistemic Metrics Canonical Binding
       const tauVal = (pc && pc.tau_epi != null) ? pc.tau_epi : data.tau_epi;
@@ -1532,6 +1544,7 @@
       const badge = document.getElementById('market-verdict-badge');
       const text = document.getElementById('market-verdict-text');
       text.innerText = data.epistemic_verdict.toUpperCase();
+      renderRouteReading('market-equation-box', data.series_reading);
 
       if (data.epistemic_verdict === 'unique_support') {
         badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald";
@@ -1781,12 +1794,79 @@
       box.classList.remove('hidden');
     }
 
+    // The measured discovery routes (main search; series route for return-like data), shown under the
+    // promoted-equation box of whichever panel asked. Built with textContent only: nothing from the
+    // response is ever parsed as HTML.
+    function renderRouteReading(anchorId, reading) {
+      const anchor = document.getElementById(anchorId);
+      if (!anchor || !anchor.parentNode) return;
+      const boxId = anchorId + '-route-reading';
+      let box = document.getElementById(boxId);
+      if (!reading || typeof reading !== 'object') {
+        if (box) box.classList.add('hidden');
+        return;
+      }
+      if (!box) {
+        box = document.createElement('div');
+        box.id = boxId;
+        box.className = 'mt-3 p-4 bg-emerald-500/5 border border-emerald-500/30 rounded-xl space-y-1 font-mono text-xs';
+        anchor.parentNode.insertBefore(box, anchor.nextSibling);
+      }
+      box.textContent = '';
+      const line = (label, text, cls) => {
+        const row = document.createElement('div');
+        const head = document.createElement('span');
+        head.className = 'text-slate-500';
+        head.textContent = label + ' ';
+        const body = document.createElement('span');
+        body.className = cls || 'text-slate-300';
+        body.textContent = String(text);
+        row.appendChild(head);
+        row.appendChild(body);
+        box.appendChild(row);
+      };
+      const isSeries = reading.route === 'series_route';
+      const title = document.createElement('div');
+      title.className = 'font-bold text-emerald-400';
+      title.textContent = isSeries
+        ? 'SERIES ROUTE (return-like data: a law only if it forecasts later rows)'
+        : 'DISCOVERY ROUTE: ' + (reading.route || 'main_search') + (reading.route === reading.default_route ? ' (default)' : '');
+      box.appendChild(title);
+      if (reading.error) {
+        line('not run:', reading.error, 'text-amber-400');
+      } else {
+        line('outcome:', reading.action || 'unknown');
+        const law = reading.law_as_confirmed || reading.law;
+        if (reading.reported && law) {
+          line(isSeries ? 'law (passed the forecast test):' : 'law (confirmed against rivals):', law, 'text-emerald-400');
+        } else if (reading.tentative && law) {
+          line('tentative law (nothing challenged it):', law, 'text-amber-400');
+        } else {
+          line('law:', 'none reported', 'text-slate-400');
+        }
+        if (reading.forecast_test && reading.forecast_test.p_value != null) {
+          line('forecast test on later rows:', 'p = ' + Number(reading.forecast_test.p_value).toPrecision(3) +
+            ' (level ' + reading.forecast_test.alpha + ', ' + reading.forecast_test.rows + ' rows)');
+        }
+        if (reading.path_alone && reading.path_alone.law) {
+          line('main search path alone (not to be acted on here):', reading.path_alone.action, 'text-slate-500');
+        }
+        if (reading.search_stage) line('search stage:', reading.search_stage, 'text-slate-400');
+        if (reading.complete === false) {
+          line('partial reading:', 'the search stage did not run, so this is the first pass only and not the measured route', 'text-amber-400');
+        }
+      }
+      if (reading.evidence) line('measured in:', reading.evidence, 'text-slate-500');
+      box.classList.remove('hidden');
+    }
+
     function renderSandboxResults(data) {
       const badge = document.getElementById('sandbox-verdict-badge');
       const v = (data.verdict || 'unknown').toLowerCase();
       badge.innerText = v.toUpperCase();
 
       renderCompetition(data.competition);
+      renderRouteReading('sandbox-promoted-equation-box', data.route_reading || data.series_reading);
 
       const multiBox = document.getElementById('sandbox-multi-rivals-box');
 
@@ -2544,10 +2624,30 @@
       const inp = document.getElementById('api-key-input');
       if (inp) inp.value = localStorage.getItem('apedp_api_key') || '';
     });
+    // One line under the key bar: which route is the default, whether its search stage can run here,
+    // and which engines were retired. Read from /api/status; textContent only.
+    async function loadDiscoveryStatus() {
+      const strip = document.getElementById('discovery-status-strip');
+      if (!strip) return;
+      try {
+        const resp = await fetch('/api/status', {headers: apiHeaders()});
+        if (!resp.ok) return;
+        const d = (await resp.json()).discovery;
+        if (!d) return;
+        const retired = Object.keys(d.retired_engines || {}).join(', ');
+        strip.textContent = 'Default discovery route: ' + d.default_route + ' · search stage: ' + d.search_stage +
+          (retired ? ' · retired engines: ' + retired : '');
+        strip.title = d.caution || '';
+        strip.classList.remove('hidden');
+      } catch (err) {
+        console.error(err);
+      }
+    }
     window.addEventListener('DOMContentLoaded', () => {
       loadPhysicsCatalog();
       loadMarketWindows();
       executePhysicsDiscovery();
+      loadDiscoveryStatus();
     });
 
     window.addEventListener('keydown', (e) => {

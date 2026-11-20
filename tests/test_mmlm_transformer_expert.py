@@ -40,6 +40,22 @@ def test_bit_probabilities_multiply_back_to_the_byte_probability_in_every_window
             assert along_path == pytest.approx(float(logp[t - start - 1, array[t]]), abs=1e-4)
 
 
+def test_a_certain_model_still_returns_probabilities_strictly_inside_the_unit_interval():
+    """CI found it: a model that fits the repetitive test text well enough rounds a bit to exactly 1.0 in float32.
+
+    How far the five-second fixture trains depends on the machine, so the case is built here: the output
+    table is scaled until the softmax saturates.
+    """
+    torch.manual_seed(0)
+    model = te.ByteTransformer(d_model=32, layers=1, heads=2, context=32, dropout=0.0)
+    with torch.no_grad():
+        model.token.weight.mul_(200.0)               # the head shares this table: logits of order thousands
+    bits = te.bit_probabilities(model, TEXT[:200], batch=4)
+    assert bits.dtype == np.float32 and np.all((bits > 0) & (bits < 1))
+    assert np.any(bits < 1e-6) or np.any(bits > 1 - 1e-6)          # the case is the saturated one
+    assert np.all(np.isfinite(np.log(bits))) and np.all(np.isfinite(np.log1p(-bits.astype(np.float64))))
+
+
 def test_the_expert_does_not_see_the_future(trained):
     model, _ = trained
     data = TEXT[7000:7400]

@@ -1,0 +1,96 @@
+# What has been measured, and where the system stands
+
+Last updated 2026-11-20. This page is the short answer to "what does this system do, and how do you
+know". Every line points at a preregistered run: the question, the method and the pass criteria were
+frozen by digest before the run, the run was made once, and the outputs are committed unedited under
+[`preregistration/`](../preregistration/). Where an expectation was missed, the result file says so
+and so does this page. The register of known defects is
+[`SYSTEM_FLAWS_AUDIT.md`](SYSTEM_FLAWS_AUDIT.md).
+
+## The discovery routes
+
+For tabular data `apedp_dyn/discovery_l2/route.py` chooses between the main search (the default) and
+the template engine. Trajectories and return-like series have their own entry points
+(`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`).
+
+| Route | For | What it does | Measured | Result file |
+| :--- | :--- | :--- | :--- | :--- |
+| **Main search** (default since 2026-11-19) | Tabular data where a law explains nearly all of the target | Exhaustive first pass, then PySR, then confirmation on rows chosen to tell rivals apart, then an adequacy check | SRBench, 133 laws at noise 0 and 1 %: a law reported in 186 of 266 runs, **4 not accurate (2.2 %**, interval 0.6–5.4 %), 152 the law. Feynman 69 and 70 of 119; PySR alone 73 and 68 | [`RESULT-MAIN-SEARCH`](../preregistration/RESULT-MAIN-SEARCH-2026-11.md) |
+| **ODE** | Trajectories of a dynamical system | One state and one rate per disjoint window, then the main search per component | ODEBench, 63 systems, 117 components: **80 and 69 recovered** (noise 0, 1 %); 9 of 184 reported laws wrong (4.9 %). The sparse polynomial reference: 78 and 53, 29.1 % wrong | [`RESULT-ODE-MAIN-SEARCH`](../preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md) |
+| **Series** | Noisy series in time order (return-like data) | Candidates from the main search, one chosen inside the development period, one forecast test on later rows | Simulated series with a planted law (not market findings): a law reported in **0 of 40** series that contain none (the main search alone: 28 of 40); 31 of 40 where the law explains 5 or 20 % of the variance; 3 of 20 at 2 %; 0 of 20 at 0.5 % | [`RESULT-MARKET-PLANTED`](../preregistration/RESULT-MARKET-PLANTED-2026-11.md) |
+| Template engine with the referee (`l2`) | Kept for replication, and for laws inside its grammar | Enumerates dimensionally valid expressions; the referee promotes one | SRBench: 268 promotions, **160 not accurate**. On laws its grammar can express (blind benchmark): 7 false in 288 | [`RESULT-SRBENCH-BASELINE`](../preregistration/RESULT-SRBENCH-BASELINE-2026-11.md), [`RESULT-BLIND-L2`](../preregistration/RESULT-BLIND-L2-2026-11.md) |
+
+Other measured engines: partial differential equations in two space dimensions, 117 of 120 runs exact
+([`RESULT-PDE-2D`](../preregistration/RESULT-PDE-2D-2026-11.md)); lagged causal graphs, precision
+0.97 and recall 0.99 on linear series
+([`RESULT-GRAPHS`](../preregistration/RESULT-GRAPHS-2026-11.md)); contrast confirmation, the true
+law confirmed in 63 of 80 runs and a wrong law named alone in none
+([`RESULT-CONTRAST`](../preregistration/RESULT-CONTRAST-2026-11.md)).
+
+**Retired as law-discovery engines** (kept importable for replication): RIME-AD (11 of 532 SRBench
+runs recovered, 62 % timed out) and the genetic search (53 and 7 of 119 Feynman laws against 73 and 68
+for PySR). In the same baseline the extended hierarchical engine recovered 36 of 532 runs and RIME 24.
+
+## Search guidance
+
+| What | Measured | Result file |
+| :--- | :--- | :--- |
+| A language model writing the candidate laws, in the place PySR has (`nemotron-3-ultra` on NVIDIA's free API, given numbers only) | 92 laws reported in 266 runs, 2 not accurate, **78 recovered against 152 with PySR**; 12 found by the model. It stays an optional proposer | [`RESULT-LLM-PROPOSER`](../preregistration/RESULT-LLM-PROPOSER-2026-11.md) |
+| A learned prior over formulas ordering the exhaustive search (MMLM) | The true law is reached after about a twentieth of the candidates; with a confirmed early stop, 96 of 100 laws recovered while fitting a median 3.2 % of the candidates | [`RESULT-MMLM-S`](../preregistration/RESULT-MMLM-S-2026-11.md), [`-S2`](../preregistration/RESULT-MMLM-S2-2026-11.md), [`-L`](../preregistration/RESULT-MMLM-L-2026-11.md) |
+| The mixture language model as a compressor (MMLM-CM) | 1.455 bits per byte on the WikiText-2 test split against 1.513 for the best reference compressor | [`RESULT-MMLM-CM`](../preregistration/RESULT-MMLM-CM-2026-11.md) |
+
+## Quantum circuits that tolerate a failing gate
+
+`apedp_dyn/vqc/fault_tolerant_prep.py` certifies fault tolerance by enumerating every single fault and
+every pair, and searches with that certificate. For the Steane code: 22,976 shortest encoders
+(8 CNOTs) up to symmetry, **none fault-tolerant alone**; with one ancilla check, 275,712 certified
+circuits at 11 CNOTs. The second-order error coefficient is exact (best 19.12, median 21.40, worst
+27.88) and agrees with Stim sampling at p = 0.001 within 2.2 %. The unprotected encoder is 120 times
+worse. On a 2 × 4 grid the best certified circuit has 14 CNOTs.
+[`RESULT-FT-PREP`](../preregistration/RESULT-FT-PREP-2026-11.md). It covers state preparation for
+one distance-three code; it is not a compiler and says nothing about larger codes.
+
+## The promotion referee on market data
+
+On real crypto returns 0 of 500 placebo signals passed stages 2 and 3
+([`RESULT-CRYPTO-CAL`](../preregistration/RESULT-CRYPTO-CAL-2026-11.md)). On the point-in-time panel
+the positive control passed stage 4, the null control was refused at stage 2, and the one test claim
+(order-flow imbalance) was **refused at stage 2**
+([`RESULT-CRYPTO-PIT`](../preregistration/RESULT-CRYPTO-PIT-2026-11.md)). Nothing here is evidence of
+a tradeable effect.
+
+## Frozen and not yet recorded
+
+| Preregistration | Question | State on 2026-11-20 |
+| :--- | :--- | :--- |
+| [`PREREG-REFINED-SEARCH`](../preregistration/PREREG-REFINED-SEARCH-2026-11.md) | Does adding physical units, a polynomial library and term pruning around the main search recover more held-out laws (at least 62 and 58 of 103, against 55 and 52) without reporting more wrong ones? | Run in progress |
+| [`PREREG-LLM-CONTROLLER`](../preregistration/PREREG-LLM-CONTROLLER-2026-11.md) | Does a language model that configures PySR, instead of writing the laws, match the refined path? | Run in progress |
+| [`PREREG-REFEREE-STRUCTURE`](../preregistration/PREREG-REFEREE-STRUCTURE-2026-11.md) | With Guard 3 on, does the referee stop promoting laws that do not fit, and keep the correct ones? | See the file |
+
+## Known limits
+
+- **The default referee still promotes a sole survivor that does not fit** (audit M-10). Guard 3
+  closes this behind a switch that is off until its run is recorded. The default route does not use
+  that rule.
+- **The adequacy check is weak on rows taken from one trajectory** (M-14): a law that nothing
+  challenged is reported as tentative, and the UI shows it apart from confirmed laws.
+- **The main search alone reports laws in pure noise on return-like data** (M-16). Use the series
+  route there.
+- **An exact fit can carry a term that contributes nothing** (M-15). A proposal that is not finite
+  on the data can crash a run when a proposer is used directly (M-17); the composed proposer of the
+  refined path contains and records such a failure.
+- **Memorisation.** SRBench's laws are textbook formulas a language model may have seen. LLM-SRBench
+  was built against that; its dataset is gated and has not been run here.
+- **The UI** shows the default route beside the template engine's verdict, runs the PySR stage only
+  when asked and only where PySR is installed, and labels a reading without it as partial. The
+  registry endpoint still shows the template engine alone (M-18).
+- **Governance.** The signed certification covers an earlier revision of the canonical specification;
+  re-signing needs the registered trustees. The CI job that checks this fails until they sign.
+- **Lean.** 39 theorems of a small core are machine-checked; the transcription tree is not a
+  verification layer.
+
+## How to reproduce a number
+
+Each result directory holds `results.json` (with the digests of the frozen files), `runs.jsonl` and
+the per-shard files. The workflow under `.github/workflows/` named in the result file reruns it; the
+harness refuses to run if a frozen file has changed.

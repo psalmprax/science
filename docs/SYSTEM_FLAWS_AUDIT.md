@@ -223,9 +223,52 @@ three preregistered expectations missed.
   path reported a law in 186 of 266 runs; 4 were not accurate (2.2 %, interval
   0.6 to 5.4 %) and 152 were the law (81.7 %). It refused 78 runs. The default
   route is now the main search (`discovery_l2/route.py`).
-  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`. **Still open:** the
-  sole-survivor rule is still in the referee and the template engine; the UI
-  server still calls the template engine (freeze-pinned, needs a re-mint).
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`.
+  **The referee's own rule (2026-11-20, behind a switch, off by default):**
+  Guard 3, `apedp_dyn/epistemic/structure_guard.py`. A promoted law must
+  leave no structure in its holdout residuals over the input space: the
+  leave-one-out R² of each residual from its eight nearest neighbours'
+  residuals is compared with its own seeded permutation distribution at the
+  canonical level (0.01). It fails closed. It is applied to the verdict
+  `adjudicate` returned (`guard_promotion`), so it covers every route to a
+  promotion and `adjudicate.py` is unchanged; `L2DiscoveryEngine.discover`
+  applies it when `structure_rule=True`, which is not the default.
+  Development (30 problems never used to score it) changed the design twice,
+  and both are recorded because they are the kind of defect a test of the
+  happy case does not show: a first version inside `adjudicate` guarded two
+  of its three promotion exits and 3 wrong promotions left through the third;
+  and at zero noise it refused 4 of 7 correct laws, because the right law's
+  rounding error follows the size of the prediction and is structured over
+  the inputs (residuals within `ABSOLUTE_EPS` of the observation RMS now pass
+  as an exact fit). Whether the guard becomes the default is the question of
+  PREREG-REFEREE-STRUCTURE-2026-11, on the 103 problems not used here.
+  **Still open until that run:** the default referee still promotes a sole
+  survivor that does not fit.
+- **M-18 the UI showed the template engine's verdict only — ADDRESSED
+  2026-11-20 for the demo, market and caller-data endpoints; the registry
+  endpoint is unchanged.** Every discovery endpoint of the UI called the
+  template engines, whose promotions are the subject of M-10, while the
+  default route has been the main search since 2026-11-19. Now
+  `/api/discover/physics` carries `route_reading` (the default route on the
+  same rows), `/api/discover/market` carries `series_reading` (the series
+  route on the window's train slice; M-16), `POST /api/discover/route` runs
+  the measured routes on a table the caller sends, and `/api/status` names the
+  default route, the recorded result behind each route, and the retired
+  engines. On the one market window the tests use (NASDAQ-100, the 2020
+  window) the two disagree: the template engine's verdict is `unique_support`
+  and the series route reports no law (forecast test p = 0.74). The page shows the reading under the promoted equation: a law
+  confirmed against rivals, a tentative law that nothing challenged (M-14), or
+  none. **Limits, stated on the page:** the measured route is the first pass
+  and the PySR search together; the search stage runs only when asked for
+  (a toggle, 30 s) and only where PySR is installed, and a reading without it
+  is labelled partial. With the first pass alone the reading finds the kinetic
+  and Duffing laws and returns `widen_search` on the pendulum and the damped
+  oscillator, which need the search stage. `/api/discover/registry` still
+  shows the template engine alone: its data is one trajectory of a driven
+  system, which the ODE route was not measured on. The template engine's
+  verdict is still displayed everywhere it was. `apedp_dyn/ui/route_endpoint.py`,
+  `tests/test_dyn_ui_route_endpoint.py`; `ui/server.py` (four lines, still at
+  its size ceiling) and `ui/dashboard.html` re-minted in the freeze record.
 - **M-13 the main search path reports the search's text, not the fit it
   confirmed — WORKED AROUND 2026-11-19.** Found after PREREG-MAIN-SEARCH's
   run. Confirmation and the adequacy check are applied to a candidate refitted

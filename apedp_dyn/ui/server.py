@@ -29,6 +29,7 @@ from apedp_dyn.epistemic.claim_ladder import (
 )
 from apedp_dyn.harness import AEH
 from apedp_dyn.orchestration.competition import competition_records
+from apedp_dyn.ui import route_endpoint as _routes
 from apedp_dyn.market.assets import (
     AVAILABLE_ASSETS,
     compute_strictly_causal_features,
@@ -91,6 +92,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+_routes.mount(app)
 
 
 # Diagnostics for degraded-but-continue paths. Debug level on purpose: these
@@ -105,6 +107,7 @@ class PhysicsRequest(BaseModel):
     noise: float = 0.01
     multiterm: bool = False
     n_samples: int = 80
+    search_seconds: float | None = None  # run the main search's PySR stage for this long, if PySR is installed
 
 
 class MarketRequest(BaseModel):
@@ -149,11 +152,7 @@ def status() -> dict[str, Any]:
         "build": _build_id(),
         "api_endpoints": sorted({r.path for r in app.routes if hasattr(r, "path")}),
         "benchmark_level": "L2_OPEN_DISCOVERY",
-        "engines": [
-            "L2DiscoveryEngine",
-            "MultiTermL2Engine",
-            "L2ODEDiscoveryEngine",
-        ],
+        **_routes.status_fields(),  # "engines" as before, and "discovery": the measured routes
         "physics_systems": [
             {"id": "pendulum", "name": "Nonlinear Pendulum", "equation": "\\ddot{\\theta} = -\\frac{g}{L}\\sin(\\theta)"},
             {"id": "duffing", "name": "Nonlinear Duffing Oscillator", "equation": "\\ddot{x} = -\\alpha x - \\delta v - \\beta x^3"},
@@ -466,6 +465,7 @@ def discover_market(req: MarketRequest) -> dict[str, Any]:
             "returns": ho_returns,
         },
         "competition": _market_competition(req.asset, window),
+        "series_reading": _routes.market_series_reading(req.asset, window),
     })
     _audit("discover/market", {"window_id": record.window_id,
                                "asset": record.asset,

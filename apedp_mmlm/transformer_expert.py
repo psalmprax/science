@@ -212,7 +212,10 @@ def _bit_probabilities_from(logp: torch.Tensor, target: torch.Tensor) -> torch.T
 
 @torch.no_grad()
 def bit_probabilities(model: ByteTransformer, data: bytes, *, batch: int = 64, device: str | None = None) -> np.ndarray:
-    """``[len(data), 8]`` probabilities that each bit is 1, given the earlier bytes and the higher bits."""
+    """``[len(data), 8]`` probabilities that each bit is 1, given the earlier bytes and the higher bits.
+
+    float32, each strictly between 0 and 1 (the nearest representable value when the model is certain).
+    """
     dev = pick_device(device)
     model = model.to(dev).eval()
     n, t = len(data), model.context
@@ -236,4 +239,7 @@ def bit_probabilities(model: ByteTransformer, data: bytes, *, batch: int = 64, d
             rows = predicted - s - 1
             out[predicted.numpy()] = _bit_probabilities_from(logp[row, rows], stream[predicted]).float().numpy()
     model.to("cpu")
+    # A confident prediction rounds to exactly 0 or 1 in float32, and a consumer that takes a logarithm
+    # or a logit of it gets an infinity. Every probability returned is strictly inside (0, 1).
+    np.clip(out, np.finfo(np.float32).tiny, np.nextafter(np.float32(1.0), np.float32(0.0)), out=out)
     return out

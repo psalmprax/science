@@ -15,6 +15,20 @@ inferred releases.
 
 ### Changed
 
+- **The UI shows the measured discovery routes; the referee gains a guard behind a switch
+  (2026-11-20).** *UI* (audit M-18): `/api/discover/physics` returns `route_reading` (the default
+  route, the main search, on the same rows), `/api/discover/market` returns `series_reading` (the
+  series route), `POST /api/discover/route` runs the routes on a table the caller sends, and
+  `/api/status` names the default route, the result behind each route and the retired engines. The
+  page shows a confirmed law, a tentative law that nothing challenged, or none, and labels a reading
+  made without the PySR stage as partial. The template engine's verdict is displayed as before; the
+  registry endpoint is unchanged. New `apedp_dyn/ui/route_endpoint.py`; `ui/server.py` and
+  `ui/dashboard.html` re-minted in the freeze record. *Referee* (audit M-10): Guard 3,
+  new `apedp_dyn/epistemic/structure_guard.py`: a promoted law must leave no structure in its
+  holdout residuals over the input space. It is applied to the verdict `adjudicate` returned, so
+  every route to a promotion is covered and `adjudicate.py` is unchanged;
+  `L2DiscoveryEngine.discover(structure_rule=True)` turns it on, and it is off by default, so no
+  verdict changes. Whether it becomes the default is decided by PREREG-REFEREE-STRUCTURE-2026-11.
 - **Two more measurements, both with every expectation held (2026-11-20).**
   *Return-like series* (PREREG-MARKET-PLANTED-2026-11, simulated series with a planted law, not
   market findings): the main search path alone reported a law in 28 of 40 series that contain none;

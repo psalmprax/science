@@ -2,7 +2,7 @@
 
 **Status:** Authoritative  
 **Version:** 2.0.0 (Post-Audit Discovery Engine Architecture)  
-**Last Updated:** 2026-10-12
+**Last Updated:** 2026-11-20
 
 ---
 
@@ -50,6 +50,39 @@ flowchart TD
     AG -->|Gated Clean Data| S1
     S1 --> S2 --> S3 --> S4 --> S5 --> S6
 ```
+
+---
+
+## 2.1 Discovery routes (law discovery from data)
+
+The pipeline above is the promotion lifecycle for a market hypothesis. Discovering a law from a
+table of measurements goes through a discovery route. For tabular data
+`apedp_dyn/discovery_l2/route.py` chooses between the main search (the default since 2026-11-19) and
+the template engine; trajectories and return-like series have their own entry points, listed below.
+The routes keep the same separation: a proposer emits candidates and never decides its own
+acceptance. The diagram is the main search.
+
+```mermaid
+flowchart LR
+    D["Rows: development and a pool of unread rows"] --> F["First pass\n(exhaustive, small formulas)"]
+    F --> S["Search stage\n(PySR; optionally a language model)"]
+    S --> C["Contrast confirmation\n(reads pool rows chosen to tell rivals apart)"]
+    C --> A["Adequacy check\n(no structure left; as good as a smoother)"]
+    A -->|confirmed or equivalent class| R["Law reported, in its confirmed form"]
+    A -->|nothing challenged it| T["Tentative law"]
+    A -->|fails| W["widen_search: no law"]
+```
+
+| Route | Module | Use |
+| :--- | :--- | :--- |
+| `main_search` (default) | `discovery_l2/main_search.py` | Tabular data |
+| ODE | `ode/main_search_ode.py`, `ode/window_rows.py` | Trajectories: one state and one rate per disjoint window, then the main search per component |
+| Series | `discovery_l2/series_route.py` | Return-like series: the main search supplies candidates only; one is chosen inside the development period and must pass one forecast test on later rows |
+| Refined | `discovery_l2/refined_search.py`, `proposers/composed.py` | The main search with physical units, a polynomial library and term pruning added around it; preregistered, result pending |
+| `l2` | `discovery_l2/l2_engine.py`, `epistemic/adjudicate.py` | The template engine and the referee's verdict; kept for replication |
+
+The measured result behind each route, and its limits, are in
+[`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 
 ---
 
