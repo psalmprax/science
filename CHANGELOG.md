@@ -23,6 +23,15 @@ inferred releases.
 
 ### Changed
 
+- **A blind test of the repaired ODE route, frozen (2026-11-21, PREREG-ODE-BLIND-2026-11).** The
+  fit guard and pruning to the rows' precision were both written with ODEBench's outcomes known,
+  so they are measured on systems nothing here has seen: 98 chaotic polynomial systems (310
+  components) taken by a mechanical rule from the `dysts` database
+  (`scripts/build_dysts_polynomial_systems.py`, `benchmarks/dysts_polynomial_systems.json`),
+  leaving out ODEBench's systems and five with the same terms. `scripts/run_ode_blind.py` runs the
+  repaired route beside the recorded ODE route and the sparse polynomial reference, 1,860 runs,
+  with the frozen runner's rows and scoring. No discovery was run on these systems before
+  freezing. `.github/workflows/ode-blind.yml`.
 - **An audit of five published laws of asset returns, power-checked and frozen; not run
   (2026-11-20, PREREG-LAW-AUDIT-FINANCE-2026-11).** The first step towards a finding on real data
   is not a search: `apedp_dyn/market/law_audit.py` states Cont's stylised facts 1, 2, 8, 9 and 10

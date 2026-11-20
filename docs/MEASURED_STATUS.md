@@ -91,6 +91,15 @@ interval alone covered 92 to 99.7 % of the time where it claims 99 %, so each in
 by a factor measured on 1,500 other simulated panels (2.3 for the tail index, 1.1 to 1.5 for the
 rest); those factors are as good as the simulated panels are like a market.
 
+## The repaired ODE route on unseen systems: frozen, running
+
+[`PREREG-ODE-BLIND-2026-11`](../preregistration/PREREG-ODE-BLIND-2026-11.md) runs the refined ODE path
+with four searches, the fit guard and pruning to the rows' precision on 98 chaotic polynomial
+systems (310 components) from the `dysts` database that no route here was built or run on, beside
+the recorded ODE route. It was frozen on 2026-11-21 and started the same day; there is no result
+yet. If at most 5 % of its reported laws are wrong and it recovers at least as many components as
+the recorded route at both noise levels, it becomes the default ODE route.
+
 ## Developed and not taken to a preregistered run
 
 | What | What development showed | Why it stopped there |
