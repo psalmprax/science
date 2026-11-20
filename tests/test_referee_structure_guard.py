@@ -160,3 +160,32 @@ def test_the_engine_promotes_the_true_law_on_noise_free_data_with_the_guard_on()
                           seed=0, structure_rule=True).adjudication
     assert adj.status is EpistemicStatus.UNIQUE_SUPPORT, adj.reason
     assert adj.promoted.candidate.metadata["canonical_expr"] in ("a*b/c", "(a*b)/c", "a*(b/c)"), adj.promoted.candidate.metadata
+
+
+def test_structure_under_heavier_noise_is_seen_at_a_larger_neighbourhood():
+    """Development: with eight neighbours alone a wrong law with test R² 0.990 passed at 10 % noise (p = 0.17)."""
+    rng = np.random.default_rng(5)
+    inputs = rng.uniform(1.0, 5.0, (500, 4))
+    smooth = 0.1 * (inputs[:, 0] - 3.0) * (inputs[:, 3] - 3.0)            # a missing term, smooth over the inputs
+    noisy = smooth + rng.normal(0.0, 3.0 * np.std(smooth), 500)            # under noise three times its size
+    assert _promotion_structure(noisy, inputs, scales=(8,))[0]             # eight neighbours alone do not see it
+    ok, why = _promotion_structure(noisy, inputs)
+    assert not ok and "k=64" in why, why
+
+
+def test_the_level_holds_with_several_neighbourhood_sizes():
+    """Taking the largest of five statistics must not refuse a true law five times as often."""
+    rng = np.random.default_rng(22)
+    refused = 0
+    for _ in range(200):
+        inputs = rng.uniform(1.0, 5.0, (160, 3))
+        refused += not _promotion_structure(rng.normal(0.0, 1.0, 160), inputs, permutations=199)[0]
+    assert refused <= 7, refused          # the level is 0.01; 7 of 200 is the 99.9th percentile of that
+
+
+def test_neighbourhoods_larger_than_a_quarter_of_the_sample_are_left_out():
+    rng = np.random.default_rng(23)
+    inputs = rng.uniform(1.0, 5.0, (40, 2))
+    _, why = _promotion_structure(rng.normal(0.0, 1.0, 40), inputs)
+    assert "k=[4, 8]" in why
+    assert _promotion_structure(rng.normal(0.0, 1.0, 12), inputs[:12])[0] is False

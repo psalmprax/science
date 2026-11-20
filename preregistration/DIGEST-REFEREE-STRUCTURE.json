@@ -1,0 +1,13 @@
+{
+ "preregistration": "PREREG-REFEREE-STRUCTURE-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/l2_engine.py": "a772ba3636067def66d7ba70e06fc9ba90b64a580088cdf9eb0fd64facac3223",
+  "apedp_dyn/epistemic/adjudicate.py": "a4c9a14418309452e13ab38598f941f20261262e78917a1b4270174969703063",
+  "apedp_dyn/epistemic/structure_guard.py": "dee1c24826c3549f244566fb5639e5402e9920e10b469fca91c6e6469ea5c1fa",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-REFEREE-STRUCTURE-2026-11.md": "a3521467fafa92c9ebd74706a27a490183c4548b4d6411316850b4184de6cc34",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36",
+  "scripts/run_srbench_referee_structure.py": "e6f41e0c24a021a9e2b2ad8b216b87c518818c1dfdfae3818e0c9cc303a00a2b"
+ }
+}

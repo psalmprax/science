@@ -12,11 +12,20 @@ residuals in row order, and rows of a table have no order.
 
 **What.** ``promotion_structure`` asks whether a residual can be predicted from
 the residuals of its nearest neighbours in the standardised input space. The
-statistic is the leave-one-out R² of that prediction; its null distribution is
-the same statistic on seeded permutations of the residuals, and the level is
-the canonical significance level (``DIEBOLD_MARIANO_P_VALUE_THRESHOLD``), so a
-true law is refused at about that rate. It fails closed on missing or
-misaligned evidence.
+statistic is the leave-one-out R² of that prediction, at several neighbourhood
+sizes (``SCALES``), each standardised and the largest taken; its null
+distribution is the same quantity on seeded permutations of the residuals, and
+the level is the canonical significance level
+(``DIEBOLD_MARIANO_P_VALUE_THRESHOLD``), so a true law is refused at about that
+rate whatever the scales are. It fails closed on missing or misaligned evidence.
+
+**Why several sizes.** A small neighbourhood sees sharp structure and is noisy;
+a large one averages the noise away and blurs sharp structure. Which is needed
+depends on how the missing term compares with the noise, which is not known in
+advance. (Development: with eight neighbours alone, a wrong law with test R²
+0.990 passed at 10 % noise with p = 0.17; at 16 neighbours and above p ≤ 0.005.
+Taking the largest standardised statistic over the sizes, with the permutations
+calibrating that maximum, needs no choice between them.)
 
 **Where.** ``guard_promotion`` is applied to the verdict ``adjudicate``
 returned, not inside it. So it covers every route to a promotion, including
@@ -48,7 +57,8 @@ from apedp_dyn.epistemic.adjudicate import (
     EpistemicStatus,
 )
 
-NEIGHBOURS = 8
+SCALES = (4, 8, 16, 32, 64)
+"""Neighbourhood sizes. The test takes the largest standardised statistic over those that fit the sample."""
 PERMUTATIONS = 999
 MAX_ROWS = 1500
 """Rows the test reads at most (a seeded sample beyond that): the distance matrix is quadratic in it."""
@@ -56,12 +66,14 @@ FLAG = "STRUCTURED_RESIDUALS_IN_INPUT_SPACE"
 
 
 def promotion_structure(resid: Any, inputs: Any, *, alpha: float = DIEBOLD_MARIANO_P_VALUE_THRESHOLD,
-                        k: int = NEIGHBOURS, permutations: int = PERMUTATIONS,
+                        scales: tuple[int, ...] = SCALES, permutations: int = PERMUTATIONS,
                         obs_rms: float | None = None) -> tuple[bool, str]:
     """``(passes, why)`` for one residual series and the inputs it was measured at, one row per residual.
 
     Deterministic. ``obs_rms`` is the RMS of the holdout observations; without
     it there is no allowance for rounding and only exact zeros pass untested.
+    A neighbourhood size is used when the sample holds at least four times as
+    many rows; with fewer than four times the smallest size the test fails closed.
     """
     if resid is None or inputs is None:
         return False, "no residuals or no inputs; structure in input space unassessable"
@@ -70,8 +82,9 @@ def promotion_structure(resid: Any, inputs: Any, *, alpha: float = DIEBOLD_MARIA
     X = X.reshape(len(X), -1) if X.ndim != 2 else X
     if len(X) != r.size:
         return False, f"{r.size} residuals for {len(X)} input rows; structure in input space unassessable"
-    if r.size < 4 * k:
-        return False, f"too few holdout rows ({r.size}) to test structure with {k} neighbours"
+    sizes = tuple(k for k in sorted(set(scales)) if k >= 1 and 4 * k <= r.size)
+    if not sizes:
+        return False, f"too few holdout rows ({r.size}) to test structure with {min(scales)} neighbours"
     if not (np.all(np.isfinite(r)) and np.all(np.isfinite(X))):
         return False, "residuals or inputs contain non-finite values"
     if not np.any(r):
@@ -85,22 +98,34 @@ def promotion_structure(resid: Any, inputs: Any, *, alpha: float = DIEBOLD_MARIA
     if r.size > MAX_ROWS:
         rows = np.sort(rng.choice(r.size, MAX_ROWS, replace=False))
         r, X = r[rows], X[rows]
+    sizes = tuple(k for k in sizes if 4 * k <= r.size)  # the sample may have been cut above
     Z = (X - X.mean(axis=0)) / np.maximum(X.std(axis=0), 1e-12)
     d2 = ((Z[:, None, :] - Z[None, :, :]) ** 2).sum(axis=2)
     np.fill_diagonal(d2, np.inf)
-    nn = np.argsort(d2, axis=1)[:, :k]
+    nearest = np.argsort(d2, axis=1)[:, : sizes[-1]]
     centred = r - r.mean()
     total = float(np.dot(centred, centred))
     if total <= 1e-24 * float(np.dot(r, r)):  # constant up to rounding
         return False, "residuals are constant and not zero: a fixed offset is left unexplained"
+    last = np.asarray(sizes) - 1
+    counts: np.ndarray = np.asarray(sizes, dtype=float)
 
-    def statistic(values: np.ndarray) -> float:
-        return 1.0 - float(np.sum((values - values[nn].mean(axis=1)) ** 2)) / total
+    def statistics(values: np.ndarray) -> np.ndarray:
+        """Leave-one-out R² of each value from the mean of its k nearest neighbours' values, one per size."""
+        means = np.cumsum(values[nearest], axis=1)[:, last] / counts
+        out: np.ndarray = 1.0 - np.sum((values[:, None] - means) ** 2, axis=0) / total
+        return out
 
-    observed = statistic(r)
-    exceed = sum(statistic(rng.permutation(r)) >= observed for _ in range(permutations))
-    p_value = (1 + exceed) / (1 + permutations)
-    detail = f"neighbour R^2={observed:.3f}, permutation p={p_value:.3f} vs level {alpha:g}, k={k}, n={r.size}"
+    # Row 0 is the data, the rest are permutations. Standardising with all rows keeps the rows exchangeable
+    # under the null, so the rank of row 0's maximum is an exact permutation p-value.
+    table = np.vstack([statistics(r)] + [statistics(rng.permutation(r)) for _ in range(permutations)])
+    spread = table.std(axis=0)
+    standardised = (table - table.mean(axis=0)) / np.where(spread > 0, spread, 1.0)
+    largest = standardised.max(axis=1)
+    p_value = float(np.sum(largest >= largest[0])) / (1 + permutations)
+    at = int(np.argmax(standardised[0]))
+    detail = (f"neighbour R^2={table[0, at]:.3f} at k={sizes[at]} (largest standardised of k={list(sizes)}), "
+              f"permutation p={p_value:.3f} vs level {alpha:g}, n={r.size}")
     return bool(p_value >= alpha), detail
 
 
