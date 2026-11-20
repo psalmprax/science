@@ -98,6 +98,28 @@ three preregistered expectations missed.
   a rival that was indistinguishable from the truth on the domain. `unique`
   is relative to the candidates given; only `no_survivor` says anything about
   the search space. `preregistration/RESULT-CONTRAST-2026-11.md`.
+- **M-16 the main search path reports laws in pure noise on return-like
+  data — ADDRESSED BY A SEPARATE ROUTE 2026-11-20.** PREREG-MARKET-PLANTED
+  (simulated series with heavy-tailed noise of changing scale, run once, all
+  four expectations held): in 28 of 40 series that contain no law the path
+  returned one, and 14 of those forecast later data worse than the mean. Its
+  checks ask whether residuals show structure and whether a rival predicts
+  differently, not whether a law predicts anything, and they assume one noise
+  level. `discovery_l2/series_route.py` takes the path's candidates, chooses
+  one inside the development period and gives it one Diebold-Mariano test on
+  later data: 0 of 40 null series, 31 of 40 where a law explains 5 or 20 % of
+  the variance (28 of them capturing the signal), 3 of 20 at 2 %, 0 of 20 at
+  0.5 %. The path itself is unchanged and must not be used alone on such
+  data. Not addressed: regime changes, fading effects, costs, real prices,
+  and the low power at small signal sizes.
+  `preregistration/RESULT-MARKET-PLANTED-2026-11.md`.
+- **M-17 a proposal that is not finite on the data can crash a run — PARTLY
+  ADDRESSED 2026-11-20.** In PREREG-LLM-PROPOSER five of 266 runs ended in
+  `ValueError: array must not contain infs or NaNs`: a formula the model
+  proposed was not finite on the rows and a fit raised instead of skipping
+  it. `proposers/composed.CompositeProposer` contains a failing search stage
+  and records it; the frozen runner and the frozen path are unchanged, so a
+  proposer used directly can still do this.
 - **M-15 an exact-fit confirmation can carry a term that contributes nothing
   — OPEN.** Found after PREREG-ODE-MAIN-SEARCH's run. For `dx/dt = -x**3` the
   path reported `-x0**3` plus `1.7e-8*x0 - 4.4e-9*exp(exp(x0))`, confirmed

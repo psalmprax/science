@@ -15,6 +15,19 @@ inferred releases.
 
 ### Changed
 
+- **Two more measurements, both with every expectation held (2026-11-20).**
+  *Return-like series* (PREREG-MARKET-PLANTED-2026-11, simulated series with a planted law, not
+  market findings): the main search path alone reported a law in 28 of 40 series that contain none;
+  `apedp_dyn/discovery_l2/series_route.py` (candidates from the path, one chosen inside the
+  development period, one Diebold-Mariano test on later data) reported none of the 40, and 31 of
+  40 where a law explains 5 or 20 % of the variance, 3 of 20 at 2 % and 0 of 20 at 0.5 %.
+  *A language model as the search stage* (PREREG-LLM-PROPOSER-2026-11, `nemotron-3-ultra` on
+  NVIDIA's API, numbers only): 92 laws reported in 266 runs, 2 not accurate (both the path's own
+  known failure), 78 recovered, 12 of them found by the model; Feynman 40 and 32 against 69 and 70
+  with PySR in the same place. It stays an optional proposer. Five runs crashed on a proposal that
+  was not finite on the data (audit M-17).
+  `preregistration/RESULT-MARKET-PLANTED-2026-11.md`, `preregistration/RESULT-LLM-PROPOSER-2026-11.md`.
+
 - **Quantum circuits are now searched for and certified against faults, not only for size
   (2026-11-20).** `apedp_dyn/vqc/fault_tolerant_prep.py`: a referee that decides fault tolerance of a
   logical-zero preparation by enumerating every single fault and counts exactly the fault pairs that

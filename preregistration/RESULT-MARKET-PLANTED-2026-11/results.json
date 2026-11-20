@@ -1,0 +1,217 @@
+{
+ "frozen": {
+  "apedp_dyn/discovery_l2/confirmed_stop.py": "ce13a721d801c6db81d9bd2618b1aa252fba30ef5353100aadac145366148e66",
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/contrast_resolution.py": "6c6001b7285295c8f1121bd48743b69fe6ff96b4f86a8cd37e3a17366562ee2b",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/series_route.py": "0e1ec86a4b9abb75b076406434d8aa1192e82ab64493c468f5a4f01dbda0bfb8",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "apedp_referee/novelty_adjudication.py": "255432e53d87adc1a21e990ba7a79022c649d38a4158b79cf762dbd0b06728d1",
+  "preregistration/PREREG-MARKET-PLANTED-2026-11.md": "81ebe17a5c9c00c49b9423d0cfc7454fc5c132a4bd2b9449c6d3a55687a0711d",
+  "scripts/market_planted_worlds.py": "feae785030f9cd3d7d178b6e4c003210bca32207f5deaf2817e3c474eeae20a7",
+  "scripts/run_market_planted_benchmark.py": "226e85f04d7336c62627184abae236a1d4e36aab0f7bb9e88ae0a5d36b47916c"
+ },
+ "preregistration": "PREREG-MARKET-PLANTED-2026-11",
+ "summary": {
+  "law_saturating_trend": {
+   "earned_a_test": 16,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 9,
+    "reported": 9,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 0
+   },
+   "n": 16,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 10,
+    "reported": 13,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 1
+   }
+  },
+  "law_spread_plus_interaction": {
+   "earned_a_test": 16,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 4,
+    "reported": 5,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 1
+   },
+   "n": 16,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 11,
+    "reported": 12,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 2
+   }
+  },
+  "law_trend": {
+   "earned_a_test": 16,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 6,
+    "reported": 6,
+    "symbolic": 4,
+    "worse_than_no_law_on_test": 0
+   },
+   "n": 16,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 12,
+    "reported": 12,
+    "symbolic": 9,
+    "worse_than_no_law_on_test": 0
+   }
+  },
+  "law_trend_fading_in_volatility": {
+   "earned_a_test": 16,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 7,
+    "reported": 8,
+    "symbolic": 1,
+    "worse_than_no_law_on_test": 0
+   },
+   "n": 16,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 11,
+    "reported": 13,
+    "symbolic": 1,
+    "worse_than_no_law_on_test": 1
+   }
+  },
+  "law_trend_with_flow": {
+   "earned_a_test": 15,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 5,
+    "reported": 6,
+    "symbolic": 3,
+    "worse_than_no_law_on_test": 1
+   },
+   "n": 16,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 11,
+    "reported": 14,
+    "symbolic": 10,
+    "worse_than_no_law_on_test": 2
+   }
+  },
+  "null": {
+   "earned_a_test": 35,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 0,
+    "reported": 0,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 0
+   },
+   "n": 40,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 0,
+    "reported": 28,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 14
+   }
+  },
+  "planted": {
+   "earned_a_test": 79,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 31,
+    "reported": 34,
+    "symbolic": 8,
+    "worse_than_no_law_on_test": 2
+   },
+   "n": 80,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 55,
+    "reported": 64,
+    "symbolic": 20,
+    "worse_than_no_law_on_test": 6
+   }
+  },
+  "share_0.005": {
+   "earned_a_test": 19,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 0,
+    "reported": 0,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 0
+   },
+   "n": 20,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 11,
+    "reported": 18,
+    "symbolic": 5,
+    "worse_than_no_law_on_test": 5
+   }
+  },
+  "share_0.02": {
+   "earned_a_test": 20,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 3,
+    "reported": 3,
+    "symbolic": 0,
+    "worse_than_no_law_on_test": 1
+   },
+   "n": 20,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 15,
+    "reported": 16,
+    "symbolic": 6,
+    "worse_than_no_law_on_test": 1
+   }
+  },
+  "share_0.05": {
+   "earned_a_test": 20,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 11,
+    "reported": 14,
+    "symbolic": 4,
+    "worse_than_no_law_on_test": 1
+   },
+   "n": 20,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 13,
+    "reported": 14,
+    "symbolic": 5,
+    "worse_than_no_law_on_test": 0
+   }
+  },
+  "share_0.2": {
+   "earned_a_test": 20,
+   "errors": 0,
+   "gated": {
+    "captures_signal": 17,
+    "reported": 17,
+    "symbolic": 4,
+    "worse_than_no_law_on_test": 0
+   },
+   "n": 20,
+   "timeouts": 0,
+   "ungated": {
+    "captures_signal": 16,
+    "reported": 16,
+    "symbolic": 4,
+    "worse_than_no_law_on_test": 0
+   }
+  }
+ }
+}
