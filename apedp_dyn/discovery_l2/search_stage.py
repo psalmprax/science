@@ -18,6 +18,13 @@ Julia runtime. Where fewer than ``CORES_FOR_PORTFOLIO`` cores are available the
 stage is the single PySR search the refined run measured, so nothing slower is
 imposed on a small machine.
 
+**The fit guard.** Either stage is wrapped in ``proposers.fit_guard.FitGuardProposer``,
+which drops a candidate the path's least-squares fit cannot handle before the
+path sees it (audit M-24: three preregistered runs ended on such a candidate
+on 2026-11-20, one of them in the run cited above). The measured run had no
+guard; the guard only removes candidates that would have ended a run or been
+skipped as not finite, and it has not been measured in a run of its own.
+
 **Not covered by the measurement.** ODE systems: four seeds of one search were
 measured there (PREREG-ODE-REFINED-2026-11) and not adopted. Series data: not
 measured.
@@ -28,6 +35,7 @@ import os
 from typing import Any
 
 from apedp_dyn.proposers.deep_pass import mixed_members
+from apedp_dyn.proposers.fit_guard import FitGuardProposer
 from apedp_dyn.proposers.portfolio import PortfolioProposer
 
 #: cores the four members need to run side by side (one each)
@@ -58,5 +66,5 @@ def default_search_stage(budget_seconds: float, *, cores: int | None = None, see
     if free >= CORES_FOR_PORTFOLIO:
         stage = PortfolioProposer(mixed_members(budget_seconds, seed), max_proposals=MAX_PROPOSALS, parallel=True,
                                   timeout=budget_seconds + MEMBER_GRACE_S)
-        return stage, f"four searches side by side (PREREG-PORTFOLIO-SEARCH), {budget_seconds:g} s"
-    return PySRProposer(budget_seconds=budget_seconds, seed=seed), f"PySR, {budget_seconds:g} s"
+        return FitGuardProposer(stage), f"four searches side by side (PREREG-PORTFOLIO-SEARCH), {budget_seconds:g} s"
+    return FitGuardProposer(PySRProposer(budget_seconds=budget_seconds, seed=seed)), f"PySR, {budget_seconds:g} s"

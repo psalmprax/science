@@ -23,6 +23,15 @@ inferred releases.
 
 ### Changed
 
+- **A guard against unfittable candidates, a prediction ledger, and a reading of the field
+  (2026-11-20).** `proposers/fit_guard.py` drops a proposal the path's least-squares fit cannot
+  handle before the path sees it (audit M-24; three runs ended that way today), and the default
+  search stage is wrapped in it. `epistemic/prediction_ledger.py` records dated predictions and
+  their outcomes in a hash-chained file: one outcome per claim, not before its due date, the
+  verdict computed from the bound the claim stated, overdue claims counted. No claims yet.
+  `docs/COMPETITIVE_RESEARCH_2026-11.md` compares the system with published work: behind on raw
+  recovery and on language-model guidance, unmeasured on the memorisation-proof benchmark, ahead
+  in kind on reporting how often it is wrong.
 - **Four different searches as the default search stage, measured and adopted (2026-11-20,
   PREREG-PORTFOLIO-SEARCH-2026-11, run once, all four expectations held).** On SRBench's 103
   held-out problems: 73 and 63 recovered by form against 61 and 61 for one search (expected at

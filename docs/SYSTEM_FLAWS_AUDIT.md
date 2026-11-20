@@ -291,7 +291,13 @@ three preregistered expectations missed.
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
 - **M-24 a candidate that cannot be fitted ends the whole run — FOUND
-  2026-11-20, OPEN.** In PREREG-ODE-REFINED-2026-11 two of 234 runs ended
+  2026-11-20; GUARDED FOR THE DEFAULT SEARCH STAGE THE SAME DAY, NOT YET
+  MEASURED.** `proposers/fit_guard.py` now screens every proposal with the
+  path's own fit before the path sees it, and `discovery_l2/search_stage.py`
+  wraps the default stage in it. `log(a - 5)` on rows where it is undefined
+  reproduces the recorded `LinAlgError` and is dropped. The path polishes
+  constants before fitting, so a failure after polishing is still possible;
+  the ODE runner and other direct callers are not wrapped. In PREREG-ODE-REFINED-2026-11 two of 234 runs ended
   with `LinAlgError: SVD did not converge in Linear Least Squares`, raised by
   `numpy.linalg.lstsq` in `contrast_confirmation.fit_candidate` while one
   candidate was being fitted; `main_search.discover` does not catch it. Both
