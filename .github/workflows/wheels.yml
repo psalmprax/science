@@ -61,8 +61,12 @@ jobs:
         include:
           - target: x86_64-apple-darwin
             runner: macos-15-intel
+          # macos-15, not macos-14: GitHub retired the macOS 14 images on
+          # 2026-11-02. From then on this job was cancelled before any step
+          # ran ("The configuration 'macos-14-arm64-us-default' is not
+          # supported"), so no arm64 macOS wheel was built or checked.
           - target: aarch64-apple-darwin
-            runner: macos-14
+            runner: macos-15
     steps:
       - uses: actions/checkout@v7
 

@@ -591,6 +591,10 @@ inferred releases.
 
 ### Fixed
 
+- **CI: the arm64 macOS wheel was not being built (2026-11-20).** `wheels.yml` asked for the
+  `macos-14` runner image, which GitHub retired on 2026-11-02. Since then the job was cancelled
+  before any step ran, with no log, on every pull request. It now runs on `macos-15`, as the Intel
+  job already does, and a contract test refuses a workflow that names a retired image.
 - **CI: the Rust toolchain failure that looked like a flake (2026-11-20).** On the pull-request
   branch the test job had the step that empties the toolchain home twice, once before the
   toolchain is installed and once after, left there by a merge. The second copy deleted the

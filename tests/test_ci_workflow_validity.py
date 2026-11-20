@@ -172,6 +172,32 @@ def test_actionlint_accepts_every_workflow() -> None:
     assert proc.returncode == 0, proc.stdout + proc.stderr
 
 
+# --- Runner images that no longer exist ---------------------------------------
+
+# Hosted runner images GitHub has retired. A job that asks for one is not
+# failed: it is cancelled before any step runs, with no log, which is easy to
+# read as an interrupted run. The arm64 macOS wheel job asked for macos-14 and
+# was cancelled that way on every run from its retirement on 2026-11-02 until
+# 2026-11-20.
+RETIRED_RUNNER_LABELS = ("macos-12", "macos-13", "macos-14", "ubuntu-20.04", "windows-2019")
+
+
+@pytest.mark.parametrize("path", WORKFLOWS, ids=lambda p: p.name)
+def test_no_job_asks_for_a_retired_runner_image(path: Path) -> None:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    text = "\n".join(line for line in lines if not line.lstrip().startswith("#"))
+    for label in RETIRED_RUNNER_LABELS:
+        assert not re.search(rf"(?<![\w.-]){re.escape(label)}(?![\w.-])", text), f"{path.name} names the retired image {label}"
+
+
+def test_the_retired_image_guard_reads_labels_and_not_comments() -> None:
+    pattern = rf"(?<![\w.-]){re.escape('macos-14')}(?![\w.-])"
+    assert re.search(pattern, "            runner: macos-14")
+    assert re.search(pattern, "    runs-on: [macos-14]")
+    assert not re.search(pattern, "            runner: macos-15-intel")
+    assert not re.search(pattern, "    runs-on: macos-14-large")  # a different label, not in the list
+
+
 # --- The one deselected test ------------------------------------------------
 
 GOVERNANCE_TEST = "tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid"
