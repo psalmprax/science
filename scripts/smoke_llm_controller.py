@@ -33,7 +33,7 @@ def main() -> int:
     failed = 0
     for seed, text in enumerate(LAWS):
         truth = sp.sympify(text)
-        names = sorted((str(s) for s in truth.free_symbols))
+        names = sorted(str(s) for s in truth.free_symbols)
         fn = sp.lambdify([sp.Symbol(n) for n in names], truth, "numpy")
         rng = np.random.default_rng(100 + seed)
         X, pool = rng.uniform(1.0, 5.0, (300, len(names))), rng.uniform(1.0, 5.0, (600, len(names)))
@@ -55,7 +55,7 @@ def main() -> int:
                                                      proposer=controller, noise="absolute")
             print("CONTROLLER " + json.dumps({"truth": text, "seconds": round(time.time() - started, 1), "action": result.action,
                                               "law": result.law, "tentative_law": result.tentative_law,
-                                              "controller": controller.last_run, "calls": client.calls,  # type: ignore[attr-defined]
+                                              "controller": controller.last_run, "calls": getattr(client, "calls", None),
                                               "failures": result.proposer_failures}, default=str), flush=True)
             failed += bool(controller.last_run.get("model_failure"))
         except Exception as exc:  # noqa: BLE001 - the smoke reports a failure and goes on to the next law
