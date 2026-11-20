@@ -599,6 +599,10 @@ inferred releases.
 
 ### Fixed
 
+- **CI: the arm64 macOS wheel was not being built (2026-11-20).** `wheels.yml` asked for the
+  `macos-14` runner image, which GitHub retired on 2026-11-02. Since then the job was cancelled
+  before any step ran, with no log, on every pull request. It now runs on `macos-15`, as the Intel
+  job already does, and a contract test refuses a workflow that names a retired image.
 - **The formula parser no longer evaluates unbounded numeric towers.**
   `safe_parse_expr("9**9**9**9")` and `safe_parse_expr("zeta(10**7)")` did not
   return: SymPy folds numeric sub-expressions during the parse, before the
