@@ -284,6 +284,26 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-22 more of the same search buys nothing; more depth buys a little and
+  costs trust under noise — MEASURED IN DEVELOPMENT 2026-11-20, OPEN.** The
+  default route's search stage is one serial PySR search on one core, and the
+  benchmark runners have four. Two things were tried on SRBench's 30
+  development problems (the 103 held-out problems were not touched).
+  (a) Four seeds of the same search side by side
+  (`proposers/portfolio.py`): 27 and 25 of 30 recovered at noise 0 and 1 %,
+  the same runs as one search, none gained, none lost, no member failed. The
+  search is deterministic for a seed and other seeds find the same laws, so
+  the misses are not bad luck. (b) The exhaustive pass two levels deeper,
+  with no PySR (`proposers/deep_pass.py`), on the 18 development runs the
+  first passes miss: 3 recovered, against 10 for PySR; one of the three
+  (`feynman_test_5` without noise) is recovered by no PySR run recorded here.
+  At 1 % noise it returned four laws that are accurate and are not the law
+  (towers of exponentials that fit the noise). **Consequence:** seeds alone
+  are not preregistered; the deeper pass is never the only search and is
+  offered as one member of a portfolio whose candidates the confirmation
+  step compares (`deep_pass.mixed_members`). **Still open:** whether that
+  portfolio recovers more than one search on problems it was not built on is
+  not measured; the default route still uses one core.
 - **M-21 the language-model client would send the API key to any address
   it is given — CLOSED FOR NEW CALLERS 2026-11-20; accepted in the frozen
   file.** Found by the CI security scan (bandit B310) once the test suite got

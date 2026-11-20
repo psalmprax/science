@@ -1,4 +1,5 @@
-# The refined path with four PySR searches side by side (preregistration/PREREG-PORTFOLIO-SEARCH-2026-11.md).
+# The refined path with four different searches side by side (preregistration/PREREG-PORTFOLIO-SEARCH-2026-11.md).
+#   a development branch with "seeds" in its name runs four seeds of one search instead (a comparison, not the run)
 #   push to srbench-portfolio-smoke-*  -> two development problems, short budget
 #   push to srbench-portfolio-dev-*    -> smoke, then the 30 development problems only, printed to the log
 #   push to srbench-portfolio-run-*    -> smoke, then the one preregistered run
@@ -52,6 +53,7 @@ jobs:
       - name: Development problems, shard ${{ matrix.k }} of 10
         env:
           SHARD: ${{ matrix.k }}
+          PORTFOLIO_MEMBERS: ${{ contains(github.ref_name, 'seeds') && 'seeds' || 'mixed' }}
         run: |
           nproc
           python scripts/run_srbench_portfolio.py develop --shard "$SHARD/10" --out dev-out

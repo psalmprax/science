@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""The refined path with four searches side by side, for PREREG-PORTFOLIO-SEARCH-2026-11.
+"""The refined path with four different searches side by side, for PREREG-PORTFOLIO-SEARCH-2026-11.
 
 Exactly PREREG-REFINED-SEARCH-2026-11's protocol (same problems, noise, rows, development and pool
 split, units, 240 s per search, scoring), with one difference: the search stage is a portfolio of
-four PySR searches with different seeds, each on its own core, merged before confirmation
-(``apedp_dyn.proposers.portfolio``). The first member has the seed the refined run used, so the
-portfolio is that run's search plus three more. The recorded refined run is the comparison.
+four searches, each on its own core, merged before confirmation (``apedp_dyn.proposers.portfolio``).
+The members are those of ``apedp_dyn.proposers.deep_pass.mixed_members``: the refined run's own PySR
+search with its seed, the exhaustive pass one or two levels deeper, a PySR search with algebraic
+operators only, and the default search with the next seed. The recorded refined run is the
+comparison.
+
+Development, 2026-11-20 (the 30 development problems, both noise levels, on GitHub's four-core
+runners). Four seeds of the same search (``PORTFOLIO_MEMBERS=seeds``) recovered exactly the runs the
+single search recovers, no more and no fewer, so that portfolio was not taken further; the mixed
+portfolio is what ``run`` uses.
 
     python scripts/run_srbench_portfolio.py smoke   --out DIR
     python scripts/run_srbench_portfolio.py develop --out DIR [--shard k/N]   # development problems only
@@ -37,7 +44,7 @@ PREREGISTRATION_ID = "PREREG-PORTFOLIO-SEARCH-2026-11"
 DIGEST = ROOT / "preregistration" / "DIGEST-PORTFOLIO-SEARCH.json"
 FROZEN = ("preregistration/PREREG-PORTFOLIO-SEARCH-2026-11.md", "scripts/run_srbench_portfolio.py",
           "scripts/run_srbench_refined.py", "scripts/run_srbench_main_search.py", "scripts/run_srbench_baseline.py",
-          "benchmarks/srbench/manifest.json", "apedp_dyn/proposers/portfolio.py",
+          "benchmarks/srbench/manifest.json", "apedp_dyn/proposers/portfolio.py", "apedp_dyn/proposers/deep_pass.py",
           "apedp_dyn/discovery_l2/refined_search.py", "apedp_dyn/proposers/composed.py",
           "apedp_dyn/discovery_l2/main_search.py", "apedp_dyn/proposers/pysr_proposer.py",
           "apedp_dyn/discovery_l2/contrast_confirmation.py", "apedp_dyn/discovery_l2/contrast_resolution.py",
@@ -48,6 +55,8 @@ ENGINE = "refined_portfolio"
 NOISE_LEVELS = refined_run.NOISE_LEVELS
 SEARCH_BUDGET_S = refined_run.SEARCH_BUDGET_S
 MEMBERS = 4
+MEMBER_SET = "mixed"      # what ``run`` uses; "seeds" exists for development comparisons only
+MEMBER_SETS = ("mixed", "seeds")
 MAX_PROPOSALS = 10        # the composite keeps eleven: these and the polynomial library's one
 TIME_LIMIT_S = 720.0      # the refined run's 600 s, plus room for four Julia runtimes to start
 used_in_development = refined_run.used_in_development
@@ -58,9 +67,26 @@ def member_seeds() -> tuple[int, ...]:
     return tuple(base.SEED + k for k in range(MEMBERS))
 
 
+def member_set() -> str:
+    """``MEMBER_SET``, unless a development command asked for another one through the environment."""
+    chosen = os.environ.get("PORTFOLIO_MEMBERS", MEMBER_SET)
+    if chosen not in MEMBER_SETS:
+        raise SystemExit(f"PORTFOLIO_MEMBERS must be one of {MEMBER_SETS}")
+    return chosen
+
+
+def members(budget: float) -> list[Any]:
+    from apedp_dyn.proposers.deep_pass import mixed_members
+    from apedp_dyn.proposers.portfolio import pysr_members
+
+    if member_set() == "seeds":
+        return list(pysr_members(budget, member_seeds()))
+    return list(mixed_members(budget, base.SEED))
+
+
 def run_portfolio(split: dict[str, Any], entry: dict[str, Any], budget: float = SEARCH_BUDGET_S) -> dict[str, Any]:
     from apedp_dyn.discovery_l2 import refined_search
-    from apedp_dyn.proposers.portfolio import PortfolioProposer, pysr_members
+    from apedp_dyn.proposers.portfolio import PortfolioProposer
 
     names, X, y = split["names"], split["X_train"], split["y_train"]
     # the refined run's own development and pool rows
@@ -70,8 +96,7 @@ def run_portfolio(split: dict[str, Any], entry: dict[str, Any], budget: float = 
     dev, pool = order[:cut], order[cut:]
     pool_y = y[pool]
     units = {n: entry["units"].get(f, {}) for n, f in zip(names, entry["features"], strict=True)}
-    portfolio = PortfolioProposer(pysr_members(budget, member_seeds()), max_proposals=MAX_PROPOSALS, parallel=True,
-                                  timeout=budget + 300.0)
+    portfolio = PortfolioProposer(members(budget), max_proposals=MAX_PROPOSALS, parallel=True, timeout=budget + 300.0)
     result = refined_search.discover_refined(
         {n: X[dev, i] for i, n in enumerate(names)}, y[dev], X[pool], lambda rows: pool_y[rows],
         proposer=portfolio, units=units, target_units=entry["target_units"], noise="absolute", seed=base.SEED)
@@ -82,7 +107,7 @@ def run_portfolio(split: dict[str, Any], entry: dict[str, Any], budget: float = 
              "units": result.units, "proposer_failures": result.proposer_failures, "found_by": path.found_by,
              "path_law_text": path.law, "rejected_law": path.rejected_law, "adequacy": path.adequacy,
              "rows_read": path.rows_read, "first_pass": path.first_pass, "search": path.search, "candidates": path.candidates,
-             "portfolio": dict(portfolio.last_run), "used_in_development": used_in_development(entry["name"])}
+             "portfolio": {**portfolio.last_run, "member_set": member_set()}, "used_in_development": used_in_development(entry["name"])}
     return {"model": law, "pred": path_run._predict(law, names, split["X_test"]) if law is not None else None,
             "formula": result.law, "extra": extra}
 
@@ -154,6 +179,8 @@ def main(argv: list[str] | None = None) -> int:
                 failed += 1
         return 1 if failed and args.command == "smoke" else 0
     check_frozen()
+    if member_set() != MEMBER_SET:
+        raise SystemExit("PORTFOLIO_MEMBERS is for development commands; the run uses the frozen member set")
     if args.command == "run":
         path = args.out / f"runs-shard-{k:03d}-of-{n:03d}.jsonl"
         with path.open("w", encoding="utf-8") as handle:

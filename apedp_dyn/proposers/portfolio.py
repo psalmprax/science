@@ -3,8 +3,8 @@
 Status: experimental
 
 **Why.** The search stage of the default route is one PySR search, serial, for
-240 seconds on one core. Two things measured on 2026-11-20 say that this is
-what limits recovery, and that the machine has room for more:
+240 seconds on one core. Two things measured on 2026-11-20 suggested that this
+limits recovery, and that the machine has room for more:
 
 * Two runs of the same path that differ only in how the search was configured
   (PREREG-REFINED-SEARCH and PREREG-LLM-CONTROLLER) recovered 174 and 173 of 266
@@ -18,8 +18,18 @@ first, then every member's second, and so on, without duplicates, up to
 contrast confirmation as a single search's would, which is where a wrong
 candidate from one member meets the right one from another.
 
-``pysr_members`` builds the usual portfolio: the same PySR search with
+``pysr_members`` builds the simplest portfolio: the same PySR search with
 different random seeds.
+
+**What development showed (2026-11-20).** Four seeds of the same search, on
+the 30 development problems of SRBench at both noise levels (60 runs, GitHub's
+four-core runners): 27 and 25 recovered, exactly the runs the single search
+recovers; none gained, none lost, 0 of 54 reported laws inaccurate, no member
+failed, 265 s of wall time for a 240 s budget. The search is deterministic for
+a seed, and other seeds find the same laws or lose to the same rival. So the
+two recorded runs above differ because the search was configured differently,
+not because of chance, and a portfolio pays only if its members differ in
+kind. ``apedp_dyn.proposers.deep_pass.mixed_members`` is that portfolio.
 
 **Processes.** Members run under the ``spawn`` start method, so each child
 starts its own Julia runtime; a Julia runtime does not survive ``fork``. Each

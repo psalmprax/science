@@ -23,6 +23,17 @@ inferred releases.
 
 ### Changed
 
+- **Several searches side by side, and what development showed (2026-11-20).** New
+  `apedp_dyn/proposers/portfolio.py` (`PortfolioProposer`: members in separate processes, merged
+  round-robin, a failing member recorded and not fatal) and `scripts/run_srbench_portfolio.py`.
+  Four seeds of the same PySR search, developed on SRBench's 30 development problems (60 runs on
+  four-core runners): 27 and 25 recovered, exactly what the single search recovers, none gained
+  and none lost. Seeds alone are therefore not taken to a preregistered run. New
+  `apedp_dyn/proposers/deep_pass.py`: the exhaustive pass at 8 nodes for one variable and 7 for
+  two or three, which on the 18 development runs the first passes miss recovered 3 (one that no
+  PySR run here has recovered) and, at 1 % noise, returned four laws that fit and are not the
+  law. It joins the portfolio as one member of four different ones (`mixed_members`); that
+  portfolio is in development and nothing about it is claimed yet (audit M-22).
 - **The structure guard is the template engine's default where its test is valid (2026-11-20).**
   New `apedp_dyn/discovery_l2/guarded_l2.py`: `GuardedL2DiscoveryEngine`, the engine with
   `structure_rule=True` by default, as PREREG-REFEREE-STRUCTURE fixed for the case that its first
