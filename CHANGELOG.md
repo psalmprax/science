@@ -15,6 +15,18 @@ inferred releases.
 
 ### Changed
 
+- **Quantum circuits are now searched for and certified against faults, not only for size
+  (2026-11-20).** `apedp_dyn/vqc/fault_tolerant_prep.py`: a referee that decides fault tolerance of a
+  logical-zero preparation by enumerating every single fault and counts exactly the fault pairs that
+  cause a logical error, and a search ranked by CNOTs, ancillas, then that count.
+  PREREG-FT-PREP-2026-11, run once, all five expectations held: for the Steane code the search
+  certifies 275 712 fault-tolerant circuits at the known optimum of 11 CNOTs and one ancilla (none
+  of the 22 976 shortest encoders is fault-tolerant alone); the exact coefficient agrees with Stim
+  within 2.2 % at p = 0.001 on five circuits; among circuits of identical size the logical error
+  rate differs by a factor 1.46 and Stim reproduces it; on a 2-by-4 nearest-neighbour grid the best
+  circuit of this family has 14 CNOTs. No circuit smaller than the published one was found or
+  expected. `preregistration/RESULT-FT-PREP-2026-11.md`.
+
 - **ODE discovery measured on ODEBench (2026-11-19).** `apedp_dyn/ode/window_rows.py` and
   `apedp_dyn/ode/main_search_ode.py` send each component of a system through the main search path.
   PREREG-ODE-MAIN-SEARCH-2026-11, run once, all four expectations held (two narrowly): 80 of 117
