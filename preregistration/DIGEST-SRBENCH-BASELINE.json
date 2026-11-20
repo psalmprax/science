@@ -1,0 +1,9 @@
+{
+ "preregistration": "PREREG-SRBENCH-BASELINE-2026-11",
+ "sha256": {
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-SRBENCH-BASELINE-2026-11.md": "4e5fc57e4e3edca6ed8e91189b95e39d71ed0b78759de9104f6801d9732b4f3f",
+  "scripts/fetch_srbench_ground_truth.py": "527b4d980b888bfcac3039b9e9a4da16de641271ce1f479a8323f1ffc3b0ff73",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd"
+ }
+}

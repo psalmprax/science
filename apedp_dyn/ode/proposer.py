@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from apedp_dyn.grammar.proposer_interface import CandidateProposal, ProposerBase, StrategyArchetype
+from apedp_dyn.ode import weak_form
 from apedp_dyn.ode.dispatch import discover_coupled_ode
 
 PROPOSER_ID = "coupled_ode_proposer"
@@ -28,7 +29,13 @@ class CoupledOdeProposer(ProposerBase):
         include_cross_interactions: bool = True,
         sparsity_threshold: float = 0.02,
         strategy_archetype: StrategyArchetype = StrategyArchetype.CONTINUOUS_FACTOR,
+        coefficient_estimator: str = "kernel",
     ):
+        if coefficient_estimator not in ("kernel", "weak_form"):
+            raise ValueError("coefficient_estimator must be 'kernel' or 'weak_form'")
+        # "weak_form": the kernel still selects the terms; their coefficients are
+        # re-estimated without differentiating the data (apedp_dyn/ode/weak_form.py).
+        self._coefficient_estimator = coefficient_estimator
         self._dt = dt
         self._max_polynomial_degree = max_polynomial_degree
         self._include_cross_interactions = include_cross_interactions
@@ -69,7 +76,15 @@ class CoupledOdeProposer(ProposerBase):
         candidates: list[CandidateProposal] = []
         for eq in res.equations:
             cid_hash = hashlib.sha256(f"{eq.state_variable}_{eq.formula}".encode()).hexdigest()[:12]
-            param_dict = {term: float(coeff) for term, coeff in zip(eq.active_terms, eq.coefficients, strict=False)}
+            coefficients = [float(c) for c in eq.coefficients]
+            estimator_used = "kernel"
+            if self._coefficient_estimator == "weak_form":
+                refit = weak_form.refit_coefficients(series_dict, eq.state_variable, list(eq.active_terms), self._dt)
+                if refit is not None and np.all(np.isfinite(refit)):
+                    coefficients, estimator_used = [float(c) for c in refit], "weak_form"
+            param_dict = dict(zip(eq.active_terms, coefficients, strict=False))
+            formula = eq.formula if estimator_used == "kernel" else (
+                f"d{eq.state_variable}/dt = " + " + ".join(f"{c:.4f} * ({term})" for term, c in param_dict.items()))
 
             # FLAW-02 remediation: the score function must EVALUATE the
             # discovered right-hand side, not echo the input state column.
@@ -77,8 +92,7 @@ class CoupledOdeProposer(ProposerBase):
             # rust/apedp-kernel/src/rime/coupled_system.rs: "1" (constant),
             # "x_i" (linear), "x_i^2" / "x_i*x_j" (degree-2 squares and
             # cross-interactions), "x_i^3" (degree-3 self-powers).
-            active = [(term, float(coeff)) for term, coeff in
-                      zip(eq.active_terms, eq.coefficients, strict=False)]
+            active = list(zip(eq.active_terms, coefficients, strict=False))
 
             def _term_value(term: str, row: dict[str, float]) -> float:
                 if term == "1":
@@ -127,7 +141,7 @@ class CoupledOdeProposer(ProposerBase):
             proposal = CandidateProposal(
                 proposer_id=self.proposer_id,
                 candidate_id=f"coupled_ode_{eq.state_variable}_{cid_hash}",
-                formula=eq.formula,
+                formula=formula,
                 strategy_archetype=self._strategy_archetype,
                 declared_scale_invariant=True,
                 declared_nominal_dependencies=tuple(state_cols),
@@ -138,6 +152,7 @@ class CoupledOdeProposer(ProposerBase):
                     "r2": float(eq.r2),
                     "residual_rmse": float(eq.residual_rmse),
                     "mean_system_r2": float(res.mean_system_r2),
+                    "coefficient_estimator": estimator_used,
                 },
             )
             candidates.append(proposal)

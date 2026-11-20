@@ -15,8 +15,9 @@ variable at 0/1/5/10 % noise. Wrong-law promotions: 7 of 288, none on a
 textbook law. Recovery: 82 % on known laws, 58 % on invented ones; two of the
 three preregistered expectations missed.
 
-- **M-01 the referee refuses a perfect fit as unassessed — OPEN, referee
-  decision.** All nine known-law misses at zero noise are the right law fitted
+- **M-01 the referee refuses a perfect fit as unassessed — FIXED 2026-11-19
+  at the owner's request.** All nine known-law misses at zero noise (and two invented-law
+  runs) are the right law fitted
   with RMSE 0 and refused because "residual series is constant: |rho1|
   undefined, whiteness unassessable" (`epistemic/adjudicate.py`, and the same
   rule in `whiteness_calibration.py`). A residual of zeros has nothing to test,
@@ -25,9 +26,13 @@ three preregistered expectations missed.
   noise-free simulation benchmark, and makes noise-free verdicts depend on
   the platform: whether the residuals come out exactly zero or carry
   rounding noise decides it (the benchmark's own toy test passed locally and
-  failed on CI 3.11 until it was given 1 % noise). Not changed: `adjudicate.py` is pinned by
-  `APEDPX_FROZEN_v1_18.json`, and what an exact fit should earn is for the
-  owner to decide.
+  failed on CI 3.11 until it was given 1 % noise). Fixed: a holdout residual of exact zeros now passes both whiteness
+  checks as an exact fit; a constant nonzero offset is still refused, and
+  any nonzero residual takes the ordinary test. `adjudicate.py` is re-minted
+  (`remint_log`, `frozen_spec.py`), `DYNAMIC_EPISTEMIC_VERSION` is
+  `solefid-v6`, and `tests/test_exact_fit_is_not_refused.py` pins it. The
+  preregistered benchmark's numbers stand as run; they were measured under
+  solefid-v5.
 - **M-02 a term carrying less than 5 % of the signal cannot be confirmed —
   RECORDED, by design.** Of 64 two-term runs, 7 recovered, 7 promoted the
   dominant term, 50 abstained. Diagnosed after the run: the true law is in the
@@ -62,6 +67,389 @@ three preregistered expectations missed.
   freeze guard file, so `APEDPX_FROZEN_v1_18.json` is re-minted for it with a
   `remint_log` entry (the first push missed this and CI's freeze guard
   caught it); the governance digest awaiting trustee signatures is unchanged.
+- **M-05 a RIME result was published as RIME-AD's — FIXED.**
+  `benchmarks/run_population_extrapolation_rime_ad_vs_ga.py` constructed
+  `RimeProposer` and stored its numbers under `rime_ad`; its report and
+  `docs/DOCUMENTATION.md` credited RIME-AD with exact recovery and a ~246x
+  speed advantage over GA. RIME-AD was never run. Re-run with both engines:
+  RIME recovers the law exactly in 7 ms; RIME-AD reaches A-test R² −0.28 in
+  19 s, because it builds features from contemporaneous columns and this law
+  is lagged. The "GA" arms are a genetic search over columns of a hand-built
+  library that contains the true interaction, now named as such. Tests pin
+  that each row's `engine_class` is the engine the script constructed.
+- **M-06 the holdout spends its rows where rivals agree — ADDRESSED; TESTED
+  2026-11-19 (PREREG-CONTRAST-2026-11: three of four expectations held).** M-02's abstentions come from comparing rivals on a
+  random holdout, where a small term barely moves the error.
+  `discovery_l2/contrast_confirmation.py` compares them on rows chosen (from
+  inputs alone) where they disagree. Development study on already-seen laws,
+  tuned three times while looking at them: true law uniquely confirmed 46/48
+  (referee promoted in 8 of the same runs); one true law refuted; one equivalence
+  class headed by a wrong law that also contains the true one; truth removed from the candidates gave `no_survivor`
+  16/16. It reads extra designed rows the referee did not have, so the
+  comparison is not at equal data. It needs a pool or the ability to measure,
+  a known noise model, and laws linear in their coefficients. Next: a
+  preregistered run on fresh laws with a random-rows control arm at the same
+  row count.
+  **Preregistered result** on 40 fresh laws, 80 runs: true law uniquely
+  confirmed 63 (random-rows control 54, paired p = 0.002; referee promoted it
+  in 28 and a wrong law in 5); wrong law named alone 0; true law refuted 2.
+  Missed: with the truth removed it said `no_survivor` in 61 of 80 (expected
+  at least 64) and named a wrong law alone in 19 (expected at most 4), mostly
+  a rival that was indistinguishable from the truth on the domain. `unique`
+  is relative to the candidates given; only `no_survivor` says anything about
+  the search space. `preregistration/RESULT-CONTRAST-2026-11.md`.
+- **M-16 the main search path reports laws in pure noise on return-like
+  data — ADDRESSED BY A SEPARATE ROUTE 2026-11-20.** PREREG-MARKET-PLANTED
+  (simulated series with heavy-tailed noise of changing scale, run once, all
+  four expectations held): in 28 of 40 series that contain no law the path
+  returned one, and 14 of those forecast later data worse than the mean. Its
+  checks ask whether residuals show structure and whether a rival predicts
+  differently, not whether a law predicts anything, and they assume one noise
+  level. `discovery_l2/series_route.py` takes the path's candidates, chooses
+  one inside the development period and gives it one Diebold-Mariano test on
+  later data: 0 of 40 null series, 31 of 40 where a law explains 5 or 20 % of
+  the variance (28 of them capturing the signal), 3 of 20 at 2 %, 0 of 20 at
+  0.5 %. The path itself is unchanged and must not be used alone on such
+  data. Not addressed: regime changes, fading effects, costs, real prices,
+  and the low power at small signal sizes.
+  `preregistration/RESULT-MARKET-PLANTED-2026-11.md`.
+- **M-17 a proposal that is not finite on the data can crash a run — PARTLY
+  ADDRESSED 2026-11-20.** In PREREG-LLM-PROPOSER five of 266 runs ended in
+  `ValueError: array must not contain infs or NaNs`: a formula the model
+  proposed was not finite on the rows and a fit raised instead of skipping
+  it. `proposers/composed.CompositeProposer` contains a failing search stage
+  and records it; the frozen runner and the frozen path are unchanged, so a
+  proposer used directly can still do this.
+- **M-15 an exact-fit confirmation can carry a term that contributes nothing
+  — ADDRESSED IN THE REFINED PATH 2026-11-20; the frozen path is unchanged.** Found after PREREG-ODE-MAIN-SEARCH's run. For `dx/dt = -x**3` the
+  path reported `-x0**3` plus `1.7e-8*x0 - 4.4e-9*exp(exp(x0))`, confirmed
+  exact on the pool. The extra terms are at the level of the numerical error
+  on the confirmed states and unbounded outside them (R² -935 011 on the
+  scoring states). One case in 184 reports. The frozen path does not remove
+  such terms; a wrapper should drop terms whose contribution on the confirmed
+  rows is below the numerical floor and confirm again.
+  `discovery_l2/refined_search.confirmed_and_pruned` does that. In
+  PREREG-REFINED-SEARCH-2026-11 it dropped terms in 13 of 266 runs and none of
+  the 212 reported laws was inaccurate. The ODE route still uses the frozen
+  path.
+- **M-07 the ODE path differentiates noisy data — ADDRESSED BY A NEW ROUTE
+  2026-11-19; the older path is unchanged.** `ode/window_rows.py` turns a
+  trajectory into rows with independent errors (one state and one rate per
+  disjoint window) and `ode/main_search_ode.py` sends each component through
+  the main search path with the pool taken from another trajectory.
+  PREREG-ODE-MAIN-SEARCH-2026-11 (ODEBench, 63 systems, 117 components, run
+  once, all four expectations held, two narrowly): 80 components recovered
+  without noise and 69 at 1 %, 4.9 % of reported laws wrong (interval 2.3 to
+  9.1 %); polynomial sparse regression on the same rows: 78 and 53, and 29.1 %
+  of what it reports wrong. Without noise the regression recovers 11
+  polynomial components the path does not. Not checked: forward integration
+  of a discovered system. `preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md`.
+  Earlier entry, for the older path:
+  `ode/weak_form.py` integrates instead. On the Lorenz world (20 seeds,
+  development study) its coefficients are much better up to 5 % noise, but
+  with the twenty-term cubic library and a 10 s trajectory it finds the exact
+  terms no more often than the derivative route from 2 % noise, and PySINDy's
+  weak form does no better. Term selection, not the derivative, is what limits
+  ODE discovery there; the expectation that the weak form alone would lift the
+  ODE engine was wrong. Candidates for selection: contrast confirmation on a
+  second trajectory, or longer data. Wired in as an opt-in coefficient
+  estimator of `CoupledOdeProposer` (the kernel still selects the terms).
+- **M-08 the PDE kernel does not survive 1 % noise — ADDRESSED FOR 1-D.** On a
+  heat equation u_t = 0.8 u_xx the pointwise kernel returns five terms and a
+  diffusion coefficient of 0.03 at 1 % noise (second derivatives of noisy
+  data). `pde/weak_form.py` identifies it exactly in 10 of 10 seeds through
+  10 % noise and viscous Burgers in 9 of 10 (development study; both fail at
+  20 %). Here, unlike the ODE case, the weak form fixes selection as well.
+  Opt-in in `PdeProposer`, 1-D grids only; its library is the divergence-form
+  one, so `|grad u|^2` and `u*laplacian(u)` are not available in it; 2-D and
+  a preregistered test are not done.
+  **Two dimensions, 2026-11-19:** `apedp_dyn/pde/weak_form_2d.py` with
+  evidence-based term selection. PREREG-PDE-2D-2026-11, all four expectations
+  held: the exact equation in 117 of 120 runs on six simulated equations
+  (90 of 90 at noise up to 5 %), coefficients to about 1 %, no false term in
+  any run. Still open: measured fields, boundaries, terms outside the
+  divergence-form library, and three space dimensions.
+- **M-12 the graph engine had never been measured — ADDRESSED ON SIMULATED
+  DATA.** `apedp_dyn/proposers/causal_graph.py` returns the whole lagged graph
+  from one PCMCI+ run and adds a pass for links through an even function.
+  PREREG-GRAPHS-2026-11, all four expectations held: precision 0.963 and
+  recall 0.937 on 60 series (a third of a vector autoregression's false
+  links); the pass finds 57 of 58 even links. Open: the series meet PCMCI+'s
+  assumptions (no hidden common cause, no links within a time step, a fixed
+  graph), which market data do not; and the even pass adds false links on
+  heavy-tailed series (precision 0.899 against 0.962), so it should be off or
+  made robust there.
+- **M-09 MMLM had no measured result — ADDRESSED; TWO LIMITS OPEN.** MMLM now
+  has two measured models, each tested once on data it had not seen.
+  *Generic (text):* MMLM-CM (`apedp_mmlm/context_mixing.py`), counting, match
+  and read-so-far experts plus one 806k-weight LSTM trained on CPU, mixed with
+  fitted weights. PREREG-MMLM-CM-2026-11, all four expectations held: 1.455
+  bits per byte on the WikiText-2 test split (the tokenised version with
+  `<unk>`, wrongly called "raw" in the preregistration; corrected in the
+  result) against 1.513 for the best
+  classical compressor primed with the same training text; every expert group
+  earns 0.020 to 0.025. The old tracks A-C (4.20 to 4.25 bits per byte on other
+  text, behind gzip) are superseded. *Scientific (laws):* MMLM-L
+  (`apedp_mmlm/law_language.py`) with canonical tokens, tree-view experts,
+  domain back-off and fitted mixing. PREREG-MMLM-L-2026-11, all six held: 22.61
+  bits per fresh ODEBench law against 27.94 for the earlier model; the
+  confirmed early stop (`confirmed_stop.py`) recovers 96 of 100 laws with 4
+  wrong stops in 4.3 % of the plain search's time, which closes the miss of
+  PREREG-MMLM-S2. Earlier results (PREREG-MMLM-S, -S2) stand as recorded.
+  **Open:** (1) the better law model does not order the search better than the
+  earlier one (median position 20 against 24.5, p = 0.75): the search gain
+  came from the stop rule; (2) with no laws from a field, MMLM-L is not better
+  than a unigram (31.51 against 29.97 bits) until it has learned some. Also
+  not done: a comparison with large neural language models (they are well
+  ahead on text), the prior inside PySR, and data with no law-like style (no
+  corpus of confirmed market laws exists). One law in 133 still reads
+  differently under renaming (a sign convention of the algebra system).
+- **M-10 the referee promotes a sole survivor that does not fit — ADDRESSED
+  FOR THE DEFAULT ROUTE 2026-11-19; the rule itself is unchanged.** On
+  SRBench (PREREG-SRBENCH-BASELINE-2026-11, run once) 168 of L2's 268 promotions
+  were of something other than the recovered law (62.7 %; the expectation was at
+  most 5 %). In 116 the reason given is that no structurally distinct rival
+  survived; the median test R² of the wrongly promoted laws is 0.81 and 36 are
+  below 0.5. `UNIQUE_SUPPORT` is relative to the candidates the search built and
+  carries no absolute-fit condition, so on laws outside the search space it
+  certifies the least bad candidate. The blind benchmark's 7 in 288 was measured
+  on laws the search can express and does not transfer. No referee change has
+  been made: it needs its own preregistered test. Result:
+  `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
+  **Fix under test (2026-11-19):** the main search path
+  (`apedp_dyn/discovery_l2/main_search.py`) does not use the sole-survivor
+  rule. It reports a law only after contrast confirmation and an adequacy
+  check (no structure in the residuals, and at least as good as a
+  nearest-neighbour smoother). PREREG-MAIN-SEARCH-2026-11 sets the criterion:
+  at most 5 % of the laws it reports may be inaccurate on the test rows. The
+  referee's own rule is unchanged and still used by the template engine.
+  **Result (run once, all four expectations held):** on the same benchmark the
+  path reported a law in 186 of 266 runs; 4 were not accurate (2.2 %, interval
+  0.6 to 5.4 %) and 152 were the law (81.7 %). It refused 78 runs. The default
+  route is now the main search (`discovery_l2/route.py`).
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`.
+  **The referee's own rule (2026-11-20, behind a switch, off by default):**
+  Guard 3, `apedp_dyn/epistemic/structure_guard.py`. A promoted law must
+  leave no structure in its holdout residuals over the input space: the
+  leave-one-out R² of each residual from its nearest neighbours' residuals,
+  at 4 to 64 neighbours, the largest standardised value compared with the
+  seeded permutation distribution of that maximum at the canonical level
+  (0.01). It fails closed. It is applied to the verdict
+  `adjudicate` returned (`guard_promotion`), so it covers every route to a
+  promotion and `adjudicate.py` is unchanged; `L2DiscoveryEngine.discover`
+  applies it when `structure_rule=True`, which is not the default.
+  Development (30 SRBench problems) changed the design three times, and all
+  three are recorded because they are the kind of defect a test of the happy
+  case does not show: a first version inside `adjudicate` guarded two of its
+  three promotion exits and 3 wrong promotions left through the third; at
+  zero noise it refused 4 of 7 correct laws, because the right law's rounding
+  error follows the size of the prediction and is structured over the inputs
+  (residuals within `ABSOLUTE_EPS` of the observation RMS now pass as an
+  exact fit); and with eight neighbours alone one wrong law passed at 10 %
+  noise, which larger neighbourhoods see. On those 30 problems at noise 0,
+  1 % and 10 % the baseline promoted 21 correct and 29 wrong laws; with the
+  guard, 23 correct and none wrong. Whether the guard becomes the default is
+  the question of PREREG-REFEREE-STRUCTURE-2026-11 (frozen 2026-11-20), on
+  the 103 problems not used here; the consequence of each outcome is fixed
+  in it.
+  **Result (run once; two of three expectations held):** with the guard the
+  template engine promoted 113 laws on SRBench and 3 were not accurate
+  (without it 268 and 160); correct promotions 103 against 100. On the 103
+  held-out problems 3 of 81 promotions were not accurate (limit 5 %; the
+  interval reaches 10 %), 71 of 72 correct promotions were kept, and 10 of 81
+  were false by the symbolic criterion (limit 10 %, **missed**): six are two
+  Strogatz problems whose promoted structure has the law's terms under one
+  common coefficient, four are at 10 % noise where a small error hides in the
+  noise. `preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md`.
+  **The consequence, as applied (2026-11-20):** the preregistration fixed
+  that the guard becomes the template engine's default if the first two
+  expectations hold. They did. `l2_engine.py` is frozen by that
+  preregistration's digest, so the default is changed in a subclass,
+  `discovery_l2/guarded_l2.GuardedL2DiscoveryEngine`, and callers are moved
+  to it one at a time.
+  *Moved:* `ui/physics_endpoint.py` (its rows carry independent noise). All
+  twelve verdicts of the four demo systems at noise 0, 1 % and 5 % are the
+  same with and without the guard, and the UI tests pass unchanged.
+  *Not moved, and why:* `ui/registry_endpoint.py` and
+  `discovery_l2/ode_engine.py` (targets made by differencing one trajectory:
+  the rows are not exchangeable and the guard is not measured there);
+  `orchestration/competition.py` (fed by every UI data source, those two
+  included); `market/sweep.py` and the market sandboxes (rows in time order);
+  `orchestration/dispatch.py` (a caller's table of unknown row structure);
+  the stability endpoint in `ui/server.py` (pinned, and at its size ceiling);
+  `contrast_resolution.py`, `work_queue.py` and `refusal_memory.py` (they use
+  the engine to build candidates, and the verdict there is contrast
+  confirmation's); the benchmark runners under `scripts/` (records of what was
+  run); and the multi-term engine, which the preregistration did not cover.
+  **Still open:** for every caller in that list, the template engine still
+  promotes a sole survivor that does not fit; and the guard on trajectory and
+  time-ordered rows has not been measured.
+- **M-23 the recovery criterion can pass a form that is not the law —
+  FOUND 2026-11-20, OPEN.** `symbolic_recovery` in
+  `scripts/run_srbench_baseline.py` (frozen by every SRBench preregistration)
+  refits a model's constants to the clean truth on the test rows and accepts a
+  relative error below 1e-8. The test rows come from the same sample as the
+  training rows, so a flexible form that follows the law on that range can
+  pass. A development run returned, for Planck's law (`feynman_I_41_16`,
+  no noise), a cubic in the dimensionless product plus a cosine of a cosine;
+  refit, its error is 9.2e-9, and it is scored as recovered. **How much of
+  the record this touches (checked the same day):** real recoveries have an
+  error below 1e-12, three orders of magnitude apart from the narrow passes.
+  PREREG-REFINED-SEARCH: 0 narrow passes in 174. PREREG-MAIN-SEARCH: 0.
+  PREREG-ODE-MAIN-SEARCH: 0 in 149. PREREG-LLM-CONTROLLER: 2 in 173
+  (`feynman_I_10_7`, `feynman_III_4_33`, both without noise), noted on its
+  result file. The frozen criterion stays the one expectations are judged by;
+  **from now on** a result also states the count with narrow passes (error
+  above 1e-10) taken out. **Still open:** a check on rows outside the sampled
+  range would catch an approximation that happens to pass below 1e-10; it is
+  not written.
+- **M-22 more of the same search buys nothing; more depth buys a little and
+  costs trust under noise — MEASURED IN DEVELOPMENT 2026-11-20, OPEN.** The
+  default route's search stage is one serial PySR search on one core, and the
+  benchmark runners have four. Two things were tried on SRBench's 30
+  development problems (the 103 held-out problems were not touched).
+  (a) Four seeds of the same search side by side
+  (`proposers/portfolio.py`): 27 and 25 of 30 recovered at noise 0 and 1 %,
+  the same runs as one search, none gained, none lost, no member failed. The
+  search is deterministic for a seed and other seeds find the same laws, so
+  the misses there are not bad luck. On ODEBench's 15 development systems,
+  where the rows are windows of trajectories, the same four seeds did gain:
+  28 and 23 of 31 components against 25 and 22 with one search, nothing lost.
+  Why the two differ is not understood. (b) The exhaustive pass two levels deeper,
+  with no PySR (`proposers/deep_pass.py`), on the 18 development runs the
+  first passes miss: 3 recovered, against 10 for PySR; one of the three
+  (`feynman_test_5` without noise) is recovered by no PySR run recorded here.
+  At 1 % noise it returned four laws that are accurate and are not the law
+  (towers of exponentials that fit the noise). **Consequence:** seeds alone
+  are not preregistered on tables; on ODE systems they are
+  (PREREG-ODE-REFINED-2026-11, frozen, held-out systems); the deeper pass is never the only search and is
+  offered as one member of a portfolio whose candidates the confirmation
+  step compares (`deep_pass.mixed_members`). **Still open:** whether that
+  portfolio recovers more than one search on problems it was not built on is
+  not measured; the default route still uses one core. (c) The mixed
+  portfolio, same 30 problems, 60 runs: 29 and 25 recovered by the benchmark's
+  criterion against 27 and 25; three runs gained (`feynman_test_5` and
+  `feynman_I_41_16` without noise, `feynman_II_11_3` at 1 %), one lost
+  (`feynman_I_6_2a` at 1 %: with more rivals the path could not settle); 0 of
+  54 reported laws inaccurate; no member failed. Read by form, two of the
+  three gains are the law and the third is not (M-23): 28 and 25. Not
+  preregistered yet.
+- **M-21 the language-model client would send the API key to any address
+  it is given — CLOSED FOR NEW CALLERS 2026-11-20; accepted in the frozen
+  file.** Found by the CI security scan (bandit B310) once the test suite got
+  far enough to reach it. `proposers/llm_clients.py` passes its `base_url`
+  parameter to `urllib.request.urlopen` with the key in a header. The default
+  is NVIDIA's https endpoint and every caller uses it, so nothing leaked; an
+  `http://` address would have sent the key in clear text and a `file://`
+  address would have read a local file. The file is frozen by two
+  preregistrations' digests, so it is not edited:
+  `proposers/llm_https.py` wraps the client and refuses any address that is
+  not https before a request is made, and the finding is listed as accepted
+  in `scripts/bandit_baseline.json`, which the scan now reads. A test pins
+  that the baseline holds this one finding and nothing else.
+- **M-20 a search that cannot express the law yields a wrong law that the
+  later stages pass — OPEN.** Found in PREREG-LLM-CONTROLLER's run. On
+  `feynman_III_8_54` (`sin(E t/ħ)²`, noise 0) the language model allowed the
+  search `sqrt`, `exp`, `log` and `square` and no sine. PySR returned a formula
+  in powers of a logarithm with test R² 0.91; it was reported as an
+  equivalence class. The adequacy check passed it: no structure found in the
+  residuals, and an error 47 % of a nearest-neighbour smoother's. One case in
+  207 reports, and the only inaccurate one in 419 laws the refined path has
+  reported. Two things follow: a controller should widen a search and not be
+  allowed to narrow it below the default operator set, and the adequacy
+  check's smoother comparison is too lenient when the smoother itself is poor
+  (the same weakness as M-14). Neither is changed yet; both files are frozen.
+- **M-19 the refined path reports a law without a search stage — CLOSED AT
+  THE DEFAULT ROUTE 2026-11-20; `discover_refined` itself is unchanged.**
+  Found while making the refined path the default. Its measured result (0 of
+  212 reported laws inaccurate) had PySR on every problem. Called with no
+  proposer, `refined_search.discover_refined` still marks a law as reported
+  when it is confirmed against the first pass and the polynomial library
+  alone; on 80 rows at 5 % noise that confirmed `-0.40*omega + 0.69*theta**3
+  - 4.93*theta` for a damped pendulum (the law has `sin(theta)`), and on the
+  Duffing system a form with `x*exp(sin(x)**2)`. `refined_search.py` is
+  frozen, so the rule is in `discovery_l2/default_route.discover_law`: with no
+  proposer the law is returned as `tentative_law` with the reason and
+  `reported` is false. A caller of `discover_refined` directly does not get
+  that.
+- **M-18 the UI showed the template engine's verdict only — ADDRESSED
+  2026-11-20 for the demo, market and caller-data endpoints; the registry
+  endpoint is unchanged.** Every discovery endpoint of the UI called the
+  template engines, whose promotions are the subject of M-10, while the
+  default route has been the main search since 2026-11-19. Now
+  `/api/discover/physics` carries `route_reading` (the default route on the
+  same rows), `/api/discover/market` carries `series_reading` (the series
+  route on the window's train slice; M-16), `POST /api/discover/route` runs
+  the measured routes on a table the caller sends, and `/api/status` names the
+  default route, the recorded result behind each route, and the retired
+  engines. On the one market window the tests use (NASDAQ-100, the 2020
+  window) the two disagree: the template engine's verdict is `unique_support`
+  and the series route reports no law (forecast test p = 0.74). The page shows the reading under the promoted equation: a law
+  confirmed against rivals, a tentative law that nothing challenged (M-14), or
+  none. **Limits, stated on the page:** the measured route is the first pass
+  and the PySR search together; the search stage runs only when asked for
+  (a toggle, 30 s) and only where PySR is installed, and a reading without it
+  is labelled partial. Since the refined path became the default the reading
+  is its first pass and polynomial library, and a law found that way is shown
+  as tentative with the reason, never as confirmed: on the demo pendulum at
+  5 % noise it "confirmed" a cubic in the angle for the sine, which is what a
+  rival set without a real search allows. The UI has no physical units for a
+  table, so the units reduction does not run there. `/api/discover/registry` still
+  shows the template engine alone: its data is one trajectory of a driven
+  system, which the ODE route was not measured on. The template engine's
+  verdict is still displayed everywhere it was. `apedp_dyn/ui/route_endpoint.py`,
+  `tests/test_dyn_ui_route_endpoint.py`; `ui/server.py` (four lines, still at
+  its size ceiling) and `ui/dashboard.html` re-minted in the freeze record.
+- **M-13 the main search path reports the search's text, not the fit it
+  confirmed — WORKED AROUND 2026-11-19.** Found after PREREG-MAIN-SEARCH's
+  run. Confirmation and the adequacy check are applied to a candidate refitted
+  with one coefficient per additive term; `MainSearchResult.law` is the text
+  before the refit. In 2 of 186 reported laws the two differ materially (the
+  text `x0*(x2 + x3*x4/x1)**2` was reported, and what was confirmed exact is
+  its cross term alone; test R² 0.80 for the text, 1.0 for the fit). The frozen
+  path is unchanged. `route.discover_law` returns `law_as_confirmed`, and the
+  ODE and series routes report the confirmed form. The refined path reports
+  the confirmed form only (PREREG-REFINED-SEARCH-2026-11: 0 of 212 reported
+  laws inaccurate).
+- **M-14 the adequacy check is weak on trajectory rows — ADDRESSED IN THE
+  DEFAULT ROUTE 2026-11-20 (the refined path); open in the main search.** In the same
+  run it passed `sin(exp(x0*x1))` on `strogatz_lv1` (test R² 0.35) at both
+  noise levels: unchallenged by any rival, no structure found in the residuals,
+  and an error 83 % of a nearest-neighbour smoother's, which on clustered
+  trajectory rows is itself a poor predictor. 2 of the 24 `unchallenged`
+  reports were wrong against none of the 162 confirmed against a rival (in the
+  confirmed form). One problem at two noise levels: a suspicion, not a rate.
+  An `unchallenged` law should be read as weaker than a confirmed one.
+  The refined path runs the search stage on every problem and returns a law
+  that nothing challenged as tentative, not reported. In
+  PREREG-REFINED-SEARCH-2026-11 no law was left unchallenged, and
+  `strogatz_lv1` was recovered at both noise levels. The refined path is the
+  default route since 2026-11-20 (`discovery_l2/default_route.py`); the main
+  search still returns `unchallenged`, and the UI shows it as tentative.
+- **M-11 the in-house search is dominated by an outside engine — DECIDED
+  AND IMPLEMENTED 2026-11-19; the UI is not moved yet.** PREREG-SRBENCH-EXTERNAL-2026-11 (run once,
+  both expectations held): on the 119 Feynman problems PySR recovers 73 at zero
+  noise and 68 at 1 %, PhySO 41 and 40, the in-house exhaustive search 31 and
+  31, L2 24 and 24. PySR recovers every problem L2 does. The outside engines
+  had 240 s per run against 120 s. Result:
+  `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11.md`. **Owner's decision:**
+  PySR is the main search and the engines it beat are retired. **Done:**
+  `apedp_dyn/proposers/pysr_proposer.py` (PySR as a proposer) and
+  `apedp_dyn/discovery_l2/main_search.py` (exhaustive first pass with the
+  confirmed stop, then PySR, then contrast confirmation and a residual
+  adequacy check); RIME-AD and the extended hierarchical search are
+  `deprecated` and RIME-AD no longer runs in the engine competition; RIME is
+  documented as not for tabular law discovery. **Measured 2026-11-19 (PREREG-MAIN-SEARCH-2026-11, run once, all four
+  expectations held):** the path as a whole recovers 69 and 70 of the 119
+  Feynman laws (PySR alone: 73 and 68) and 2.2 % of what it reports is not
+  accurate; GA/GP recovers 53 and 7, so it is retired as a law-discovery
+  engine (kept importable; its module is in that preregistration's digest and
+  is not edited). `DEFAULT_ROUTE` is now `main_search`.
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`. **Open:** (1) the UI still
+  calls the template engine (the UI server is freeze-pinned, so moving it needs
+  a re-mint); (2) RIME stays in the time-series repair path and the QED arms,
+  which no benchmark here covers; (3) at noise 0 the path refuses 50 of 133
+  problems, mostly laws PySR does not reach in 240 s.
 
 Built in the same round, from the plan agreed on 2026-11-18 with its four
 corrections: a refusal-memory loop (`discovery_l2/refusal_memory.py`) that

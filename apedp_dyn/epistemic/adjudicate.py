@@ -53,9 +53,9 @@ class EpistemicStatus(str, Enum):
     EXTRAPOLATION_UNJUSTIFIED = "extrapolation_unjustified"
 
 
-DYNAMIC_EPISTEMIC_VERSION = "bootstrap-v3+solefid-v5"
+DYNAMIC_EPISTEMIC_VERSION = "bootstrap-v3+solefid-v6"
 """Version stamp for the adjudication contract (bootstrap tiebreaker + the
-sole-survivor fidelity and whiteness guards). Recorded into artifacts by
+sole-survivor fidelity and whiteness guards; v6: exact-zero residuals pass, M-01). Recorded into artifacts by
 dyn_sweep and dyn_tournament so a stored verdict can be traced to the rules
 that produced it."""
 
@@ -407,16 +407,16 @@ def _sole_survivor_whiteness(resid: Any, threshold: float) -> tuple[bool, str]:
         return False, f"residual series too short ({arr.size} points) to test"
     if not np.all(np.isfinite(arr)):
         return False, "residual series contains non-finite values"
+    if not np.any(arr):  # exact zeros = exact fit (M-01); a constant nonzero offset is still refused below
+        return True, "residuals are exactly zero: exact fit, no error left to test"
     centred = arr - arr.mean()
     denom = float(np.dot(centred, centred))
     if denom <= 0.0:
-        return False, ("residual series is constant: |rho1| undefined, "
-                       "whiteness unassessable")
+        return False, "residual series is constant: |rho1| undefined, whiteness unassessable"
     rho1 = float(np.dot(centred[:-1], centred[1:]) / denom)
     ok = bool(abs(rho1) < threshold)
     if ok:
         return ok, f"|rho1|={abs(rho1):.3f} vs flag {threshold:g}"
-
     if arr.size >= 8:
         alpha = 0.8
         curr_var = float(np.var(centred))

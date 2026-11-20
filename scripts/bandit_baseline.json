@@ -1,0 +1,25 @@
+{
+ "note": "Findings of the CI security scan (bandit -ll) that are accepted, each with its reason in docs/SYSTEM_FLAWS_AUDIT.md. Bandit reports anything not listed here. The list may shrink freely; adding to it needs an audit entry.",
+ "results": [
+  {
+   "code": "84         method=\"GET\" if payload is None else \"POST\")\n85     with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - fixed https service\n86         parsed: dict[str, Any] = json.loads(response.read().decode(\"utf-8\"))\n",
+   "col_offset": 9,
+   "end_col_offset": 57,
+   "filename": "apedp_dyn/proposers/llm_clients.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 85,
+   "line_range": [
+    85
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  }
+ ]
+}

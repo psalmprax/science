@@ -76,7 +76,10 @@ noise 0 are `INSUFFICIENT_EVIDENCE` with the reason "residual series is constant
 whiteness unassessable" — the right law fitted with RMSE 0, and a residual of zeros has no
 autocorrelation to test, so `adjudicate.py` treats it as unassessed and abstains. Real data are never
 noise-free, so this costs nothing outside simulation, but it is a mislabel: a perfect fit is reported
-as structured residuals.
+as structured residuals. Re-running every zero-noise `INSUFFICIENT_EVIDENCE` run confirms it: all
+11 (the 9 known-law misses and 2 invented-law runs, `invented_18` and `invented_21`) ranked the true
+law first with holdout RMSE exactly 0 and were refused for this reason. The other zero-noise runs
+of the same laws passed because rounding left the residuals nonzero.
 
 ## What follows
 
@@ -90,6 +93,6 @@ as structured residuals.
 - The benchmark's comparison function raises on a promoted law that is not a sum of monomials
   (such as `1/(x + y)**3`). No such law was promoted in this run, so no result is affected; a
   successor must count it as a false discovery instead of crashing.
-- The exact-fit refusal is recorded as an audit finding (`docs/SYSTEM_FLAWS_AUDIT.md`, M-01). It is
-  not changed here: `adjudicate.py` is pinned by `APEDPX_FROZEN_v1_18.json`, and the change is a
-  referee decision for the repository owner.
+- The exact-fit refusal is recorded as an audit finding (`docs/SYSTEM_FLAWS_AUDIT.md`, M-01) and was
+  fixed on 2026-11-19 at the owner's request (adjudication contract `solefid-v6`). The numbers above
+  were measured under `solefid-v5` and stand as run.

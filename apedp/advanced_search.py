@@ -626,6 +626,11 @@ def _fit_scale_offset(expr: str, var_names: list[str], data: list[Any],
 class HierarchicalSearch:
     """Hierarchical search: coarse -> mid -> fine.
 
+    Deprecated for law discovery since 2026-11-19: with the extended templates it
+    recovered 36 of 532 SRBench runs (6.8 %, PREREG-SRBENCH-BASELINE-2026-11)
+    against 160 of 266 for PySR, which is the main search
+    (``apedp_dyn.discovery_l2.main_search``). Kept so recorded results replicate.
+
     Two template sets are available. ``"classic"`` is the original six templates
     and five expansions. ``"extended"`` adds the structural families the classic
     set cannot express at all -- reciprocal, square root, cubic, exponential

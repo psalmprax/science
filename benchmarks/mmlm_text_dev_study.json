@@ -1,0 +1,69 @@
+{
+ "licence": "MIT (this repository)",
+ "results": {
+  "AttentionFreeMMLM_C0": {
+   "bits_per_byte": 4.195215645399283,
+   "eval_seconds": 46.9,
+   "fit_seconds": 2.8
+  },
+  "AutomatonOnly": {
+   "bits_per_byte": 3.8678631380469324,
+   "eval_seconds": 2.4,
+   "fit_seconds": 0.2
+  },
+  "HybridMMLM_B0": {
+   "bits_per_byte": 4.214273356321925,
+   "eval_seconds": 46.6,
+   "fit_seconds": 3.0
+  },
+  "NonNeuralMMLM_A0": {
+   "bits_per_byte": 4.253638989096418,
+   "eval_seconds": 31.5,
+   "fit_seconds": 1.1
+  },
+  "RecurrentBaseline": {
+   "bits_per_byte": 7.023259935432213,
+   "eval_seconds": 1.5,
+   "fit_seconds": 0.1
+  },
+  "SSMBaseline": {
+   "bits_per_byte": 13.852338660665945,
+   "eval_seconds": 1.5,
+   "fit_seconds": 0.1
+  },
+  "SelfWeightingA0": {
+   "bits_per_byte": 3.863911176153293,
+   "eval_seconds": 10.6,
+   "final_weights": {
+    "automaton": 0.6582109759004124,
+    "bayesian": 0.3297890240984231,
+    "dynamics": 0.004000000000873704,
+    "koopman": 0.004000000000035292,
+    "tensor_train": 0.004000000000255396
+   }
+  },
+  "TransformerBaseline": {
+   "bits_per_byte": 4.096124870806426,
+   "eval_seconds": 4.0,
+   "fit_seconds": 0.5
+  },
+  "bz2-9": {
+   "bits_per_byte": 2.2641655948943193
+  },
+  "gzip-9": {
+   "bits_per_byte": 2.782498968671892
+  },
+  "lzma-9e": {
+   "bits_per_byte": 2.439078842000534
+  },
+  "order-0 bytes": {
+   "bits_per_byte": 4.632025663392875
+  }
+ },
+ "source": "docs/SYSTEM_FLAWS_AUDIT.md",
+ "status": "development study, not preregistered",
+ "test_bytes": 41209,
+ "test_lines": 339,
+ "train_lines": 1356,
+ "vocabulary": 2048
+}

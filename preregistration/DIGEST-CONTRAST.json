@@ -1,0 +1,10 @@
+{
+ "preregistration": "PREREG-CONTRAST-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "preregistration/PREREG-CONTRAST-2026-11.md": "e255d46adbc9c4323cd526c70f9813bee8405bea6903c8e4804bc9c1f56a8a87",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627",
+  "scripts/run_prereg_contrast.py": "257c84413d9a2656946ca38e10c6bbdfbc96ed12ceabf648b08fc207fe106cd6",
+  "scripts/study_contrast_confirmation_dev.py": "7850993e52339ce675776f08da292e950051e95c7aaa91806600cc0c193dd8f3"
+ }
+}

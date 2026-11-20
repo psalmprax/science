@@ -1,0 +1,8 @@
+{
+ "preregistration": "PREREG-FT-PREP-2026-11",
+ "sha256": {
+  "apedp_dyn/vqc/fault_tolerant_prep.py": "a946dad63aaa2cd9ae4b0b9817ca7828ed29652f3b3aeb0d6cf46fa075651a3c",
+  "preregistration/PREREG-FT-PREP-2026-11.md": "977310d6628a1db29afd5324bd4f0f8361de0eb6a4292ebb2d26fc4c5ae845d0",
+  "scripts/run_prereg_ft_prep.py": "6115c069dd016377a6e6ea9c6867b4df471933c98d15f9f702d418faa115651d"
+ }
+}

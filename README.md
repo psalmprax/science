@@ -33,6 +33,29 @@ To maintain scientific integrity, the platform explicitly acknowledges its empir
 
 ---
 
+## Measured status (2026-11)
+
+Each line is one preregistered run, made once, with its outputs committed unedited. The full page,
+with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
+
+| Part | Benchmark | Result |
+| :--- | :--- | :--- |
+| Main search (first pass, PySR, contrast confirmation, adequacy); the default until 2026-11-20 | SRBench, 133 laws | 186 laws reported in 266 runs, 4 not accurate (2.2 %); 69 and 70 of 119 Feynman laws at noise 0 and 1 % |
+| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law |
+| ODE route | ODEBench, 117 components | 80 and 69 recovered; 4.9 % of reported laws wrong |
+| Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
+| Language model in PySR's place, and configuring PySR | SRBench | Writing the laws: 78 recovered against 152. Configuring the search: 173 against 174 without it. Optional |
+| Fault-tolerant state preparation | Steane code, every fault and fault pair enumerated | 275,712 certified circuits at 11 CNOTs; none of the 22,976 shortest encoders is fault-tolerant alone |
+| Template engine with the referee | SRBench | 160 of 268 promotions not accurate. With the referee's structure guard: 3 of 113, and the correct promotions kept (103 against 100) |
+| Promotion referee on crypto returns | 500 placebo signals; one test claim | 0 placebos passed; the claim (order-flow imbalance) was refused |
+
+For tabular data `apedp_dyn/discovery_l2/default_route.py` runs the refined path unless the main
+search or the template engine is named; trajectories and return-like series have their own entry points
+(`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the
+default route beside the template engine's verdict (`apedp_dyn/ui/route_endpoint.py`).
+
+---
+
 ## System Architecture
 
 ```
@@ -266,6 +289,8 @@ measurements, the build log, and the reproduction commands),
 - [`docs/adr/README.md`](docs/adr/README.md): Architecture decision records and review process.
 - [`AGENTS.md`](AGENTS.md): Repository guidelines and integrity rules for AI coding assistants.
 - [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md): Complete module-by-module reference and status index.
+- [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md): What has been measured, by which preregistered run, and the known limits.
+- [`docs/SYSTEM_FLAWS_AUDIT.md`](docs/SYSTEM_FLAWS_AUDIT.md): Register of known defects and what was done about each.
 - [`docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md`](docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md): Engineering audit mapping guarantees to tests.
 - [`docs/INVSQRT_SUB62_DESIGN.md`](docs/INVSQRT_SUB62_DESIGN.md): Benchmark I width ceiling — the 62-qubit bar, where the 89 qubits are, and the three levers measured shut.
 

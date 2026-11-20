@@ -1,0 +1,125 @@
+# Planted laws in market-like series through the series route
+# (preregistration/PREREG-MARKET-PLANTED-2026-11.md).
+#   push to market-planted-smoke-*  -> three development worlds, short budget
+#   push to market-planted-dev-*    -> development worlds (other seeds than the run's), printed to the log
+#   push to market-planted-run-*    -> smoke, then the one preregistered run
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Market planted laws
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['market-planted-smoke-*', 'market-planted-run-*', 'market-planted-dev-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    if: ${{ !startsWith(github.ref_name, 'market-planted-dev-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Three development worlds
+        run: python scripts/run_market_planted_benchmark.py smoke --out smoke-out
+
+  develop:
+    if: startsWith(github.ref_name, 'market-planted-dev-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Development worlds, part ${{ matrix.k }} of 6
+        env:
+          PART: ${{ matrix.k }}
+        run: python scripts/run_market_planted_benchmark.py develop --shard "$PART/6" --out dev-out
+
+  shard:
+    needs: smoke
+    if: startsWith(github.ref_name, 'market-planted-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Run shard ${{ matrix.k }} of 32
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_market_planted_benchmark.py run --shard "$SHARD/32" --out market-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: market-planted-shard-${{ matrix.k }}
+          path: market-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: market-planted-shard-*
+          path: market-out
+          merge-multiple: true
+      - name: Merge the shards
+        run: python scripts/run_market_planted_benchmark.py collect --out market-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: market-planted-results
+          path: |
+            market-out/runs.jsonl
+            market-out/results.json
+            market-out/runs-shard-*.jsonl
+          if-no-files-found: error
+      # The artifact store is not reachable from every environment that has to commit the
+      # results, so they are also printed, with their checksums, for rebuilding from the log.
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd market-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

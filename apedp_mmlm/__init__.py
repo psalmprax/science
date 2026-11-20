@@ -2,6 +2,12 @@
 
 Status: experimental
 
+Direction (owner, 2026-11-19): MMLM is the project's route from language to science.
+Track S (`apedp_mmlm.equation_language`) applies the engines to the language of
+equations and feeds the discovery search as a prior; it is the track with a measured
+result. Tracks A-C (text) have no committed evaluation on real text, and none of their
+language-modelling hypotheses is claimed as shown.
+
 Provides the three-track Multi-Mathematical Language Model research architecture
 and the Quantum-Reach MMLM Circuit Discovery subsystem:
   - Track A (`NonNeuralMMLM_A0`): Pure non-neural mathematical language modeling

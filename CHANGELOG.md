@@ -13,7 +13,220 @@ inferred releases.
 
 ## [Unreleased]
 
+### Security
+
+- **The language-model client and its API key (2026-11-20, audit M-21).** CI's security scan
+  flagged `proposers/llm_clients.py`: the service address is a parameter and the key goes to
+  whatever it names. Nothing leaked (every caller uses the https default). New
+  `proposers/llm_https.py` refuses any address that is not https; the frozen file is unchanged and
+  its finding is listed in `scripts/bandit_baseline.json`, which the scan reads and a test pins.
+
 ### Changed
+
+- **Four different searches on tables, developed; and a limit of the recovery criterion found
+  (2026-11-20, audit M-22 and M-23).** `mixed_members` on SRBench's 30 development problems: 29
+  and 25 recovered against 27 and 25, three runs gained and one lost, nothing inaccurate
+  reported. One gain is not the law: a form that follows Planck's law on the sampled range and
+  passes the 1e-8 tolerance at 9.2e-9. Checked against the record: real recoveries sit below
+  1e-12; the refined run (174), the main search and the ODE run have no narrow pass, the
+  language-model controller run has 2 in 173, now noted on its result file. Results from now on
+  give both counts. The portfolio's summary no longer counts a run whose search stage was
+  skipped.
+- **ODE systems through the refined path with four searches: preregistered (2026-11-20).**
+  On ODEBench's 15 development systems four PySR seeds side by side recovered 28 and 23 of 31
+  components (one search: 25 and 22; the recorded ODE route: 24 and 21), kept every run the
+  recorded route recovered, and reported 1 wrong law in 57. `PREREG-ODE-REFINED-2026-11` fixes
+  three expectations on the 48 systems not used in development and what follows from each
+  outcome; frozen by `preregistration/DIGEST-ODE-REFINED.json`, run once. No result yet.
+- **Several searches side by side, and what development showed (2026-11-20).** New
+  `apedp_dyn/proposers/portfolio.py` (`PortfolioProposer`: members in separate processes, merged
+  round-robin, a failing member recorded and not fatal) and `scripts/run_srbench_portfolio.py`.
+  Four seeds of the same PySR search, developed on SRBench's 30 development problems (60 runs on
+  four-core runners): 27 and 25 recovered, exactly what the single search recovers, none gained
+  and none lost. On tables, seeds alone are therefore not taken to a preregistered run. New
+  `apedp_dyn/proposers/deep_pass.py`: the exhaustive pass at 8 nodes for one variable and 7 for
+  two or three, which on the 18 development runs the first passes miss recovered 3 (one that no
+  PySR run here has recovered) and, at 1 % noise, returned four laws that fit and are not the
+  law. It joins the portfolio as one member of four different ones (`mixed_members`); that
+  portfolio is in development and nothing about it is claimed yet (audit M-22).
+- **The structure guard is the template engine's default where its test is valid (2026-11-20).**
+  New `apedp_dyn/discovery_l2/guarded_l2.py`: `GuardedL2DiscoveryEngine`, the engine with
+  `structure_rule=True` by default, as PREREG-REFEREE-STRUCTURE fixed for the case that its first
+  two expectations held. `l2_engine.py` is frozen by that preregistration and is not edited. The
+  UI's physics endpoint is moved to it; all twelve demo verdicts are unchanged. Callers whose rows
+  lie along one trajectory or in time order, and the multi-term engine, are not moved; the audit
+  (M-10) lists each with its reason.
+- **The referee's structure guard, measured (2026-11-20, PREREG-REFEREE-STRUCTURE-2026-11, run
+  once).** The template engine on SRBench with Guard 3 on: 113 promotions, 3 not accurate, 103
+  correct (without the guard: 268, 160 and 100). On the 103 problems the guard was not built on:
+  3 of 81 promotions not accurate (expected at most 5 %; held), 71 of the baseline's 72 correct
+  promotions kept (expected at least 65; held), 10 of 81 false by the symbolic criterion (expected
+  at most 10 %; **missed** at 12 %, six of the ten being two Strogatz problems whose promoted
+  structure has the law's terms). The two expectations that decide it held, so the guard becomes
+  the template engine's default; `l2_engine.py` is frozen by this preregistration, so that is done
+  in a subclass callers are moved to (in progress). `preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md`.
+- **A language model configuring the search, measured (2026-11-20, PREREG-LLM-CONTROLLER-2026-11,
+  run once, all three expectations held).** `nemotron-3-ultra` chooses PySR's operators, extra
+  features and guesses inside the refined path: 207 laws reported in 266 SRBench runs, 1 not
+  accurate, 173 recovered against 174 without the model; held-out 123 against 122; every reply
+  readable. The model adds nothing by itself here. The one inaccurate law came from a
+  configuration that left out the operator the law needs (audit M-20). The two runs recover
+  different laws, 191 of 266 between them. `preregistration/RESULT-LLM-CONTROLLER-2026-11.md`.
+- **The refined path is the default route (2026-11-20, the owner's decision).** New
+  `apedp_dyn/discovery_l2/default_route.py`: `discover_law` runs the refined path unless the main
+  search or the template ladder is named or set in `APEDP_LAW_DISCOVERY_ROUTE`. `route.py`, which
+  held the earlier default, is frozen by PREREG-LLM-PROPOSER's digest and is wrapped, not edited.
+  The evidence is PREREG-REFINED-SEARCH (0 of 212 reported laws inaccurate, 174 recovered against
+  152); the same run missed one of its three expectations by one law, and it fixed no rule for
+  moving the default, so the move is recorded as a decision. With no search stage the route
+  reports nothing and returns a law as tentative with the reason (audit M-19). The UI reads the
+  new default; `ui/dashboard.html` re-minted for two strings.
+- **The refined path, measured (2026-11-20, PREREG-REFINED-SEARCH-2026-11, run once).** The main
+  search with physical units, a polynomial library, the confirmed-and-pruned report and the search
+  stage on every problem (`apedp_dyn/discovery_l2/refined_search.py`): 212 laws reported in 266
+  SRBench runs, **none inaccurate**, 174 recovered (the main path: 186, 4 and 152). Feynman 78 and
+  77 of 119 (69 and 70); Strogatz 19 of 28 (13). On the 103 held-out problems 61 and 61 against 55
+  and 52. Expectations: reported laws accurate, held; `strogatz_lv1`, held; held-out recovery at
+  least 62 and 58, **missed at noise 0 by one law** and held at 1 %.
+  Audit M-13, M-14 and M-15 are addressed in this path.
+  `preregistration/RESULT-REFINED-SEARCH-2026-11.md`.
+- **The UI shows the measured discovery routes; the referee gains a guard behind a switch
+  (2026-11-20).** *UI* (audit M-18): `/api/discover/physics` returns `route_reading` (the default
+  route, the main search, on the same rows), `/api/discover/market` returns `series_reading` (the
+  series route), `POST /api/discover/route` runs the routes on a table the caller sends, and
+  `/api/status` names the default route, the result behind each route and the retired engines. The
+  page shows a confirmed law, a tentative law that nothing challenged, or none, and labels a reading
+  made without the PySR stage as partial. The template engine's verdict is displayed as before; the
+  registry endpoint is unchanged. New `apedp_dyn/ui/route_endpoint.py`; `ui/server.py` and
+  `ui/dashboard.html` re-minted in the freeze record. *Referee* (audit M-10): Guard 3,
+  new `apedp_dyn/epistemic/structure_guard.py`: a promoted law must leave no structure in its
+  holdout residuals over the input space. It is applied to the verdict `adjudicate` returned, so
+  every route to a promotion is covered and `adjudicate.py` is unchanged;
+  `L2DiscoveryEngine.discover(structure_rule=True)` turns it on, and it is off by default, so no
+  verdict changes. Whether it becomes the default is decided by PREREG-REFEREE-STRUCTURE-2026-11.
+- **Two more measurements, both with every expectation held (2026-11-20).**
+  *Return-like series* (PREREG-MARKET-PLANTED-2026-11, simulated series with a planted law, not
+  market findings): the main search path alone reported a law in 28 of 40 series that contain none;
+  `apedp_dyn/discovery_l2/series_route.py` (candidates from the path, one chosen inside the
+  development period, one Diebold-Mariano test on later data) reported none of the 40, and 31 of
+  40 where a law explains 5 or 20 % of the variance, 3 of 20 at 2 % and 0 of 20 at 0.5 %.
+  *A language model as the search stage* (PREREG-LLM-PROPOSER-2026-11, `nemotron-3-ultra` on
+  NVIDIA's API, numbers only): 92 laws reported in 266 runs, 2 not accurate (both the path's own
+  known failure), 78 recovered, 12 of them found by the model; Feynman 40 and 32 against 69 and 70
+  with PySR in the same place. It stays an optional proposer. Five runs crashed on a proposal that
+  was not finite on the data (audit M-17).
+  `preregistration/RESULT-MARKET-PLANTED-2026-11.md`, `preregistration/RESULT-LLM-PROPOSER-2026-11.md`.
+
+- **Quantum circuits are now searched for and certified against faults, not only for size
+  (2026-11-20).** `apedp_dyn/vqc/fault_tolerant_prep.py`: a referee that decides fault tolerance of a
+  logical-zero preparation by enumerating every single fault and counts exactly the fault pairs that
+  cause a logical error, and a search ranked by CNOTs, ancillas, then that count.
+  PREREG-FT-PREP-2026-11, run once, all five expectations held: for the Steane code the search
+  certifies 275 712 fault-tolerant circuits at the known optimum of 11 CNOTs and one ancilla (none
+  of the 22 976 shortest encoders is fault-tolerant alone); the exact coefficient agrees with Stim
+  within 2.2 % at p = 0.001 on five circuits; among circuits of identical size the logical error
+  rate differs by a factor 1.46 and Stim reproduces it; on a 2-by-4 nearest-neighbour grid the best
+  circuit of this family has 14 CNOTs. No circuit smaller than the published one was found or
+  expected. `preregistration/RESULT-FT-PREP-2026-11.md`.
+
+- **ODE discovery measured on ODEBench (2026-11-19).** `apedp_dyn/ode/window_rows.py` and
+  `apedp_dyn/ode/main_search_ode.py` send each component of a system through the main search path.
+  PREREG-ODE-MAIN-SEARCH-2026-11, run once, all four expectations held (two narrowly): 80 of 117
+  components recovered without noise and 69 at 1 % noise, 13 of the 38 non-polynomial ones; 9 of 184
+  reported laws wrong (4.9 %). Polynomial sparse regression on the same rows: 78 and 53, none of the
+  non-polynomial ones, and 29.1 % of what it reports wrong. Found after the run: an exact-fit
+  confirmation can carry a term that contributes nothing on the confirmed states and explodes
+  outside them (audit M-15, open). `preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md`.
+
+- **The main search path is now the default route for discovering a law, and GA/GP is retired
+  (2026-11-19).** PREREG-MAIN-SEARCH-2026-11 was run once on SRBench (133 problems, noise 0 and 1 %)
+  and all four expectations held. The path reported a law in 186 of 266 runs; 4 were not accurate
+  (2.2 %; the referee's sole-survivor rule: 62.7 % on the same benchmark) and 152 were the law. On
+  the Feynman problems it recovered 69 and 70 of 119 (PySR alone: 73 and 68); GA/GP recovered 53
+  and 7. As preregistered, `DEFAULT_ROUTE` in `apedp_dyn/discovery_l2/route.py` changes from `l2` to
+  `main_search`, and GA/GP is retired as a law-discovery engine (kept importable; a deployment can
+  still set `APEDP_LAW_DISCOVERY_ROUTE=l2`). Found after the run and recorded as such: the path
+  reports the search's text and not the refit it confirmed, which made 2 of the 4 inaccurate reports
+  (audit M-13; `route.discover_law` now also returns `law_as_confirmed`), and the adequacy check
+  passed a poor law on one trajectory problem at both noise levels (audit M-14, open).
+  `preregistration/RESULT-MAIN-SEARCH-2026-11.md`.
+
+- **The language-model proposer can now be run with a real model (2026-11-19).**
+  `apedp_dyn/proposers/llm_clients.py` is a client for NVIDIA's hosted API; the key comes from the
+  environment and is never written anywhere. `scripts/run_llm_proposer_benchmark.py` and
+  `.github/workflows/llm-proposer.yml` put the model in PySR's place in the main search path, with
+  variables anonymised and no problem description, so it cannot answer by recalling a named law. No
+  result yet: the workflow needs the repository secret `NVIDIA_API_KEY`, and the preregistration is
+  written once a smoke run shows which model answers.
+
+- **Two engines measured for the first time, both with every expectation held (2026-11-19).**
+  *PDE in two dimensions* (`apedp_dyn/pde/weak_form_2d.py`, PREREG-PDE-2D-2026-11): the exact equation
+  in 117 of 120 runs on six simulated equations, 90 of 90 at noise up to 5 %, coefficients to about
+  1 %, no false term in any run; term selection by evidence recovers Fisher-KPP, which the threshold
+  rule loses in 8 of 20 runs. *Causal graphs* (`apedp_dyn/proposers/causal_graph.py`,
+  PREREG-GRAPHS-2026-11): the whole lagged graph from one PCMCI+ run, precision 0.963 and recall 0.937
+  on 60 simulated series, a third of a vector autoregression's false links; an added pass finds 57 of
+  58 links that act through an even function. Both are on simulated data that meet the methods'
+  assumptions; the results say what is not shown. Audit M-08 extended, M-12 added.
+
+- **A GPU-scale network expert for MMLM, and a correction (2026-11-19).**
+  `apedp_mmlm/transformer_expert.py` is a byte-level transformer that enters the mixture as the LSTM
+  does; `scripts/train_mmlm_gpu_expert.py` trains it and measures the mixture on the development
+  half; `notebooks/mmlm_gpu_expert_colab.ipynb` runs that in Colab on WikiText-103. No GPU result
+  exists yet. **Correction:** the MMLM-CM text was described as "WikiText-2, raw"; it is the tokenised
+  version with `<unk>`. No number changes and comparisons within the run hold, but the absolute bits
+  per byte are not comparable with results on raw text. Recorded in
+  `preregistration/RESULT-MMLM-CM-2026-11.md`.
+
+- **The open gaps of the main search are in hand (2026-11-19).** PREREG-MAIN-SEARCH-2026-11 is frozen
+  and running: the whole path on SRBench with the M-10 criterion (at most 5 % of reported laws
+  inaccurate), and the in-house GA/GP, measured for the first time. The path gained an exact-fit
+  confirmation for noise-free data, refitting of constants in searched expressions, and a second
+  adequacy condition (the law must predict at least as well as a nearest-neighbour smoother).
+  `apedp_dyn/discovery_l2/route.py` switches between the main search and the template ladder, and the
+  ladder now hands over to the main search when its rungs are exhausted. The default route stays `l2`
+  and the UI unchanged until the preregistration reports. `pysr` is an optional dependency
+  (`pip install -e ".[search]"`).
+
+- **PySR is the main search; the engines it beat are retired (2026-11-19, owner's decision).**
+  `apedp_dyn/proposers/pysr_proposer.py` wraps PySR as a proposer (optional dependency; an explicit
+  error without it, never a silent fallback). `apedp_dyn/discovery_l2/main_search.py` is the path for
+  discovering a law from tabular data: exhaustive first pass with the confirmed stop, PySR seeded by
+  it, contrast confirmation, and a residual adequacy check that turns a confirmation into a refusal
+  when the survivor's residuals still have structure. RIME-AD (2.1 % on SRBench) and the extended
+  hierarchical search (6.8 %) are `deprecated`; the engine competition gains a `pysr` entry and no
+  longer runs `rime_ad` by default (`RETIRED_ENGINES`, `include_retired=True` to run it). Not changed:
+  the L2 template engine is still wired into the UI and the refusal-memory ladder, RIME into the
+  time-series repair path, and GA/GP has no benchmark number. The path as a whole is not yet measured
+  (audit M-11).
+
+- **MMLM rebuilt as two measured models, generic and scientific (2026-11-19).** *MMLM-CM*
+  (`apedp_mmlm/context_mixing.py`, `neural_expert.py`): a byte-level language model of counting, match
+  and read-so-far experts plus one small LSTM trained on CPU, mixed with fitted weights.
+  PREREG-MMLM-CM-2026-11, run once, all four expectations held: 1.455 bits per byte on the WikiText-2
+  test split against 1.513 for the best primed classical compressor (PPMd order 16); the network alone
+  1.772. *MMLM-L* (`apedp_mmlm/law_language.py`, `law_corpora.py`, `law_ledger.py`): a law language
+  model with canonical tokens, tree-view experts, per-domain back-off and fitted mixing.
+  PREREG-MMLM-L-2026-11, run once, all six held: 22.61 bits per fresh law against 27.94 for the earlier
+  model. `apedp_dyn/discovery_l2/confirmed_stop.py` makes the guided search confirm an early stop:
+  96 of 100 laws with 4 wrong stops in 4.3 % of the plain search's time. Recorded limits: the new
+  prior does not order the search better than the old one, and it needs laws from a field before it
+  beats a unigram there. Audit entry M-09 updated.
+
+- **SRBench outside-engine result recorded: PySR recovers three times what L2 does (2026-11-19).**
+  PREREG-SRBENCH-EXTERNAL-2026-11 ran once (798 runs); both expectations held. Feynman symbolic
+  recovery of 119 at noise 0 and 1 %: PySR 73 and 68, PhySO 41 and 40, exhaustive search with MDL 31
+  and 31, against L2's 24 and 24. Recorded as audit entry M-11 (open, owner's decision). Outputs
+  unedited in `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11/`; report in
+  `preregistration/RESULT-SRBENCH-EXTERNAL-2026-11.md`.
+
+- **SRBench baseline result recorded: the referee's promotions are mostly wrong on it (2026-11-19).**
+  PREREG-SRBENCH-BASELINE-2026-11 ran once (2,128 runs). Symbolic recovery over four noise levels:
+  L2 108 of 532 (20.3 %), extended hierarchical 36, RIME 24, RIME-AD 11. The one expectation was
+  missed: 168 of L2's 268 promotions (62.7 %) were not the recovered law, against a limit of 5 %.
+  Recorded as audit entry M-10 (open); no referee code changed. Outputs unedited in
+  `preregistration/RESULT-SRBENCH-BASELINE-2026-11/`; report in
+  `preregistration/RESULT-SRBENCH-BASELINE-2026-11.md`.
 
 - **Running the tests no longer rewrites committed evidence (2026-11-17).**
   The five-gate programme's two report files and the two Rust profile records
@@ -454,6 +667,81 @@ inferred releases.
 - `scripts/audit_untested_modules.py` scored a module as unnamed when a test imported it with a parenthesised, line-broken `from <package> import (a, b)`. The one-line rule was the reason the register's own coverage file did not register: nine benchmark problems imported that way stayed in the census. The rule and its basis text now cover the multi-line form, and `tests/test_untested_module_register.py` pins it on a synthetic tree.
 
 ### Added
+- **MMLM follow-up: PREREG-MMLM-S2-2026-11 (2026-11-19), three of five expectations held.** The prior-ordered
+  search with an early stop (`discovery_l2/guided_search.py`) recovered 121 of 128 laws against 123 for the
+  plain search in 3.5 % of its time; it stopped on a near-miss law 7 times, one over the limit. Learning from
+  the ledger by domain (`apedp_mmlm/ledger_learning.py`) was not worse than pooled. Missed: a model trained on
+  Feynman formulas prices the Strogatz laws no better than a unigram. Also: the tensor-train engine's readout
+  is now fitted (375.6 to 40.8 bits; level with a unigram), and the first real-text measurement of tracks A-C
+  (bits per byte: A0 4.25, B0 4.21, C0 4.20; automaton alone 3.87; gzip 2.78; bz2 2.26),
+  where a self-weighting A0 (`apedp_mmlm/adaptive_mixture.py`) reaches 3.86.
+- **MMLM Track S made self-adjusting and tested: PREREG-MMLM-S-2026-11 (2026-11-19), all three expectations
+  held.** `SelfAdjustingEquationModel` re-weights four engines by how well each predicted every confirmed law,
+  learns the law, and can retract one. Frozen, then run once: on 24 laws from other fields the law's median
+  position in the search fell from 6,111.5 to 303.5; selection from data was unchanged (already 24 of 24);
+  on a stream of 120 invented laws the adaptive copy cost 53 % of a frozen copy's bits in the second half.
+  Position is a count, not yet time saved. `preregistration/RESULT-MMLM-S-2026-11.md`.
+- **MMLM Track S: a language model of equations as a discovery prior (`apedp_mmlm/equation_language.py`).**
+  The owner's direction for MMLM is language toward science, replacing the "research track" note of earlier
+  today. Cross-validated development study on SRBench's 133 formulas: 33.7 bits per held-out
+  equation (automaton engine) against 52.1 uniform; ordering the exhaustive search by the model
+  reaches a held-out law after a median of 112 candidates against 6268 in size order
+  (30 reachable laws). The tensor-train engine fails here. `exhaustive_search` accepts the
+  model as an optional structure cost.
+- **Weak-form PDE identification (`apedp_dyn/pde/weak_form.py`, experimental; `PdeProposer(estimator="weak_form")`
+  for 1-D grids).** Development study: the heat equation is identified exactly through 10 % noise, where the
+  pointwise kernel's diffusion coefficient is already 96 % off at 1 %. The contrast ladder now covers all
+  three rungs and reads and feeds the refusal memory.
+- **Wiring.** `discovery_l2/contrast_resolution.py` takes a referee abstention to contrast confirmation and
+  returns the next action; its ladder climbs to a larger space only when no candidate survives.
+  `CoupledOdeProposer(coefficient_estimator="weak_form")` refits the kernel's selected terms by the weak
+  form (opt-in; coefficient error at 10 % noise falls about eightfold on a damped oscillator).
+- **Contrast confirmation tested on fresh laws: PREREG-CONTRAST-2026-11 (2026-11-19).** Frozen, then
+  run once: true law uniquely confirmed in 63 of 80 runs (random-rows control 54, paired p = 0.002;
+  the referee promoted it in 28), no wrong law named, 2 true laws refuted. Three expectations held.
+  The fourth missed: with the true law removed it named a wrong law alone in 19 of 80 runs, so its
+  `unique` is relative to the candidates given. `preregistration/RESULT-CONTRAST-2026-11.md`.
+- **Outside engines frozen: PREREG-SRBENCH-EXTERNAL-2026-11 (2026-11-19).** PySR, PhySO and the
+  exhaustive search on the baseline's protocol, 798 runs, frozen before any baseline result was seen.
+  Expectations: an outside engine, and the exhaustive search, each beat every baseline engine on
+  Feynman symbolic recovery.
+- **Two proposers (experimental): PCMCI+ parent sets (`proposers/pcmci_proposer.py`, Tigramite optional)
+  and an LLM equation proposer interface with memorisation guards (`proposers/llm_proposer.py`: anonymous
+  variables, a recitation probe before data, whitelist-only parsing).** The LLM interface has been run
+  only with a scripted stand-in.
+- **Exhaustive search with description-length scoring (`apedp_dyn/discovery_l2/exhaustive_search.py`,
+  experimental).** Every expression up to a node limit, deduplicated numerically, scored by description
+  length, sliceable across `work_queue.py` workers with an identical result. In the spirit of ESR, with
+  the differences stated in the module.
+- **Weak-form ODE identification (`apedp_dyn/ode/weak_form.py`, experimental) and outside-engine adapters
+  (`scripts/run_srbench_external.py`: PySR, PhySO).** On the preregistered Lorenz world the weak form's
+  coefficients are far more accurate up to 5 % noise (1.8 % against 100 % worst error at 1 %), but it
+  does not select the exact terms more often from 2 % up; it is a better estimator, not a fix for
+  term selection. Development study, 20 seeds.
+- **Owner's decisions, 2026-11-19.** The referee's 5 %-of-signal resolution floor stays as calibrated;
+  small terms are to be addressed by contrast confirmation, and the floor is revisited only if its
+  preregistered test fails. `apedp_mmlm` was marked a research track (corrected the same day: see the Track S entry above). The
+  in-house GA/GP and the template search keep their place until the shared benchmark has numbers for
+  them and for PySR.
+- **Contrast confirmation (`apedp_dyn/discovery_l2/contrast_confirmation.py`, experimental).** Rival
+  laws are decided on rows chosen where they disagree, with power computed before any target is
+  read, certified equivalence in place of a bare abstention, and a refutation test that reports a
+  law missing from the candidates. Development study on the eight two-term laws the blind benchmark
+  had already used (so not a result): the true law uniquely confirmed in 46 of 48 runs where the
+  referee promoted in 8, and `no_survivor` in 16 of 16 runs with the truth removed. Not at equal
+  data: it reads a median of 60 designed rows on top of the referee's 120.
+- **A shared external benchmark, frozen: PREREG-SRBENCH-BASELINE-2026-11 (2026-11-19).** SRBench's
+  ground-truth track (119 Feynman, 14 Strogatz) from PMLB, checksum-pinned, with one protocol and one
+  scoring for every engine. The baseline covers L2, RIME, RIME-AD and the extended hierarchical
+  search; it runs once on GitHub Actions. Expectation fixed now: L2's referee promotes a wrong law in
+  at most 5 % of its promotions.
+- **The referee accepts an exact fit (M-01, `solefid-v6`).** A holdout residual of exact zeros
+  passed neither whiteness check, so the right law on noise-free data was refused as
+  unassessable (all 11 zero-noise refusals in PREREG-BLIND-L2-2026-11). It now passes as an exact
+  fit; a constant nonzero offset is still refused. No threshold changed; `adjudicate.py` re-minted.
+- **A RIME result had been published as RIME-AD's (M-05).** The population extrapolation
+  benchmark ran `RimeProposer` under RIME-AD's name. Each engine now runs under its own; RIME-AD
+  does not recover the lagged law (A-test R² −0.28). The GA arms are renamed to term selection.
 - **User strings no longer reach file paths (M-04).** Fixes four CodeQL findings: the volume
   sandbox's sidecar name, the external-60 scratch file names, the pipeline route's path check,
   and an exception message returned to API clients.

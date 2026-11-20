@@ -1,0 +1,156 @@
+{
+ "frozen": {
+  "apedp_dyn/pde/weak_form.py": "0b5faa25fb260236c2632fdca23bf7bc61d15ba0f903b49898272924b3786067",
+  "apedp_dyn/pde/weak_form_2d.py": "478961db26a177c2fc54e0b0a72f14170a28560181479dd76b0b43b2ca59d12b",
+  "preregistration/PREREG-PDE-2D-2026-11.md": "9608cccf852b52b6b369b6f7edb0f874be5f4ad68537cb735e48340c7e43f9c3",
+  "scripts/pde_2d_worlds.py": "71b25664190275d8a09136099a16ea265bd99a3bd80afeccd7a98f0fd29d3c49",
+  "scripts/run_prereg_pde_2d.py": "6cc21c501db6274a7fef02183590c1f47a6cc1f8ef2d7b52298455ff47a5a6cc"
+ },
+ "preregistration": "PREREG-PDE-2D-2026-11",
+ "summary": {
+  "evidence|0.0": {
+   "exact": 30,
+   "median_max_relative_error_when_exact": 0.0003954494701002842,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 0,
+   "worst_max_relative_error_when_exact": 0.0004744536505469493
+  },
+  "evidence|0.01": {
+   "exact": 30,
+   "median_max_relative_error_when_exact": 0.001562086192424643,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 0,
+   "worst_max_relative_error_when_exact": 0.007727328334303693
+  },
+  "evidence|0.05": {
+   "exact": 30,
+   "median_max_relative_error_when_exact": 0.006561485247787678,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 0,
+   "worst_max_relative_error_when_exact": 0.025230509832135928
+  },
+  "evidence|0.1": {
+   "exact": 27,
+   "median_max_relative_error_when_exact": 0.013904681974672428,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 3,
+   "worst_max_relative_error_when_exact": 0.04447463020902445
+  },
+  "evidence|all": {
+   "exact": 117,
+   "median_max_relative_error_when_exact": 0.0025619937321583186,
+   "runs": 120,
+   "with_extra_terms": 0,
+   "with_missing_terms": 3,
+   "worst_max_relative_error_when_exact": 0.04447463020902445
+  },
+  "evidence|up_to_0.05": {
+   "exact": 90,
+   "median_max_relative_error_when_exact": 0.001562086192424643,
+   "runs": 90,
+   "with_extra_terms": 0,
+   "with_missing_terms": 0,
+   "worst_max_relative_error_when_exact": 0.025230509832135928
+  },
+  "evidence|world|advection_diffusion": {
+   "exact": 20,
+   "runs": 20
+  },
+  "evidence|world|allen_cahn": {
+   "exact": 17,
+   "runs": 20
+  },
+  "evidence|world|anisotropic_diffusion": {
+   "exact": 20,
+   "runs": 20
+  },
+  "evidence|world|burgers": {
+   "exact": 20,
+   "runs": 20
+  },
+  "evidence|world|fisher_kpp": {
+   "exact": 20,
+   "runs": 20
+  },
+  "evidence|world|heat": {
+   "exact": 20,
+   "runs": 20
+  },
+  "threshold|0.0": {
+   "exact": 28,
+   "median_max_relative_error_when_exact": 0.00045805807831755807,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 2,
+   "worst_max_relative_error_when_exact": 0.003071619072651799
+  },
+  "threshold|0.01": {
+   "exact": 28,
+   "median_max_relative_error_when_exact": 0.0015008614186196498,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 2,
+   "worst_max_relative_error_when_exact": 0.007727328334303693
+  },
+  "threshold|0.05": {
+   "exact": 28,
+   "median_max_relative_error_when_exact": 0.006356842295725049,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 2,
+   "worst_max_relative_error_when_exact": 0.025230509832135928
+  },
+  "threshold|0.1": {
+   "exact": 28,
+   "median_max_relative_error_when_exact": 0.013900842948682199,
+   "runs": 30,
+   "with_extra_terms": 0,
+   "with_missing_terms": 2,
+   "worst_max_relative_error_when_exact": 0.04447463020902445
+  },
+  "threshold|all": {
+   "exact": 112,
+   "median_max_relative_error_when_exact": 0.002919764153640172,
+   "runs": 120,
+   "with_extra_terms": 0,
+   "with_missing_terms": 8,
+   "worst_max_relative_error_when_exact": 0.04447463020902445
+  },
+  "threshold|up_to_0.05": {
+   "exact": 84,
+   "median_max_relative_error_when_exact": 0.001562086192424643,
+   "runs": 90,
+   "with_extra_terms": 0,
+   "with_missing_terms": 6,
+   "worst_max_relative_error_when_exact": 0.025230509832135928
+  },
+  "threshold|world|advection_diffusion": {
+   "exact": 20,
+   "runs": 20
+  },
+  "threshold|world|allen_cahn": {
+   "exact": 20,
+   "runs": 20
+  },
+  "threshold|world|anisotropic_diffusion": {
+   "exact": 20,
+   "runs": 20
+  },
+  "threshold|world|burgers": {
+   "exact": 20,
+   "runs": 20
+  },
+  "threshold|world|fisher_kpp": {
+   "exact": 12,
+   "runs": 20
+  },
+  "threshold|world|heat": {
+   "exact": 20,
+   "runs": 20
+  }
+ }
+}

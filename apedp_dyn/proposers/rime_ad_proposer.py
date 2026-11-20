@@ -1,5 +1,15 @@
 """RIME-AD Autonomous Multi-Representation Proposer.
 
+Status: deprecated
+
+Retired on 2026-11-19 as an engine for discovering laws from tabular data. On
+SRBench it recovered 11 of 532 runs (2.1 %) and timed out on 62 % of them
+(PREREG-SRBENCH-BASELINE-2026-11); PySR recovered 160 of 266
+(PREREG-SRBENCH-EXTERNAL-2026-11) and is the main search
+(``apedp_dyn.proposers.pysr_proposer``, ``apedp_dyn.discovery_l2.main_search``).
+The module is kept so recorded results replicate; the engine competition no
+longer runs it by default.
+
 Integrates the native Rust engines in `apedp_kernel`:
 - Pillar 1: Variational BV-ROF Total Variation filtering & step extraction (`total_variation.rs`)
 - Pillar 2: Sparse Implicit SVD null space for rational poles and algebraic constraints (`implicit.rs`)

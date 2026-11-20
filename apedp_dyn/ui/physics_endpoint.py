@@ -19,7 +19,7 @@ from fastapi import HTTPException
 from scipy.integrate import solve_ivp
 
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
-from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
+from apedp_dyn.discovery_l2.guarded_l2 import GuardedL2DiscoveryEngine
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
 from apedp_dyn.epistemic.claim_ladder import (
     ClaimLevel,
@@ -30,6 +30,7 @@ from apedp_dyn.epistemic.claim_ladder import (
 )
 from apedp_dyn.harness import AEH
 from apedp_dyn.orchestration.competition import competition_records
+from apedp_dyn.ui.route_endpoint import route_reading
 
 
 def run_physics_discovery(req: Any) -> dict[str, Any]:
@@ -76,7 +77,7 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
         else:
             y_true = -9.81 * np.sin(theta)
             y_obs = y_true + noise_arr
-            eng = L2DiscoveryEngine(
+            eng = GuardedL2DiscoveryEngine(
                 operators=("+", "-", "*", "/", "pow", "sin", "cos"),
                 max_depth=1,
                 max_complexity=3,
@@ -164,7 +165,7 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
         noise_arr = rng.normal(0, max(0.0, req.noise), size=n)
         y_obs = 0.5 * m * (v**2) + noise_arr
 
-        eng = L2DiscoveryEngine(
+        eng = GuardedL2DiscoveryEngine(
             operators=("+", "-", "*", "/", "pow"),
             max_depth=2,
             max_complexity=5,
@@ -455,6 +456,11 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
         "rival_a": rival_a,
         "rival_b": rival_b,
         "pareto_candidates": formatted_pareto,
+        # The default discovery route on the same rows (PREREG-MAIN-SEARCH). Shown first by the page;
+        # the template engine's verdict above is kept for comparison and replication.
+        "route_reading": route_reading({k: np.asarray(v, dtype=float) for k, v in state_series.items()},
+                                       np.asarray(y_obs, dtype=float), noise="absolute",
+                                       search_seconds=getattr(req, "search_seconds", None)),
         "competition": competition_records(
             {k: np.asarray(v, dtype=float) for k, v in state_series.items()},
             np.asarray(y_obs, dtype=float),
