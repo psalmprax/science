@@ -131,7 +131,13 @@ three preregistered expectations missed.
   `discovery_l2/refined_search.confirmed_and_pruned` does that. In
   PREREG-REFINED-SEARCH-2026-11 it dropped terms in 13 of 266 runs and none of
   the 212 reported laws was inaccurate. The ODE route still uses the frozen
-  path.
+  path. **Not fixed on window rows (PREREG-ODE-REFINED-2026-11, 2026-11-20):**
+  sent through the refined path, `dx/dt = -x**3` was again reported with
+  `4.4e-9*exp(exp(x0))` (the path dropped a constant and kept that term; test
+  R² -936 612), and one held-out law (`x0*x2 - 10*x1`) was lost to two terms
+  with coefficients of 1e-16 and 1e-12. Why the rule kept these terms is not
+  established; it was written and measured on tables, where it left nothing
+  inaccurate. Open.
 - **M-07 the ODE path differentiates noisy data — ADDRESSED BY A NEW ROUTE
   2026-11-19; the older path is unchanged.** `ode/window_rows.py` turns a
   trajectory into rows with independent errors (one state and one rate per
@@ -284,6 +290,21 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-24 a candidate that cannot be fitted ends the whole run — FOUND
+  2026-11-20, OPEN.** In PREREG-ODE-REFINED-2026-11 two of 234 runs ended
+  with `LinAlgError: SVD did not converge in Linear Least Squares`, raised by
+  `numpy.linalg.lstsq` in `contrast_confirmation.fit_candidate` while one
+  candidate was being fitted; `main_search.discover` does not catch it. Both
+  were components the recorded ODE route recovers, so they count as two of
+  that run's four lost recoveries. The recorded route, with one search, had
+  no such run in 234: four searches hand over more candidates, and one that
+  cannot be fitted is more likely. The three modules involved are frozen by
+  several preregistrations. **To do:** a wrapper around the search stage that
+  fits each proposal on the development rows first and drops, with a record,
+  any whose fit raises or is not finite, so the path never sees it. The
+  tables run with four searches (PREREG-PORTFOLIO-SEARCH-2026-11) was frozen
+  before this was known and runs without that wrapper; errors there are
+  counted as they fall.
 - **M-23 the recovery criterion can pass a form that is not the law —
   FOUND 2026-11-20, OPEN.** `symbolic_recovery` in
   `scripts/run_srbench_baseline.py` (frozen by every SRBench preregistration)
@@ -322,8 +343,10 @@ three preregistered expectations missed.
   (`feynman_test_5` without noise) is recovered by no PySR run recorded here.
   At 1 % noise it returned four laws that are accurate and are not the law
   (towers of exponentials that fit the noise). **Consequence:** seeds alone
-  are not preregistered on tables; on ODE systems they are
-  (PREREG-ODE-REFINED-2026-11, frozen, held-out systems); the deeper pass is never the only search and is
+  are not preregistered on tables; on ODE systems they were
+  (PREREG-ODE-REFINED-2026-11: on held-out systems 63 and 50 of 86 components
+  against 56 and 48, so the gain is real there, and 5.1 % of reported laws
+  wrong against a limit of 5 %, so the route is not adopted); the deeper pass is never the only search and is
   offered as one member of a portfolio whose candidates the confirmation
   step compares (`deep_pass.mixed_members`). **Still open:** whether that
   portfolio recovers more than one search on problems it was not built on is

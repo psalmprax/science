@@ -23,6 +23,15 @@ inferred releases.
 
 ### Changed
 
+- **ODE systems through the refined path with four searches, measured: not adopted (2026-11-20,
+  PREREG-ODE-REFINED-2026-11, run once).** 92 and 73 of ODEBench's 117 components recovered
+  against 80 and 69 for the recorded route. On the 86 components it was not built on: 63 and 50
+  against 56 and 48 (expected at least 60 and 49; held), and 100 of the recorded route's 104
+  recoveries kept (expected at least 98; held). Of 195 reported laws 10 are wrong, 5.1 %
+  (expected at most 5 %; **missed by one law**), and the preregistration fixed that a miss there
+  means the route is not adopted. Eight of the ten are the recorded route's own wrong laws. Two
+  runs ended on a least-squares fit that did not converge (audit M-24), and the pruning left
+  unnoticed terms on window rows (M-15). `preregistration/RESULT-ODE-REFINED-2026-11.md`.
 - **Four different searches on tables: preregistered (2026-11-20).**
   `PREREG-PORTFOLIO-SEARCH-2026-11` tests the mixed portfolio as the refined path's search stage
   on the 103 problems not used to build it, against the recorded refined run (61 and 61). Its
