@@ -591,6 +591,12 @@ inferred releases.
 
 ### Fixed
 
+- **CI: the Rust toolchain failure that looked like a flake (2026-11-20).** On the pull-request
+  branch the test job had the step that empties the toolchain home twice, once before the
+  toolchain is installed and once after, left there by a merge. The second copy deleted the
+  toolchain every run; rustup reinstalled it at the next Rust command and sometimes failed on
+  `bin/cargo-clippy` (a407ca5, test (3.11)). The copy is removed and a contract test requires
+  exactly one such step, with nothing touching that home after the install.
 - **The formula parser no longer evaluates unbounded numeric towers.**
   `safe_parse_expr("9**9**9**9")` and `safe_parse_expr("zeta(10**7)")` did not
   return: SymPy folds numeric sub-expressions during the parse, before the
