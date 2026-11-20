@@ -300,7 +300,8 @@ three preregistered expectations missed.
   (`feynman_I_10_7`, `feynman_III_4_33`, both without noise), noted on its
   result file. The frozen criterion stays the one expectations are judged by;
   **from now on** a result also states the count with narrow passes (error
-  above 1e-10) taken out. **Still open:** a check on rows outside the sampled
+  above 1e-10) taken out, and PREREG-PORTFOLIO-SEARCH-2026-11 is the first
+  whose expectations are judged by that count. **Still open:** a check on rows outside the sampled
   range would catch an approximation that happens to pass below 1e-10; it is
   not written.
 - **M-22 more of the same search buys nothing; more depth buys a little and
@@ -332,8 +333,9 @@ three preregistered expectations missed.
   `feynman_I_41_16` without noise, `feynman_II_11_3` at 1 %), one lost
   (`feynman_I_6_2a` at 1 %: with more rivals the path could not settle); 0 of
   54 reported laws inaccurate; no member failed. Read by form, two of the
-  three gains are the law and the third is not (M-23): 28 and 25. Not
-  preregistered yet.
+  three gains are the law and the third is not (M-23): 28 and 25.
+  Preregistered on the 103 held-out problems, judged by form
+  (PREREG-PORTFOLIO-SEARCH-2026-11, frozen 2026-11-20, no result yet).
 - **M-21 the language-model client would send the API key to any address
   it is given — CLOSED FOR NEW CALLERS 2026-11-20; accepted in the frozen
   file.** Found by the CI security scan (bandit B310) once the test suite got

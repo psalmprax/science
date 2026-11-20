@@ -23,6 +23,14 @@ inferred releases.
 
 ### Changed
 
+- **Four different searches on tables: preregistered (2026-11-20).**
+  `PREREG-PORTFOLIO-SEARCH-2026-11` tests the mixed portfolio as the refined path's search stage
+  on the 103 problems not used to build it, against the recorded refined run (61 and 61). Its
+  expectations are judged by form, with narrow passes of the recovery tolerance taken out and
+  listed: at most 2 % of reported laws inaccurate, at least 63 recovered without noise, at least
+  59 at 1 %, at least 116 of the refined run's 122 recoveries kept. What follows from each outcome
+  is fixed in the document. Frozen by `preregistration/DIGEST-PORTFOLIO-SEARCH.json`; no result
+  yet. The runner's summary gained the count by form.
 - **Four different searches on tables, developed; and a limit of the recovery criterion found
   (2026-11-20, audit M-22 and M-23).** `mixed_members` on SRBench's 30 development problems: 29
   and 25 recovered against 27 and 25, three runs gained and one lost, nothing inaccurate

@@ -57,6 +57,11 @@ ENGINE = "refined_portfolio"
 NOISE_LEVELS = refined_run.NOISE_LEVELS
 SEARCH_BUDGET_S = refined_run.SEARCH_BUDGET_S
 MEMBERS = 4
+# A recovery "by form": the benchmark's criterion (constants refitted to the clean law on the test rows,
+# relative error below 1e-8) and, in addition, an error at most this. In every recorded run a real
+# recovery sits below 1e-12 and a form that only follows the law on the sampled range sits above 1e-9
+# (audit M-23). A reading of the score, not an acceptance threshold of the referee.
+STRICT_REL_RMSE = 1e-10
 MEMBER_SET = "mixed"      # what ``run`` uses; "seeds" exists for development comparisons only
 MEMBER_SETS = ("mixed", "seeds")
 MAX_PROPOSALS = 10        # the composite keeps eleven: these and the polynomial library's one
@@ -122,8 +127,14 @@ def all_jobs() -> list[dict[str, Any]]:
             for p in base.load_manifest() for noise in NOISE_LEVELS]
 
 
+def recovered_by_form(row: dict[str, Any]) -> bool:
+    """Recovered by the benchmark's criterion, and not a narrow pass of its tolerance."""
+    error = row.get("symbolic_rel_rmse")
+    return bool(row["status"] == "ok" and row.get("symbolic") and error is not None and float(error) <= STRICT_REL_RMSE)
+
+
 def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """The refined run's summary, plus what the portfolio did."""
+    """The refined run's summary, plus the count by form and what the portfolio did."""
     out: dict[str, Any] = refined_run.summarise(rows)
     for key, cell in out.items():
         group, noise = key.split("|")
@@ -131,6 +142,8 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
             group == "all" or group == r["family"]
             or (group == "development" and used_in_development(r["problem"]))
             or (group == "held_out" and not used_in_development(r["problem"])))]
+        cell["symbolic_by_form"] = sum(recovered_by_form(r) for r in sel)
+        cell["narrow_passes"] = sorted(f"{r['problem']}|{r['noise']}" for r in sel if r.get("symbolic") and not recovered_by_form(r))
         ran = [r["portfolio"] for r in sel if (r.get("portfolio") or {}).get("members")]  # the stage is skipped when no product is left
         cell["portfolio_ran"] = len(ran)
         cell["member_failures"] = sum(len(p.get("failures", [])) for p in ran)
