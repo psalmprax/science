@@ -269,6 +269,8 @@ def test_the_agent_repairs_what_the_search_found_and_the_search_is_seeded_with_t
         {"round": 0, "proposals": 2, "seeded_with": 1, "proposer_id": "stub_search"},
         {"round": 1, "proposals": 2, "seeded_with": 3, "proposer_id": "stub_search"}]
     assert all(p.metadata["selection_pool_size"] == len(proposals) for p in proposals)
+    # every structure handed on is recorded with who first wrote it, so a recovery can be traced
+    assert proposer.last_run["returned"] == [{"formula": p.formula, "source": p.metadata["found_by"]} for p in proposals]
 
 
 def test_without_a_usable_model_the_searchs_expressions_are_still_returned():

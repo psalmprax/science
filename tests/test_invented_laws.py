@@ -123,3 +123,49 @@ def test_an_arm_with_a_scripted_model_is_run_scored_and_summarised(monkeypatch):
     with np.errstate(all="ignore"):
         bad = h.run_one({"problem": "invented_9002", "noise": 0.01, "arm": "no_such_arm"}, h.entries(), 5.0, 60.0)
     assert bad["status"] == "error" and "unknown arm" in bad["error"]
+
+
+def _harness():
+    name = "run_invented_laws"
+    if name not in sys.modules:
+        if str(ROOT / "scripts") not in sys.path:
+            sys.path.insert(0, str(ROOT / "scripts"))
+        spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+def test_a_study_record_keeps_the_summary_and_says_which_arm_recovered_what_the_other_did_not():
+    dev = _harness()
+
+    def row(arm, problem, noise, symbolic, model="x0"):
+        return {"arm": arm, "problem": problem, "noise": noise, "status": "ok", "seconds": 1.0, "symbolic": symbolic,
+                "accuracy_solution": True, "model": model, "formula": model, "truth": "x0", "candidates": ["bulk"],
+                "agent": {"sessions": [{"fits": 3, "stopped": "submitted"}], "by_agent": 2, "structures_tried": 5,
+                          "last_reply": "bulk"}}
+
+    rows = [row("default", "a", 0.0, True), row("agentic", "a", 0.0, True), row("default", "b", 0.0, False),
+            row("agentic", "b", 0.0, True), row("default", "c", 0.01, True), row("agentic", "c", 0.01, False, None)]
+    record = dev.study_record(rows, {"where": "a test"})
+    assert record["recovered_by_one_arm_and_not_the_other"] == {"default and not agentic": ["c at noise 0.01"],
+                                                                "agentic and not default": ["b at noise 0"]}
+    assert len(record["runs"]) == 6 and all("candidates" not in run and "agent" not in run for run in record["runs"])
+    assert record["runs"][0]["sessions"] == [[3, "submitted"]] and record["provenance"] == {"where": "a test"}
+    assert record["summary"]["agentic|all"]["symbolic"] == 2
+    assert [run["reported"] for run in record["runs"] if run["problem"] == "c"] == [False, True]    # agentic, default
+
+
+def test_the_recorded_development_run_says_what_the_documents_say():
+    record = json.loads((ROOT / "benchmarks" / "agentic_variation_dev_study.json").read_text(encoding="utf-8"))
+    summary = record["summary"]
+    assert len(record["runs"]) == 120 and record["provenance"]["github_run"] == 44861670227
+    assert [summary[f"{arm}|all"]["symbolic"] for arm in ("default", "agentic", "agent_alone")] == [13, 16, 1]
+    assert [summary[f"{arm}|all"]["reported"] for arm in ("default", "agentic", "agent_alone")] == [26, 27, 12]
+    assert all(summary[f"{arm}|all"]["reported_wrong"] == 0 for arm in ("default", "agentic", "agent_alone"))
+    assert round(summary["default|all"]["median_seconds"]) == 277 and round(summary["agentic|all"]["median_seconds"]) == 504
+    paired = record["recovered_by_one_arm_and_not_the_other"]
+    assert len(paired["agentic and not default"]) == 4 and paired["default and not agentic"] == ["invented_9008 at noise 0.01"]
+    assert "not a preregistered result" in record["what"]

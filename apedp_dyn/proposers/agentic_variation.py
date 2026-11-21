@@ -518,6 +518,9 @@ class AgenticVariationProposer(ProposerBase):
             "last_answer": dict(getattr(self._client, "last", {}) or {}),
         }
         proposals = []
+        #: who first wrote each structure handed on, so that a recovery can be traced to the agent or to the search
+        self.last_run["returned"] = [{"formula": str(t.fitted.xreplace(to_feature)), "source": t.source}
+                                     for t in ranked[: self._max_proposals]]
         for trial in ranked[: self._max_proposals]:
             fitted = trial.fitted.xreplace(to_feature)
             fn = sp.lambdify([sp.Symbol(f) for f in features], fitted, "numpy")

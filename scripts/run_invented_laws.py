@@ -9,6 +9,7 @@ with its settings fixed. Nothing here reads a held-back law.
     python scripts/run_invented_laws.py smoke   --out DIR          # three development laws, short budget
     python scripts/run_invented_laws.py develop --out DIR --shard k/N
     python scripts/run_invented_laws.py collect --out DIR
+    python scripts/run_invented_laws.py study   --out DIR --record FILE   # a collected run as a compact record
 
 Rows, split, pool, scoring and the child process are the SRBench runs' (``run_srbench_baseline``,
 ``run_srbench_main_search``): 1,000 training rows and 500 test rows drawn on the laws' domain,
@@ -211,20 +212,60 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def study_record(rows: list[dict[str, Any]], provenance: dict[str, Any]) -> dict[str, Any]:
+    """A collected development run without its bulk: the summary, and one line per run.
+
+    Left out of each run: the candidates handed to confirmation and the agent's last reply. Added:
+    arm against arm, run for run, which laws one recovered and the other did not.
+    """
+    keep = ("problem", "noise", "arm", "status", "seconds", "symbolic", "accuracy_solution", "action", "found_by",
+            "truth", "formula", "model_calls", "test_r2")
+    runs = []
+    for r in sorted(rows, key=lambda r: (r["problem"], r["noise"], r["arm"])):
+        agent = r.get("agent") or {}
+        runs.append({**{k: r.get(k) for k in keep},
+                     "reported": r.get("model") not in (None, "None"),
+                     "sessions": [[s.get("fits"), s.get("stopped")] for s in agent.get("sessions", [])],
+                     "structures_tried": agent.get("structures_tried"), "structures_by_agent": agent.get("by_agent")})
+    recovered = {(r["arm"], r["noise"], r["problem"]) for r in rows if r["status"] == "ok" and r.get("symbolic")}
+    arms = list(dict.fromkeys(r["arm"] for r in rows))
+    paired: dict[str, Any] = {}
+    for a in arms:
+        for b in arms:
+            if a == b:
+                continue
+            cells = sorted({(r["noise"], r["problem"]) for r in rows})
+            paired[f"{a} and not {b}"] = [f"{problem} at noise {noise:g}" for noise, problem in cells
+                                          if (a, noise, problem) in recovered and (b, noise, problem) not in recovered]
+    return {"tag": TAG, "what": "A development run on the twenty development laws: not a preregistered result.",
+            "provenance": provenance, "summary": summarise(rows), "recovered_by_one_arm_and_not_the_other": paired,
+            "runs": runs}
+
+
 def _printable(row: dict[str, Any]) -> str:
     return json.dumps({k: v for k, v in row.items() if k not in ("candidates", "trace")}, default=str)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
-    parser.add_argument("command", choices=("smoke", "develop", "collect"))
+    parser.add_argument("command", choices=("smoke", "develop", "collect", "study"))
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--record", type=Path, help="for study: the file to write")
+    parser.add_argument("--provenance", default="{}", help="for study: JSON, where and when the run was made")
     parser.add_argument("--shard", default="0/1", help="k/N: this shard's runs")
     parser.add_argument("--arms", default=",".join(ARMS))
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
     laws = entries()
     arms = tuple(a for a in args.arms.split(",") if a)
+    if args.command == "study":
+        if args.record is None:
+            parser.error("study needs --record")
+        collected = [json.loads(line) for line in (args.out / "runs.jsonl").read_text(encoding="utf-8").splitlines()]
+        record = study_record(collected, json.loads(args.provenance))
+        args.record.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"wrote {args.record}: {len(record['runs'])} runs")
+        return 0
     if args.command == "smoke":
         budget = float(os.environ.get("SMOKE_BUDGET_SECONDS", "40"))
         failed = 0

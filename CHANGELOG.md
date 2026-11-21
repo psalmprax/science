@@ -35,6 +35,17 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The agent beside the search, first development run with a real model (2026-11-21; not a
+  preregistered result).** Twenty invented development laws at noise 0 and 1 %, the free model
+  `nemotron-3-ultra`, 120 runs, all completed (`benchmarks/agentic_variation_dev_study.json`). The
+  search with the agent recovered 16 of 40, the default search stage 13, the agent alone 1; no arm
+  reported a wrong law. Run for run: four laws gained, one lost, which five runs cannot tell from
+  chance. The agent's arm took 504 s a run against 277 s, and the default stage was not given
+  that time, so the run does not show the agent adds anything a longer search would not. The rows
+  could not say which structures the agent wrote; the proposer now records it
+  (`last_run["returned"]`). The comparison that would settle it, on the forty held-back laws with
+  the default stage given the agent's extra time, is designed and not frozen: testing waits for a
+  stronger model, on the owner's instruction.
 - **The repaired ODE route passed its blind test and is the default ODE route (2026-11-21,
   PREREG-ODE-BLIND-2026-11, run once).** On 98 chaotic polynomial systems (310 components) that no
   route here was built or run on, the refined ODE path with four searches, the fit guard and
