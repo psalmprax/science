@@ -46,11 +46,15 @@ Before any row is shown the model is asked what the law is from the
 description alone, and a proposal with the structure of one of those answers
 is marked ``recited_before_data``, as in ``llm_proposer``.
 
-**What is returned.** Not the best fits alone: on noisy rows the best fits are
-the most elaborate expressions, and the path picks the simplest of the
-candidates it cannot tell apart, so the simple ones have to reach it. The
-proposals are the expressions no other beats on both error and cost, best fit
-first, and then the rest by fit.
+**What is returned.** Not the best fits: on noisy rows the best fits are the
+most elaborate expressions, and an agent told to lower the error will keep
+adding terms below the noise (the first run with a real model did exactly
+that: it wrote the true law in its first step and then decorated it with
+sines for eleven more). So an expression has to earn its cost: going from the
+cheapest expression upwards, one is kept only if its error is at least ``GAIN``
+lower than that of the last one kept. Those come first, best fit first; then
+the rest by fit. The model is told the same rule, and that a residual with no
+structure in it is a reason to simplify and submit, not to add.
 
 **What is not known.** Whether this recovers more laws than the search alone,
 at equal time and without more wrong laws, has not been measured. The earlier
@@ -76,6 +80,7 @@ from apedp_dyn.proposers import llm_proposer
 
 EXACT = 1e-6            # relative error below which a fit is exact to numerical precision (the path's own floor)
 HINT_FLOOR = 0.25       # a rank correlation of the residual below this is not reported
+GAIN = 0.05             # an expression earns a higher cost only by an error lower by this share
 MAX_CONSTANTS = 6
 FITS_PER_REPLY = 3
 SUBMITS = 3
@@ -261,20 +266,38 @@ class Workbench:
         usable = [t for t in self.trials.values() if np.isfinite(t.error)]
         return sorted(usable, key=lambda t: (0.0 if t.error < EXACT else t.error, t.cost, t.skeleton))
 
-    def front_first(self) -> list[Trial]:
-        """The trials no other beats on both error and cost, best fit first; then the others by fit."""
-        ranked = self.ranked()
+    def earned(self) -> list[Trial]:
+        """The expressions that earn their cost, best fit first.
+
+        Of the trials no other beats on both error and cost, taken from the cheapest upwards, one
+        is kept only if its error is at least ``GAIN`` lower than that of the last one kept (an
+        exact fit after one that is not exact always is). What a dearer expression gains below
+        that is within what noise gives any expression with one more term.
+        """
         front, cheapest = [], float("inf")
-        for trial in ranked:                      # by error: one is on the front if it is cheaper than all before it
+        for trial in self.ranked():               # by error: on the front if cheaper than all that fit better
             if trial.cost < cheapest:
                 front.append(trial)
                 cheapest = trial.cost
-        chosen = {id(trial) for trial in front}
-        return front + [trial for trial in ranked if id(trial) not in chosen]
+        kept: list[Trial] = []
+        for trial in reversed(front):             # from the cheapest (and worst) upwards
+            error = 0.0 if trial.error < EXACT else trial.error
+            last = None if not kept else (0.0 if kept[-1].error < EXACT else kept[-1].error)
+            if last is None or error < (1.0 - GAIN) * last:
+                kept.append(trial)
+        return kept[::-1]
+
+    def shortlist(self) -> list[Trial]:
+        """Every usable trial: those that earn their cost first (best fit first), then the others by fit."""
+        earned = self.earned()
+        chosen = {id(trial) for trial in earned}
+        return earned + [trial for trial in self.ranked() if id(trial) not in chosen]
 
     def lineage(self, limit: int = 8) -> str:
-        rows = self.front_first()[:limit]
-        return "\n".join(f"  {i + 1}. {t.line()}" for i, t in enumerate(rows)) or "  nothing tried yet"
+        earned = {id(trial) for trial in self.earned()}
+        rows = self.shortlist()[:limit]
+        return "\n".join(f"  {i + 1}. {t.line()}" + ("" if id(t) in earned else " | fits no better than a cheaper one")
+                         for i, t in enumerate(rows)) or "  nothing tried yet"
 
 
 def read_actions(reply: str) -> list[tuple[str, str]]:
@@ -320,7 +343,8 @@ def _prompt(bench: Workbench, session: Session, observations: list[str], steps_l
         "expressions for you and tells you what their residuals (data minus fit) still follow.\n"
         f"{len(y)} rows. Ranges: {ranges}; y in [{y.min():.3g}, {y.max():.3g}].\n"
         f"A few rows ({names}, y):\n{rows}\n"
-        f"Lineage, best first (error is relative RMS; cost counts operations and constants):\n{bench.lineage()}\n"
+        "Lineage (error is relative RMS; cost counts operations and constants). First the expressions that "
+        f"earn their cost, best fit first; then the others:\n{bench.lineage()}\n"
         f"Results of your last actions:\n{last}\n"
         f"Steps left: {steps_left}. Fits left: {fits_left}.\n"
         "Rules for expressions: variables " + names + "; free constants c0, c1, ... (fitted for you); functions "
@@ -330,7 +354,9 @@ def _prompt(bench: Workbench, session: Session, observations: list[str], steps_l
         f"FIT: an expression (at most {FITS_PER_REPLY} such lines)\n"
         "KNOW: a topic, to read a note (" + ", ".join(keys[0] for keys, _ in NOTES) + ")\n"
         f"SUBMIT: your final expression (at most {SUBMITS} such lines; ends the session)\n"
-        "Repair the best expression where its residual shows structure, or simplify it if it has terms it does not need."
+        f"An expression earns a higher cost only if its error is at least {100 * GAIN:.0f} % lower than a cheaper one's; "
+        "a smaller difference is noise. Where the leading expression's residual shows structure, repair it. "
+        "Where it shows none, do not add terms: try cheaper forms of it, then SUBMIT the cheapest that fits as well."
     )
 
 
@@ -468,7 +494,7 @@ class AgenticVariationProposer(ProposerBase):
             if self._search is not None:
                 engine = self._search(self._budget / self._rounds)
                 if engine is not None:
-                    seeds = [str(t.fitted.xreplace(to_feature)) for t in bench.front_first()[: self._seeds_per_round]]
+                    seeds = [str(t.fitted.xreplace(to_feature)) for t in bench.shortlist()[: self._seeds_per_round]]
                     found = list(engine.fit_and_propose(frame, target_col=target, guesses=seeds or None))
                     search_proposals += found
                     for proposal in found:
@@ -480,7 +506,7 @@ class AgenticVariationProposer(ProposerBase):
                                             description=self._description,
                                             deadline=time.monotonic() + self._session_seconds))
 
-        ranked = bench.front_first()
+        ranked = bench.shortlist()
         by_agent = sum(t.source == "agent" for t in ranked)
         transcript = hashlib.sha256(repr([s.transcript for s in sessions]).encode()).hexdigest()
         self.last_run = {

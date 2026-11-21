@@ -135,19 +135,25 @@ def test_a_u_shaped_residual_is_named_as_one():
     assert av.residual_hints(av.probe_features(X), np.full(400, np.nan)) == []
 
 
-def test_the_front_puts_the_cheap_expression_before_dearer_ones_that_fit_no_better():
+def test_an_expression_has_to_earn_its_cost():
     X, y = _rows(noise=0.3)
     bench = av.Workbench(X, y)
     for text in ("c0*x0 + c1*x0*x1", "c0*x0 + c1*x0*x1 + c2*x2 + c3*x2**2 + c4*sin(x2)", "c0*x0", "c0*x1 + c1"):
         assert isinstance(bench.fit(text), av.Trial)
-    ranked, front = bench.ranked(), bench.front_first()
-    assert complexity_of(ranked[0]) > complexity_of(front[1])      # the best fit on noisy rows is the elaborate one ...
-    assert [t.skeleton for t in front[:2]] == [ranked[0].skeleton, "c0*x0 + c1*x0*x1"]   # ... the law comes right after it
-    assert {t.skeleton for t in front} == {t.skeleton for t in ranked}
+    ranked, earned, shortlist = bench.ranked(), bench.earned(), bench.shortlist()
+    assert ranked[0].skeleton.count("x2") >= 3 and ranked[0].cost > ranked[1].cost   # the best fit on noisy rows is the elaborate one
+    assert ranked[0].error > (1.0 - av.GAIN) * ranked[1].error                       # ... by less than an expression has to gain
+    assert [t.skeleton for t in earned] == ["c0*x0 + c1*x0*x1", "c0*x0"]             # the law leads; the cheaper, worse one follows
+    assert [t.skeleton for t in shortlist[:2]] == [t.skeleton for t in earned] and len(shortlist) == len(ranked)
+    assert "fits no better than a cheaper one" in bench.lineage().splitlines()[2]
+    assert "fits no better than a cheaper one" not in bench.lineage().splitlines()[0]
 
 
-def complexity_of(trial: av.Trial) -> int:
-    return trial.cost
+def test_an_exact_fit_always_earns_its_cost_and_nothing_dearer_does_after_it():
+    bench = av.Workbench(*_rows())
+    for text in ("c0*x0", "c0*x0 + c1*x0*x1", "c0*x0 + c1*x0*x1 + c2*sin(x2)"):
+        assert isinstance(bench.fit(text), av.Trial)
+    assert [t.skeleton for t in bench.earned()] == ["c0*x0 + c1*x0*x1", "c0*x0"]
 
 
 def test_notes_are_found_by_their_key_words():

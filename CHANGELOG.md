@@ -46,8 +46,10 @@ inferred releases.
   the search's next round. Only action lines are read from a reply, an expression is used only if
   the whitelist parser accepts it, every structure fitted is counted, and a missing or useless
   model costs the search nothing. `discovery_l2/agentic_stage.py` puts it around the default
-  stage's searches; nothing selects it by default. **Not measured with a real model**: 31 tests
-  use a scripted one. For a fair test, `scripts/build_invented_laws.py` draws sixty laws nobody
+  stage's searches; nothing selects it by default. **Not measured**: 32 tests use a scripted
+  model, and a smoke run with the real one on four invented laws showed that it drives the loop
+  and that it chases error below the noise, so an expression has to earn its cost (an error 5 %
+  lower) to be handed on. For a fair test, `scripts/build_invented_laws.py` draws sixty laws nobody
   has published (20 for development, 40 held back; every part of a law has to matter on its
   domain, audit M-03), and `scripts/run_invented_laws.py` is the development harness on the
   twenty. Workflow `.github/workflows/agentic-variation.yml`.
