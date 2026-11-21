@@ -20,7 +20,13 @@ from apedp_dyn.discovery_l2 import contrast_confirmation as cc
 from apedp_dyn.discovery_l2 import deciding_measurement as dm
 from apedp_dyn.discovery_l2 import refined_search
 from apedp_dyn.ode import chosen_experiment as ce
-from apedp_dyn.ode import default_route, extended_route, precision_adequacy, second_engine
+from apedp_dyn.ode import (
+    default_route,
+    experiment_pruning,
+    extended_route,
+    precision_adequacy,
+    second_engine,
+)
 from apedp_dyn.ode.window_rows import WindowRows
 from apedp_dyn.proposers.portfolio import FixedFormulasProposer
 from apedp_dyn.proposers.sparse_library import SparseLibraryProposer, supports
@@ -157,6 +163,85 @@ def test_the_follow_up_starts_where_the_rivals_part_and_a_random_one_does_not_ch
     assert json.dumps(ce.as_record(done))
 
 
+# ------------------------------------------------------------------ the experiment that shortens a law
+def test_the_sign_flip_test_is_exact_and_cannot_go_below_one_pattern_in_all():
+    p = experiment_pruning.sign_flip_p
+    assert p(np.arange(1.0, 11.0)) == 1 / 1024                     # every restart in favour: one pattern of 2**10
+    assert p(np.array([-0.5, *np.arange(1.0, 10.0)])) == 2 / 1024  # the smallest one against: that pattern and the all-positive one
+    assert p(-np.arange(1.0, 11.0)) == 1.0
+    assert 0.3 < p(np.array([1.0, -1.0, 2.0, -2.0, 3.0, -3.0])) < 0.7
+    assert p(np.array([])) == 1.0 and p(np.array([1.0, np.nan])) == 1.0 and p(np.zeros(4)) == 1.0
+    with pytest.raises(ValueError):
+        p(np.ones(21))
+
+
+def test_terms_are_tried_singly_as_the_smallest_group_and_in_pairs():
+    a, b, c, d = sp.symbols("a b c d")
+    tried = experiment_pruning.shorter_versions([a, b, c, d], np.array([5.0, 0.1, 3.0, 0.2]))
+    assert tried[:4] == [(0,), (1,), (2,), (3,)]
+    assert (1, 3) in tried and (1, 2, 3) in tried              # the two and the three smallest on the rows seen
+    assert {(0, 1), (0, 2), (2, 3)} <= set(tried) and len(tried) == len(set(tried)) == 4 + 6 + 1
+    assert experiment_pruning.shorter_versions([a, b], np.array([1.0, 2.0])) == [(0,), (1,)]
+    long = experiment_pruning.shorter_versions(list(sp.symbols("t0:10")), np.arange(10.0))
+    assert len(long) == 10 + 8                                # too many terms for pairs: singles and the smallest groups
+
+
+def test_predicted_and_measured_change_agree_for_the_law_and_not_for_another(toy):
+    measured = experiment_pruning.restarts(_rate, [(1.0, 0.5), (0.3, 1.2)], 0.0, np.ones(2), seed=0)
+    assert len(measured) == 2 and measured[0][1].shape == (1000, 2)
+    for t, x in measured:
+        right = experiment_pruning.increment_error(1.0 - x[:, 0] * x[:, 1], t, x, 0)
+        assert right < 1e-12 < experiment_pruning.increment_error(1.0 - x[:, 0], t, x, 0)
+        assert experiment_pruning.increment_error(np.full(len(t), np.nan), t, x, 0) == float("inf")
+        assert np.isnan(experiment_pruning.increment_error(np.zeros(50), t[:50], x[:50], 0))      # shorter than one stretch
+    blown = experiment_pruning.restarts(lambda s: np.full((1, 2), 1e9), [(1.0, 1.0)], 0.0, np.ones(2), seed=0)
+    assert blown == []
+
+
+def _rows_with_an_error_shaped_like_a_term(world) -> WindowRows:
+    """The toy rows with rates that are off by ``0.002*x0**3*x1**2``: an error of the rate estimates that a term can fit."""
+    dev = world["dev"]
+    rates = _rate(dev.states)
+    rates[:, 0] += 2e-3 * dev.states[:, 0] ** 3 * dev.states[:, 1] ** 2
+    return WindowRows(dev.states, rates, dev.times, dev.degree, dev.fit_rms, dev.rate_sd)
+
+
+def test_an_experiment_removes_an_added_term_and_leaves_the_law_alone(toy):
+    _, world = toy
+    dev = _rows_with_an_error_shaped_like_a_term(world)
+    padded = "1.0 - 1.0*x0*x1 + 2e-3*x0**3*x1**2"              # fits those rows exactly; the system itself has no such term
+    done = experiment_pruning.prune_by_experiment(padded, dev, 0, _rate, level=0.0, spread=world["spread"], seed=1)
+    assert done.dropped == ["x0**3*x1**2"] and done.restarts_used >= 8 and done.chosen
+    assert {str(t) for t in refined_search._terms(done.law, ["x0", "x1"])} == {"1", "x0*x1"}
+    assert done.spreads == sorted(done.spreads, reverse=True) and any(t["p"] < 1e-3 for t in done.tests)
+    kept = experiment_pruning.prune_by_experiment("1.0 - 1.0*x0*x1", world["dev"], 0, _rate, level=0.0,
+                                                  spread=world["spread"], seed=1)
+    assert kept.dropped == [] and kept.law == "1.0 - 1.0*x0*x1" and max(t["p"] for t in kept.tests) == 1.0
+    single = experiment_pruning.prune_by_experiment("2.0*x0", world["dev"], 0, _rate, level=0.0, spread=world["spread"])
+    assert single.law == "2.0*x0" and "one term" in single.note and single.restarts_used == 0
+    box = np.array(done.starts)                                # restarts are chosen in a box twice the range seen
+    middle = 0.5 * (dev.states.max(axis=0) + dev.states.min(axis=0))
+    half = 0.5 * np.ptp(dev.states, axis=0)
+    assert np.all(np.abs(box - middle) <= experiment_pruning.EXPAND * half + 1e-9)
+    assert np.any(np.abs(box - middle) > half)
+
+
+def test_the_experiment_changes_only_a_reported_law(toy):
+    _, world = toy
+    dev = _rows_with_an_error_shaped_like_a_term(world)
+    found = default_route.ComponentLaw(route="repaired", action="equivalent_class", law="1.0 - 1.0*x0*x1 + 2e-3*x0**3*x1**2",
+                                       tentative_law=None)
+    shorter, done = experiment_pruning.decided(found, dev, 0, _rate, level=0.0, spread=world["spread"], seed=1)
+    assert shorter.law != found.law and shorter.action == found.action and done["experiment"]["dropped"] == ["x0**3*x1**2"]
+    assert json.dumps(done)
+    nothing = default_route.ComponentLaw(route="repaired", action="widen_search", law=None, tentative_law="x0")
+    same, why = experiment_pruning.decided(nothing, dev, 0, _rate, level=0.0, spread=world["spread"])
+    assert same is nothing and why["experiment"]["note"] == "no reported law"
+    _by_chance, random_done = experiment_pruning.decided(found, dev, 0, _rate, level=0.0, spread=world["spread"],
+                                                         seed=1, chosen=False)
+    assert random_done["experiment"]["chosen"] is False and random_done["experiment"]["spreads"] == []
+
+
 def test_the_rivals_are_the_candidates_that_fit_best_each_once(toy):
     _, world = toy
     kept = ce.rivals_of(["x0 + x1", "1 - x0*x1", "1 - x1*x0", "log(x0 - 50)"], ["x0", "x1"], world["dev"].states,
@@ -248,24 +333,36 @@ def test_the_summary_judges_the_expectations_as_written():
         for component in range(10):
             rows.append(_row("default", noise, component, symbolic=component < 4))
             rows.append(_row("both", noise, component, symbolic=component < 6))
-            rows.append(_row("both_chosen", noise, component, symbolic=component < 8))
-            rows.append(_row("both_random", noise, component, symbolic=component < 7))
+            rows.append(_row("experiment", noise, component, symbolic=component < 8))
+            rows.append(_row("experiment_random", noise, component, symbolic=component < 7))
     summary = runner.summarise(rows)
     e = summary["expectations"]
-    assert e["1_holds"] and e["2_holds"] and e["3_holds"]
-    assert e["2_recovered_both_and_default"] == {"0.0": [6, 4], "0.01": [6, 4]}
+    assert e["1_holds"] and e["2_holds"] and e["3_holds"] and e["4_holds"]
+    assert e["2_recovered_both"] == {"0.0": 6, "0.01": 6} and e["2_recovered_default"] == {"0.0": 4, "0.01": 4}
+    assert e["3_recovered_experiment"] == {"0.0": 8, "0.01": 8} and e["4_recovered_experiment_random"] == {"0.0": 7, "0.01": 7}
     assert summary["run_for_run"]["both against default|0.0"] == {"gained": 2, "lost": 0}
+    assert summary["run_for_run"]["experiment against both|0.01"] == {"gained": 2, "lost": 0}
     assert summary["both|all|invented"]["recovered"] == 12
-    # one wrong law among twenty reports of the chosen arm is 5 %: at the limit, it holds; two is over it
+    # one wrong law among twenty reports of the experiment arm is 5 %: at the limit, it holds; two is over it,
+    # and one more wrong law than the route without the experiment fails the third expectation
     worse = [dict(r) for r in rows]
-    spoiled = [r for r in worse if r["arm"] == "both_chosen" and not r["symbolic"]][:2]
+    spoiled = [r for r in worse if r["arm"] == "experiment" and not r["symbolic"]][:2]
     spoiled[0]["accuracy_solution"] = False
-    assert runner.summarise(worse)["expectations"]["1_holds"]
+    first = runner.summarise(worse)["expectations"]
+    assert first["1_holds"] and not first["3_holds"] and first["3_wrong_experiment_and_both"] == [1, 0]
     spoiled[1]["accuracy_solution"] = False
     assert not runner.summarise(worse)["expectations"]["1_holds"]
-    # a tie between a chosen and a random experiment is not a pass
-    tied = [dict(r, symbolic=(r["component"] < 7)) if r["arm"] == "both_chosen" else r for r in rows]
-    assert not runner.summarise(tied)["expectations"]["3_holds"]
+    # an experiment that recovers no more than the route without it has not helped, and a tie with random restarts
+    # does not show that choosing them matters
+    level = [dict(r, symbolic=(r["component"] < 6)) if r["arm"] == "experiment" else r for r in rows]
+    assert not runner.summarise(level)["expectations"]["3_holds"]
+    tied = [dict(r, symbolic=(r["component"] < 7)) if r["arm"] == "experiment" else r for r in rows]
+    assert runner.summarise(tied)["expectations"]["3_holds"] and not runner.summarise(tied)["expectations"]["4_holds"]
+    # a row records whether an experiment ran and whether it shortened the law
+    ran = [dict(rows[2], experiment={"restarts_used": 16, "dropped": ["x0**3"]}), dict(rows[3], experiment={"restarts_used": 0})]
+    tally = runner.summarise(ran)
+    assert tally["experiment|all|all"]["experiments_run"] == 1 and tally["experiment|all|all"]["laws_shortened_by_the_experiment"] == 1
+    assert tally["experiment_random|all|all"]["experiments_run"] == 0
 
 
 def test_the_second_blind_set_is_what_the_rules_give_and_shares_no_system_with_the_first():

@@ -307,6 +307,35 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-28 rows of a follow-up experiment cannot simply join the pool — FOUND
+  2026-11-21 IN A DEVELOPMENT REPLAY; THAT USE IS RETIRED, ANOTHER IS BUILT AND
+  UNDER TEST; the frozen path is unchanged.** The first form of the "deciding
+  measurement" for a system that can be restarted added the experiment's rows
+  to the pool and ran the confirmation again. Replayed on the 98 systems of
+  PREREG-ODE-BLIND-2026-11 with the recorded candidates
+  (`benchmarks/ode_additions_dev_replay.json`), it recovered 167 and 128 of
+  310 components (no noise, 1 % noise) where the same route without the
+  experiment recovered 202 and 232; with random restarts in place of chosen
+  ones, 182 and 148. Of the 143 laws the chosen experiment lost, 139 ended as
+  "no survivor": the path's last test holds the survivor's error on the rows
+  it reads against its error on the development rows, and a short restart
+  away from the attractor is measured less precisely than the long
+  trajectories. Choosing the restarts where rivals disagree most made it
+  worse than random ones, because those are the states measured worst. The
+  path assumes pool rows are measured like development rows; nothing checks
+  that. **What the same replay showed the experiment is for:** of the 78
+  reported laws that were not the law, 65 were the law with terms added, tiny
+  on the attractor. **Second form (`ode/experiment_pruning.py`):** restarts
+  are chosen where the law with and without its terms differ most; on each
+  the two versions are compared with each other, by how far the variable
+  moved against how far each says it moved, and terms are dropped only when
+  the version without them predicts better (exact sign-flip test over the
+  restarts, canonical level). The comparison is paired, so the restarts'
+  precision cancels. On those 78 laws it leaves the law in 41 (27 of 38
+  without noise, 14 of 40 at 1 %) against 26 with random restarts in the same
+  box, and of 75 recovered laws sampled it changed none. All of that is
+  development on systems whose answers are known. **Not measured blind**;
+  under test in PREREG-ODE-ADDITIONS-2026-11.
 - **M-27 the adequacy check refuses true laws on trajectory rows — FOUND
   2026-11-21 ON THE ROWS OF THE BLIND ODE RUN; A REPAIR IS BUILT AND UNDER
   TEST; the frozen path is unchanged.** `main_search.adequacy` passes a law

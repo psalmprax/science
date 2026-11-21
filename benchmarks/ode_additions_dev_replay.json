@@ -1,0 +1,580 @@
+{
+ "laws_the_experiment_arms_lost_against_both": {
+  "both_chosen": {
+   "refused: no survivor": 139,
+   "refused: the rejected law failed the adequacy check": 4
+  },
+  "both_random": {
+   "another law reported": 3,
+   "refused: no survivor": 106,
+   "refused: the rejected law failed the adequacy check": 1,
+   "unchallenged": 2
+  }
+ },
+ "provenance": {
+  "branch": "ode-additions-replay-1",
+  "collected": "2026-11-21",
+  "commit": "10ec9c9",
+  "rows_file": "benchmarks/ode_additions_dev_replay_rows.jsonl.gz",
+  "workflow_run": 44894435439
+ },
+ "reported_laws_of_both_that_were_not_the_law": {
+  "by_kind": {
+   "another form": 13,
+   "the law with terms added": 65
+  },
+  "count": 78,
+  "wrong": 3
+ },
+ "rows": 4340,
+ "summary": {
+  "both_chosen|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 305,
+   "recovered": 128,
+   "reinstated": 6,
+   "reported": 135,
+   "reported_accurate_not_the_law": 6,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_chosen|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 305,
+   "recovered": 128,
+   "reinstated": 6,
+   "reported": 135,
+   "reported_accurate_not_the_law": 6,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_chosen|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 303,
+   "recovered": 167,
+   "reinstated": 0,
+   "reported": 183,
+   "reported_accurate_not_the_law": 16,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "both_chosen|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 303,
+   "recovered": 167,
+   "reinstated": 0,
+   "reported": 183,
+   "reported_accurate_not_the_law": 16,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "both_chosen|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 608,
+   "recovered": 295,
+   "reinstated": 6,
+   "reported": 318,
+   "reported_accurate_not_the_law": 22,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_chosen|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 608,
+   "recovered": 295,
+   "reinstated": 6,
+   "reported": 318,
+   "reported_accurate_not_the_law": 22,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_random|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 310,
+   "recovered": 148,
+   "reinstated": 6,
+   "reported": 162,
+   "reported_accurate_not_the_law": 13,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_random|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 310,
+   "recovered": 148,
+   "reinstated": 6,
+   "reported": 162,
+   "reported_accurate_not_the_law": 13,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_random|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 310,
+   "recovered": 182,
+   "reinstated": 0,
+   "reported": 198,
+   "reported_accurate_not_the_law": 15,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_random|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 310,
+   "recovered": 182,
+   "reinstated": 0,
+   "reported": 198,
+   "reported_accurate_not_the_law": 15,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both_random|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 620,
+   "recovered": 330,
+   "reinstated": 6,
+   "reported": 360,
+   "reported_accurate_not_the_law": 28,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "both_random|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 620,
+   "recovered": 330,
+   "reinstated": 6,
+   "reported": 360,
+   "reported_accurate_not_the_law": 28,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "both|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 232,
+   "reinstated": 23,
+   "reported": 272,
+   "reported_accurate_not_the_law": 38,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "both|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 232,
+   "reinstated": 23,
+   "reported": 272,
+   "reported_accurate_not_the_law": 38,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "both|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 202,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 202,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 434,
+   "reinstated": 26,
+   "reported": 512,
+   "reported_accurate_not_the_law": 75,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "both|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 434,
+   "reinstated": 26,
+   "reported": 512,
+   "reported_accurate_not_the_law": 75,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "default|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 210,
+   "reinstated": 0,
+   "reported": 249,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "default|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 210,
+   "reinstated": 0,
+   "reported": 249,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "default|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 199,
+   "reinstated": 0,
+   "reported": 235,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "default|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 199,
+   "reinstated": 0,
+   "reported": 235,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "default|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 409,
+   "reinstated": 0,
+   "reported": 484,
+   "reported_accurate_not_the_law": 72,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "default|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 409,
+   "reinstated": 0,
+   "reported": 484,
+   "reported_accurate_not_the_law": 72,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "expectations": {
+   "1_holds": true,
+   "1_limit": 0.05,
+   "1_share_of_reported_laws_wrong": {
+    "both": 0.005859375,
+    "both_chosen": 0.0031446540880503146
+   },
+   "2_holds": true,
+   "2_recovered_both_and_default": {
+    "0.0": [
+     202,
+     199
+    ],
+    "0.01": [
+     232,
+     210
+    ]
+   },
+   "3_holds": false,
+   "3_recovered_chosen_and_random": {
+    "0.0": [
+     167,
+     182
+    ],
+    "0.01": [
+     128,
+     148
+    ]
+   },
+   "3_wrong_chosen_and_random": [
+    1,
+    2
+   ],
+   "default_share_wrong": 0.006198347107438017
+  },
+  "precision|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 228,
+   "reinstated": 22,
+   "reported": 271,
+   "reported_accurate_not_the_law": 40,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "precision|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 228,
+   "reinstated": 22,
+   "reported": 271,
+   "reported_accurate_not_the_law": 40,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "precision|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 200,
+   "reinstated": 1,
+   "reported": 236,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "precision|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 200,
+   "reinstated": 1,
+   "reported": 236,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "precision|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 428,
+   "reinstated": 23,
+   "reported": 507,
+   "reported_accurate_not_the_law": 75,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 4
+  },
+  "precision|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 428,
+   "reinstated": 23,
+   "reported": 507,
+   "reported_accurate_not_the_law": 75,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 4
+  },
+  "run_for_run": {
+   "both against default|0.0": {
+    "gained": 3,
+    "lost": 0
+   },
+   "both against default|0.01": {
+    "gained": 23,
+    "lost": 1
+   },
+   "both_chosen against both_random|0.0": {
+    "gained": 9,
+    "lost": 24
+   },
+   "both_chosen against both_random|0.01": {
+    "gained": 20,
+    "lost": 40
+   },
+   "both_chosen against both|0.0": {
+    "gained": 0,
+    "lost": 35
+   },
+   "both_chosen against both|0.01": {
+    "gained": 4,
+    "lost": 108
+   },
+   "both_random against both|0.0": {
+    "gained": 0,
+    "lost": 20
+   },
+   "both_random against both|0.01": {
+    "gained": 8,
+    "lost": 92
+   },
+   "precision against default|0.0": {
+    "gained": 1,
+    "lost": 0
+   },
+   "precision against default|0.01": {
+    "gained": 18,
+    "lost": 0
+   },
+   "second_engine against default|0.0": {
+    "gained": 1,
+    "lost": 0
+   },
+   "second_engine against default|0.01": {
+    "gained": 3,
+    "lost": 1
+   }
+  },
+  "second_engine|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 212,
+   "reinstated": 0,
+   "reported": 249,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "second_engine|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 212,
+   "reinstated": 0,
+   "reported": 249,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "second_engine|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 200,
+   "reinstated": 0,
+   "reported": 237,
+   "reported_accurate_not_the_law": 36,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "second_engine|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 200,
+   "reinstated": 0,
+   "reported": 237,
+   "reported_accurate_not_the_law": 36,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "second_engine|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 412,
+   "reinstated": 0,
+   "reported": 486,
+   "reported_accurate_not_the_law": 71,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "second_engine|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 412,
+   "reinstated": 0,
+   "reported": 486,
+   "reported_accurate_not_the_law": 71,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "sparse_poly3|0.01|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 189,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 98,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 23
+  },
+  "sparse_poly3|0.01|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 189,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 98,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 23
+  },
+  "sparse_poly3|0.0|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 255,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 44,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 11
+  },
+  "sparse_poly3|0.0|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 255,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 44,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 11
+  },
+  "sparse_poly3|all|all": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 444,
+   "reinstated": 0,
+   "reported": 620,
+   "reported_accurate_not_the_law": 142,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 34
+  },
+  "sparse_poly3|all|first blind set": {
+   "errors": 0,
+   "experiments_with_rows": 0,
+   "recovered": 444,
+   "reinstated": 0,
+   "reported": 620,
+   "reported_accurate_not_the_law": 142,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 34
+  }
+ },
+ "what": "A replay on the 98 systems of PREREG-ODE-BLIND-2026-11 after that run, with the candidates its searches handed over: development, not a result. The arms are those of scripts/run_ode_additions.py at commit 10ec9c9; both_chosen and both_random (a follow-up experiment's rows added to the pool, everything confirmed again) were retired on this evidence."
+}

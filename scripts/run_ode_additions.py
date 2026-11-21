@@ -15,9 +15,15 @@ given those same candidates, so the arms differ only in what they do with them:
 - ``precision``: a law refused at the adequacy check is reinstated if its residual is within the
   rows' own precision;
 - ``both``: the two together;
-- ``both_chosen``: ``both``, then one follow-up experiment where its rival laws disagree most,
-  and the same candidates confirmed again;
-- ``both_random``: the same with the experiment's starts drawn at random: equal data, no choice.
+- ``experiment``: ``both``, then one follow-up experiment: the system is restarted where the
+  reported law and its own shorter versions disagree most, and a term is dropped if the shorter
+  law predicts those restarts better (``ode/experiment_pruning.py``);
+- ``experiment_random``: the same with the restarts at random states of the same box: equal
+  data, no choice.
+
+An earlier form of the experiment arms (the experiment's rows added to the pool and everything
+confirmed again) was replayed on 2026-11-21 and made the route worse; it is recorded in
+``benchmarks/ode_additions_dev_replay.json`` and is not an arm any more.
 
 ``sparse_poly3`` is the frozen runner's reference, reported beside them.
 
@@ -58,14 +64,15 @@ FROZEN = (
     "scripts/odebench_worlds.py", "scripts/run_odebench_main_search.py", "scripts/run_ode_blind.py",
     "scripts/build_dysts_polynomial_systems.py",
     "apedp_dyn/ode/extended_route.py", "apedp_dyn/ode/second_engine.py", "apedp_dyn/ode/precision_adequacy.py",
-    "apedp_dyn/ode/chosen_experiment.py", "apedp_dyn/ode/default_route.py", "apedp_dyn/ode/refined_ode.py",
+    "apedp_dyn/ode/chosen_experiment.py", "apedp_dyn/ode/experiment_pruning.py", "apedp_dyn/ode/default_route.py",
+    "apedp_dyn/ode/refined_ode.py",
     "apedp_dyn/ode/main_search_ode.py", "apedp_dyn/ode/window_rows.py", "apedp_dyn/ode/weak_form.py",
     "apedp_dyn/discovery_l2/deciding_measurement.py", "apedp_dyn/discovery_l2/evolved_stage.py",
     "apedp_dyn/discovery_l2/precision_pruning.py", "apedp_dyn/discovery_l2/refined_search.py",
     "apedp_dyn/discovery_l2/main_search.py", "apedp_dyn/proposers/sparse_library.py", "apedp_dyn/proposers/fit_guard.py",
     "apedp_dyn/proposers/portfolio.py", "apedp_dyn/proposers/pysr_proposer.py",
 )
-ARMS = ("default", "second_engine", "precision", "both", "both_chosen", "both_random")
+ARMS = ("default", "second_engine", "precision", "both", "experiment", "experiment_random")
 REFERENCE = "sparse_poly3"
 NOISE_LEVELS = (0.0, 0.01)
 WRONG_LIMIT = 0.05
@@ -107,7 +114,7 @@ def _scored(world: dict[str, Any], truth: sp.Expr, found: Any, names: list[str])
 def arms_of(system: dict[str, Any], world: dict[str, Any], component: int, noise: float, searched: list[str] | None,
             budget: float) -> list[dict[str, Any]]:
     """Every arm on one component: one row each, the reference last."""
-    from apedp_dyn.ode import default_route, extended_route
+    from apedp_dyn.ode import default_route, experiment_pruning, extended_route
 
     names = [f"x{i}" for i in range(system["dim"])]
     truth = system["components"][component]
@@ -138,12 +145,12 @@ def arms_of(system: dict[str, Any], world: dict[str, Any], component: int, noise
         law, done = extended_route.discover_component(dev, pool, component, proposer=extended_route.replayed(searched),
                                                       seed=ode_run.SEED, second_engine=second, at_precision=precise)
         record(arm, law, done, started)
-    for arm, chosen in (("both_chosen", True), ("both_random", False)):
+    both_done = dict(done)
+    for arm, chosen in (("experiment", True), ("experiment_random", False)):
         started = time.perf_counter()
-        law, done = extended_route.follow_up(dev, pool, component, found["both"], searched, rate, level=noise,
-                                             spread=world["spread"], seed=ode_run.SEED, chosen=chosen,
-                                             second_engine=True, at_precision=True)
-        record(arm, law, done, started)
+        law, done = experiment_pruning.decided(found["both"], dev, component, rate, level=noise, spread=world["spread"],
+                                               seed=ode_run.SEED, chosen=chosen)
+        record(arm, law, {**both_done, **done}, started)
     started = time.perf_counter()
     raw = ode_run.run_sparse_poly3(world, component)
     rows.append({"arm": REFERENCE, "status": "ok", "seconds": round(time.perf_counter() - started, 2),
@@ -223,13 +230,14 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
                     "recovered": sum(bool(r.get("symbolic")) for r in ok), "wrong": sum(_wrong(r) for r in ok),
                     "reported_accurate_not_the_law": sum(bool(r.get("accuracy_solution")) and not r.get("symbolic") for r in reported),
                     "reinstated": sum(bool((r.get("precision") or {}).get("reinstated")) for r in ok),
-                    "experiments_with_rows": sum(bool((r.get("experiment") or {}).get("rows")) for r in ok),
+                    "experiments_run": sum(bool((r.get("experiment") or {}).get("restarts_used")) for r in ok),
+                    "laws_shortened_by_the_experiment": sum(bool((r.get("experiment") or {}).get("dropped")) for r in ok),
                 }
     recovered = {(r["arm"], r["noise"], r["system"], r["component"]) for r in rows if r["status"] == "ok" and r.get("symbolic")}
     cells = sorted({(r["noise"], r["system"], r["component"]) for r in rows})
     paired = {}
-    for a, b in (("both", "default"), ("second_engine", "default"), ("precision", "default"), ("both_chosen", "both"),
-                 ("both_random", "both"), ("both_chosen", "both_random")):
+    for a, b in (("both", "default"), ("second_engine", "default"), ("precision", "default"), ("experiment", "both"),
+                 ("experiment_random", "both"), ("experiment", "experiment_random")):
         for noise in NOISE_LEVELS:
             mine = [c for c in cells if c[0] == noise]
             paired[f"{a} against {b}|{noise}"] = {"gained": sum((a, *c) in recovered and (b, *c) not in recovered for c in mine),
@@ -242,18 +250,22 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
     def share_wrong(arm: str) -> float:
         return count(arm, "all", "wrong") / max(count(arm, "all", "reported"), 1)
 
+    def recovered_by(arm: str) -> dict[str, int]:
+        return {str(n): count(arm, n, "recovered") for n in NOISE_LEVELS}
+
     out["expectations"] = {
-        "1_share_of_reported_laws_wrong": {arm: share_wrong(arm) for arm in ("both", "both_chosen")},
+        "1_share_of_reported_laws_wrong": {arm: share_wrong(arm) for arm in ("both", "experiment")},
         "1_limit": WRONG_LIMIT,
-        "1_holds": all(share_wrong(arm) <= WRONG_LIMIT for arm in ("both", "both_chosen")),
-        "2_recovered_both_and_default": {str(n): [count("both", n, "recovered"), count("default", n, "recovered")] for n in NOISE_LEVELS},
+        "1_holds": all(share_wrong(arm) <= WRONG_LIMIT for arm in ("both", "experiment")),
+        "2_recovered_both": recovered_by("both"), "2_recovered_default": recovered_by("default"),
         "2_holds": all(count("both", n, "recovered") >= count("default", n, "recovered") for n in NOISE_LEVELS),
-        "3_recovered_chosen_and_random": {str(n): [count("both_chosen", n, "recovered"), count("both_random", n, "recovered")]
-                                          for n in NOISE_LEVELS},
-        "3_wrong_chosen_and_random": [count("both_chosen", "all", "wrong"), count("both_random", "all", "wrong")],
-        "3_holds": all(count("both_chosen", n, "recovered") >= count("both_random", n, "recovered") for n in NOISE_LEVELS)
-        and count("both_chosen", "all", "recovered") > count("both_random", "all", "recovered")
-        and count("both_chosen", "all", "wrong") <= count("both_random", "all", "wrong"),
+        "3_recovered_experiment": recovered_by("experiment"),
+        "3_wrong_experiment_and_both": [count("experiment", "all", "wrong"), count("both", "all", "wrong")],
+        "3_holds": all(count("experiment", n, "recovered") >= count("both", n, "recovered") for n in NOISE_LEVELS)
+        and count("experiment", "all", "recovered") > count("both", "all", "recovered")
+        and count("experiment", "all", "wrong") <= count("both", "all", "wrong"),
+        "4_recovered_experiment_random": recovered_by("experiment_random"),
+        "4_holds": count("experiment", "all", "recovered") > count("experiment_random", "all", "recovered"),
         "default_share_wrong": share_wrong("default"),
     }
     return out

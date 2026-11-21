@@ -35,6 +35,29 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The deciding experiment, tried, found harmful, and rebuilt (2026-11-22; development, not a
+  result).** The additions below were replayed on the first blind set with the recorded candidates
+  (`benchmarks/ode_additions_dev_replay.json`). Second engine and precision adequacy together:
+  202 and 232 of 310 recovered (no noise, 1 %) against 199 and 210, 3 wrong of 512. The follow-up
+  experiment as first built (its rows added to the pool, everything confirmed again): 167 and 128,
+  and worse with chosen restarts than with random ones. 139 of the 143 laws it lost ended "no
+  survivor": a short restart is measured less precisely than the development rows, and the path
+  fails the survivor for that (audit M-28). The same rows showed what an experiment is needed for:
+  65 of the 78 reported laws that were not the law were the law with terms added. So
+  `ode/experiment_pruning.py`: restart where the law with and without its terms differ most,
+  compare the two versions with each other on how far the variable moved (no rate estimated, no
+  refit), drop terms only when the shorter version predicts better by an exact sign-flip test.
+  On the 78 it leaves the law in 41, with random restarts 26; none of 75 recovered laws changed.
+  The runner's experiment arms are now `experiment` and `experiment_random`.
+- **A red team for the referee (2026-11-22; built, campaign not yet run).** `apedp_dyn/redteam`:
+  counterfeit laws (one building block of a law exchanged, constants fitted to the law itself),
+  worlds (a law, counterfeits handed over as a search's candidates with or without the law, how
+  rows are sampled, what noise they carry) and a search over worlds for the outcome a referee
+  must not produce. `scripts/run_red_team.py` runs it against the route in force for tables,
+  beside two plain ways of ending a search, in five arenas: the conditions of the preregistered
+  runs, and four that each leave them in one direction. `benchmarks/red_team_laws.json`: 150
+  laws with 1,878 counterfeits. Development by its nature; a repair found with it is tested on
+  worlds drawn afterwards.
 - **Why the ODE route loses to plain sparse regression without noise, and three additions built on
   it (2026-11-21; development, not a result).** Looking at the rows of the blind ODE run after
   it: in 50 of the 58 noise-free components only the sparse reference recovered, the law's terms
