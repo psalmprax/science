@@ -147,6 +147,14 @@ three preregistered expectations missed.
   systems' outcomes were known when the rule was written, and its one setting
   was chosen on six of their cases, so this is a development result. It is
   not wired into a route. Open until tested on systems it has not seen.
+  **Measured blind 2026-11-21 (PREREG-ODE-BLIND-2026-11):** on 98 chaotic
+  polynomial systems no route had seen, it changed 42 of the 484 reported laws,
+  made 24 recoveries (all without noise), lost none, and left the wrong laws at
+  3 before and after. It is part of the default ODE route
+  (`ode/default_route.py`). One of those 3 wrong laws is again a term small
+  on the rows and unbounded beyond them (`SprottE`, component 0:
+  `1.6e-5*x1**5*exp(sin(x2))*sin(...)`), which the pruning did not remove: the
+  rule lowers the rate of such terms, it does not end them.
 - **M-07 the ODE path differentiates noisy data — ADDRESSED BY A NEW ROUTE
   2026-11-19; the older path is unchanged.** `ode/window_rows.py` turns a
   trajectory into rows with independent errors (one state and one rate per
@@ -299,6 +307,29 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-26 the recovery criterion can refit a factor away — FOUND 2026-11-21 IN
+  THE BLIND ODE RUN, RECORDED; the frozen scorer is unchanged.**
+  `run_srbench_baseline.symbolic_recovery` refits every constant of a reported
+  law to the true law, those inside a function too, and checks only that no
+  additive term vanishes. A factor `cos(c*...)` is 1 when `c` is refitted to
+  zero. In PREREG-ODE-BLIND-2026-11 both routes reported, for `SprottE`
+  component 1 without noise, `7.6275*x0**2*cos(...) - 7.6275*x1*cos(...)` with
+  cosine arguments of size 1e-4 on the rows; refitted, it is the law
+  `7.6275*x0**2 - 7.6275*x1` to 2.5e-12, so it counts as recovered, while as
+  reported it has R² −0.80 on the test rows. One recovery of 409 for the
+  repaired route and one of 333 for the recorded one; counted as wrong instead
+  the repaired route has 4 wrong of 484 (0.8 %) and no expectation of that run
+  changes. M-23 was a form passing the tolerance narrowly; this one passes it
+  exactly, because the refit is allowed to erase the difference. **Checked on
+  the same day across every committed result that has per-run rows:** in the
+  table runs no recovery is inaccurate as reported (0 of 174, 189, 173, 152
+  and the rest). In the two ODEBench runs two recoveries each are, at 1 %
+  noise with R² 0.998 to 0.999: the law's own form with constants slightly
+  off, which is what "recovered" is meant to allow. A factor refitted away
+  occurs once, the component above. **What would repair it:** require that a
+  recovered law has no factor the refit turns into a constant, or report
+  "recovered and accurate as reported" beside "recovered"; every result file
+  records both per run, so either can be restated without a new run.
 - **M-25 a test whose result depended on the machine's speed — FOUND BY CI
   2026-11-20, FIXED THE SAME DAY.** `tests/test_mmlm_transformer_expert.py`
   trains a tiny transformer for five seconds of wall clock and required a
@@ -314,8 +345,15 @@ three preregistered expectations missed.
   trains for a time budget (`tests/test_mmlm_context_mixing.py`) asks only
   for one step.
 - **M-24 a candidate that cannot be fitted ends the whole run — FOUND
-  2026-11-20; GUARDED FOR THE DEFAULT SEARCH STAGE THE SAME DAY, NOT YET
-  MEASURED.** `proposers/fit_guard.py` now screens every proposal with the
+  2026-11-20; GUARDED FOR THE DEFAULT SEARCH STAGE THE SAME DAY; MEASURED
+  BLIND ON TRAJECTORIES 2026-11-21.** In PREREG-ODE-BLIND-2026-11 the guarded
+  route had no such error in 620 runs. The guard dropped two candidates, in
+  one run (`SprottF`, component 0, 1 % noise), and the recorded route, which
+  has no guard, ended with the same `LinAlgError` on that component at that
+  noise level: its one error in 620 runs. The guard is in the default ODE
+  route (`ode/default_route.py`) as well as the default search stage for
+  tables. One case is one case: it shows the guard catching what it was
+  written for, not a rate. `proposers/fit_guard.py` now screens every proposal with the
   path's own fit before the path sees it, and `discovery_l2/search_stage.py`
   wraps the default stage in it. `log(a - 5)` on rows where it is undefined
   reproduces the recorded `LinAlgError` and is dropped. The path polishes

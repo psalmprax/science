@@ -35,6 +35,23 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The repaired ODE route passed its blind test and is the default ODE route (2026-11-21,
+  PREREG-ODE-BLIND-2026-11, run once).** On 98 chaotic polynomial systems (310 components) that no
+  route here was built or run on, the refined ODE path with four searches, the fit guard and
+  pruning to the rows' precision reported 484 laws, 3 of them wrong (0.6 %, limit 5 %), and
+  recovered 199 and 210 components at noise 0 and 1 % against 132 and 201 for the recorded route.
+  Pruning changed 42 laws, made 24 recoveries and lost none. All four expectations held, and the
+  preregistration had fixed what follows: `apedp_dyn/ode/default_route.py` composes the route as
+  the frozen runner did and is the ODE entry point; `APEDP_ODE_ROUTE=main_search` restores the
+  recorded route. The same route without the two repairs had 5.1 % wrong laws on ODEBench against
+  a limit of 5 % and was not adopted there; that stands and is stated wherever the route is
+  described. Recorded with the pass: one recovery is a law that is inaccurate as reported, because
+  the benchmark's criterion refits constants inside functions (new audit item M-26; one case,
+  checked across every committed result); the guard dropped candidates in one run and the
+  unguarded route ended in an error on that same component; and without noise sparse regression
+  on a cubic library recovers 56 more components than the route, on its home ground. A first
+  launch was cancelled during warm-up before any system ran. Result:
+  `preregistration/RESULT-ODE-BLIND-2026-11.md`.
 - **A loop in which a coding model rewrites the search's candidate generator (2026-11-21).** The
   second step after the agentic operator, and the closer one to Agentic Variation Operators: the
   model varies code, not candidates. New package `apedp_dyn/evolution`: `restricted` refuses any

@@ -1,6 +1,6 @@
 # What has been measured, and where the system stands
 
-Last updated 2026-11-20. This page is the short answer to "what does this system do, and how do you
+Last updated 2026-11-21. This page is the short answer to "what does this system do, and how do you
 know". Every line points at a preregistered run: the question, the method and the pass criteria were
 frozen by digest before the run, the run was made once, and the outputs are committed unedited under
 [`preregistration/`](../preregistration/). Where an expectation was missed, the result file says so
@@ -13,13 +13,16 @@ For tabular data the default is the **refined path** since 2026-11-20
 (`apedp_dyn/discovery_l2/default_route.py`; the owner's decision on the result below, one of whose
 three expectations was missed by one law). The main search was the default from 2026-11-19 and can
 still be chosen, as can the template engine. Trajectories and return-like series have their own
-entry points (`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`).
+entry points (`apedp_dyn/ode/default_route.py`, since 2026-11-21 the refined path with four searches,
+the fit guard and pruning to the rows' precision, on the blind result below;
+`apedp_dyn/discovery_l2/series_route.py`).
 
 | Route | For | What it does | Measured | Result file |
 | :--- | :--- | :--- | :--- | :--- |
 | **Refined** (the default since 2026-11-20; `discovery_l2/refined_search.py`) | Tabular data, with physical units where the problem has them | The main search with the units' dimensionless products, a polynomial library, a report in the confirmed form with unnoticed terms dropped, and the search stage on every problem | SRBench: a law reported in 212 of 266 runs, **none inaccurate** (interval 0–1.7 %), **174 the law**. Feynman 78 and 77 of 119; Strogatz 19 of 28. On 103 held-out problems 61 and 61 against the main search's 55 and 52: one short of the 62 expected at noise 0. It uses units, which the other rows were not given. **With four different searches side by side as the search stage** (`discovery_l2/search_stage.py`, PREREG-PORTFOLIO-SEARCH): 189 recovered, 1 of 224 reported laws not accurate; on the 103 held-out problems 73 and 63 against 61 and 61. All four expectations held; it is the search stage wherever four cores are available | [`RESULT-REFINED-SEARCH`](../preregistration/RESULT-REFINED-SEARCH-2026-11.md), [`RESULT-PORTFOLIO-SEARCH`](../preregistration/RESULT-PORTFOLIO-SEARCH-2026-11.md) |
 | Main search (the default from 2026-11-19 to 2026-11-20) | Tabular data where a law explains nearly all of the target | Exhaustive first pass, then PySR, then confirmation on rows chosen to tell rivals apart, then an adequacy check | SRBench, 133 laws at noise 0 and 1 %: a law reported in 186 of 266 runs, **4 not accurate (2.2 %**, interval 0.6–5.4 %), 152 the law. Feynman 69 and 70 of 119; PySR alone 73 and 68 | [`RESULT-MAIN-SEARCH`](../preregistration/RESULT-MAIN-SEARCH-2026-11.md) |
-| **ODE** | Trajectories of a dynamical system | One state and one rate per disjoint window, then the main search per component | ODEBench, 63 systems, 117 components: **80 and 69 recovered** (noise 0, 1 %); 9 of 184 reported laws wrong (4.9 %). The sparse polynomial reference: 78 and 53, 29.1 % wrong. **Through the refined path with four searches side by side** (`ode/refined_ode.py`, PREREG-ODE-REFINED): 92 and 73 recovered, and on the 86 components it was not built on 63 and 50 against 56 and 48; but 10 of 195 reported laws wrong (5.1 %) against a limit of 5 % fixed in advance, so it is **not adopted** | [`RESULT-ODE-MAIN-SEARCH`](../preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md), [`RESULT-ODE-REFINED`](../preregistration/RESULT-ODE-REFINED-2026-11.md) |
+| **ODE** (the default since 2026-11-21: `ode/default_route.py`) | Trajectories of a dynamical system | One state and one rate per disjoint window; then, per component, the refined path with four searches side by side behind a guard that drops candidates the path cannot fit, and the reported law pruned to the precision of the rate estimates | **98 chaotic polynomial systems it had never seen** (`dysts`, 310 components, PREREG-ODE-BLIND): **3 of 484 reported laws wrong (0.6 %**, interval 0.1–1.8 %, limit 5 %); **199 and 210 recovered** (noise 0, 1 %) against 132 and 201 for the route below; all four expectations held. Sparse regression on a cubic library, the reference: 255 and 189, 5.5 % wrong. **The same route without the guard and the pruning, on ODEBench** (63 systems, 117 components, PREREG-ODE-REFINED): 92 and 73 recovered, 10 of 195 reported laws wrong (5.1 %) against a limit of 5 %, **not adopted there**; that result stands. The blind systems are all polynomial: nothing is measured with the repairs on rational or transcendental right-hand sides | [`RESULT-ODE-BLIND`](../preregistration/RESULT-ODE-BLIND-2026-11.md), [`RESULT-ODE-REFINED`](../preregistration/RESULT-ODE-REFINED-2026-11.md) |
+| ODE, the recorded route (the default until 2026-11-21; `ode/main_search_ode.py`) | Trajectories of a dynamical system | The same rows, then the main search per component with one search | ODEBench: **80 and 69 recovered**; 9 of 184 reported laws wrong (4.9 %). The sparse polynomial reference there: 78 and 53, 29.1 % wrong. On the 98 blind systems: 132 and 201 recovered, 3 of 456 wrong, and one run ended on a fit that did not converge | [`RESULT-ODE-MAIN-SEARCH`](../preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md), [`RESULT-ODE-BLIND`](../preregistration/RESULT-ODE-BLIND-2026-11.md) |
 | **Series** | Noisy series in time order (return-like data) | Candidates from the main search, one chosen inside the development period, one forecast test on later rows | Simulated series with a planted law (not market findings): a law reported in **0 of 40** series that contain none (the main search alone: 28 of 40); 31 of 40 where the law explains 5 or 20 % of the variance; 3 of 20 at 2 %; 0 of 20 at 0.5 % | [`RESULT-MARKET-PLANTED`](../preregistration/RESULT-MARKET-PLANTED-2026-11.md) |
 | Template engine with the referee (`l2`) | Kept for replication, and for laws inside its grammar | Enumerates dimensionally valid expressions; the referee promotes one | SRBench: 268 promotions, **160 not accurate**. **With Guard 3** (`epistemic/structure_guard.py`): 113 promotions, **3 not accurate**, 103 correct against 100; on the 103 held-out problems 3 of 81 not accurate and 71 of 72 correct promotions kept. Two of three expectations held; the third (at most 10 % false by the symbolic criterion) was missed at 12 %. On laws its grammar can express (blind benchmark, no guard): 7 false in 288 | [`RESULT-SRBENCH-BASELINE`](../preregistration/RESULT-SRBENCH-BASELINE-2026-11.md), [`RESULT-REFEREE-STRUCTURE`](../preregistration/RESULT-REFEREE-STRUCTURE-2026-11.md), [`RESULT-BLIND-L2`](../preregistration/RESULT-BLIND-L2-2026-11.md) |
 
@@ -113,16 +116,33 @@ One of the 2,400 panels failed a claim that was true in its world. The intervals
 is present its size depends on how turbulent the five years are: a verdict here is about the sign
 in this period, and the estimate is not a long-run constant.
 
-## The repaired ODE route on unseen systems: frozen, running
+## The repaired ODE route on unseen systems: all four expectations held
 
-[`PREREG-ODE-BLIND-2026-11`](../preregistration/PREREG-ODE-BLIND-2026-11.md) runs the refined ODE path
-with four searches, the fit guard and pruning to the rows' precision on 98 chaotic polynomial
-systems (310 components) from the `dysts` database that no route here was built or run on, beside
-the recorded ODE route. It was frozen on 2026-11-21 and its 48 shards started the same day at 00:16
-UTC, on branch `ode-blind-run-2`; there is no result yet. (A first launch, on `ode-blind-run-1`, was
-cancelled during its warm-up job, before any shard started and so before any system was run.) If at
-most 5 % of its reported laws are wrong and it recovers at least as many components as the
-recorded route at both noise levels, it becomes the default ODE route.
+[`PREREG-ODE-BLIND-2026-11`](../preregistration/PREREG-ODE-BLIND-2026-11.md), run once on 2026-11-21
+([result](../preregistration/RESULT-ODE-BLIND-2026-11.md)): the refined ODE path with four searches,
+the fit guard and pruning to the rows' precision, on 98 chaotic polynomial systems (310 components)
+from the `dysts` database that no route here was built or run on.
+
+| | Law reported | Reported and wrong | Recovered, noise 0 | Recovered, noise 1 % |
+| :--- | ---: | ---: | ---: | ---: |
+| Repaired route | 484 of 620 | 3 (0.6 %) | 199 of 310 | 210 of 310 |
+| Recorded route | 456 | 3 (0.7 %) | 132 | 201 |
+| Sparse regression on a cubic library | 620 | 34 (5.5 %) | 255 | 189 |
+
+As fixed before the run, the repaired route is now the default ODE route
+(`apedp_dyn/ode/default_route.py`). Three things the result note records beside the pass:
+
+- **One recovery is not a usable law** (M-26): the benchmark's criterion refits constants inside
+  functions too, and one law with two cosine factors counts as recovered though it is inaccurate as
+  reported. Counted as wrong: 4 of 484.
+- **The guard met its case once**: on the one component where it dropped candidates, the recorded
+  route, which has none, ended in an error.
+- **Without noise, sparse regression recovers 56 more components** than the route, in a fraction of
+  a second; it reports a law for every component and one in eighteen is wrong. Every system here
+  is polynomial, which is that method's home ground.
+
+A first launch, on `ode-blind-run-1`, was cancelled during its warm-up job, before any shard
+started and so before any system was run; the run is the one on `ode-blind-run-2`.
 
 ## Developed and not taken to a preregistered run
 
@@ -131,7 +151,7 @@ recorded route at both noise levels, it becomes the default ODE route.
 | A language-model agent as the variation operator of a search, after Agentic Variation Operators (`apedp_dyn/proposers/agentic_variation.py`, `discovery_l2/agentic_stage.py`) | With a scripted stand-in for the model: the agent is shown what a fit's residual still follows, repairs its guess, and the repair seeds the search's next round; replies are read only as bounded actions; a missing or useless model costs the search nothing (32 tests). A smoke run with the real model on four invented laws: it drives the loop (7 to 18 fits a session, no unusable reply, 3 to 73 seconds a call); with a search beside it the true structure came back for three of four, twice with a small spurious term | Four laws and no comparison arm are not a measurement. The model chased error below the noise, so an expression now has to earn its cost. The development run on twenty invented laws is next; the forty held back are for a preregistered comparison at equal time |
 | A loop in which a coding model rewrites the search's candidate generator under a fixed judge (`apedp_dyn/evolution/`, `discovery_l2/evolved_stage.py`, `scripts/run_search_evolution.py`; [SEARCH_EVOLUTION.md](SEARCH_EVOLUTION.md)) | With a scripted stand-in for the model, on 16 training and 16 validation laws: a reply with an import is refused before it runs, its repair fails when run, the next repair runs and proposes 1 and 4 of the laws where the seed proposes none, a version that never returns is stopped on every problem, strings such as `9**9**9**9` are refused by the judge. The jailed process, given code the check would refuse, could not write, read, open a socket, start a process or see a variable of the caller | **No real model has driven it**, on the owner's instruction: it waits for a coding model. Nothing it produces is installed; a version would enter the route only by a reviewed commit after one preregistered test on laws it was never scored on. The training laws share one grammar, so a gain on them is not yet a gain on laws |
 | ODE systems through the refined path with one search (`apedp_dyn/ode/refined_ode.py`) | On 15 of ODEBench's 63 systems (31 components), with one PySR search: 25 and 22 recovered at noise 0 and 1 % against the ODE route's 24 and 21; 3 of 52 reported laws not accurate against 2 of 51. Without any search engine: 24 of 31 at noise 0, all correct, four seconds each | One more component at each level is inside the difference between two runs. With four searches side by side the same systems gave 28 and 23; that version was preregistered and run, and is in the routes table above (recovers more, not adopted) |
-| Term pruning to the data's precision, for trajectory rows (`discovery_l2/precision_pruning.py`) | Applied after the fact to the 195 laws PREREG-ODE-REFINED reported: recovered 165 to 167, wrong 10 to 9 (4.6 %, under that run's 5 % limit), none lost | The run's outcomes were known when the rule was written, so this cannot count. It needs ODE systems it has not seen |
+| Term pruning to the data's precision, for trajectory rows (`discovery_l2/precision_pruning.py`) | Applied after the fact to the 195 laws PREREG-ODE-REFINED reported: recovered 165 to 167, wrong 10 to 9 (4.6 %, under that run's 5 % limit), none lost | **Since measured blind** (PREREG-ODE-BLIND, 2026-11-21): on 98 unseen systems it changed 42 reported laws, made 24 recoveries, lost none and left the wrong laws at 3. In use in the default ODE route |
 | Four seeds of the same PySR search side by side (`apedp_dyn/proposers/portfolio.py`, `pysr_members`) | On SRBench's 30 development problems, both noise levels, on four-core runners: 27 and 25 recovered, exactly the runs one search recovers; none gained, none lost; 0 of 54 reported laws inaccurate; 265 s of wall time for a 240 s budget | A seed does not change what the search finds. A portfolio of different searches (`apedp_dyn/proposers/deep_pass.py`, `mixed_members`) was developed instead (next row; audit M-22) |
 | Four different searches side by side: default PySR, a deeper exhaustive pass, algebraic PySR, a second seed (`mixed_members`) | Same 30 problems: 29 and 25 recovered by the benchmark's criterion against 27 and 25; three runs gained, one lost; 0 of 54 reported laws inaccurate. One of the three gains is an approximation that passes the tolerance narrowly (M-23), so by form 28 and 25 | Taken to a preregistered run, which held all four expectations; now in the routes table above |
 
@@ -162,7 +182,13 @@ recorded route at both noise levels, it becomes the default ODE route.
   `4.4e-9*exp(exp(x))` beside `-x**3`, and lost one law to two terms of size 1e-12.
 - **A candidate that cannot be fitted ends the run** (M-24): two of PREREG-ODE-REFINED's 234 runs
   and one of PREREG-PORTFOLIO-SEARCH's 266 stopped on a least-squares fit that did not converge,
-  each on a law the earlier route recovers. More searches mean more candidates, so this is more likely with a portfolio. A proposal that is not finite
+  each on a law the earlier route recovers. More searches mean more candidates, so this is more likely with a portfolio.
+  The fit guard is in the default routes for tables and for trajectories. In the blind ODE run it
+  dropped two candidates in one of 620 runs, and the unguarded route ended in that error on the
+  same component; none of the guarded runs did.
+- **The recovery criterion refits constants inside functions** (M-26): a factor `cos(c*...)`
+  becomes 1 when `c` is refitted to zero, so a law with such a factor can count as recovered while
+  it is inaccurate as reported. One case in the blind ODE run, for both routes (test R² −0.80). A proposal that is not finite
   on the data can crash a run when a proposer is used directly (M-17); the composed proposer of the
   refined path contains and records such a failure.
 - **Memorisation.** SRBench's laws are textbook formulas a language model may have seen. LLM-SRBench
