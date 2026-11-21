@@ -1,0 +1,738 @@
+{
+ "between_runs_spread": {
+  "recovered": 0.1057,
+  "reported": 0.0779,
+  "wrong": 0.0754
+ },
+ "forecast_beats_averages": [
+  7,
+  10
+ ],
+ "held_out_runs": [
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2706,
+     "expected": 167.4,
+     "inside": false,
+     "interval": [
+      159,
+      176
+     ],
+     "seen": 131
+    },
+    "reported": {
+     "brier": 0.0,
+     "expected": 233.6,
+     "inside": true,
+     "interval": [
+      233,
+      234
+     ],
+     "seen": 234
+    },
+    "wrong": {
+     "brier": 0.2611,
+     "expected": 13.2,
+     "inside": false,
+     "interval": [
+      9,
+      18
+     ],
+     "seen": 68
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.402,
+     "expected": 155.8,
+     "inside": false,
+     "interval": [
+      148,
+      164
+     ],
+     "seen": 131
+    },
+    "reported": {
+     "brier": 0.0,
+     "expected": 233.6,
+     "inside": true,
+     "interval": [
+      233,
+      234
+     ],
+     "seen": 234
+    },
+    "wrong": {
+     "brier": 0.2804,
+     "expected": 14.7,
+     "inside": false,
+     "interval": [
+      11,
+      19
+     ],
+     "seen": 68
+    }
+   },
+   "group": "sparse",
+   "held_out": "RESULT-ODE-MAIN-SEARCH-2026-11",
+   "learned_from": 620,
+   "route": "sparse_poly3",
+   "route_seen_before": true,
+   "runs": 234
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2279,
+     "expected": 346.8,
+     "inside": false,
+     "interval": [
+      331,
+      363
+     ],
+     "seen": 444
+    },
+    "reported": {
+     "brier": 0.0,
+     "expected": 617.4,
+     "inside": false,
+     "interval": [
+      615,
+      619
+     ],
+     "seen": 620
+    },
+    "wrong": {
+     "brier": 0.1083,
+     "expected": 181.3,
+     "inside": false,
+     "interval": [
+      167,
+      196
+     ],
+     "seen": 34
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.22,
+     "expected": 433.2,
+     "inside": true,
+     "interval": [
+      422,
+      445
+     ],
+     "seen": 444
+    },
+    "reported": {
+     "brier": 0.0,
+     "expected": 617.4,
+     "inside": false,
+     "interval": [
+      615,
+      619
+     ],
+     "seen": 620
+    },
+    "wrong": {
+     "brier": 0.0641,
+     "expected": 76.9,
+     "inside": false,
+     "interval": [
+      67,
+      87
+     ],
+     "seen": 34
+    }
+   },
+   "group": "sparse",
+   "held_out": "RESULT-ODE-BLIND-2026-11",
+   "learned_from": 234,
+   "route": "sparse_poly3",
+   "route_seen_before": true,
+   "runs": 620
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2535,
+     "expected": 177.4,
+     "inside": false,
+     "interval": [
+      168,
+      187
+     ],
+     "seen": 152
+    },
+    "reported": {
+     "brier": 0.2185,
+     "expected": 212.8,
+     "inside": false,
+     "interval": [
+      205,
+      221
+     ],
+     "seen": 186
+    },
+    "wrong": {
+     "brier": 0.0151,
+     "expected": 1.0,
+     "inside": false,
+     "interval": [
+      0,
+      2
+     ],
+     "seen": 4
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.1585,
+     "expected": 177.2,
+     "inside": false,
+     "interval": [
+      170,
+      185
+     ],
+     "seen": 152
+    },
+    "reported": {
+     "brier": 0.166,
+     "expected": 213.2,
+     "inside": false,
+     "interval": [
+      206,
+      220
+     ],
+     "seen": 186
+    },
+    "wrong": {
+     "brier": 0.0152,
+     "expected": 0.6,
+     "inside": false,
+     "interval": [
+      0,
+      2
+     ],
+     "seen": 4
+    }
+   },
+   "group": "tables",
+   "held_out": "RESULT-MAIN-SEARCH-2026-11",
+   "learned_from": 797,
+   "route": "main_search",
+   "route_seen_before": false,
+   "runs": 264
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2263,
+     "expected": 171.9,
+     "inside": true,
+     "interval": [
+      162,
+      182
+     ],
+     "seen": 174
+    },
+    "reported": {
+     "brier": 0.1623,
+     "expected": 206.3,
+     "inside": true,
+     "interval": [
+      198,
+      215
+     ],
+     "seen": 212
+    },
+    "wrong": {
+     "brier": 0.0001,
+     "expected": 2.3,
+     "inside": false,
+     "interval": [
+      1,
+      4
+     ],
+     "seen": 0
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.1214,
+     "expected": 172.4,
+     "inside": true,
+     "interval": [
+      165,
+      180
+     ],
+     "seen": 174
+    },
+    "reported": {
+     "brier": 0.1296,
+     "expected": 207.6,
+     "inside": true,
+     "interval": [
+      200,
+      215
+     ],
+     "seen": 212
+    },
+    "wrong": {
+     "brier": 0.0001,
+     "expected": 1.7,
+     "inside": true,
+     "interval": [
+      0,
+      3
+     ],
+     "seen": 0
+    }
+   },
+   "group": "tables",
+   "held_out": "RESULT-REFINED-SEARCH-2026-11",
+   "learned_from": 795,
+   "route": "refined",
+   "route_seen_before": false,
+   "runs": 266
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.212,
+     "expected": 166.0,
+     "inside": false,
+     "interval": [
+      156,
+      176
+     ],
+     "seen": 189
+    },
+    "reported": {
+     "brier": 0.1382,
+     "expected": 201.2,
+     "inside": false,
+     "interval": [
+      192,
+      210
+     ],
+     "seen": 224
+    },
+    "wrong": {
+     "brier": 0.0038,
+     "expected": 2.0,
+     "inside": true,
+     "interval": [
+      0,
+      4
+     ],
+     "seen": 1
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.133,
+     "expected": 166.2,
+     "inside": false,
+     "interval": [
+      159,
+      174
+     ],
+     "seen": 189
+    },
+    "reported": {
+     "brier": 0.1271,
+     "expected": 202.0,
+     "inside": false,
+     "interval": [
+      194,
+      210
+     ],
+     "seen": 224
+    },
+    "wrong": {
+     "brier": 0.0038,
+     "expected": 1.0,
+     "inside": true,
+     "interval": [
+      0,
+      2
+     ],
+     "seen": 1
+    }
+   },
+   "group": "tables",
+   "held_out": "RESULT-PORTFOLIO-SEARCH-2026-11",
+   "learned_from": 796,
+   "route": "refined_portfolio",
+   "route_seen_before": false,
+   "runs": 265
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2274,
+     "expected": 172.2,
+     "inside": true,
+     "interval": [
+      162,
+      182
+     ],
+     "seen": 173
+    },
+    "reported": {
+     "brier": 0.1726,
+     "expected": 207.9,
+     "inside": true,
+     "interval": [
+      199,
+      217
+     ],
+     "seen": 207
+    },
+    "wrong": {
+     "brier": 0.0038,
+     "expected": 2.0,
+     "inside": true,
+     "interval": [
+      0,
+      4
+     ],
+     "seen": 1
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.1196,
+     "expected": 172.8,
+     "inside": true,
+     "interval": [
+      165,
+      180
+     ],
+     "seen": 173
+    },
+    "reported": {
+     "brier": 0.1351,
+     "expected": 209.4,
+     "inside": true,
+     "interval": [
+      202,
+      217
+     ],
+     "seen": 207
+    },
+    "wrong": {
+     "brier": 0.0038,
+     "expected": 1.0,
+     "inside": true,
+     "interval": [
+      0,
+      2
+     ],
+     "seen": 1
+    }
+   },
+   "group": "tables",
+   "held_out": "RESULT-LLM-CONTROLLER-2026-11",
+   "learned_from": 795,
+   "route": "refined_controlled",
+   "route_seen_before": false,
+   "runs": 266
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2317,
+     "expected": 144.2,
+     "inside": true,
+     "interval": [
+      135,
+      154
+     ],
+     "seen": 149
+    },
+    "reported": {
+     "brier": 0.1682,
+     "expected": 180.5,
+     "inside": true,
+     "interval": [
+      172,
+      189
+     ],
+     "seen": 184
+    },
+    "wrong": {
+     "brier": 0.0377,
+     "expected": 2.7,
+     "inside": false,
+     "interval": [
+      1,
+      5
+     ],
+     "seen": 9
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.2251,
+     "expected": 93.9,
+     "inside": false,
+     "interval": [
+      85,
+      103
+     ],
+     "seen": 149
+    },
+    "reported": {
+     "brier": 0.1672,
+     "expected": 142.9,
+     "inside": false,
+     "interval": [
+      134,
+      151
+     ],
+     "seen": 184
+    },
+    "wrong": {
+     "brier": 0.0266,
+     "expected": 8.5,
+     "inside": true,
+     "interval": [
+      5,
+      12
+     ],
+     "seen": 9
+    }
+   },
+   "group": "trajectories",
+   "held_out": "RESULT-ODE-MAIN-SEARCH-2026-11",
+   "learned_from": 1471,
+   "route": "ode_main_search",
+   "route_seen_before": true,
+   "runs": 234
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2167,
+     "expected": 140.3,
+     "inside": false,
+     "interval": [
+      131,
+      150
+     ],
+     "seen": 165
+    },
+    "reported": {
+     "brier": 0.1401,
+     "expected": 176.9,
+     "inside": false,
+     "interval": [
+      169,
+      185
+     ],
+     "seen": 195
+    },
+    "wrong": {
+     "brier": 0.0423,
+     "expected": 2.5,
+     "inside": false,
+     "interval": [
+      1,
+      5
+     ],
+     "seen": 10
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.1774,
+     "expected": 130.7,
+     "inside": false,
+     "interval": [
+      122,
+      139
+     ],
+     "seen": 165
+    },
+    "reported": {
+     "brier": 0.1231,
+     "expected": 171.2,
+     "inside": false,
+     "interval": [
+      163,
+      179
+     ],
+     "seen": 195
+    },
+    "wrong": {
+     "brier": 0.0305,
+     "expected": 10.8,
+     "inside": true,
+     "interval": [
+      7,
+      15
+     ],
+     "seen": 10
+    }
+   },
+   "group": "trajectories",
+   "held_out": "RESULT-ODE-REFINED-2026-11",
+   "learned_from": 1473,
+   "route": "ode_refined",
+   "route_seen_before": false,
+   "runs": 232
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2247,
+     "expected": 417.3,
+     "inside": true,
+     "interval": [
+      402,
+      432
+     ],
+     "seen": 409
+    },
+    "reported": {
+     "brier": 0.1722,
+     "expected": 503.4,
+     "inside": false,
+     "interval": [
+      491,
+      516
+     ],
+     "seen": 484
+    },
+    "wrong": {
+     "brier": 0.0063,
+     "expected": 26.5,
+     "inside": false,
+     "interval": [
+      20,
+      33
+     ],
+     "seen": 3
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.2732,
+     "expected": 411.2,
+     "inside": true,
+     "interval": [
+      399,
+      424
+     ],
+     "seen": 409
+    },
+    "reported": {
+     "brier": 0.1886,
+     "expected": 496.4,
+     "inside": false,
+     "interval": [
+      485,
+      508
+     ],
+     "seen": 484
+    },
+    "wrong": {
+     "brier": 0.0053,
+     "expected": 3.4,
+     "inside": true,
+     "interval": [
+      1,
+      6
+     ],
+     "seen": 3
+    }
+   },
+   "group": "trajectories",
+   "held_out": "RESULT-ODE-BLIND-2026-11",
+   "learned_from": 466,
+   "route": "ode_repaired",
+   "route_seen_before": false,
+   "runs": 620
+  },
+  {
+   "averages_only": {
+    "recovered": {
+     "brier": 0.2668,
+     "expected": 416.6,
+     "inside": false,
+     "interval": [
+      402,
+      431
+     ],
+     "seen": 333
+    },
+    "reported": {
+     "brier": 0.1997,
+     "expected": 502.6,
+     "inside": false,
+     "interval": [
+      490,
+      515
+     ],
+     "seen": 456
+    },
+    "wrong": {
+     "brier": 0.0063,
+     "expected": 26.5,
+     "inside": false,
+     "interval": [
+      20,
+      33
+     ],
+     "seen": 3
+    }
+   },
+   "forecast": {
+    "recovered": {
+     "brier": 0.3104,
+     "expected": 382.6,
+     "inside": false,
+     "interval": [
+      370,
+      395
+     ],
+     "seen": 333
+    },
+    "reported": {
+     "brier": 0.1932,
+     "expected": 476.4,
+     "inside": false,
+     "interval": [
+      465,
+      488
+     ],
+     "seen": 456
+    },
+    "wrong": {
+     "brier": 0.0053,
+     "expected": 3.2,
+     "inside": true,
+     "interval": [
+      1,
+      5
+     ],
+     "seen": 3
+    }
+   },
+   "group": "trajectories",
+   "held_out": "RESULT-ODE-BLIND-2026-11",
+   "learned_from": 466,
+   "route": "ode_main_search",
+   "route_seen_before": true,
+   "runs": 619
+  }
+ ],
+ "total_inside_unwidened_interval": [
+  4,
+  10
+ ],
+ "what": "Each recorded run forecast from the other runs of its group. A backtest, not a test: every outcome was known when the forecaster was written."
+}

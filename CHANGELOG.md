@@ -35,6 +35,14 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The system forecasts its own results (2026-11-21).** Until now the author wrote his
+  expectations into each preregistration by hand. `discovery_l2/outcome_forecast.py` learns from
+  the recorded runs how the outcome depends on what the law looks like and on the route, and
+  gives each problem's chance of recovery with totals and intervals. Backtest (not a test):
+  better than the average in 7 of 10 held-out runs, clearly on tables, not across kinds of
+  dynamical systems; whole runs differed from their forecasts by 10.6 percentage points, so the
+  intervals are widened by that. From now on a forecast is frozen with each preregistration and
+  scored in its result.
 - **The agent beside the search, first development run with a real model (2026-11-21; not a
   preregistered result).** Twenty invented development laws at noise 0 and 1 %, the free model
   `nemotron-3-ultra`, 120 runs, all completed (`benchmarks/agentic_variation_dev_study.json`). The
