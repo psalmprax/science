@@ -1,0 +1,156 @@
+# A model rewrites the search's candidate generator under a fixed judge (apedp_dyn/evolution).
+#   push to search-evolution-smoke-*  -> the tests, the seed's scores, the loop driven by a scripted stand-in, and
+#                                        the seed beside the default searches on two development laws.
+#                                        No model and no key are used.
+#   push to search-evolution-run-*    -> smoke, then the loop driven by a real coding model, then its champion and
+#                                        the seed through the refined path on the twenty development laws.
+# The run needs the repository secret CODING_MODEL_API_KEY and the repository variable CODING_MODEL (the model's
+# name), and the variable CODING_MODEL_BASE_URL unless the model is on NVIDIA's service. Until they exist the run
+# stops before anything is asked of a model. Only the job that talks to the model is given the key; code a model
+# wrote runs in a process that is given none of the job's environment.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+# Development only: no version is installed, no held-back law is read, no preregistered measurement is taken.
+name: Search evolution
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['search-evolution-smoke-*', 'search-evolution-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The loop's own tests and the invented laws'
+        run: python -m pytest tests/test_evolution.py tests/test_invented_laws.py -q
+      - name: The seed on the training and validation laws
+        run: python scripts/run_search_evolution.py baseline --out evolution-out/baseline
+      - name: The loop driven by a scripted stand-in (no model)
+        run: python scripts/run_search_evolution.py demo --out evolution-out/demo --train 16 --validation 16 --seconds-per-call 1.5
+      - name: The seed beside the default searches on two development laws
+        run: python scripts/run_search_evolution.py score --code seed --arm seed_generator --limit 2 --budget 40 --out evolution-out/path
+
+  evolve:
+    needs: smoke
+    if: startsWith(github.ref_name, 'search-evolution-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: A coding model has been provided
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY }}
+          CODING_MODEL: ${{ vars.CODING_MODEL }}
+        run: |
+          if [ -z "$CODING_MODEL_API_KEY" ] || [ -z "$CODING_MODEL" ]; then
+            echo "::error::No coding model has been provided: set the repository secret CODING_MODEL_API_KEY and the repository variable CODING_MODEL (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+      - name: The loop, driven by the model
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY }}
+          CODING_MODEL: ${{ vars.CODING_MODEL }}
+          CODING_MODEL_BASE_URL: ${{ vars.CODING_MODEL_BASE_URL }}
+        run: python scripts/run_search_evolution.py evolve --out evolution-out --steps 30 --seconds 14400
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: evolution-ledger
+          path: evolution-out/
+          if-no-files-found: error
+      - name: Print the ledger for rebuilding from the log
+        if: always()
+        run: |
+          cd evolution-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="
+
+  score:
+    needs: evolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        arm: [champion, seed_generator]
+        k: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: evolution-ledger
+          path: evolution-out
+      - name: Development laws through the path, ${{ matrix.arm }}, shard ${{ matrix.k }} of 6
+        env:
+          ARM: ${{ matrix.arm }}
+          SHARD: ${{ matrix.k }}
+        run: |
+          if [ "$ARM" = "champion" ]; then CODE=evolution-out/champion.txt; else CODE=seed; fi
+          python scripts/run_search_evolution.py score --code "$CODE" --arm "$ARM" --shard "$SHARD/6" --out path-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: evolution-path-${{ matrix.arm }}-${{ matrix.k }}
+          path: path-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: score
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: evolution-path-*
+          path: path-out
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/run_search_evolution.py collect --out path-out
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd path-out
+          rm -f path-shard-*.jsonl
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

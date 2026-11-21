@@ -18,10 +18,16 @@ whole domain), and a search that drops it would be marked wrong (audit M-03).
 
 The first ``DEVELOPMENT`` laws are for development; the rest are held back for a preregistered
 run. Nothing claims these resemble natural laws: they are a test of search, not of physics.
+
+``benchmarks/invented_laws_fingerprints.json`` holds the SHA-256 of every law's structure and
+nothing else. Anything that draws further laws from this grammar for training (the loop of
+``apedp_dyn.evolution``) uses it to leave out structures that are in the benchmark, without
+reading a held-back law.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -32,6 +38,7 @@ import sympy as sp
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "benchmarks" / "invented_laws.json"
+FINGERPRINTS = ROOT / "benchmarks" / "invented_laws_fingerprints.json"
 
 SEED = 20261121
 COUNT = 60
@@ -142,19 +149,35 @@ def build() -> dict[str, Any]:
             "seed": SEED, "domain": [LOW, HIGH], "constants": list(CONSTANTS), "laws": laws}
 
 
+def fingerprint(text: str) -> str:
+    """The SHA-256 of the structure of a law given as text: what two laws share if they differ only in their constants."""
+    expr = sp.sympify(text, locals={f"x{i}": sp.Symbol(f"x{i}") for i in range(3)})
+    return hashlib.sha256(structure(expr).encode()).hexdigest()
+
+
+def fingerprints(record: dict[str, Any]) -> dict[str, Any]:
+    """The structure fingerprints of every law of the benchmark, sorted, with no law's text."""
+    return {"note": "SHA-256 of the structure of each law in invented_laws.json (constants replaced by C), sorted. "
+                    "For leaving these structures out of training sets; no law can be read back from it.",
+            "fingerprints": sorted(fingerprint(law["text"]) for law in record["laws"])}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
     record = build()
     text = json.dumps(record, indent=1, sort_keys=True) + "\n"
+    prints = json.dumps(fingerprints(record), indent=1, sort_keys=True) + "\n"
     if args.check:
-        if not OUT.exists() or OUT.read_text(encoding="utf-8") != text:
-            print(f"{OUT.name} is not what the generator gives")
-            return 1
-        print(f"{OUT.name}: {len(record['laws'])} laws, as generated")
+        for path, expected in ((OUT, text), (FINGERPRINTS, prints)):
+            if not path.exists() or path.read_text(encoding="utf-8") != expected:
+                print(f"{path.name} is not what the generator gives")
+                return 1
+        print(f"{OUT.name}: {len(record['laws'])} laws, as generated; {FINGERPRINTS.name} matches")
         return 0
     OUT.write_text(text, encoding="utf-8")
+    FINGERPRINTS.write_text(prints, encoding="utf-8")
     by_inputs = {k: sum(law["inputs"] == k for law in record["laws"]) for k in (1, 2, 3)}
     print(f"wrote {OUT.relative_to(ROOT)}: {len(record['laws'])} laws, by number of inputs {by_inputs}")
     return 0

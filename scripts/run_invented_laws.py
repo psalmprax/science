@@ -61,6 +61,8 @@ TIME_LIMIT_S = 1200.0      # when a run's process is killed
 MODEL = os.environ.get("LLM_MODEL", "nvidia/nemotron-3-ultra-550b-a55b")
 THINKING, REASONING_BUDGET = True, 2000
 INTERVAL_S = float(os.environ.get("LLM_INTERVAL_SECONDS", "6.0"))   # spacing of requests; the free tier is rate limited
+#: further arms other harnesses add before they call ``run_one``: arm -> (search budget -> (stage, description))
+EXTRA_STAGES: dict[str, Any] = {}
 
 
 def entries(split: str = "development") -> dict[str, dict[str, Any]]:
@@ -117,6 +119,8 @@ def run_arm(arm: str, split: dict[str, Any], entry: dict[str, Any], budget: floa
         stage = FitGuardProposer(AgenticVariationProposer(client, None, rounds=1, steps=STEPS, session_seconds=SESSION_S,
                                                           target_col="__target__", seed=base.SEED), target_col="__target__")
         described = "the agent alone"
+    elif arm in EXTRA_STAGES:
+        stage, described = EXTRA_STAGES[arm](budget)
     else:
         raise ValueError(f"unknown arm {arm!r}")
     result = refined_search.discover_refined(
@@ -130,6 +134,7 @@ def run_arm(arm: str, split: dict[str, Any], entry: dict[str, Any], budget: floa
              "proposer_failures": result.proposer_failures, "found_by": path.found_by, "rejected_law": path.rejected_law,
              "adequacy": path.adequacy, "rows_read": path.rows_read, "candidates": path.candidates, "stage": described,
              "agent": dict(getattr(inner, "last_run", {}) or {}) if arm != "default" else {},
+             "stage_run": dict(getattr(stage, "last_run", {}) or {}) if arm in EXTRA_STAGES else {},
              "model_calls": getattr(client, "calls", 0) if client is not None else 0}
     return {"model": law, "pred": path_run._predict(law, names, split["X_test"]) if law is not None else None,
             "formula": result.law, "extra": extra}

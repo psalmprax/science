@@ -147,8 +147,14 @@ What carries over and what does not:
   more laws at equal time, without more wrong ones, is an open question, to be answered on laws a
   model cannot have read (`benchmarks/invented_laws.json`).
 - **The second step,** closer to AVO itself, is an agent that edits the search's own code under a
-  judge it cannot edit, scored on development problems and tested once on problems held back. It
-  needs a strong coding model and far more compute than free CI runners, and it is not started.
+  judge it cannot edit, scored on development problems and tested once on problems held back.
+  The machinery was built on the same date (`apedp_dyn/evolution`,
+  [SEARCH_EVOLUTION.md](SEARCH_EVOLUTION.md)): a check that refuses code outside a safe subset of
+  Python, a process the code runs in that can reach nothing, the loop, and a fixed judge. It is
+  tested with a scripted stand-in and has not been run with a model: it needs a strong coding
+  model, which the project does not have yet. AVO's own setting has an advantage this one lacks:
+  a kernel's speed is the thing wanted, while a judge's count of laws proposed on training laws
+  is a stand-in for laws recovered on new ones.
 
 
 ## What this pass did not cover

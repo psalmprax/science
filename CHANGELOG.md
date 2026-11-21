@@ -35,6 +35,24 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **A loop in which a coding model rewrites the search's candidate generator (2026-11-21).** The
+  second step after the agentic operator, and the closer one to Agentic Variation Operators: the
+  model varies code, not candidates. New package `apedp_dyn/evolution`: `restricted` refuses any
+  code outside an allowlisted subset of Python before it runs; `jail` runs what passes in a
+  process that has none of the caller's environment and cannot write, open a file or a socket, or
+  start a process; `operator` is the loop (lineage, one variation with repair, a ledger of every
+  version); `evolved_proposer` is the judge and the door, through which a candidate's output
+  passes as text only. The judge is this repository's code and no candidate can reach it; the
+  loop installs nothing. Built on the owner's instruction to implement it and wait for a coding
+  model: tested with a scripted stand-in (`tests/test_evolution.py`, 116 tests), and **no real
+  model has driven it**. Two things the tests found: numpy fetches some of its own helpers by name
+  on first use, which a process that can open no file has to allow for; and the whitelist parser
+  evaluates whole-number powers exactly, so a candidate returning `9**9**9**9` would have stalled
+  the judge. The second also holds for the earlier language-model proposers, whose replies come
+  from a hosted model; the new door checks for it, the frozen parser is unchanged.
+  `benchmarks/invented_laws_fingerprints.json` lets training laws be drawn without the
+  benchmark's structures and without reading a held-back law. Design, limits and the rule for
+  adoption: `docs/SEARCH_EVOLUTION.md`.
 - **A language-model agent as the variation operator of a search (2026-11-21).** After Agentic
   Variation Operators (Chen et al., 2026). The two language-model runs so far used the model in a
   fixed pipeline: it wrote equations and was told their fit error (78 laws recovered against 152
