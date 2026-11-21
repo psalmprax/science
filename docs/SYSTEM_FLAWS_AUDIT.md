@@ -307,6 +307,34 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-27 the adequacy check refuses true laws on trajectory rows — FOUND
+  2026-11-21 ON THE ROWS OF THE BLIND ODE RUN; A REPAIR IS BUILT AND UNDER
+  TEST; the frozen path is unchanged.** `main_search.adequacy` passes a law
+  only if its residuals show no structure among neighbouring rows
+  (`residual_structure <= 0`). For independent rows of a table that is the
+  right demand. Window rows of a trajectory carry an estimated state and an
+  estimated rate with related errors, and without noise a rate's error is the
+  systematic error of the window fit: a smooth function of the state, which
+  is structure. Measured on the 98 systems of PREREG-ODE-BLIND-2026-11 after
+  that run (development): given the *true* law of each of the 310 components,
+  the check fails it in 53 at 1 % noise; without noise 173 fits are exact to
+  numerical precision, which the path accepts without this check, and of the
+  other 137 the check fails 93. Of the 28 runs in
+  which the route refused a law at this check, the refused law was the true
+  one in 20 (17 of 22 at 1 %, 3 of 6 without noise). It explains what the
+  result note could only suspect: both path routes recover more at 1 % noise
+  than without, where random error hides the systematic one. With the true
+  law as the only searched candidate, 12 of 14 components that sparse
+  regression recovers without noise were still refused. **Repair
+  (`ode/precision_adequacy.py`):** a refused law whose residual is within two
+  of the rows' own standard errors is reinstated; structure beneath what the
+  rows resolve is no evidence. On the same 28 refusals it reinstates 17 true
+  laws, 4 accurate ones and 2 wrong ones. Without noise it reinstates little,
+  because the rows' stated error understates the systematic error (the true
+  law's residual is up to 66 times it): a better error estimate for
+  noise-free rows is not built. **Not measured blind**; under test in
+  PREREG-ODE-ADDITIONS-2026-11. The tabular routes are unaffected by the
+  repair and were not re-examined for the same fault.
 - **M-26 the recovery criterion can refit a factor away — FOUND 2026-11-21 IN
   THE BLIND ODE RUN, RECORDED; the frozen scorer is unchanged.**
   `run_srbench_baseline.symbolic_recovery` refits every constant of a reported

@@ -38,6 +38,11 @@ class SideBySide(CompositeProposer):
         self._searches, self._generator = searches, generator
 
     @property
+    def dropped(self) -> list[tuple[str, str]]:
+        """What the fit guards of both members dropped in the last call."""
+        return [*getattr(self._searches, "dropped", []), *getattr(self._generator, "dropped", [])]
+
+    @property
     def last_run(self) -> dict[str, Any]:
         return {"generator": dict(getattr(self._generator, "last_run", {}) or {}),
                 "generator_dropped_by_fit_guard": [list(item) for item in getattr(self._generator, "dropped", [])],

@@ -35,6 +35,20 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **Why the ODE route loses to plain sparse regression without noise, and three additions built on
+  it (2026-11-21; development, not a result).** Looking at the rows of the blind ODE run after
+  it: in 50 of the 58 noise-free components only the sparse reference recovered, the law's terms
+  were never among the route's candidates; and the path's adequacy check, which demands residuals
+  with no structure at all, fails the *true* law in 53 of 310 components at 1 % noise and in 93 of
+  the 137 noise-free ones whose fit is not exact (audit M-27). Window rows are not the
+  independent rows the check was made for. Built around the frozen path, none in force:
+  `ode/second_engine.py` (sparse regression beside the searches), `ode/precision_adequacy.py` (a
+  law refused for structure beneath the rows' own precision is reinstated),
+  `ode/chosen_experiment.py` with `discovery_l2/deciding_measurement.py` (restart the system
+  where the rival laws disagree most, and confirm again). `scripts/run_ode_additions.py` gives
+  every arm the same candidates. The first blind set cannot test what was found on it, so a
+  second one was drawn by two mechanical rules: 30 invented polynomial systems and 16 rational
+  ones from the literature (`scripts/build_ode_second_blind_systems.py`).
 - **The system forecasts its own results (2026-11-21).** Until now the author wrote his
   expectations into each preregistration by hand. `discovery_l2/outcome_forecast.py` learns from
   the recorded runs how the outcome depends on what the law looks like and on the route, and

@@ -131,6 +131,12 @@ def discover_component(dev: WindowRows, pool: WindowRows, component: int, *, bud
                             result=found)
     stage = search_stage(budget_seconds, seed) if proposer is _UNSET else proposer
     result = refined_ode.discover_component(dev, pool, component, proposer=stage, seed=seed)
+    return pruned_to_precision(result, dev, component, stage)
+
+
+def pruned_to_precision(result: Any, dev: WindowRows, component: int, stage: Any = None) -> ComponentLaw:
+    """A refined-path result as the route reports it: its law pruned to the rows' precision, the unpruned law kept."""
+    names = main_search_ode.state_names(dev.states.shape[1])
     law, pruned, dropped, prune_error = result.law, result.law, [], None
     if law:
         try:
