@@ -112,9 +112,9 @@ before the run, and a panel that keeps the pairs that stopped trading.
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | No number on a benchmark where memorising does not help (LLM-SRBench) | The largest unknown | Needs the owner's Hugging Face access and `HF_TOKEN` | Blocked |
 | 2 | ODE discovery without chosen experiments | Leading systems report 90 % and more by choosing them. On this system's own record the headroom is smaller: of the 69 runs the refined ODE run missed, in 10 the true law was proposed and could not be told from its rivals on the rows at hand; in 37 nothing was confirmed and in 17 the law was never proposed | Buildable here: start further trajectories where the surviving rivals disagree, and measure against equal data chosen at random | Not built |
-| 3 | A capable language model in the loop | The source of the field's gains on tables | Needs a paid model key | Blocked |
+| 3 | A capable language model in the loop | The source of the field's gains on tables | Needs a paid model key. What does not need one was built on 2026-11-21: the model as an agent on the search's lineage (`proposers/agentic_variation.py`, after AVO), with a development harness on invented laws | Built with a scripted model; **not measured**; a strong model still blocked |
 | 4 | The ODE route's refined path missed its reliability limit by one law | 92 and 73 components recovered against 80 and 69, unused | A blind run | **Frozen and started today** (PREREG-ODE-BLIND) |
-| 5 | No finding on real data | The lowest-rated part of the system | The owner's word to start the frozen audit; then the dated claims | Frozen, waiting |
+| 5 | No finding on real data | The lowest-rated part of the system | The owner's word to start the frozen audits (eleven published claims in two batches since 2026-11-21); then the dated claims | Frozen, waiting |
 | 6 | No statistical guarantee on which terms are kept | Others now offer a controlled false-discovery rate | Buildable here: knockoff selection in the polynomial stage, measured against the present pruning | Not built |
 | 7 | The recovery criterion can pass a form that is not the law (M-23) | Two of 173 in one run | Done today: every recorded recovery judged on a range twice as wide | **Closed for tables**; open for trajectories |
 | 8 | Outsiders have never tried to break the referee | Its error rate is self-measured | Needs a public page | Not started |
@@ -124,6 +124,32 @@ under gap 2 comes from the recorded rows of PREREG-ODE-REFINED-2026-11: 69 misse
 37 where the search confirmed nothing, 27 where the path reported one of several laws it could not
 separate (the true law among the recorded candidates in 10 of them), 3 confirmed and wrong, and 2
 that ended in an error. Most of what the ODE route loses is search, not the choice of experiment.
+
+### Third pass, the same day: agents as variation operators
+
+AVO (Chen et al., NVIDIA, arXiv:2603.24517, March 2026) replaces the fixed mutation and crossover
+of evolutionary program search with a coding agent that reads the lineage of candidates, a
+knowledge base and the results of running its own edits. Its evidence is on GPU attention kernels,
+where a candidate's score is a benchmark that is exact and cheap; over seven days of unattended
+running it reports kernels up to 3.5 % faster than cuDNN and up to 10.5 % faster than
+FlashAttention-4.
+
+What carries over and what does not:
+
+- **Carries over:** the role. This system's two language-model runs both kept the model inside a
+  fixed pipeline, and both showed little (78 recovered against 152 for PySR; 173 against 174
+  without the model). A model that can see residuals, choose what to test and vary what the
+  searches found is the one design not tried. It was built on this date
+  (`proposers/agentic_variation.py`) and is not measured.
+- **Does not carry over:** the score. A fit on development rows is not an exact benchmark; it can
+  be improved by overfitting. So the agent proposes and the path's confirmation decides, as for
+  every proposer, and every structure the agent tries is counted. Whether the loop then recovers
+  more laws at equal time, without more wrong ones, is an open question, to be answered on laws a
+  model cannot have read (`benchmarks/invented_laws.json`).
+- **The second step,** closer to AVO itself, is an agent that edits the search's own code under a
+  judge it cannot edit, scored on development problems and tested once on problems held back. It
+  needs a strong coding model and far more compute than free CI runners, and it is not started.
+
 
 ## What this pass did not cover
 

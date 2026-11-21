@@ -1,0 +1,14 @@
+{
+ "preregistration": "PREREG-LAW-AUDIT-FINANCE-MORE-2026-11",
+ "sha256": {
+  "apedp_dyn/market/law_audit.py": "082e3f2959e4f3196932ea0a4862387dfd7081af086b242668db809a7250327b",
+  "apedp_dyn/market/law_audit_more.py": "46318bde807c5c724eff4b1feccc5968e4f381a0824755916b1ad1d4c1410255",
+  "apedp_dyn/market/law_audit_more_worlds.py": "1b8bb8fbc7ab898abdf526efc48df835dea0374d438c2156e37235eb791a2e3a",
+  "apedp_dyn/market/law_audit_worlds.py": "bebeb1574b31551755eb57701ffe910f6534e3b01c91e2df8c3660472b9eff8a",
+  "preregistration/POWER-LAW-AUDIT-FINANCE-MORE-2026-11/calibration.json": "47416ff0e8e13659b670c2bb095c96b7a39ad5ec5d5c351918b8061940efdbe3",
+  "preregistration/POWER-LAW-AUDIT-FINANCE-MORE-2026-11/summary.json": "dd3d8ef635bc1428b163c53c0db86159bf20fda0c8bc0d9610467d8b90a6c23c",
+  "preregistration/PREREG-LAW-AUDIT-FINANCE-MORE-2026-11.md": "5ddad30fd874f0f0aea6e395f1d8475dbad868bf5631ec6e9b7d753004feb55b",
+  "scripts/run_law_audit_finance.py": "b80450bcd531eb8e7b180bfb36a5682867dbf3d0f58ea1201853574b9b862837",
+  "scripts/run_law_audit_finance_more.py": "d97c053a6cf4a19f8a4b75d41092e7961ca8ea1937b9ed5050ca6fcaf8a8ef0f"
+ }
+}

@@ -1,0 +1,440 @@
+{
+ "constants": [
+  0.3,
+  0.45,
+  0.7,
+  1.3,
+  1.7,
+  2.3,
+  2.9,
+  3.7
+ ],
+ "domain": [
+  1.0,
+  5.0
+ ],
+ "laws": [
+  {
+   "cost": 10,
+   "id": 9000,
+   "inputs": 2,
+   "split": "development",
+   "text": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "cost": 14,
+   "id": 9001,
+   "inputs": 3,
+   "split": "development",
+   "text": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "cost": 5,
+   "id": 9002,
+   "inputs": 1,
+   "split": "development",
+   "text": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "cost": 8,
+   "id": 9003,
+   "inputs": 2,
+   "split": "development",
+   "text": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "cost": 12,
+   "id": 9004,
+   "inputs": 1,
+   "split": "development",
+   "text": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "cost": 7,
+   "id": 9005,
+   "inputs": 1,
+   "split": "development",
+   "text": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "cost": 8,
+   "id": 9006,
+   "inputs": 1,
+   "split": "development",
+   "text": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "cost": 10,
+   "id": 9007,
+   "inputs": 2,
+   "split": "development",
+   "text": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "cost": 10,
+   "id": 9008,
+   "inputs": 2,
+   "split": "development",
+   "text": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "cost": 11,
+   "id": 9009,
+   "inputs": 2,
+   "split": "development",
+   "text": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "cost": 5,
+   "id": 9010,
+   "inputs": 2,
+   "split": "development",
+   "text": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "cost": 5,
+   "id": 9011,
+   "inputs": 2,
+   "split": "development",
+   "text": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "cost": 5,
+   "id": 9012,
+   "inputs": 1,
+   "split": "development",
+   "text": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "cost": 5,
+   "id": 9013,
+   "inputs": 1,
+   "split": "development",
+   "text": "3.7*sin(2.9*x0)"
+  },
+  {
+   "cost": 8,
+   "id": 9014,
+   "inputs": 1,
+   "split": "development",
+   "text": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "cost": 12,
+   "id": 9015,
+   "inputs": 2,
+   "split": "development",
+   "text": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "cost": 14,
+   "id": 9016,
+   "inputs": 3,
+   "split": "development",
+   "text": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "cost": 13,
+   "id": 9017,
+   "inputs": 3,
+   "split": "development",
+   "text": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "cost": 10,
+   "id": 9018,
+   "inputs": 3,
+   "split": "development",
+   "text": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "cost": 7,
+   "id": 9019,
+   "inputs": 3,
+   "split": "development",
+   "text": "1.3*exp(-0.7*x0)/(x1*x2)"
+  },
+  {
+   "cost": 9,
+   "id": 9020,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "2.3*log(0.45*x1 + 1)/(x0 + 1.3)"
+  },
+  {
+   "cost": 9,
+   "id": 9021,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "1.7*x1*sin(0.45*x0) - 1.3/x2"
+  },
+  {
+   "cost": 10,
+   "id": 9022,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "-0.3*x0**3 + 2.3*log(0.45*x0 + 1)"
+  },
+  {
+   "cost": 7,
+   "id": 9023,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "0.45*x0**2/(0.3 + 1/x0)"
+  },
+  {
+   "cost": 13,
+   "id": 9024,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "-1.3*sqrt(x0 + 1.7) + 2.9*log(0.45*x1 + 1)"
+  },
+  {
+   "cost": 12,
+   "id": 9025,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "0.7*x1**3*sqrt(x2 + 1.3)*sin(0.3*x0)"
+  },
+  {
+   "cost": 9,
+   "id": 9026,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "2.3*x1**2/(tanh(0.7*x0) + 2.9)"
+  },
+  {
+   "cost": 7,
+   "id": 9027,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "2.3*x0*sin(2.3*x0)/(x0 + 2.3)"
+  },
+  {
+   "cost": 9,
+   "id": 9028,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "0.3/(x0*(1.7 + exp(-1.3*x0)))"
+  },
+  {
+   "cost": 5,
+   "id": 9029,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "2.3*x0/(x0 + 0.7)"
+  },
+  {
+   "cost": 8,
+   "id": 9030,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "0.7*x0*x1/((x0 + 1.7)*(x1 + 1.7))"
+  },
+  {
+   "cost": 13,
+   "id": 9031,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "3.7*x0**2*x1/((x1 + 0.7)*(tanh(0.3*x2) + 2.3))"
+  },
+  {
+   "cost": 10,
+   "id": 9032,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "0.3*x1*log(3.7*x0 + 1)/(x1 + 1.3)"
+  },
+  {
+   "cost": 12,
+   "id": 9033,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "3.7*x1*exp(-1.7*x2)/(x1 + 0.7) + 1.7/x0"
+  },
+  {
+   "cost": 7,
+   "id": 9034,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "-0.7*x2 + 0.7*x1**2/x0"
+  },
+  {
+   "cost": 8,
+   "id": 9035,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "0.7*x1*x2*log(1.3*x0 + 1)"
+  },
+  {
+   "cost": 11,
+   "id": 9036,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "2.9*log(0.3*x0 + 1)*log(1.3*x0 + 1)"
+  },
+  {
+   "cost": 11,
+   "id": 9037,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "x2**3*(-0.7*x0 + 0.3*sqrt(x1 + 1.3))"
+  },
+  {
+   "cost": 10,
+   "id": 9038,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "1.7*x1*sqrt(x0 + 0.45)/(x1 + 0.7)"
+  },
+  {
+   "cost": 8,
+   "id": 9039,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "(1.7/x1 + 3.7/x0)/(x0 + 1.3)"
+  },
+  {
+   "cost": 6,
+   "id": 9040,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "2.3*x1*tanh(0.45*x0)"
+  },
+  {
+   "cost": 6,
+   "id": 9041,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "3.7*x0**3 - 0.45*x1"
+  },
+  {
+   "cost": 8,
+   "id": 9042,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "1.7*x0**3*x1**2/(x1 + 0.7)"
+  },
+  {
+   "cost": 11,
+   "id": 9043,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "2.9*x2 + 2.9*log(2.9*x0 + 1)/(0.45 + 1/x1)"
+  },
+  {
+   "cost": 8,
+   "id": 9044,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "2.9*x0 + 0.7*log(0.7*x1 + 1)"
+  },
+  {
+   "cost": 9,
+   "id": 9045,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "1.7*x0**3*x1**3*log(1.7*x1 + 1)"
+  },
+  {
+   "cost": 6,
+   "id": 9046,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "0.45*log(0.7*x0 + 1)"
+  },
+  {
+   "cost": 6,
+   "id": 9047,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "0.7*x0**2/(x0 + 2.9)"
+  },
+  {
+   "cost": 12,
+   "id": 9048,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "0.3*sqrt(x0 + 0.3) + 0.45*sqrt(x0 + 2.3)"
+  },
+  {
+   "cost": 11,
+   "id": 9049,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "(2.9*x0**3 - 3.7*x1**3)*exp(-0.45*x0)"
+  },
+  {
+   "cost": 11,
+   "id": 9050,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "3.7*sqrt(x0 + 1.7)*sqrt(x1 + 0.45)"
+  },
+  {
+   "cost": 13,
+   "id": 9051,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "1.7*x1/((x0 + 0.3)*(x1 + 0.7)*(x0/(x0 + 0.45) + 0.7))"
+  },
+  {
+   "cost": 12,
+   "id": 9052,
+   "inputs": 3,
+   "split": "held_out",
+   "text": "0.3*x1*x2**2*sqrt(x0 + 0.45)/(x1 + 2.9)"
+  },
+  {
+   "cost": 11,
+   "id": 9053,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "0.7*sin(1.7*x0)/(sqrt(x0 + 0.3) + 0.7)"
+  },
+  {
+   "cost": 5,
+   "id": 9054,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "3.7*exp(-0.3*x0)"
+  },
+  {
+   "cost": 5,
+   "id": 9055,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "2.9/(x0*(x1 + 0.45))"
+  },
+  {
+   "cost": 14,
+   "id": 9056,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "(0.3*log(1.3*x0 + 1) - 0.3/x1)*log(0.45*x1 + 1)"
+  },
+  {
+   "cost": 11,
+   "id": 9057,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "0.3*sqrt(x1 + 0.3) - 2.3*exp(-2.9*x0)"
+  },
+  {
+   "cost": 13,
+   "id": 9058,
+   "inputs": 2,
+   "split": "held_out",
+   "text": "3.7*log(1.7*x0 + 1)*log(3.7*x1 + 1)*sin(1.7*x1)"
+  },
+  {
+   "cost": 6,
+   "id": 9059,
+   "inputs": 1,
+   "split": "held_out",
+   "text": "1.7*x0/(3.7 + 1/x0)"
+  }
+ ],
+ "note": "Invented by scripts/build_invented_laws.py; not published laws and not meant to resemble any.",
+ "seed": 20261121
+}

@@ -23,6 +23,34 @@ inferred releases.
 
 ### Changed
 
+- **Six further published regularities of asset returns, frozen and not run (2026-11-21,
+  PREREG-LAW-AUDIT-FINANCE-MORE-2026-11).** The owner asked whether all the audits were built
+  before anything is run; five laws were. This batch adds the four remaining facts of Cont's list
+  that can be given a number on daily data (gain/loss asymmetry, aggregational Gaussianity,
+  conditional heavy tails, asymmetry in time scales), momentum across coins (Liu, Tsyvinski and
+  Wu) and order imbalance against the next day's return (Chordia and Subrahmanyam), on the same
+  panel and by the same method: `market/law_audit_more.py` around the frozen first batch. On
+  2,400 simulated panels one failed a claim that was true in it; where a claim's number is zero, a
+  wrong verdict came in at most 1 % of panels; momentum of the published size cannot be missed and
+  a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
+  a first-order correction in every resample, or its interval is several times too wide. The run
+  shares the first batch's job and follows it; both wait for the owner.
+- **A language-model agent as the variation operator of a search (2026-11-21).** After Agentic
+  Variation Operators (Chen et al., 2026). The two language-model runs so far used the model in a
+  fixed pipeline: it wrote equations and was told their fit error (78 laws recovered against 152
+  for PySR), or it configured the search once (173 against 174 without it). New
+  `proposers/agentic_variation.py`: a workbench holds the development rows and every expression
+  tried on them, whoever tried it, and tells the model what a fit's residual still follows and
+  where its largest error sits; the model acts for a bounded number of steps (fit, read a note,
+  submit); a search and the agent take turns on one lineage, the agent's best structures seeding
+  the search's next round. Only action lines are read from a reply, an expression is used only if
+  the whitelist parser accepts it, every structure fitted is counted, and a missing or useless
+  model costs the search nothing. `discovery_l2/agentic_stage.py` puts it around the default
+  stage's searches; nothing selects it by default. **Not measured with a real model**: 31 tests
+  use a scripted one. For a fair test, `scripts/build_invented_laws.py` draws sixty laws nobody
+  has published (20 for development, 40 held back; every part of a law has to matter on its
+  domain, audit M-03), and `scripts/run_invented_laws.py` is the development harness on the
+  twenty. Workflow `.github/workflows/agentic-variation.yml`.
 - **The recorded recoveries hold on a range twice as wide (2026-11-21, audit M-23).**
   `scripts/check_recoveries_out_of_range.py` judges every recorded SRBench recovery again, by the
   benchmark's own criterion, on rows from a range twice as wide. All 174 of the refined path, all

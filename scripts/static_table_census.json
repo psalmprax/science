@@ -73,6 +73,9 @@
     "apedp_dyn/problems/__init__.py": [
       "ALL_PROBLEMS"
     ],
+    "apedp_dyn/proposers/agentic_variation.py": [
+      "NOTES"
+    ],
     "apedp_dyn/qed/library.py": [
       "OSCILLATOR_TERMS"
     ],

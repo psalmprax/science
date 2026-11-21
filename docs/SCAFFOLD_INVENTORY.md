@@ -295,6 +295,7 @@ measured records or step ladders, and none answers a question about the world:
 | `grammar/candidate_ir.py` | `parent_candidates` | See the false positive below |
 | `market/law_audit.py` | `STRETCH` (`audit_settings`) | How far each number's resampling interval is widened about its estimate. Measured on simulated panels (`preregistration/POWER-LAW-AUDIT-FINANCE-2026-11/calibration.json`) and pinned to that file by `tests/test_market_law_audit.py`; the numbers themselves are computed from the panel |
 | `orchestration/modality_sieve.py` | `DYNAMIC_ENGINES`, `STATIC_ENGINES` | Which engine a classified modality routes to |
+| `proposers/agentic_variation.py` | `NOTES` (`knowledge`) | Ten notes written by hand on what to try when a residual looks a certain way (a missing term, a product, a plateau, a pole). General modelling practice that a language-model agent may read during a session; no benchmark's answers, and nothing computed is replaced by them |
 | `problems/__init__.py` | `ALL_PROBLEMS` | The problem catalogue |
 | `qed/library.py` | `OSCILLATOR_TERMS` | The hypothesis library offered to the search |
 | `quantum_compilation/faros_isq.py` | `_RESOLVED_PYTHON` | Memo of resolved interpreter paths -- a cache the resolver reads back, not a result table |

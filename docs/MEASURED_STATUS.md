@@ -91,19 +91,44 @@ interval alone covered 92 to 99.7 % of the time where it claims 99 %, so each in
 by a factor measured on 1,500 other simulated panels (2.3 for the tail index, 1.1 to 1.5 for the
 rest); those factors are as good as the simulated panels are like a market.
 
+**A second batch, frozen the next day and also not run:**
+[`PREREG-LAW-AUDIT-FINANCE-MORE-2026-11`](../preregistration/PREREG-LAW-AUDIT-FINANCE-MORE-2026-11.md)
+adds the four remaining facts of Cont's list that can be given a number on daily data, and two
+published claims about what predicts returns. It runs in the same job as the first batch, after
+it. Every claim is a sign. On 2,400 simulated panels of the real one's shape
+(`preregistration/POWER-LAW-AUDIT-FINANCE-MORE-2026-11/`):
+
+| Claim | Where it is true | Where it is not |
+| :--- | :--- | :--- |
+| Large moves are more often losses than gains | failed in 1 of 600; 56 % losses survives in 78 of 150, 53 % in 8 | the reverse fails in 125 of 150; survived in 1 of 1,800 |
+| Closer to normal over a week than over a day | survives in 1,922 of 1,950 | stable-law returns (Mandelbrot's rival claim): survived in 4 of 300, never failed |
+| Tails less heavy once volatility is corrected for | survives in 1,640 of 1,800 | constant volatility: fails in 599 of 600 |
+| ... and still heavy | survives in all 2,250 | independent normal returns: not rejected in all 150 |
+| Coarse volatility predicts fine better than the reverse | survives in 80 of 150 at the stronger setting, 27 at half of it | the reverse fails in 150 and 71 of 150; survived in 4 of 1,800 |
+| Momentum across assets, one to four weeks | a rank correlation of 0.07, about the published size, survives in all 150; 0.02 in 87; 0.004 in 4 | reversal of 0.045 fails in 149 of 150; survived in 1 of 1,650 |
+| A day's order imbalance and the next day's return | 0.034 survives in 142 of 150; 0.017 in 101 | the reverse fails in 148 and 101 of 150; survived in 10 of 1,800, 5 of them where momentum makes it real |
+
+One of the 2,400 panels failed a claim that was true in its world. The intervals are widened by
+1.2 to 1.8, measured on 2,100 other simulated panels. In the worlds where momentum or order flow
+is present its size depends on how turbulent the five years are: a verdict here is about the sign
+in this period, and the estimate is not a long-run constant.
+
 ## The repaired ODE route on unseen systems: frozen, running
 
 [`PREREG-ODE-BLIND-2026-11`](../preregistration/PREREG-ODE-BLIND-2026-11.md) runs the refined ODE path
 with four searches, the fit guard and pruning to the rows' precision on 98 chaotic polynomial
 systems (310 components) from the `dysts` database that no route here was built or run on, beside
-the recorded ODE route. It was frozen on 2026-11-21 and started the same day; there is no result
-yet. If at most 5 % of its reported laws are wrong and it recovers at least as many components as
-the recorded route at both noise levels, it becomes the default ODE route.
+the recorded ODE route. It was frozen on 2026-11-21 and its 48 shards started the same day at 00:16
+UTC, on branch `ode-blind-run-2`; there is no result yet. (A first launch, on `ode-blind-run-1`, was
+cancelled during its warm-up job, before any shard started and so before any system was run.) If at
+most 5 % of its reported laws are wrong and it recovers at least as many components as the
+recorded route at both noise levels, it becomes the default ODE route.
 
 ## Developed and not taken to a preregistered run
 
 | What | What development showed | Why it stopped there |
 | :--- | :--- | :--- |
+| A language-model agent as the variation operator of a search, after Agentic Variation Operators (`apedp_dyn/proposers/agentic_variation.py`, `discovery_l2/agentic_stage.py`) | With a scripted stand-in for the model: the agent is shown what a fit's residual still follows, repairs its guess, and the repair seeds the search's next round; replies are read only as bounded actions; a missing or useless model costs the search nothing (31 tests). Through the refined path the scripted agent's law is confirmed | No real model has driven it yet. The two earlier language-model runs (78 recovered against 152; 173 against 174) used one model in a fixed pipeline and suggest the model is the limit. A smoke run with the real model is written (`scripts/smoke_agentic_variation.py`); a fair test needs laws a model cannot have read |
 | ODE systems through the refined path with one search (`apedp_dyn/ode/refined_ode.py`) | On 15 of ODEBench's 63 systems (31 components), with one PySR search: 25 and 22 recovered at noise 0 and 1 % against the ODE route's 24 and 21; 3 of 52 reported laws not accurate against 2 of 51. Without any search engine: 24 of 31 at noise 0, all correct, four seconds each | One more component at each level is inside the difference between two runs. With four searches side by side the same systems gave 28 and 23; that version was preregistered and run, and is in the routes table above (recovers more, not adopted) |
 | Term pruning to the data's precision, for trajectory rows (`discovery_l2/precision_pruning.py`) | Applied after the fact to the 195 laws PREREG-ODE-REFINED reported: recovered 165 to 167, wrong 10 to 9 (4.6 %, under that run's 5 % limit), none lost | The run's outcomes were known when the rule was written, so this cannot count. It needs ODE systems it has not seen |
 | Four seeds of the same PySR search side by side (`apedp_dyn/proposers/portfolio.py`, `pysr_members`) | On SRBench's 30 development problems, both noise levels, on four-core runners: 27 and 25 recovered, exactly the runs one search recovers; none gained, none lost; 0 of 54 reported laws inaccurate; 265 s of wall time for a 240 s budget | A seed does not change what the search finds. A portfolio of different searches (`apedp_dyn/proposers/deep_pass.py`, `mixed_members`) was developed instead (next row; audit M-22) |

@@ -1035,7 +1035,9 @@ def test_every_census_module_in_apedp_dyn_is_named_in_the_inventory():
     # 21 since PREREG-PDE-2D: `pde/weak_form_2d.py::LIBRARY_2D` (the two-dimensional weak form's eleven terms).
     # 22 since PREREG-LAW-AUDIT-FINANCE: `market/law_audit.py::STRETCH` (how far each interval is widened;
     # measured on simulated panels and pinned to that measurement by tests/test_market_law_audit.py).
-    assert len(recorded) == 22
+    # 23 since the agentic variation operator: `proposers/agentic_variation.py::NOTES` (ten hand-written
+    # notes on what to try when a residual looks a certain way, which an agent may read).
+    assert len(recorded) == 23
 
     for module_path in recorded:
         # The census table writes paths relative to the package root.
