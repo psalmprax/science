@@ -383,3 +383,12 @@ def test_the_second_blind_set_is_what_the_rules_give_and_shares_no_system_with_t
         assert all(c.is_rational_function(*symbols) for c in system["components"])
         if system["part"] == "invented":                 # every component is held in by its own cubic term
             assert all(sp.Poly(c, *symbols).coeff_monomial(symbols[i] ** 3) < 0 for i, c in enumerate(system["components"]))
+
+
+def test_the_frozen_files_of_the_additions_run_match_their_digest():
+    runner = _load("run_ode_additions")
+    recorded = json.loads(runner.DIGEST.read_text(encoding="utf-8"))
+    assert recorded["preregistration"] == runner.PREREGISTRATION_ID and set(recorded["sha256"]) == set(runner.FROZEN)
+    runner.check_frozen()
+    forecast = json.loads((ROOT / "preregistration" / "FORECAST-ODE-ADDITIONS-2026-11.json").read_text(encoding="utf-8"))
+    assert forecast["problems"] == len(runner.units()) == 276 and forecast["forecast_as"] == "ode_repaired"

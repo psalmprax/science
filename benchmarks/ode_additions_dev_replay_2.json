@@ -1,0 +1,600 @@
+{
+ "note": "The first replay (benchmarks/ode_additions_dev_replay.json) ran the arms default, second_engine, precision and both on the same inputs on other machines; three of them differ from this replay by one recovery (412/413, 434/435) and one reinstated law. A difference of one law between arms is within what the machinery itself varies by.",
+ "provenance": {
+  "branch": "ode-additions-replay-2",
+  "collected": "2026-11-22",
+  "commit": "c58bbce",
+  "rows_file": "benchmarks/ode_additions_dev_replay_2_rows.jsonl.gz",
+  "workflow_run": 44963718557
+ },
+ "rows": 4340,
+ "summary": {
+  "both|0.01|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 233,
+   "reinstated": 23,
+   "reported": 273,
+   "reported_accurate_not_the_law": 38,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "both|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 233,
+   "reinstated": 23,
+   "reported": 273,
+   "reported_accurate_not_the_law": 38,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "both|0.0|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 202,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 202,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "both|all|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 435,
+   "reinstated": 26,
+   "reported": 513,
+   "reported_accurate_not_the_law": 75,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "both|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 435,
+   "reinstated": 26,
+   "reported": 513,
+   "reported_accurate_not_the_law": 75,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "default|0.01|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 210,
+   "reinstated": 0,
+   "reported": 249,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "default|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 210,
+   "reinstated": 0,
+   "reported": 249,
+   "reported_accurate_not_the_law": 37,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "default|0.0|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 199,
+   "reinstated": 0,
+   "reported": 235,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "default|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 199,
+   "reinstated": 0,
+   "reported": 235,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "default|all|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 409,
+   "reinstated": 0,
+   "reported": 484,
+   "reported_accurate_not_the_law": 72,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "default|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 409,
+   "reinstated": 0,
+   "reported": 484,
+   "reported_accurate_not_the_law": 72,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "expectations": {
+   "1_holds": true,
+   "1_limit": 0.05,
+   "1_share_of_reported_laws_wrong": {
+    "both": 0.005847953216374269,
+    "experiment": 0.005847953216374269
+   },
+   "2_holds": true,
+   "2_recovered_both": {
+    "0.0": 202,
+    "0.01": 233
+   },
+   "2_recovered_default": {
+    "0.0": 199,
+    "0.01": 210
+   },
+   "3_holds": true,
+   "3_recovered_experiment": {
+    "0.0": 229,
+    "0.01": 247
+   },
+   "3_wrong_experiment_and_both": [
+    3,
+    3
+   ],
+   "4_holds": true,
+   "4_recovered_experiment_random": {
+    "0.0": 222,
+    "0.01": 239
+   },
+   "default_share_wrong": 0.006198347107438017
+  },
+  "experiment_random|0.01|all": {
+   "errors": 0,
+   "experiments_run": 244,
+   "laws_shortened_by_the_experiment": 9,
+   "recovered": 239,
+   "reinstated": 23,
+   "reported": 273,
+   "reported_accurate_not_the_law": 32,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "experiment_random|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 244,
+   "laws_shortened_by_the_experiment": 9,
+   "recovered": 239,
+   "reinstated": 23,
+   "reported": 273,
+   "reported_accurate_not_the_law": 32,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "experiment_random|0.0|all": {
+   "errors": 0,
+   "experiments_run": 212,
+   "laws_shortened_by_the_experiment": 20,
+   "recovered": 222,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 18,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "experiment_random|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 212,
+   "laws_shortened_by_the_experiment": 20,
+   "recovered": 222,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 18,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "experiment_random|all|all": {
+   "errors": 0,
+   "experiments_run": 456,
+   "laws_shortened_by_the_experiment": 29,
+   "recovered": 461,
+   "reinstated": 26,
+   "reported": 513,
+   "reported_accurate_not_the_law": 50,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "experiment_random|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 456,
+   "laws_shortened_by_the_experiment": 29,
+   "recovered": 461,
+   "reinstated": 26,
+   "reported": 513,
+   "reported_accurate_not_the_law": 50,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "experiment|0.01|all": {
+   "errors": 0,
+   "experiments_run": 234,
+   "laws_shortened_by_the_experiment": 17,
+   "recovered": 247,
+   "reinstated": 23,
+   "reported": 273,
+   "reported_accurate_not_the_law": 24,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "experiment|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 234,
+   "laws_shortened_by_the_experiment": 17,
+   "recovered": 247,
+   "reinstated": 23,
+   "reported": 273,
+   "reported_accurate_not_the_law": 24,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "experiment|0.0|all": {
+   "errors": 0,
+   "experiments_run": 202,
+   "laws_shortened_by_the_experiment": 28,
+   "recovered": 229,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 10,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "experiment|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 202,
+   "laws_shortened_by_the_experiment": 28,
+   "recovered": 229,
+   "reinstated": 3,
+   "reported": 240,
+   "reported_accurate_not_the_law": 10,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "experiment|all|all": {
+   "errors": 0,
+   "experiments_run": 436,
+   "laws_shortened_by_the_experiment": 45,
+   "recovered": 476,
+   "reinstated": 26,
+   "reported": 513,
+   "reported_accurate_not_the_law": 34,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "experiment|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 436,
+   "laws_shortened_by_the_experiment": 45,
+   "recovered": 476,
+   "reinstated": 26,
+   "reported": 513,
+   "reported_accurate_not_the_law": 34,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "precision|0.01|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 228,
+   "reinstated": 22,
+   "reported": 271,
+   "reported_accurate_not_the_law": 40,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "precision|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 228,
+   "reinstated": 22,
+   "reported": 271,
+   "reported_accurate_not_the_law": 40,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "precision|0.0|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 200,
+   "reinstated": 2,
+   "reported": 237,
+   "reported_accurate_not_the_law": 36,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "precision|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 200,
+   "reinstated": 2,
+   "reported": 237,
+   "reported_accurate_not_the_law": 36,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "precision|all|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 428,
+   "reinstated": 24,
+   "reported": 508,
+   "reported_accurate_not_the_law": 76,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 4
+  },
+  "precision|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 428,
+   "reinstated": 24,
+   "reported": 508,
+   "reported_accurate_not_the_law": 76,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 4
+  },
+  "run_for_run": {
+   "both against default|0.0": {
+    "gained": 3,
+    "lost": 0
+   },
+   "both against default|0.01": {
+    "gained": 24,
+    "lost": 1
+   },
+   "experiment against both|0.0": {
+    "gained": 27,
+    "lost": 0
+   },
+   "experiment against both|0.01": {
+    "gained": 14,
+    "lost": 0
+   },
+   "experiment against experiment_random|0.0": {
+    "gained": 7,
+    "lost": 0
+   },
+   "experiment against experiment_random|0.01": {
+    "gained": 8,
+    "lost": 0
+   },
+   "experiment_random against both|0.0": {
+    "gained": 20,
+    "lost": 0
+   },
+   "experiment_random against both|0.01": {
+    "gained": 6,
+    "lost": 0
+   },
+   "precision against default|0.0": {
+    "gained": 1,
+    "lost": 0
+   },
+   "precision against default|0.01": {
+    "gained": 18,
+    "lost": 0
+   },
+   "second_engine against default|0.0": {
+    "gained": 1,
+    "lost": 0
+   },
+   "second_engine against default|0.01": {
+    "gained": 4,
+    "lost": 1
+   }
+  },
+  "second_engine|0.01|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 213,
+   "reinstated": 0,
+   "reported": 250,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "second_engine|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 213,
+   "reinstated": 0,
+   "reported": 250,
+   "reported_accurate_not_the_law": 35,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 2
+  },
+  "second_engine|0.0|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 200,
+   "reinstated": 0,
+   "reported": 237,
+   "reported_accurate_not_the_law": 36,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "second_engine|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 200,
+   "reinstated": 0,
+   "reported": 237,
+   "reported_accurate_not_the_law": 36,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 1
+  },
+  "second_engine|all|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 413,
+   "reinstated": 0,
+   "reported": 487,
+   "reported_accurate_not_the_law": 71,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "second_engine|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 413,
+   "reinstated": 0,
+   "reported": 487,
+   "reported_accurate_not_the_law": 71,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 3
+  },
+  "sparse_poly3|0.01|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 188,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 99,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 23
+  },
+  "sparse_poly3|0.01|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 188,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 99,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 23
+  },
+  "sparse_poly3|0.0|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 255,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 44,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 11
+  },
+  "sparse_poly3|0.0|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 255,
+   "reinstated": 0,
+   "reported": 310,
+   "reported_accurate_not_the_law": 44,
+   "runs": 310,
+   "timeouts": 0,
+   "wrong": 11
+  },
+  "sparse_poly3|all|all": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 443,
+   "reinstated": 0,
+   "reported": 620,
+   "reported_accurate_not_the_law": 143,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 34
+  },
+  "sparse_poly3|all|first blind set": {
+   "errors": 0,
+   "experiments_run": 0,
+   "laws_shortened_by_the_experiment": 0,
+   "recovered": 443,
+   "reinstated": 0,
+   "reported": 620,
+   "reported_accurate_not_the_law": 143,
+   "runs": 620,
+   "timeouts": 0,
+   "wrong": 34
+  }
+ },
+ "what": "The second replay on the 98 systems of PREREG-ODE-BLIND-2026-11 after that run, with the candidates its searches handed over: development, not a result. The arms are those of scripts/run_ode_additions.py at commit c58bbce: the experiment arms in their second form (ode/experiment_pruning.py)."
+}

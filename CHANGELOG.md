@@ -35,6 +35,14 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The deciding experiment replayed, and PREREG-ODE-ADDITIONS-2026-11 frozen (2026-11-22).**
+  Second replay on the first blind set (`benchmarks/ode_additions_dev_replay_2.json`;
+  development): with the experiment in its second form the route recovers 229 and 247 of 310
+  (no noise, 1 %) against 202 and 233 without it and 199 and 210 for the route in force; with
+  random restarts 222 and 239; 45 laws shortened, none lost, 3 wrong of 513. That is more than
+  the sparse reference in total (476 against 443) and still fewer without noise (229 against
+  255). The comparison on 46 systems no route has run on is frozen with four expectations, the
+  system's own forecast for the default arm (90 of 276 recovered) and the author's (about 145).
 - **The first pass on a native kernel, with the reference's results (2026-11-22).** A decision of
   the main search takes about eight seconds and about seven of them are the first pass, which fits
   every enumerated expression one NumPy call at a time. `rust/apedp-kernel/src/first_pass.rs`
