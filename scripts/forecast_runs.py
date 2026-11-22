@@ -3,6 +3,7 @@
 
     python scripts/forecast_runs.py backtest                 # each recorded run forecast from the others
     python scripts/forecast_runs.py file --problems FILE --route ROUTE --group GROUP --out FILE
+    python scripts/forecast_runs.py score --out FILE         # every forecast filed before a run, against that run
 
 ``backtest`` holds one recorded run out at a time, learns from the other runs of the same group
 of routes, and compares the forecast with what happened and with the forecast that only knows
@@ -12,6 +13,11 @@ forecaster was written. The test is a forecast filed before a run (``file``) and
 ``file`` reads problems (``[{"name", "law", "inputs", "noise"}, ...]``) and writes, for one route,
 each problem's chances and the totals with their intervals. The route may be new; it is then
 forecast as ``--like`` an existing one, and the file says so.
+
+``score`` compares each filed forecast (``FILED``) with the rows of the run it was filed for: the
+totals against their intervals and against what the earlier runs' averages alone would have said,
+and, run by run, the Brier score against those averages and against the rate seen afterwards, and
+how well the chances rank the runs (0.5 is chance).
 
 Groups of routes that are learned together (a route is an indicator inside its group):
 
@@ -106,11 +112,59 @@ def between_runs_spread(rows: list[dict[str, Any]], outcome: str = "recovered") 
 
 
 BACKTEST = ROOT / "benchmarks" / "outcome_forecast_backtest.json"
+#: forecasts filed before a run: (forecast file, result directory, the arm it was filed for)
+FILED: tuple[tuple[str, str, str], ...] = (
+    ("FORECAST-ODE-ADDITIONS-2026-11.json", "RESULT-ODE-ADDITIONS-2026-11", "default"),
+    ("FORECAST-MEMORY-2026-11.json", "RESULT-MEMORY-2026-11", "default"),
+)
+
+
+def _name(row: dict[str, Any]) -> str:
+    """A run's name as the forecast files write it: a law at a noise level, or a system's component at one."""
+    if "problem" in row:
+        return f"{row['problem']}@{float(row['noise']):g}"
+    return f"{row['name']}:{row['component']}@{float(row['noise']):g}"
+
+
+def _happened(row: dict[str, Any]) -> dict[str, bool]:
+    reported = bool(row.get("formula"))
+    return {"recovered": bool(row.get("symbolic")), "reported": reported,
+            "wrong": reported and not row.get("symbolic") and not row.get("accuracy_solution")}
+
+
+def score(forecast_file: str, result: str, arm: str) -> dict[str, Any]:
+    """One filed forecast against the run it was filed for."""
+    filed = json.loads((RESULTS / forecast_file).read_text(encoding="utf-8"))
+    with gzip.open(RESULTS / result / "runs.jsonl.gz", "rt", encoding="utf-8") as handle:
+        rows = {_name(row): row for row in map(json.loads, handle) if row.get("arm") == arm}
+    if set(rows) != set(filed["names"]):
+        raise ValueError(f"{forecast_file} and {result} do not name the same runs")
+    outcomes: dict[str, Any] = {}
+    for outcome in of.OUTCOMES:
+        seen = [float(_happened(rows[name])[outcome]) for name in filed["names"]]
+        chances = [float(c) for c in filed["chances"][outcome]]
+        average = float(filed["averages_only"][outcome])
+        rate = sum(seen) / len(seen)
+        hits = [c for c, y in zip(chances, seen, strict=True) if y]
+        misses = [c for c, y in zip(chances, seen, strict=True) if not y]
+        ranks = (sum((a > b) + 0.5 * (a == b) for a in hits for b in misses) / (len(hits) * len(misses))
+                 if hits and misses else None)
+        total = filed["totals"][outcome]
+        outcomes[outcome] = {
+            "seen": int(sum(seen)), "expected": total["expected"], "interval": total["interval"], "level": total["level"],
+            "inside": bool(total["interval"][0] <= sum(seen) <= total["interval"][1]),
+            "averages_only_expected": round(average * len(seen), 1),
+            "brier": round(sum((c - y) ** 2 for c, y in zip(chances, seen, strict=True)) / len(seen), 4),
+            "brier_averages_only": round(sum((average - y) ** 2 for y in seen) / len(seen), 4),
+            "brier_of_the_rate_seen_afterwards": round(rate * (1.0 - rate), 4),
+            "ranks_the_runs": None if ranks is None else round(ranks, 3)}
+    return {"forecast": forecast_file, "result": result, "arm": arm, "runs": len(rows), "forecast_as": filed["forecast_as"],
+            "outcomes": outcomes}
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
-    parser.add_argument("command", choices=("backtest", "file"))
+    parser.add_argument("command", choices=("backtest", "file", "score"))
     parser.add_argument("--group", choices=sorted(GROUPS), default=None)
     parser.add_argument("--problems", type=Path)
     parser.add_argument("--route", default="")
@@ -134,6 +188,19 @@ def main(argv: list[str] | None = None) -> int:
                               "every outcome was known when the forecaster was written.",
                       "between_runs_spread": spreads, "forecast_beats_averages": [beats, len(rows)],
                       "total_inside_unwidened_interval": [inside, len(rows)], "held_out_runs": rows}
+            args.out.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        return 0
+    if args.command == "score":
+        scored = [score(*entry) for entry in FILED]
+        for entry in scored:
+            for outcome, s in entry["outcomes"].items():
+                print(f"{entry['result'][7:]:26s} {outcome:9s} seen {s['seen']:4d}, forecast {s['expected']:6.1f} {s['interval']} "
+                      f"({'inside' if s['inside'] else 'OUTSIDE'}), averages {s['averages_only_expected']:6.1f}; Brier "
+                      f"{s['brier']:.3f} against {s['brier_averages_only']:.3f}; ranks {s['ranks_the_runs']}")
+        totals = [s for entry in scored for s in entry["outcomes"].values()]
+        if args.out:
+            record = {"what": "Forecasts filed before a run, against that run. Each was frozen with its preregistration.",
+                      "totals_inside_their_intervals": [sum(s["inside"] for s in totals), len(totals)], "forecasts": scored}
             args.out.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
         return 0
     if not (args.problems and args.out and args.group and args.route):

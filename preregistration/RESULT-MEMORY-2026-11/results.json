@@ -1,0 +1,121 @@
+{
+ "frozen": {
+  "apedp_dyn/discovery_l2/evolved_stage.py": "c3c4d5d3c0a24609083d38ef6d1320bf933588b55954400644675a4ce4954c98",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/memory_stage.py": "5ee26a49837d73a420645fb59d4d5b2eb68af95466a1164f698bbee6a4be3136",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/search_stage.py": "23025137bff9e99fd2199ffe438ad5e3369ff6fa4fb1674450be210e98b23678",
+  "apedp_dyn/ode/extended_route.py": "2505d620532e84ee36e8d30e5c3ab96f7badfc24e2f5c3931738497f491bc766",
+  "apedp_dyn/proposers/composed.py": "eca6edc35ea1155039acb4c4745231bc4e84e8d1b9333540828ac89d9751e6e3",
+  "apedp_dyn/proposers/fit_guard.py": "cd110cf48067b588824eda14d138aa010a6c90ae2f9949630dac7793b4ce7f8a",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "apedp_dyn/proposers/structure_memory.py": "32390d2e3decf7a917fd3ba2d20284ea44384ba6ae2e09316213263fb58c4c72",
+  "benchmarks/memory_blind_laws.json": "4baa24d88a9bd2ea6fcb0af01da75e52bfbe46df9fde0f803832c2f25302bec7",
+  "benchmarks/structure_memory.json": "c7e6d4ca2f10b26ce3001259ce1c229a7b681450020086e61a6007587d0bc47b",
+  "preregistration/FORECAST-MEMORY-2026-11.json": "c6e71648ad30776292139884877f2820ea0f6709b900d60a38bd135e5c828e1b",
+  "preregistration/PREREG-MEMORY-2026-11.md": "0d58cbd0bcbbb591968d4f0a55db58d4de61da211669b9f418869a307b803d5f",
+  "scripts/build_invented_laws.py": "fc803f32cc8c7ccce890841056cb0a6817cf646bb7bb9672fdf667f5c24cab0d",
+  "scripts/build_structure_memory.py": "ad262c173fa82aa132b74fb47fbd029b47eb3bf24128505e463e6a32b48c621d",
+  "scripts/run_memory_laws.py": "f2d184d5b89ff719d1a56586c5393591f3f4ddc4bb058b0cbb41809afc50e7f6",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36"
+ },
+ "preregistration": "PREREG-MEMORY-2026-11",
+ "rows": 160,
+ "summary": {
+  "default|0.0": {
+   "errors": 0,
+   "median_seconds": 277.70500000000004,
+   "memory_handed_over_the_law": 0,
+   "recovered": 12,
+   "reported": 19,
+   "reported_accurate_not_the_law": 7,
+   "runs": 40,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|0.01": {
+   "errors": 0,
+   "median_seconds": 284.3,
+   "memory_handed_over_the_law": 0,
+   "recovered": 5,
+   "reported": 36,
+   "reported_accurate_not_the_law": 31,
+   "runs": 40,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|all": {
+   "errors": 0,
+   "median_seconds": 282.24,
+   "memory_handed_over_the_law": 0,
+   "recovered": 17,
+   "reported": 55,
+   "reported_accurate_not_the_law": 38,
+   "runs": 80,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "expectations": {
+   "1_holds": true,
+   "1_limit": 0.05,
+   "1_share_of_reported_laws_wrong": {
+    "default": 0.0,
+    "memory": 0.0
+   },
+   "2_holds": true,
+   "2_recovered_default": {
+    "0.0": 12,
+    "0.01": 5
+   },
+   "2_recovered_memory": {
+    "0.0": 17,
+    "0.01": 6
+   }
+  },
+  "memory|0.0": {
+   "errors": 0,
+   "median_seconds": 57.745000000000005,
+   "memory_handed_over_the_law": 15,
+   "recovered": 17,
+   "reported": 21,
+   "reported_accurate_not_the_law": 4,
+   "runs": 40,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "memory|0.01": {
+   "errors": 0,
+   "median_seconds": 73.60499999999999,
+   "memory_handed_over_the_law": 11,
+   "recovered": 6,
+   "reported": 36,
+   "reported_accurate_not_the_law": 30,
+   "runs": 40,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "memory|all": {
+   "errors": 0,
+   "median_seconds": 61.865,
+   "memory_handed_over_the_law": 26,
+   "recovered": 23,
+   "reported": 57,
+   "reported_accurate_not_the_law": 34,
+   "runs": 80,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "run_for_run": {
+   "memory against default|0.0": {
+    "gained": 5,
+    "lost": 0
+   },
+   "memory against default|0.01": {
+    "gained": 1,
+    "lost": 0
+   }
+  }
+ }
+}

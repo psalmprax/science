@@ -41,8 +41,9 @@ with the limits, is [`docs/MEASURED_STATUS.md`](docs/MEASURED_STATUS.md).
 | Part | Benchmark | Result |
 | :--- | :--- | :--- |
 | Main search (first pass, PySR, contrast confirmation, adequacy); the default until 2026-11-20 | SRBench, 133 laws | 186 laws reported in 266 runs, 4 not accurate (2.2 %); 69 and 70 of 119 Feynman laws at noise 0 and 1 % |
-| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law. With four different searches side by side (where four cores are free): 189 recovered, 1 of 224 not accurate |
-| **ODE route** (the refined path with four searches, a guard against unfittable candidates, and pruning to the data's precision; the default since 2026-11-21) | 98 chaotic polynomial systems it had never seen (`dysts`), 310 components | 3 of 484 reported laws wrong (0.6 %); 199 and 210 recovered at noise 0 and 1 % against 132 and 201 for the earlier route; all four expectations held. Without those two repairs, on ODEBench: 92 and 73 of 117 recovered, 5.1 % wrong against a limit of 5 %, not adopted there |
+| **Refined path, the default discovery route** (the main search with physical units, a polynomial library and term pruning) | SRBench, 133 laws | 212 laws reported, none inaccurate, 174 recovered; 78 and 77 Feynman laws; one of its three expectations missed by one law. With four different searches side by side (where four cores are free): 189 recovered, 1 of 224 not accurate. With a memory of reported laws beside the searches (in force since 2026-11-22), on 40 laws of one grammar drawn afterwards: 23 of 80 recovered against 17, none lost, no wrong law |
+| ODE route from 2026-11-21 to 2026-11-22 (the refined path with four searches, a guard against unfittable candidates, and pruning to the data's precision) | 98 chaotic polynomial systems it had never seen (`dysts`), 310 components | 3 of 484 reported laws wrong (0.6 %); 199 and 210 recovered at noise 0 and 1 % against 132 and 201 for the earlier route; all four expectations held. Without those two repairs, on ODEBench: 92 and 73 of 117 recovered, 5.1 % wrong against a limit of 5 %, not adopted there |
+| **ODE route in force** (that route with sparse regression as a second source of candidates, and a follow-up experiment where the system can be started again; since 2026-11-22) | 46 systems it was not built on (30 invented, 16 rational), 276 components and noise levels | With the second engine 117 recovered and 3 of 165 reported laws wrong, against 116 and 4 of 164 before; with the experiment 120 (as run, on top of an addition that is not in force: 123 and 6 of 188). All four expectations held and the gains are small. At 1 % noise two of every three reported laws are accurate and are not the law |
 | ODE route until 2026-11-21 (one search) | ODEBench, 117 components | 80 and 69 recovered; 4.9 % of reported laws wrong |
 | Series route, for return-like data | Simulated series with a planted law | A law in 0 of 40 series that contain none; 31 of 40 where it explains 5 or 20 % of the variance |
 | Language model in PySR's place, and configuring PySR | SRBench | Writing the laws: 78 recovered against 152. Configuring the search: 173 against 174 without it. Optional |
@@ -56,7 +57,7 @@ it can and cannot tell was measured first, on simulated panels, and is on the fu
 
 For tabular data `apedp_dyn/discovery_l2/default_route.py` runs the refined path unless the main
 search or the template engine is named; trajectories and return-like series have their own entry points
-(`apedp_dyn/ode/main_search_ode.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the
+(`apedp_dyn/ode/route_in_force.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the
 default route beside the template engine's verdict (`apedp_dyn/ui/route_endpoint.py`).
 
 ---

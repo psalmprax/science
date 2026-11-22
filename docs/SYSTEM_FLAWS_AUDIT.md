@@ -368,8 +368,13 @@ three preregistered expectations missed.
   precision cancels. On those 78 laws it leaves the law in 41 (27 of 38
   without noise, 14 of 40 at 1 %) against 26 with random restarts in the same
   box, and of 75 recovered laws sampled it changed none. All of that is
-  development on systems whose answers are known. **Not measured blind**;
-  under test in PREREG-ODE-ADDITIONS-2026-11.
+  development on systems whose answers are known. **Measured blind on
+  2026-11-22** (RESULT-ODE-ADDITIONS-2026-11, 46 other systems): it
+  shortened 9 laws, 5 of them into the law, all without noise, and changed
+  the outcome of no run at 1 % noise; 123 recovered against 118 without it,
+  no more wrong laws. Chosen restarts beat random ones by two components. In
+  force wherever the system can be started again (`ode/route_in_force.py`).
+  The 41 of 78 seen in development became 5 of 70 here.
 - **M-27 the adequacy check refuses true laws on trajectory rows — FOUND
   2026-11-21 ON THE ROWS OF THE BLIND ODE RUN; A REPAIR IS BUILT AND UNDER
   TEST; the frozen path is unchanged.** `main_search.adequacy` passes a law
@@ -395,9 +400,15 @@ three preregistered expectations missed.
   laws, 4 accurate ones and 2 wrong ones. Without noise it reinstates little,
   because the rows' stated error understates the systematic error (the true
   law's residual is up to 66 times it): a better error estimate for
-  noise-free rows is not built. **Not measured blind**; under test in
-  PREREG-ODE-ADDITIONS-2026-11. The tabular routes are unaffected by the
-  repair and were not re-examined for the same fault.
+  noise-free rows is not built. **Measured blind on 2026-11-22 and it did not
+  carry over** (RESULT-ODE-ADDITIONS-2026-11): on 46 other systems the repair
+  reinstated 23 laws, 1 of them the law, 19 accurate without being it and 3
+  wrong. There, what the check refused was rightly refused 22 times in 23.
+  The repair is **not** in force (a deviation from the preregistered
+  consequence, recorded with the result); the fault it was built for, a true
+  law refused on trajectory rows, stays open and is rarer than the first set
+  suggested. The tabular routes are unaffected by the repair and were not
+  re-examined for the same fault.
 - **M-26 the recovery criterion can refit a factor away — FOUND 2026-11-21 IN
   THE BLIND ODE RUN, RECORDED; the frozen scorer is unchanged.**
   `run_srbench_baseline.symbolic_recovery` refits every constant of a reported

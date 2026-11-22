@@ -35,6 +35,26 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **Two blind runs recorded, and what follows from them put in force (2026-11-22).**
+  *PREREG-ODE-ADDITIONS-2026-11*, 46 dynamical systems none of it was built on: all four
+  expectations held, by little. Recovered of 276: the route in force 116, with a second engine and
+  adequacy at the rows' precision 118, with the follow-up experiment 123, with random restarts
+  121; wrong among reported 4 of 164, then 6 of 188. On the systems these were developed on the
+  same steps had been worth 26 and 41 components of 620. Read from the rows, adequacy at the
+  rows' precision reinstated 23 laws of which one is the law and three are wrong; the
+  preregistration would have adopted it and it is **held back, a deviation on the cautious side
+  recorded with the result**. In force (`ode/route_in_force.py`): the second engine, and the
+  experiment wherever the system can be started again; without the reinstatement their outcome
+  on this run is 120 recovered and 3 of 165 wrong, read off the rows unit by unit.
+  *PREREG-MEMORY-2026-11*, 40 table laws drawn after the memory was written: both expectations
+  held, 23 of 80 recovered with the memory beside the searches against 17, none lost, no wrong
+  law. In force for tables (`discovery_l2/stage_in_force.py`), with its limits stated: one
+  grammar, and nearly all of the gain without noise. At 1 % noise the memory handed the route the
+  law in 11 runs and the route named it in 6. *The two forecasts filed before these runs* are
+  scored (`scripts/forecast_runs.py score`, `benchmarks/outcome_forecast_scored.json`): five of
+  six totals inside their intervals; 17 recovered where 50 (37 to 62) was forecast is a clear
+  miss. The status page's ODE entry had still described the route of 2026-11-19; it names the
+  route in force now.
 - **Google's circuit verifier as the judge of the variation loop (2026-11-22).** The owner asked
   for it. The competition's circuits have a text form with one instruction a line, and a circuit
   converted to text and back is the same bytes; so a candidate is now code that is handed the

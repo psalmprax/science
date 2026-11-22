@@ -69,8 +69,8 @@ def _search_budget(requested: float | None) -> float:
 
 
 def _proposer(budget: float) -> tuple[Any, str]:
-    """The default search stage with the budget (four searches where four cores are free, else PySR),
-    or ``None`` with the reason there is no search stage."""
+    """The search stage in force with the budget (four searches where four cores are free, else PySR, and
+    the memory of reported laws beside them), or ``None`` with the reason there is no search stage."""
     if budget <= 0.0:
         return None, f"off: first pass alone (give search_seconds, or set {SEARCH_SECONDS_VARIABLE}, to run PySR)"
     try:
@@ -78,9 +78,9 @@ def _proposer(budget: float) -> tuple[Any, str]:
 
     except Exception as exc:  # noqa: BLE001 - a missing package and a failed Julia start are the same answer here
         return None, f"unavailable: PySR could not be loaded ({type(exc).__name__}); first pass alone"
-    from apedp_dyn.discovery_l2.search_stage import default_search_stage
+    from apedp_dyn.discovery_l2 import stage_in_force
 
-    return default_search_stage(budget)
+    return stage_in_force.search_stage(budget)
 
 
 def _clean(X: Mapping[str, Any], y: Any) -> tuple[list[str], np.ndarray, np.ndarray]:
@@ -241,10 +241,13 @@ def status_block() -> dict[str, Any]:
              "what": "exhaustive first pass, PySR, contrast confirmation, adequacy check",
              "measured": "SRBench: 4 of 186 reported laws not accurate; 69 and 70 of 119 Feynman laws recovered",
              "evidence": "preregistration/RESULT-MAIN-SEARCH-2026-11.md"},
-            {"name": "ode", "for": "trajectories of a dynamical system",
-             "what": "one state and one rate per disjoint window, then the main search per component",
-             "measured": "ODEBench: 80 and 69 of 117 components recovered; 4.9 % of reported laws wrong",
-             "evidence": "preregistration/RESULT-ODE-MAIN-SEARCH-2026-11.md"},
+            {"name": "ode", "for": "trajectories of a dynamical system (apedp_dyn/ode/route_in_force.py; no endpoint here runs it)",
+             "what": ("one state and one rate per disjoint window; four searches and sparse regression side by side; terms "
+                      "below the rows' precision dropped; where the system can be started again, a follow-up experiment"),
+             "measured": ("46 systems it was not built on: 117 of 276 components recovered, 3 of 165 reported laws wrong; "
+                          "with the experiment 120, read off that run's rows. At 1 % noise two of three reported laws are "
+                          "accurate and are not the law"),
+             "evidence": "preregistration/RESULT-ODE-ADDITIONS-2026-11.md"},
             {"name": "series_route", "for": "noisy series in time order (return-like data)",
              "what": "candidates from the main search, one chosen on the development period, one forecast test on later rows",
              "measured": "simulated series: a law in 0 of 40 null series; 31 of 40 where it explains 5 or 20 % of the variance",
@@ -260,6 +263,11 @@ def status_block() -> dict[str, Any]:
                      "(PREREG-MAIN-SEARCH-2026-11). Kept importable."),
         },
         "search_stage": _proposer(_search_budget(None))[1],
+        "search_stage_measured": ("four searches side by side: SRBench, 73 and 63 of 103 problems recovered against 61 and "
+                                  "61 for one search (preregistration/RESULT-PORTFOLIO-SEARCH-2026-11.md). A memory of "
+                                  "reported laws beside them: 23 of 80 new laws recovered against 17, none lost, no wrong "
+                                  "law; nearly all of the gain without noise, and on laws of one grammar "
+                                  "(preregistration/RESULT-MEMORY-2026-11.md)"),
         "endpoints": {
             "/api/discover/physics": "template engine and referee, with the main search reading beside it (route_reading)",
             "/api/discover/market": "template engine and referee, with the series route reading beside it (series_reading)",
