@@ -35,6 +35,28 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The first pass on a native kernel, with the reference's results (2026-11-22).** A decision of
+  the main search takes about eight seconds and about seven of them are the first pass, which fits
+  every enumerated expression one NumPy call at a time. `rust/apedp-kernel/src/first_pass.rs`
+  fits the whole expression table in one pass, sharing every sub-expression's column, and also
+  the sums of two terms; `discovery_l2/fast_first_pass.py` uses those numbers only to rule
+  candidates out, each with a bound on how far the reference can be from it, and computes every
+  candidate a decision could still turn on with the reference's own functions, so the result
+  carries the reference's floats. The frozen modules are imported, not edited: `enabled()` swaps
+  one name of `main_search` at run time inside a `with` block. Measured on this machine by
+  `scripts/check_fast_first_pass.py`: 120 datasets, the same result on all 120 (61 early stops,
+  45 full searches, 14 exhausted), 537 s for the reference and 22 s for the kernel, so 24 times
+  faster overall and about 45 times where the full search runs. The error bounds are an analysis
+  with a safety factor, not a proof; `check=True` runs both and raises on a difference. Nothing
+  uses it by default.
+- **A memory of confirmed laws as a source of candidates (2026-11-22; built, not measured).**
+  `proposers/structure_memory.py` keeps, of every law the referee reported, the shapes of its
+  one-variable parts and of the whole law, with no constant's value and no variable's name, and
+  grows candidate laws for a new problem from those parts, fitting every constant to the new rows.
+  `benchmarks/structure_memory.json` is built from the 238 laws reported in two recorded runs
+  (28 motifs met in at least two laws). `discovery_l2/memory_stage.py` puts it beside the default
+  searches. `scripts/run_memory_laws.py` compares the default route with and without it on 40
+  laws drawn afterwards, both arms given the same searched candidates. Not in force.
 - **The deciding experiment, tried, found harmful, and rebuilt (2026-11-22; development, not a
   result).** The additions below were replayed on the first blind set with the recorded candidates
   (`benchmarks/ode_additions_dev_replay.json`). Second engine and precision adequacy together:

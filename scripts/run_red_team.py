@@ -30,6 +30,7 @@ invented-laws benchmark by fingerprint, without reading a held-back law.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import gzip
 import json
 import multiprocessing as mp
@@ -65,6 +66,9 @@ CHECK_ROWS = 30                 # fresh rows the validated plain method reads: t
 SURVEY_SHARES = {"measured": 0.3, "few_rows": 0.15, "sampling": 0.2, "noise_shape": 0.15, "noise_level": 0.2}
 METHODS = ("route", "best_fit", "validated")
 KEEP, CHILDREN = 8, 3
+#: RED_TEAM_FAST=1 runs the route's first pass on the native kernel (``discovery_l2/fast_first_pass.py``): the same
+#: decisions, sooner. Without the kernel installed it changes nothing.
+FAST = os.environ.get("RED_TEAM_FAST", "") == "1"
 
 
 # ---------------------------------------------------------------- laws
@@ -136,7 +140,7 @@ def _scored(text: str | None, truth: sp.Expr, names: list[str], rows: rt.Rows) -
 
 def decide(world: rt.World) -> dict[str, Any]:
     """The route in force and the two plain methods on one world: what each reported and whether it was wrong."""
-    from apedp_dyn.discovery_l2 import refined_search
+    from apedp_dyn.discovery_l2 import fast_first_pass, refined_search
     from apedp_dyn.proposers.fit_guard import FitGuardProposer
     from apedp_dyn.proposers.portfolio import FixedFormulasProposer
 
@@ -150,9 +154,10 @@ def decide(world: rt.World) -> dict[str, Any]:
     pool_y = y[pool]
     stage = FitGuardProposer(FixedFormulasProposer(list(world.candidates)), target_col="__target__")
     started = time.perf_counter()
-    result = refined_search.discover_refined({n: X[dev, i] for i, n in enumerate(names)}, y[dev], X[pool],
-                                             lambda picked: pool_y[picked], proposer=stage, noise="absolute", seed=SEED,
-                                             guided=_guided())
+    with fast_first_pass.enabled() if FAST else contextlib.nullcontext():
+        result = refined_search.discover_refined({n: X[dev, i] for i, n in enumerate(names)}, y[dev], X[pool],
+                                                 lambda picked: pool_y[picked], proposer=stage, noise="absolute", seed=SEED,
+                                                 guided=_guided())
     path = result.path
     assert path is not None
     contrast = path.contrast
