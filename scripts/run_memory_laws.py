@@ -60,7 +60,7 @@ FROZEN = (
     "apedp_dyn/discovery_l2/evolved_stage.py", "apedp_dyn/discovery_l2/search_stage.py",
     "apedp_dyn/discovery_l2/refined_search.py", "apedp_dyn/discovery_l2/main_search.py",
     "apedp_dyn/ode/extended_route.py", "apedp_dyn/proposers/fit_guard.py", "apedp_dyn/proposers/portfolio.py",
-    "apedp_dyn/proposers/pysr_proposer.py",
+    "apedp_dyn/proposers/composed.py", "apedp_dyn/proposers/pysr_proposer.py",
 )
 LAW_SEED = 20261127
 LAW_COUNT = 40

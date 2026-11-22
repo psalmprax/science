@@ -57,6 +57,16 @@ inferred releases.
   (28 motifs met in at least two laws). `discovery_l2/memory_stage.py` puts it beside the default
   searches. `scripts/run_memory_laws.py` compares the default route with and without it on 40
   laws drawn afterwards, both arms given the same searched candidates. Not in force.
+  Development (80 laws it had not seen, 1 % noise, no search engine): with the memory as its only
+  search stage the route recovered 13, against 1 with none; 3 of its 67 reports were wrong, which
+  is why the memory is tested beside the searches and never in their place. Frozen as
+  PREREG-MEMORY-2026-11 with the system's own forecast for the default arm (50 of 80 recovered;
+  the author expects about 26).
+- **A benchmark where reliability is the score (2026-11-22; built, not run).**
+  `scripts/run_counterfeit_benchmark.py` and `benchmarks/counterfeit_laws.json`: 60 laws, each
+  with counterfeits at three distances, 360 cases (three noise levels; the law offered beside its
+  counterfeits, or withheld). A right law counts one, a wrong law costs nineteen, silence and an
+  accurate approximation count nothing.
 - **The deciding experiment, tried, found harmful, and rebuilt (2026-11-22; development, not a
   result).** The additions below were replayed on the first blind set with the recorded candidates
   (`benchmarks/ode_additions_dev_replay.json`). Second engine and precision adequacy together:

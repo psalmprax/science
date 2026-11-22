@@ -227,3 +227,12 @@ def test_the_memory_runs_summary_judges_the_expectations_as_written() -> None:
     for row in [r for r in worse if r["arm"] == "memory" and not r["symbolic"]][:2]:
         row["accuracy_solution"] = False                                               # two wrong of twenty: over the limit
     assert not runner.summarise(worse)["expectations"]["1_holds"]
+
+
+def test_the_frozen_files_of_the_memory_run_match_their_digest() -> None:
+    runner = _load("run_memory_laws")
+    recorded = json.loads(runner.DIGEST.read_text(encoding="utf-8"))
+    assert recorded["preregistration"] == runner.PREREGISTRATION_ID and set(recorded["sha256"]) == set(runner.FROZEN)
+    runner.check_frozen()
+    forecast = json.loads((ROOT / "preregistration" / "FORECAST-MEMORY-2026-11.json").read_text(encoding="utf-8"))
+    assert forecast["problems"] == len(runner.units()) == 80 and forecast["forecast_as"] == "refined_portfolio"

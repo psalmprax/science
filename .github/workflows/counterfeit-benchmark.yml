@@ -1,0 +1,94 @@
+# The counterfeit-law benchmark (scripts/run_counterfeit_benchmark.py): a method is scored on what it refuses as
+# much as on what it finds. No search engine runs: the candidates are part of each case.
+#   push to counterfeit-smoke-*  -> the tests, the file against its generator, four cases.
+#   push to counterfeit-run-*    -> smoke, then PREREG-COUNTERFEIT-2026-11, once.
+name: Counterfeit-law benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['counterfeit-smoke-*', 'counterfeit-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The red team's and the benchmark's tests
+        run: python -m pytest tests/test_red_team.py tests/test_counterfeit_benchmark.py -q
+      - name: The benchmark is what its generator gives
+        run: python scripts/run_counterfeit_benchmark.py build --check
+      - name: Four cases
+        run: python scripts/run_counterfeit_benchmark.py smoke
+
+  run:
+    needs: smoke
+    if: startsWith(github.ref_name, 'counterfeit-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The cases, shard ${{ matrix.k }} of 12
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_counterfeit_benchmark.py run --shard "$SHARD/12" --out counterfeit-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: counterfeit-shard-${{ matrix.k }}
+          path: counterfeit-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: counterfeit-shard-*
+          path: counterfeit-out
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/run_counterfeit_benchmark.py collect --out counterfeit-out
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd counterfeit-out
+          rm -f runs-shard-*.jsonl
+          gzip -9 runs.jsonl
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="
