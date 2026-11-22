@@ -35,6 +35,17 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The native first pass disagreed with the reference on another processor, and why (2026-11-22;
+  audit M-29, fixed).** The check was repeated on GitHub's machines: 299 of 300 datasets agreed.
+  On a table of pure noise the reference chose `sin(exp(exp(x1)))` and the kernel `x0`. The sine
+  there is taken of numbers near 1e60, where one unit in the last place of the argument is many
+  turns: NumPy on that processor and the kernel returned unrelated columns, both correct, and
+  the kernel's error bound covered the fit only. The kernel now carries, for every expression,
+  a bound on how far two correct evaluations can differ (`eval_error`, propagated through the
+  table), and a column without a usable bound is always left to the reference. With it: 120 of
+  120 and 150 of 150 agree on the first machine (489 s against 36 s, and 453 s against 39 s:
+  about 12 times faster, where the earlier, unsafe version was 24). The entry below gives the
+  first version's numbers as they were measured.
 - **The deciding experiment replayed, and PREREG-ODE-ADDITIONS-2026-11 frozen (2026-11-22).**
   Second replay on the first blind set (`benchmarks/ode_additions_dev_replay_2.json`;
   development): with the experiment in its second form the route recovers 229 and 247 of 310

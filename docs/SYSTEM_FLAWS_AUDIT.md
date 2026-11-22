@@ -307,6 +307,26 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-29 the native first pass returned another law than the reference on
+  another processor — FOUND 2026-11-22 BY RUNNING BOTH ON GITHUB'S MACHINES,
+  FIXED THE SAME DAY; nothing had used it.** `discovery_l2/fast_first_pass.py`
+  rules candidates out with a native kernel's numbers and a bound on how far
+  the reference can be from them. On the machine it was written on it agreed
+  with the reference on 120 of 120 datasets. On GitHub's it agreed on 299 of
+  300: on a table of pure noise (two inputs, 500 rows) the reference stopped
+  on `sin(exp(exp(x1)))` and the kernel on `x0`. The bound covered the least
+  squares and not the column: the sine of a number near 1e60 is decided by
+  digits of the argument that no double holds, so NumPy on that processor and
+  the kernel computed unrelated columns and both were right. **What it shows
+  about the reference:** on such expressions the frozen first pass's own
+  answer depends on the processor and the maths library; the recorded runs
+  are answers of the machines they ran on. **Fix:** the kernel propagates,
+  for every expression, a bound on how far two correct evaluations can differ
+  (`first_pass.rs`, `eval_error`), the wrapper adds it to its doubt, and a
+  column without a usable bound is always computed by the reference. Local
+  check afterwards: 270 of 270 agree. **Still an analysis with a safety
+  factor, not a proof**; `scripts/check_fast_first_pass.py` on more than one
+  machine is the evidence, and `check=True` runs both.
 - **M-28 rows of a follow-up experiment cannot simply join the pool — FOUND
   2026-11-21 IN A DEVELOPMENT REPLAY; THAT USE IS RETIRED, ANOTHER IS BUILT AND
   UNDER TEST; the frozen path is unchanged.** The first form of the "deciding

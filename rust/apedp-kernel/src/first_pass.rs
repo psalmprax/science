@@ -13,10 +13,16 @@
 //! So nothing here decides. The caller
 //! (`apedp_dyn/discovery_l2/fast_first_pass.py`) uses these numbers to find
 //! the few candidates a decision can turn on and recomputes those with the
-//! reference. To let it do that safely each fit comes with a `condition`
-//! number, from which the caller bounds how far the reference's value can be
-//! from this one, and with a status that says when this module would rather
-//! not judge (`NEAR_RANK_THRESHOLD`).
+//! reference. To let it do that safely each fit comes with two numbers from
+//! which the caller bounds how far the reference's value can be from this one:
+//! a `condition` number of the least squares, and an `eval_error`, a bound on
+//! how far two correct implementations can disagree about the *column itself*.
+//! The second matters more than it looks: `sin(exp(exp(x)))` takes the sine of
+//! numbers near 1e60, where one unit in the last place of the argument is many
+//! turns, so two libraries return unrelated columns and both are right. (Found
+//! by running this against the reference on another processor, 2026-11-22.)
+//! A status says when this module would rather not judge at all
+//! (`NEAR_RANK_THRESHOLD`).
 
 /// Operation codes of the expression table. `VAR` reads column `left` of the rows.
 pub const VAR: u8 = 0;
@@ -43,6 +49,8 @@ pub const NEAR_RANK_THRESHOLD: u8 = 3;
 
 /// Share of the rank threshold inside which this module does not judge.
 const BAND: f64 = 0.1;
+/// Relative error allowed to one elementary operation of either implementation: a few units in the last place.
+const ULPS: f64 = 4.0 * f64::EPSILON;
 
 /// What `singles` returns, one entry per expression.
 pub struct Singles {
@@ -54,7 +62,54 @@ pub struct Singles {
     /// How ill-conditioned the fit is: the larger of the design's condition number and of the
     /// column's size over its variation. Bounds the difference to the reference's value.
     pub condition: Vec<f64>,
+    /// A bound on how far two correct evaluations of the expression can differ on any row, as a
+    /// share of the column's root-mean-square variation. Infinite where no bound can be given.
+    pub eval_error: Vec<f64>,
     pub status: Vec<u8>,
+}
+
+/// What is known of a column once it is computed: the fit, and what its parents need of it.
+struct Column {
+    status: u8,
+    rss: f64,
+    slope: f64,
+    intercept: f64,
+    structure: f64,
+    condition: f64,
+    /// Root-mean-square variation of the column (0 if it was not fitted).
+    spread: f64,
+    least: f64,
+    largest: f64,
+}
+
+/// A bound on the absolute error of a value computed from children with the given bounds.
+///
+/// `a` and `b` are `(least magnitude, largest magnitude, error bound)` of the children on the
+/// rows, `out` the least and largest magnitude of the result. First-order propagation with the
+/// worst derivative on the rows, plus a few units in the last place for the operation itself.
+fn propagated_error(op: u8, a: (f64, f64, f64), b: (f64, f64, f64), out: (f64, f64)) -> f64 {
+    let (a_least, a_largest, a_error) = a;
+    let (b_least, b_largest, b_error) = b;
+    let own = ULPS * out.1;
+    let carried = match op {
+        VAR => return 0.0,
+        SQRT => a_error / (2.0 * a_least.sqrt()),
+        EXP => out.1 * a_error,
+        LOG | INV if a_least == 0.0 => f64::INFINITY,
+        LOG => a_error / a_least,
+        SIN | COS => a_error,
+        INV => a_error / (a_least * a_least),
+        SQ => 2.0 * a_largest * a_error,
+        ADD | SUB => a_error + b_error,
+        MUL => b_largest * a_error + a_largest * b_error,
+        _ => a_error / b_least + a_largest * b_error / (b_least * b_least),
+    };
+    let total = carried + own;
+    if total.is_finite() {
+        total
+    } else {
+        f64::INFINITY
+    }
 }
 
 /// What `pairs` returns, row-major over (first, partner).
@@ -103,7 +158,6 @@ fn rank_threshold(rows: usize, columns: usize) -> f64 {
 }
 
 /// Fit `y ~ slope * column + intercept` on centred targets `yc` (mean `y_mean`), then the residual check.
-#[allow(clippy::too_many_arguments)]
 fn fit_one(
     column: &[f64],
     yc: &[f64],
@@ -112,17 +166,30 @@ fn fit_one(
     k: usize,
     floor: f64,
     resid: &mut [f64],
-) -> (u8, f64, f64, f64, f64, f64) {
+) -> Column {
     let n = column.len();
     let nf = n as f64;
+    let mut unfitted = Column {
+        status: NOT_FINITE,
+        rss: f64::NAN,
+        slope: f64::NAN,
+        intercept: f64::NAN,
+        structure: f64::NAN,
+        condition: f64::NAN,
+        spread: 0.0,
+        least: f64::INFINITY,
+        largest: 0.0,
+    };
     let mut sum = 0.0;
     let mut norm2 = 0.0;
     for &c in column {
         if !c.is_finite() {
-            return (NOT_FINITE, f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN);
+            return unfitted;
         }
         sum += c;
         norm2 += c * c;
+        unfitted.least = unfitted.least.min(c.abs());
+        unfitted.largest = unfitted.largest.max(c.abs());
     }
     let mean = sum / nf;
     let mut d2 = 0.0;
@@ -132,6 +199,7 @@ fn fit_one(
         d2 += v * v;
         sxy += v * t;
     }
+    unfitted.spread = (d2 / nf).sqrt();
     // Singular values of [column, 1] from its triangular factor [[sqrt(n), sum/sqrt(n)], [0, sqrt(d2)]].
     let t = nf + norm2;
     let smax2 = 0.5 * (t + (t * t - 4.0 * nf * d2).max(0.0).sqrt());
@@ -142,20 +210,10 @@ fn fit_one(
     };
     let threshold = rank_threshold(n, 2);
     if !(ratio > (1.0 - BAND) * threshold) {
-        return (
-            RANK_DEFICIENT,
-            f64::NAN,
-            f64::NAN,
-            f64::NAN,
-            f64::NAN,
-            f64::NAN,
-        );
+        unfitted.status = RANK_DEFICIENT;
+        return unfitted;
     }
-    let status = if ratio < (1.0 + BAND) * threshold {
-        NEAR_RANK_THRESHOLD
-    } else {
-        FITTED
-    };
+    let near = ratio < (1.0 + BAND) * threshold;
     let slope = sxy / d2;
     let mut rss = 0.0;
     let mut resid_sum = 0.0;
@@ -174,24 +232,24 @@ fn fit_one(
     } else {
         let mut unexplained = 0.0;
         for (i, &r) in resid.iter().enumerate() {
-            let mut near = 0.0;
+            let mut near_mean = 0.0;
             for &j in &nn[i * k..(i + 1) * k] {
-                near += resid[j as usize];
+                near_mean += resid[j as usize];
             }
-            let gap = r - near / (k as f64);
+            let gap = r - near_mean / (k as f64);
             unexplained += gap * gap;
         }
         1.0 - unexplained / total
     };
-    let condition = (1.0 / ratio).max((norm2 / d2).sqrt());
-    (
-        status,
-        rss.max(floor),
+    Column {
+        status: if near { NEAR_RANK_THRESHOLD } else { FITTED },
+        rss: rss.max(floor),
         slope,
-        y_mean - slope * mean,
+        intercept: y_mean - slope * mean,
         structure,
-        condition,
-    )
+        condition: (1.0 / ratio).max((norm2 / d2).sqrt()),
+        ..unfitted
+    }
 }
 
 /// Every expression of the table fitted to `y` with a scale and an offset.
@@ -260,8 +318,11 @@ pub fn singles(
         intercept: vec![f64::NAN; count],
         structure: vec![f64::NAN; count],
         condition: vec![f64::NAN; count],
+        eval_error: vec![f64::INFINITY; count],
         status: vec![NOT_FINITE; count],
     };
+    // Per expression, for its parents: least and largest magnitude on the rows, and the error bound.
+    let mut known: Vec<(f64, f64, f64)> = vec![(0.0, 0.0, f64::INFINITY); count];
     for i in 0..count {
         // A child's column lives in an earlier part of the store than its parent's, so the store
         // can be split there and the parent's column written while the children's are read.
@@ -288,14 +349,30 @@ pub fn singles(
                 apply_binary(ops[i], &before[a..a + n], &before[b..b + n], after);
             }
         }
-        let (status, rss, slope, intercept, structure, condition) =
-            fit_one(after, &yc, y_mean, nn, k, floor, &mut resid);
-        out.status[i] = status;
-        out.rss[i] = rss;
-        out.slope[i] = slope;
-        out.intercept[i] = intercept;
-        out.structure[i] = structure;
-        out.condition[i] = condition;
+        let fitted = fit_one(after, &yc, y_mean, nn, k, floor, &mut resid);
+        let nothing = (0.0, 0.0, 0.0);
+        let (a, b) = match ops[i] {
+            VAR => (nothing, nothing),
+            SQRT..=SQ => (known[left[i] as usize], nothing),
+            _ => (known[left[i] as usize], known[right[i] as usize]),
+        };
+        let error = if fitted.status == NOT_FINITE {
+            f64::INFINITY
+        } else {
+            propagated_error(ops[i], a, b, (fitted.least, fitted.largest))
+        };
+        known[i] = (fitted.least, fitted.largest, error);
+        out.status[i] = fitted.status;
+        out.rss[i] = fitted.rss;
+        out.slope[i] = fitted.slope;
+        out.intercept[i] = fitted.intercept;
+        out.structure[i] = fitted.structure;
+        out.condition[i] = fitted.condition;
+        out.eval_error[i] = if fitted.spread > 0.0 {
+            error / fitted.spread
+        } else {
+            f64::INFINITY
+        };
     }
     Ok(out)
 }
@@ -481,6 +558,52 @@ mod tests {
             "a wrong law leaves structure: {}",
             fits.structure[0]
         );
+    }
+
+    #[test]
+    fn a_column_two_libraries_cannot_agree_on_is_marked() {
+        let (x, y, nn) = rows();
+        // x0, exp(x0), exp(exp(x0)), sin(exp(exp(x0))): the sine of numbers up to exp(exp(4.9)), about 1e58
+        let ops = [VAR, EXP, EXP, SIN, SQRT];
+        let fits = singles(&ops, &[0, 0, 1, 2, 0], &[-1; 5], &x, 1, &y, &nn, 2, 0.0).unwrap();
+        assert_eq!(fits.eval_error[0], 0.0, "the rows themselves are exact");
+        assert!(fits.eval_error[1] < 1e-13 && fits.eval_error[4] < 1e-13);
+        assert!(fits.eval_error[3] > 1e30, "{}", fits.eval_error[3]);
+    }
+
+    #[test]
+    fn a_difference_of_nearly_equal_numbers_is_marked_too() {
+        let (x, y, nn) = rows();
+        // sqrt(x0**2) - x0 on rows near 1e9: every digit of the result is rounding
+        let near: Vec<f64> = x.iter().map(|v| v + 1e9).collect();
+        let ops = [VAR, SQ, SQRT, EXP, EXP, SUB];
+        let fits = singles(
+            &ops,
+            &[0, 0, 1, 0, 3, 2],
+            &[-1, -1, -1, -1, -1, 0],
+            &near,
+            1,
+            &y,
+            &nn,
+            2,
+            0.0,
+        )
+        .unwrap();
+        assert!(
+            fits.status[5] != FITTED || fits.eval_error[5] > 1e-3,
+            "{} {}",
+            fits.status[5],
+            fits.eval_error[5]
+        );
+    }
+
+    #[test]
+    fn a_column_too_large_to_square_is_not_fitted() {
+        let (x, y, nn) = rows();
+        let large: Vec<f64> = x.iter().map(|v| v * 141.5).collect();
+        // exp(x0) reaches about 1e301 on these rows; beside a column of ones that is no design at all
+        let fits = singles(&[VAR, EXP], &[0, 0], &[-1, -1], &large, 1, &y, &nn, 2, 0.0).unwrap();
+        assert_eq!(fits.status[1], RANK_DEFICIENT);
     }
 
     #[test]

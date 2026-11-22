@@ -89,6 +89,13 @@ def test_no_bound_is_claimed_near_the_floor_or_for_an_ill_conditioned_fit() -> N
     assert np.isinf(doubt[1]) and np.isinf(doubt[2]) and np.isinf(doubt[3])
 
 
+def test_no_bound_is_claimed_for_a_column_two_libraries_cannot_agree_on() -> None:
+    rss, condition = np.ones(4), np.full(4, 10.0)
+    doubt = fast_first_pass._doubt(rss, condition, 4.0, 1e-20, np.array([0.0, 1e-13, 1e-2, np.inf]))
+    assert doubt[0] == fast_first_pass._doubt(rss, condition, 4.0, 1e-20)[0]
+    assert doubt[0] < doubt[1] < 1e-10 and np.isinf(doubt[2]) and np.isinf(doubt[3])
+
+
 # ---------------------------------------------------------------- with the kernel: the same result
 CASES = [("simple", 1, 0.0, 6), ("simple", 1, 0.01, 6), ("sum", 2, 0.0, 4), ("sum", 2, 0.01, 4), ("outside", 2, 0.02, 4),
          ("noise", 1, 0.0, 6), ("large", 1, 0.0, 6), ("large", 1, 0.001, 6), ("outside", 1, 0.0, 6)]
@@ -142,6 +149,25 @@ def test_the_kernel_refuses_a_table_it_cannot_run() -> None:
         kernel.first_pass_singles(ops, left, right, x, y, nn, 0.0)
     with pytest.raises(ValueError):                                     # a column the rows do not have
         kernel.first_pass_singles(np.array([0], np.uint8), np.array([4], np.int32), np.array([-1], np.int32), x, y, nn, 0.0)
-    rss, _slope, _intercept, _structure, _condition, status = kernel.first_pass_singles(
+    rss, _slope, _intercept, _structure, _condition, eval_error, status = kernel.first_pass_singles(
         np.array([0, 9], np.uint8), np.array([0, 0], np.int32), np.array([-1, 0], np.int32), x, y, nn, 0.0)
     assert status.tolist() == [fast_first_pass.FITTED, fast_first_pass.RANK_DEFICIENT] and rss[0] < 1e-25   # x0 - x0 is constant
+    assert eval_error[0] == 0.0 and np.isinf(eval_error[1])
+
+
+@native
+def test_the_sine_of_a_huge_number_is_left_to_the_reference(guided) -> None:
+    """The case that separated the two on another processor: ``sin(exp(exp(x)))`` on a table of noise."""
+    kernel = fast_first_pass.kernel()
+    x = np.ascontiguousarray(np.linspace(1.0, 5.0, 50).reshape(-1, 1))
+    y = np.ascontiguousarray(np.random.default_rng(0).standard_normal(50))
+    nn = np.ascontiguousarray(np.array([[(i + 1) % 50, (i - 1) % 50] for i in range(50)], dtype=np.uint32))
+    ops = np.array([0, 2, 2, 4, 4], np.uint8)                       # x0, exp, exp(exp), sin(exp(exp)), sin(x0)
+    left, right = np.array([0, 0, 1, 2, 0], np.int32), np.full(5, -1, np.int32)
+    rss, _slope, _intercept, _structure, condition, eval_error, status = kernel.first_pass_singles(ops, left, right, x, y, nn, 1e-20)
+    assert status[3] == fast_first_pass.FITTED and eval_error[3] > 1e30 and eval_error[4] < 1e-12
+    doubt = fast_first_pass._doubt(rss, condition, float(np.sum((y - y.mean()) ** 2)), 1e-20, eval_error)
+    assert np.isinf(doubt[3]) and np.isfinite(doubt[4]) and np.isfinite(doubt[0])
+    for seed in range(4):                                             # and on tables of noise the two still agree
+        X, noise = _rows("noise", rows=200, inputs=2, seed=seed)
+        assert fast_first_pass.search_confirmed(guided, X, noise, ["x0", "x1"], 4, check=True)

@@ -2467,7 +2467,7 @@ fn flow_head_transport_step<'py>(
 
 /// The first pass of the law search: every expression of a table fitted to `y`.
 ///
-/// Returns `(rss, slope, intercept, structure, condition, status)`, one entry per expression;
+/// Returns `(rss, slope, intercept, structure, condition, eval_error, status)`, one entry per expression;
 /// see `first_pass.rs` for what they mean and what they do not promise. `x` is rows by
 /// columns, `nn` rows by neighbours; all arrays must be contiguous.
 #[pyfunction]
@@ -2483,6 +2483,7 @@ fn first_pass_singles<'py>(
     nn: PyReadonlyArray2<'py, u32>,
     floor: f64,
 ) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
     Bound<'py, PyArray1<f64>>,
     Bound<'py, PyArray1<f64>>,
     Bound<'py, PyArray1<f64>>,
@@ -2508,6 +2509,7 @@ fn first_pass_singles<'py>(
         fits.intercept.into_pyarray(py),
         fits.structure.into_pyarray(py),
         fits.condition.into_pyarray(py),
+        fits.eval_error.into_pyarray(py),
         fits.status.into_pyarray(py),
     ))
 }

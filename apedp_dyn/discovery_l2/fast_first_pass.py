@@ -29,6 +29,18 @@ candidate that mattered, the two would return different results. That is what
 look for (the same answer on many datasets), and ``check=True`` runs both on
 every call and raises on any difference.
 
+**It was wrong once, and how.** The first version bounded only the error of
+the *fit*. It agreed with the reference on 120 of 120 datasets on the machine
+it was written on, and on GitHub's machines on 299 of 300: on a table of pure
+noise the reference chose ``sin(exp(exp(x1)))`` and the kernel ``x0``. The
+sine there is taken of numbers near 1e60, where one unit in the last place of
+the argument is many turns, so NumPy on that processor and the kernel returned
+unrelated columns, both correct. The kernel now carries a bound on how far two
+correct evaluations of each column can differ (``eval_error``), and a column
+without a usable bound is always left to the reference. The reference's own
+answer in such a case depends on the processor it runs on; this module returns
+what the reference returns on the machine at hand.
+
 **Nothing frozen is edited.** The reference modules are imported and called.
 ``enabled()`` makes the main search use this first pass inside a ``with``
 block by replacing one name in the ``main_search`` module at run time; the
@@ -59,6 +71,8 @@ OPS = {"x": 0, "sqrt": 1, "exp": 2, "log": 3, "sin": 4, "cos": 5, "inv": 6, "sq"
 FITTED, NOT_FINITE, RANK_DEFICIENT, NEAR_RANK_THRESHOLD = 0, 1, 2, 3
 #: How many times the first-order error estimate a value of the kernel is trusted to be from the reference's.
 SAFETY = 1e3
+#: The same for the kernel's bound on how far two evaluations of a column can differ (already a worst case per step).
+EVAL_SAFETY = 10.0
 #: Below this many times the floor a residual sum of squares is rounding in both implementations: no bound is claimed.
 NEAR_FLOOR = 1e4
 KEEP, PAIR_POOL, PARTNER_COMPLEXITY = 40, 40, 3       # the reference's defaults in score_slice and merge
@@ -114,15 +128,21 @@ def table_of(nodes: Sequence[tuple[es.Node, int]]) -> Table:
     return table
 
 
-def _doubt(rss: np.ndarray, condition: np.ndarray, total: float, floor: float) -> np.ndarray:
+def _doubt(rss: np.ndarray, condition: np.ndarray, total: float, floor: float,
+           eval_error: np.ndarray | None = None) -> np.ndarray:
     """A bound on the relative difference between the reference's residual sum of squares and the kernel's.
 
-    To first order both differ from the exact least-squares value by rounding times the
-    conditioning of the fit times how small the residual is against what was fitted. Near the
-    floor, or where that estimate is not small, no bound is claimed (infinity).
+    Two things separate them. The fit: to first order both differ from the exact least-squares
+    value by rounding times the conditioning of the fit times how small the residual is against
+    what was fitted. And the column: two correct evaluations of an expression can disagree by
+    ``eval_error`` of its variation (``sin(exp(exp(x)))`` by all of it), which moves the fit by
+    as much. Near the floor, or where the estimate is not small, no bound is claimed (infinity).
     """
     with np.errstate(all="ignore"):
-        estimate = SAFETY * np.finfo(float).eps * condition * (1.0 + np.sqrt(total / rss))
+        against_fit = 1.0 + np.sqrt(total / rss)
+        estimate = SAFETY * np.finfo(float).eps * condition * against_fit
+        if eval_error is not None:
+            estimate = estimate + EVAL_SAFETY * eval_error * against_fit
     out: np.ndarray = np.where((rss >= NEAR_FLOOR * floor) & (estimate < 0.25) & np.isfinite(estimate), estimate, np.inf)
     return out
 
@@ -134,12 +154,11 @@ def _lengths(rss: np.ndarray, n: int, structure_nats: np.ndarray, params: int) -
 
 
 def _full_search(native: Any, nodes: Sequence[tuple[es.Node, int]], nats: np.ndarray, table: Table, X: np.ndarray, y: np.ndarray,
-                 names: Sequence[str], alphabet: int, rss: np.ndarray, condition: np.ndarray, status: np.ndarray,
+                 names: Sequence[str], alphabet: int, rss: np.ndarray, doubt: np.ndarray, status: np.ndarray,
                  floor: float, total: float) -> es.Scored:
     """``exhaustive_search.search(...)[0]``: the best single term or sum of two, by the reference's ordering."""
     n = len(y)
     fitted = status == FITTED
-    doubt = _doubt(rss, condition, total, floor)
     length = _lengths(rss, n, nats, 2)
     slack = np.where(np.isfinite(doubt), 0.5 * n * doubt, np.inf)
     # The reference keeps the KEEP best by (description length, index). A candidate whose best case is
@@ -234,10 +253,10 @@ def _search_confirmed(native: Any, guided: GuidedSearch, X: np.ndarray, y: np.nd
     nn = neighbours(X, min(guided.k, n - 1))
     rss_floor = n * (1e-10 * float(np.sqrt(np.mean(y ** 2)))) ** 2
     total = float(np.sum((y - y.mean()) ** 2))
-    rss, _slope, _intercept, structure, condition, status = native.first_pass_singles(
+    rss, _slope, _intercept, structure, condition, eval_error, status = native.first_pass_singles(
         table.ops, table.left, table.right, np.ascontiguousarray(X), np.ascontiguousarray(y),
         np.ascontiguousarray(nn, dtype=np.uint32), rss_floor)
-    doubt = _doubt(rss, condition, total, rss_floor)
+    doubt = _doubt(rss, condition, total, rss_floor, eval_error)
     length = _lengths(rss, n, nats, 2)
     slack = np.where(np.isfinite(doubt), 0.5 * n * doubt, np.inf)
     # A candidate can only become the best if its residuals show no structure. Those that might:
@@ -271,7 +290,7 @@ def _search_confirmed(native: Any, guided: GuidedSearch, X: np.ndarray, y: np.nd
         return GuidedResult(best, math.floor(deadline), len(nodes), True, 0.0)
     if best is not None:
         return GuidedResult(best, len(nodes), len(nodes), False, 0.0)
-    full = _full_search(native, nodes, nats, table, X, y, names, alphabet, rss, condition, status, rss_floor, total)
+    full = _full_search(native, nodes, nats, table, X, y, names, alphabet, rss, doubt, status, rss_floor, total)
     return GuidedResult(full, len(nodes), len(nodes), False, 1.0)
 
 
