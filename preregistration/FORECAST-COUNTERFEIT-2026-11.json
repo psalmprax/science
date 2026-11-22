@@ -1,0 +1,443 @@
+{
+ "cases_per_cell": 60,
+ "chance_that_an_expectation_holds": {
+  "1": 1.0,
+  "2": 1.0,
+  "3": 0.814,
+  "3_by_noise": {
+   "0": 1.0,
+   "0.01": 1.0,
+   "0.05": 0.814
+  },
+  "4": 1.0,
+  "5": 1.0
+ },
+ "checks_on_all_replayed_reports": {
+  "accurate, not the law": [
+   64,
+   620,
+   0,
+   188
+  ],
+  "outcomes": [
+   "the law",
+   "accurate, not the law",
+   "wrong",
+   "nothing"
+  ],
+  "the law": [
+   1388,
+   0,
+   0,
+   40
+  ],
+  "wrong": [
+   2,
+   5,
+   2,
+   91
+  ]
+ },
+ "counts": {
+  "0.01|offered": {
+   "after": {
+    "accurate, not the law": [
+     4,
+     10,
+     0,
+     2
+    ],
+    "the law": [
+     177,
+     0,
+     0,
+     0
+    ],
+    "wrong": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "best_fit": [
+    666,
+    2,
+    0,
+    0
+   ],
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "replayed_reports": 193,
+   "route": [
+    589,
+    61,
+    0,
+    18
+   ],
+   "survey_worlds": 668,
+   "validated": [
+    658,
+    2,
+    0,
+    8
+   ]
+  },
+  "0.01|withheld": {
+   "after": {
+    "accurate, not the law": [
+     0,
+     17,
+     0,
+     6
+    ],
+    "the law": [
+     2,
+     0,
+     0,
+     0
+    ],
+    "wrong": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "best_fit": [
+    0,
+    0,
+    357,
+    0
+   ],
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "replayed_reports": 25,
+   "route": [
+    9,
+    85,
+    0,
+    263
+   ],
+   "survey_worlds": 357,
+   "validated": [
+    0,
+    0,
+    338,
+    19
+   ]
+  },
+  "0.05|offered": {
+   "after": {
+    "accurate, not the law": [
+     6,
+     18,
+     0,
+     18
+    ],
+    "the law": [
+     99,
+     0,
+     0,
+     31
+    ],
+    "wrong": [
+     1,
+     0,
+     0,
+     35
+    ]
+   },
+   "best_fit": [
+    610,
+    40,
+    6,
+    0
+   ],
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "replayed_reports": 208,
+   "route": [
+    383,
+    133,
+    114,
+    26
+   ],
+   "survey_worlds": 656,
+   "validated": [
+    598,
+    39,
+    6,
+    13
+   ]
+  },
+  "0.05|withheld": {
+   "after": {
+    "accurate, not the law": [
+     0,
+     6,
+     0,
+     10
+    ],
+    "the law": [
+     3,
+     0,
+     0,
+     0
+    ],
+    "wrong": [
+     0,
+     2,
+     2,
+     26
+    ]
+   },
+   "best_fit": [
+    0,
+    0,
+    333,
+    0
+   ],
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "replayed_reports": 49,
+   "route": [
+    17,
+    74,
+    110,
+    132
+   ],
+   "survey_worlds": 333,
+   "validated": [
+    0,
+    0,
+    324,
+    9
+   ]
+  },
+  "0|offered": {
+   "after": {
+    "accurate, not the law": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "the law": [
+     107,
+     0,
+     0,
+     0
+    ],
+    "wrong": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "best_fit": [
+    400,
+    0,
+    0,
+    0
+   ],
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "replayed_reports": 107,
+   "route": [
+    400,
+    0,
+    0,
+    0
+   ],
+   "survey_worlds": 400,
+   "validated": [
+    400,
+    0,
+    0,
+    0
+   ]
+  },
+  "0|withheld": {
+   "after": {
+    "accurate, not the law": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "the law": [
+     6,
+     0,
+     0,
+     0
+    ],
+    "wrong": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "best_fit": [
+    0,
+    0,
+    253,
+    0
+   ],
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "replayed_reports": 6,
+   "route": [
+    16,
+    0,
+    0,
+    237
+   ],
+   "survey_worlds": 253,
+   "validated": [
+    0,
+    0,
+    243,
+    10
+   ]
+  }
+ },
+ "draws": 20000,
+ "from": {
+  "campaign": "benchmarks/red_team_worlds.jsonl.gz",
+  "replay": "benchmarks/vouching_dev_replay_rows.jsonl.gz"
+ },
+ "totals": {
+  "best_fit": {
+   "right": {
+    "expected": 175.43,
+    "interval": [
+     172.0,
+     178.0
+    ],
+    "level": 0.8
+   },
+   "score": {
+    "expected": -18.01,
+    "interval": [
+     -18.15,
+     -17.811
+    ],
+    "level": 0.8
+   },
+   "wrong": {
+    "expected": 179.85,
+    "interval": [
+     178.0,
+     181.0
+    ],
+    "level": 0.8
+   }
+  },
+  "route": {
+   "right": {
+    "expected": 156.24,
+    "interval": [
+     149.0,
+     163.0
+    ],
+    "level": 0.8
+   },
+   "score": {
+    "expected": -2.36,
+    "interval": [
+     -3.05,
+     -1.661
+    ],
+    "level": 0.8
+   },
+   "wrong": {
+    "expected": 30.55,
+    "interval": [
+     24.0,
+     37.0
+    ],
+    "level": 0.8
+   }
+  },
+  "validated": {
+   "right": {
+    "expected": 173.64,
+    "interval": [
+     170.0,
+     177.0
+    ],
+    "level": 0.8
+   },
+   "score": {
+    "expected": -17.26,
+    "interval": [
+     -17.7,
+     -16.85
+    ],
+    "level": 0.8
+   },
+   "wrong": {
+    "expected": 172.7,
+    "interval": [
+     169.0,
+     177.0
+    ],
+    "level": 0.8
+   }
+  },
+  "vouched": {
+   "right": {
+    "expected": 151.36,
+    "interval": [
+     144.0,
+     159.0
+    ],
+    "level": 0.8
+   },
+   "score": {
+    "expected": 0.7,
+    "interval": [
+     0.506,
+     0.861
+    ],
+    "level": 0.8
+   },
+   "wrong": {
+    "expected": 1.29,
+    "interval": [
+     0.0,
+     3.0
+    ],
+    "level": 0.8
+   }
+  }
+ },
+ "what": "Filed before the run. Counts come from the red-team campaign's randomly drawn worlds of the same noise, sampling and number of rows, and for the vouched route from the replay of its checks on them. Those worlds drew their counterfeits at random distances; this benchmark takes one from each band where the law is offered and only wrong ones where it is withheld, for which the campaign's worlds whose best fit was wrong stand in. The intervals and chances cover the draw of sixty cases a cell and what the counts leave open about the shares, and nothing else: not the difference between the campaign's laws and these."
+}

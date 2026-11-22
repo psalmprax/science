@@ -35,6 +35,30 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The red-team campaign recorded, the checks built from it, and the counterfeit benchmark
+  redesigned before freezing (2026-11-22).** The campaign (34,728 worlds,
+  `benchmarks/red_team_campaign.json`): on worlds drawn at random under the preregistered runs'
+  conditions the route reported 1 wrong law in 2,198; with 3 to 10 % noise, 268 in 1,057; on
+  worlds changed step by step towards its failures, 588 in 2,569 under the runs' own conditions.
+  Two causes (audit M-31, M-32): the simplest member of a class the path could not separate is
+  reported, and the last check lets through an error a third the size of the noise.
+  `discovery_l2/vouching.py` is built from that: a structure test with a known null at three
+  scales, a rule that members of a class which pass it must agree, and a rule that a law is
+  withheld where an error large enough to make it wrong would have been missed. Replayed on the
+  campaign's worlds (development): on 3,000 drawn at random 118 wrong laws became 3 and 1,825
+  recovered became 1,841. Not in force. **The counterfeit benchmark's first design could not
+  have told a careful method from a careless one**: where the law was withheld every law still
+  had a counterfeit near enough to count as accurate, so reporting the best fit was never wrong.
+  Found by reading the file before freezing; the withheld cases now offer only wrong
+  counterfeits, the laws are drawn afresh, the smoke job uses a law that is in no benchmark, and
+  the checked route is a fourth method. **PREREG-COUNTERFEIT-2026-11 is frozen** with five
+  expectations, what follows from each fixed in advance, and the system's forecast drawn from the
+  campaign's counts: the route scores -2.4, the checked route 0.7, the two plain methods -18 and
+  -17; its chance that the checks' reports stay within 5 % wrong at every noise level is 81 %,
+  all of the doubt at 5 % noise. A crash of the checks on a case counts as nothing reported.
+- **The native first pass on GitHub's machines, third attempt (2026-11-22).** All eight seeds
+  ran: 1,200 of 1,200 datasets agree with the reference, on six processor models from two
+  makers, the seed that had differed among them; 10.7 to 17.0 times faster.
 - **Two blind runs recorded, and what follows from them put in force (2026-11-22).**
   *PREREG-ODE-ADDITIONS-2026-11*, 46 dynamical systems none of it was built on: all four
   expectations held, by little. Recovered of 276: the route in force 116, with a second engine and

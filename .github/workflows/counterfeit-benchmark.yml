@@ -1,6 +1,6 @@
 # The counterfeit-law benchmark (scripts/run_counterfeit_benchmark.py): a method is scored on what it refuses as
 # much as on what it finds. No search engine runs: the candidates are part of each case.
-#   push to counterfeit-smoke-*  -> the tests, the file against its generator, four cases.
+#   push to counterfeit-smoke-*  -> the tests, the file against its generator, four cases of a law that is in no benchmark.
 #   push to counterfeit-run-*    -> smoke, then PREREG-COUNTERFEIT-2026-11, once.
 name: Counterfeit-law benchmark
 
@@ -26,11 +26,11 @@ jobs:
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test]"
-      - name: The red team's and the benchmark's tests
-        run: python -m pytest tests/test_red_team.py tests/test_counterfeit_benchmark.py -q
+      - name: The red team's, the checks' and the benchmark's tests
+        run: python -m pytest tests/test_red_team.py tests/test_vouching.py tests/test_counterfeit_benchmark.py -q
       - name: The benchmark is what its generator gives
         run: python scripts/run_counterfeit_benchmark.py build --check
-      - name: Four cases
+      - name: Four cases of a law that is in no benchmark
         run: python scripts/run_counterfeit_benchmark.py smoke
 
   run:

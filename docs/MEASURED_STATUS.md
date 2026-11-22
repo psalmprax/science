@@ -1,6 +1,6 @@
 # What has been measured, and where the system stands
 
-Last updated 2026-11-21. This page is the short answer to "what does this system do, and how do you
+Last updated 2026-11-22. This page is the short answer to "what does this system do, and how do you
 know". Every line points at a preregistered run: the question, the method and the pass criteria were
 frozen by digest before the run, the run was made once, and the outputs are committed unedited under
 [`preregistration/`](../preregistration/). Where an expectation was missed, the result file says so
@@ -200,13 +200,63 @@ searches (`discovery_l2/stage_in_force.py`). Beside the pass:
 - **At 1 % noise 31 of the 36 laws the default route reports are accurate and are not the law.**
   None counts as wrong by the benchmark's criterion.
 
+## A search for data that defeats the route, and the checks built from what it found
+
+**Development by its nature: the worlds were chosen to defeat the route, so nothing here is a
+rate on data nobody designed.** `scripts/run_red_team.py`, run once on 2026-11-22 (GitHub Actions
+run `44963722101`): 34,728 worlds (`benchmarks/red_team_campaign.json`, every world in
+`benchmarks/red_team_worlds.jsonl.gz`). A world is a law, a list of candidates said to come from a
+search (counterfeits of the law, with or without the law), a way of drawing rows and a noise.
+Half the worlds were drawn at random; half were changed step by step towards the route's failures.
+
+| Worlds drawn at random | Laws reported by the route | Wrong | The candidate that fits best: wrong |
+| :--- | ---: | ---: | ---: |
+| The conditions of the preregistered runs (noise up to 1 %, 1,000 rows, uniform, Gaussian) | 2,198 | **1 (0.05 %)** | 915 of 3,465 |
+| Fewer rows | 1,238 | 34 (2.7 %) | 427 of 1,771 |
+| Rows that do not cover the box evenly | 1,641 | 18 (1.1 %) | 403 of 2,288 |
+| Noise of another shape than the path is told | 906 | 4 (0.4 %) | 469 of 1,731 |
+| **More noise than the runs used** | 1,958 | **312 (15.9 %)** | 636 of 2,403 |
+
+By noise, under the runs' other conditions: none, 0 of 427; up to 0.3 %, 0 of 819; 0.3 to 1 %, 1 of
+952; 1 to 3 %, 44 of 901 (4.9 %); **3 to 10 %, 268 of 1,057 (25 %)**. The record of the
+preregistered runs holds where they measured and does not hold above about 3 % noise.
+
+On the worlds changed towards failure the route reported a wrong law in 588 of 2,569 reports under
+the runs' own conditions, and in most reports elsewhere. Two causes account for nearly all of it
+(audit M-31, M-32): where the path cannot tell candidates apart it reports the one with the
+shortest description (11,929 of the 13,426 wrong laws, the law itself having been offered in
+5,365), and its last check lets through an error a third the size of the noise.
+
+**The checks built from it** (`discovery_l2/vouching.py`): a structure test with a known null at
+three scales; members of an unseparated class that pass it must agree with each other, or nothing
+is reported; and a law is not reported where an error large enough to make it wrong would have
+been missed. Replayed on 6,000 of the campaign's worlds in which the route had reported a law
+(`benchmarks/vouching_dev_replay.json`):
+
+| | The law | Accurate, not the law | Wrong | Nothing |
+| :--- | ---: | ---: | ---: | ---: |
+| 3,000 worlds drawn at random, the route | 1,825 | 1,057 | 118 | |
+| The same after the checks | **1,841** | 787 | **3** | 369 |
+| 3,000 worlds changed towards failure, the route | 330 | 960 | 1,710 | |
+| The same after the checks | 481 | 669 | **2** | 1,848 |
+
+On the random worlds 68 reports changed from another candidate into the law, and 52 laws were
+lost (37 because an error of the size in question could not have been seen, 13 because members of
+a class disagreed, 2 of 1,825 refused for structure, which is the test's level). With 3 to 10 %
+noise 82 wrong laws became 2, at the price of 24 of 136 laws.
+
+**What this is not.** The checks were written after reading these worlds, so the replay shows
+what was built. The search aimed at the route without the checks; nothing has yet searched for
+data that defeats the checks. An approximation inside the accuracy line stays reportable. The
+first run on fresh laws is PREREG-COUNTERFEIT-2026-11.
+
 ## Developed and not taken to a preregistered run
 
 | What | What development showed | Why it stopped there |
 | :--- | :--- | :--- |
 | A language-model agent as the variation operator of a search, after Agentic Variation Operators (`apedp_dyn/proposers/agentic_variation.py`, `discovery_l2/agentic_stage.py`) | **Development run with the free model** (`nemotron-3-ultra`, 2026-11-21, the twenty development laws of `benchmarks/invented_laws.json` at noise 0 and 1 %, 40 runs an arm; `benchmarks/agentic_variation_dev_study.json`): the search with the agent recovered **16 of 40, the default search stage 13**, the agent alone 1. Run for run the agent's arm recovered four laws the default did not and missed one it did, which five runs cannot tell from chance (sign test 0.38). No arm reported a wrong law (0 of 27, 26 and 12). The agent's arm took a median of 504 s against 277 s. All 120 runs completed; 67 of 80 sessions fitted at least one expression | **Not a gain yet, for two reasons.** The default stage was given the same 240 s of search and not the same wall time, so more time is an explanation the run cannot exclude. And the rows did not record which of the structures handed on the agent wrote, so a gained law cannot be traced to it (they do now). What would settle it: the forty held-back laws with a third arm, the default stage given the agent's extra time as search. That comparison is designed, not frozen and not run: on the owner's instruction, testing waits for a stronger model, and its settings depend on that model's speed |
 | Additions to the ODE route: sparse regression as a second engine, adequacy judged at the rows' precision, and a follow-up experiment that shortens a reported law (`ode/second_engine.py`, `ode/precision_adequacy.py`, `ode/experiment_pruning.py`) | Development on the first blind set after its run, replayed with its recorded candidates (`benchmarks/ode_additions_dev_replay_2.json`): recovered of 310 without noise and at 1 %, the route in force 199 and 210; with the first two additions 202 and 233; with the experiment as well 229 and 247 (random restarts: 222 and 239); 3 wrong laws of 513 in each. The sparse reference: 255 and 188, with 34 wrong of 620. A first form of the experiment made the route worse and was retired (audit M-28) | **Run blind on 2026-11-22** (PREREG-ODE-ADDITIONS, 46 systems no route had run on; [`RESULT-ODE-ADDITIONS`](../preregistration/RESULT-ODE-ADDITIONS-2026-11.md)): recovered of 276, the route in force 116, with the two additions 118, with the experiment 123 (random restarts 121); wrong among reported 4 of 164, 6 of 188, 6 of 188. All four expectations held, **and what development promised did not carry over**: there the same steps were worth 26 and 41 components of 620, here 2 and 5 of 276. Adequacy at the rows' precision reinstated 23 laws of which 1 is the law and 3 are wrong; it is held back from the route in force (a recorded deviation). Chosen restarts beat random ones by two components, which is inside the variation of the machinery |
-| The first pass of the main search on a native kernel (`discovery_l2/fast_first_pass.py`, `rust/apedp-kernel/src/first_pass.rs`) | On the machine it was written on it returns the reference's result on 270 of 270 datasets, field by field, about 12 times faster (489 s against 36 s on 120 datasets; 453 s against 39 s on 150). Its first version agreed on 120 of 120 there and on 299 of 300 on GitHub's processors: it did not bound how far two correct evaluations of an expression such as `sin(exp(exp(x)))` can differ (audit M-29). Fixed; the check on GitHub's machines is being repeated | A count of agreements, not a proof: its error bounds are an analysis with a safety factor. Opt-in (`enabled()`), used by nothing by default and by no preregistered run; `check=True` runs both |
+| The first pass of the main search on a native kernel (`discovery_l2/fast_first_pass.py`, `rust/apedp-kernel/src/first_pass.rs`) | On the machine it was written on it returns the reference's result on 270 of 270 datasets, field by field, about 12 times faster (489 s against 36 s on 120 datasets; 453 s against 39 s on 150). Its first version agreed on 120 of 120 there and on 299 of 300 on GitHub's processors: it did not bound how far two correct evaluations of an expression such as `sin(exp(exp(x)))` can differ (audit M-29). **Fixed, and checked again on GitHub's machines (run `45051194079`, 2026-11-22): 1,200 of 1,200 datasets identical, eight seeds on six processor models from two makers, the seed that had differed among them; 10.7 to 17.0 times faster there** | A count of agreements, not a proof: its error bounds are an analysis with a safety factor. Opt-in (`enabled()`), used by nothing by default and by no preregistered run; `check=True` runs both |
 | A memory of confirmed laws as a candidate source (`proposers/structure_memory.py`, `discovery_l2/memory_stage.py`) | Development, on 80 laws of the invented-law grammar the memory had not seen, 1 % noise, the memory as the route's only search stage: it handed over the law itself in 15 and the route recovered 13, against 1 with no search stage. It also reported 3 wrong laws of 67 (6 of 39 with no search stage): a route whose only rivals are approximations confirms approximations | **Run blind on 2026-11-22** beside the searches, on 40 laws drawn afterwards (PREREG-MEMORY; [`RESULT-MEMORY`](../preregistration/RESULT-MEMORY-2026-11.md)): 23 of 80 recovered against 17, six gained, none lost, 0 wrong of 57 and of 55. Both expectations held and it is in force for tables. The memory's laws were the law itself in 26 runs; at 1 % noise the route reported 6 of the 11 it was handed and in the other five named a shorter candidate that is accurate and is not the law. The proposer's way of joining parts was written knowing the grammar; no gain is measured on the physics benchmarks' laws, most of which it cannot grow |
 | The system's forecast of its own results (`discovery_l2/outcome_forecast.py`, `scripts/forecast_runs.py`) | Learned from the runs on record, it gives each problem's chance of being recovered. Backtest, holding one recorded run out at a time (`benchmarks/outcome_forecast_backtest.json`): better than the plain average in 7 of 10 held-out runs; clearly so on the table benchmark, where the same laws recur (Brier 0.12 to 0.16 against 0.21 to 0.25); worse than the average in three of the six runs on dynamical systems; a whole run's recovery rate was off by 10.6 percentage points (root mean square) | A backtest is not a test: every outcome was known when it was written. **Two forecasts filed before their runs have now been scored** (`benchmarks/outcome_forecast_scored.json`): five of six totals fell inside their 80 % intervals, which are wide. On the 46 new dynamical systems it said 90 recovered (51 to 129) and 116 were, where the earlier runs' average said 182; it said 25 wrong laws and there were 4. On the 40 new table laws it said 50 (37 to 62) and **17 were: a clear miss**, on a kind of law it had seen no run on. Run by run it ranks better than chance (0.60 and 0.68, where 0.5 is chance) and no better than that. It reads the true law, so it forecasts benchmark runs, not real data |
 | A loop in which a coding model rewrites the search's candidate generator under a fixed judge (`apedp_dyn/evolution/`, `discovery_l2/evolved_stage.py`, `scripts/run_search_evolution.py`; [SEARCH_EVOLUTION.md](SEARCH_EVOLUTION.md)) | With a scripted stand-in for the model, on 16 training and 16 validation laws: a reply with an import is refused before it runs, its repair fails when run, the next repair runs and proposes 1 and 4 of the laws where the seed proposes none, a version that never returns is stopped on every problem, strings such as `9**9**9**9` are refused by the judge. The jailed process, given code the check would refuse, could not write, read, open a socket, start a process or see a variable of the caller | **No real model has driven it**, on the owner's instruction: it waits for a coding model. Nothing it produces is installed; a version would enter the route only by a reviewed commit after one preregistered test on laws it was never scored on. The training laws share one grammar, so a gain on them is not yet a gain on laws |

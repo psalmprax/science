@@ -307,6 +307,46 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-32 the path's last check lets through an error a third the size of the
+  noise — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN; A REPAIR IS BUILT AND
+  UNDER TEST; the frozen path is unchanged.** `main_search.adequacy` passes a
+  law if the leave-one-out R² of each residual from its eight nearest rows'
+  residuals is at most 0. For noise alone that statistic is about -1/8, so
+  the check only refuses structure worth an eighth of the residual variance.
+  **Evidence** (`benchmarks/red_team_campaign.json`, 34,728 worlds): of 1,057
+  laws reported on randomly drawn worlds with 3 to 10 % noise, 268 were wrong;
+  with 1 to 3 %, 44 of 901; up to 1 %, 1 of 2,198. Every one of the 588 wrong
+  laws the search found under the measured conditions had a statistic between
+  -0.05 and -0.01, where a right law's lies near -0.13: the check had the
+  information and no threshold to use it. **Repair
+  (`discovery_l2/vouching.py`)**: the same statistic at three neighbourhood
+  sizes against its own distribution under random sign flips, at the
+  canonical test level; and a law is not reported where an error large enough
+  to make it wrong would have been missed more often than the canonical power
+  minimum allows. Replayed on 3,000 randomly drawn worlds of the campaign in
+  which the route had reported a law: 118 wrong laws became 3, and the laws
+  recovered rose from 1,825 to 1,841. **Development on worlds whose answers
+  were known**; under test in PREREG-COUNTERFEIT-2026-11.
+- **M-31 when candidates cannot be told apart the route reports the one with
+  the shortest description — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN AND IN
+  TWO BLIND RUNS THE SAME DAY; A REPAIR IS BUILT AND UNDER TEST; the frozen
+  path is unchanged.** `contrast_confirmation` may measure thirty rows; where
+  that does not separate the candidates the verdict is `equivalent_class` and
+  the simplest member is reported. **Evidence:** of the 13,426 wrong laws the
+  campaign found, 11,929 came out of such a class, and in 5,365 of them the
+  law itself had been offered. On data nobody designed: at 1 % noise 31 of 36
+  laws the route reported in PREREG-MEMORY-2026-11 and 38 of 63 in
+  PREREG-ODE-ADDITIONS-2026-11 are accurate without being the law, and in
+  five runs the memory had handed it the law and it named a shorter
+  candidate. **Repair (`discovery_l2/vouching.py`)**: members of the class
+  that leave structure in their residuals are dropped; if those that remain
+  differ from each other by more than the accuracy a reported law is held
+  to, nothing is reported and the class is named; if the simplest was
+  dropped, the simplest that remains is reported. In the replay 68 reports on
+  randomly drawn worlds changed from another candidate into the law.
+  **What it does not repair:** an approximation inside the accuracy line is,
+  by that line, not an error, and stays reportable. **Development**; under
+  test in PREREG-COUNTERFEIT-2026-11.
 - **M-30 the quantum ledger says the inverse-square-root verifier does not
   simulate shots; it does — FOUND 2026-11-22 WHILE WIRING THAT VERIFIER INTO
   THE VARIATION LOOP, OPEN.** `quantum_compilation/candidates.py` lists
@@ -338,7 +378,10 @@ three preregistered expectations missed.
   for every expression, a bound on how far two correct evaluations can differ
   (`first_pass.rs`, `eval_error`), the wrapper adds it to its doubt, and a
   column without a usable bound is always computed by the reference. Local
-  check afterwards: 270 of 270 agree. **Still an analysis with a safety
+  check afterwards: 270 of 270 agree. **On GitHub's machines afterwards (run
+  45051194079): 1,200 of 1,200 agree**, eight seeds on six processor models
+  (Intel Xeon 8370C, 8573C and 6973P-C; AMD EPYC 7763, 9V45 and 9V74), the
+  seed that had differed among them. **Still an analysis with a safety
   factor, not a proof**; `scripts/check_fast_first_pass.py` on more than one
   machine is the evidence, and `check=True` runs both.
 - **M-28 rows of a follow-up experiment cannot simply join the pool — FOUND
