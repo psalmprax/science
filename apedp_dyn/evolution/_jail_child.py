@@ -50,6 +50,7 @@ def main() -> int:
     request = json.loads(sys.stdin.read())
     limits = request["limits"]
     soft, hard = float(limits["seconds_per_call"]), float(limits["cpu_seconds_per_call"])
+    result_chars = int(limits.get("result_chars") or MAX_RESULT_CHARS)   # a task whose answers are long says so
     resource.setrlimit(resource.RLIMIT_CPU, (int(limits["cpu_seconds"]), int(limits["cpu_seconds"]) + 1))
     resource.setrlimit(resource.RLIMIT_FSIZE, (0, 0))            # no file can be written
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
@@ -143,9 +144,9 @@ def main() -> int:
         seconds = time.perf_counter() - started
         if seconds > soft:
             return json.dumps({"ok": False, "error": f"answered after {seconds:.1f} s; the limit is {soft:g} s"})
-        if len(line) > MAX_RESULT_CHARS:
+        if len(line) > result_chars:
             return json.dumps({"ok": False, "error": f"the answer has {len(line)} characters; at most "
-                                                     f"{MAX_RESULT_CHARS} are read"})
+                                                     f"{result_chars} are read"})
         return line[:-1] + f', "seconds": {seconds:.4f}}}'
 
     first = attempt(None)

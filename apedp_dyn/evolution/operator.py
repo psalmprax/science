@@ -53,6 +53,7 @@ class Contract:
     signature: str              #: for example ``propose(X, y, names)``
     description: str            #: what it receives, what it must return, how it is scored
     notes: str = ""             #: anything that helps: how the judge reads the output, what tends to work
+    subject: str = "one function of a search for natural laws"   #: what the model is told it is improving
 
 
 @dataclass
@@ -158,7 +159,7 @@ def _prompt(task: Task, archive: Archive, parent: Version, steps_left: int) -> s
     c = task.contract
     notes = f"Notes:\n{c.notes}\n" if c.notes else ""
     return (
-        f"You are improving one function of a search for natural laws. A fixed judge scores every version; you cannot "
+        f"You are improving {c.subject}. A fixed judge scores every version; you cannot "
         f"change the judge.\n\nThe function: {c.signature}\n{c.description}\n{notes}\n"
         f"The language: {restricted.describe()}\n\n"
         f"Versions so far, best first:\n{archive.lineage()}\n\n"

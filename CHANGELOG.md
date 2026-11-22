@@ -35,6 +35,32 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **Google's circuit verifier as the judge of the variation loop (2026-11-22).** The owner asked
+  for it. The competition's circuits have a text form with one instruction a line, and a circuit
+  converted to text and back is the same bytes; so a candidate is now code that is handed the
+  lines of a circuit that passes and returns lines (`rewrite(lines, facts)`), in the restricted
+  language, in the jail. `evolution/circuit_text.py` reads what comes back strictly (an
+  instruction of the format written the simulator's way, or a refusal with the line number);
+  `evolution/circuit_task.py` hands the file to the verifier through the referee's pinned
+  contract, on 4,096 inputs, then a million, then, for a circuit that would lead, every input.
+  Never with a salt: the ledger allows a salted confirmation once, and a loop must not be able
+  to ask for it. **Run here with scripted replies, on a simulator built from the pinned sources
+  whose bytes differ from the pinned build, so the referee refuses it and nothing below is a
+  receipt.** The competition's reference circuit names 260 qubits and holds 249 at once: a
+  renaming written in the restricted language passed on every input (200,540,928 shots) at
+  1,988,910.71 against 2,076,774.23. On the repository's 89-qubit circuit the same renaming
+  finds nothing, and leaving out its finest rotation passes 4,096 inputs, cheaper, and fails at
+  x = 685,219: the reason the scopes grow. Ten copies of that circuit which behave alike cost
+  157,592 to 157,617 on 4,096 inputs, so a circuit leads only if it is 0.02 % cheaper; without
+  that a loop climbs on the verifier's draw. **No model has driven it.** Found on the way: the
+  quantum ledger describes this verifier as one that does not simulate shots (audit M-30, open).
+  `jail.run` reads a long answer when the task says answers are long; `operator.Contract` names
+  what is being improved. Both keep their old behaviour by default.
+- **The comparison of the native first pass on GitHub's machines, second attempt (2026-11-22).**
+  Three of eight jobs ran: 450 of 450 datasets agree with the fix of M-29. The other five failed
+  before any comparison, on the toolchain install: `rust-toolchain.toml` asks for two components
+  the workflow did not name, so the first `rustc` run installed them a second time. The workflow
+  names them now. The seed that had differed has not run yet.
 - **The native first pass disagreed with the reference on another processor, and why (2026-11-22;
   audit M-29, fixed).** The check was repeated on GitHub's machines: 299 of 300 datasets agreed.
   On a table of pure noise the reference chose `sin(exp(exp(x1)))` and the kernel `x0`. The sine

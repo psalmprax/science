@@ -274,6 +274,18 @@ word at once — a rewrite, not a tidy-up. It is also scoped: the ceiling is a s
 the APEDP-Q / SABLE search space, not about the competition, and the champion's 0.999623 of
 tolerance leaves no room for further approximation.
 
+### A loop in which a model may rewrite the circuit
+
+`apedp_dyn/evolution/circuit_task.py` hands a circuit's lines to code written by a model and
+has the competition's own verifier judge what comes back, on 4,096 inputs, then a million, then
+every input; never with a salt, so a circuit that leads still needs the one salted run.
+**No model has driven it.** With scripted replies, on a simulator built here from the pinned
+sources (its bytes differ from the pinned build, so none of this is a receipt), a renaming of
+qubits made the competition's 260-qubit reference circuit 4.2 % cheaper and passed on every
+input, and on the 89-qubit circuit the same renaming found nothing: 89 qubits are in use at
+once. That is this section's verdict again, reached by another route. What a model would have
+to write is another schedule of the arithmetic, from 27,381 lines that carry no notes.
+
 Full record: [`docs/INVSQRT_SUB62_DESIGN.md`](docs/INVSQRT_SUB62_DESIGN.md) (per-lever
 measurements, the build log, and the reproduction commands),
 [§5 of the frontier audit](docs/invsqrt_frontier_and_portfolio_synthesis.md) (the

@@ -307,6 +307,20 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-30 the quantum ledger says the inverse-square-root verifier does not
+  simulate shots; it does — FOUND 2026-11-22 WHILE WIRING THAT VERIFIER INTO
+  THE VARIATION LOOP, OPEN.** `quantum_compilation/candidates.py` lists
+  `invsqrt` as `cost-model-only` and gives the reason "it builds the circuit
+  and prices it, and does not simulate it on shots". The verifier
+  (`verifiers/invsqrt/verify_submission_invsqrt.py`, `verify`) simulates every
+  shot and raises on the first one whose input register is not restored,
+  whose working qubits are not back at zero, or whose phase is outside the
+  tolerance; a `PASS` summary means none did over `verified_shots` shots.
+  **Effect:** a pass is recorded with value, workspace and phase "not
+  applicable" where they were measured and passed: an understatement, never
+  an overstatement, so no recorded status is too generous. **Not changed
+  here:** the evidence a receipt carries decides ledger statuses, and that
+  belongs with the quantum arm's own tests.
 - **M-29 the native first pass returned another law than the reference on
   another processor — FOUND 2026-11-22 BY RUNNING BOTH ON GITHUB'S MACHINES,
   FIXED THE SAME DAY; nothing had used it.** `discovery_l2/fast_first_pass.py`

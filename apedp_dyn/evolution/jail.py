@@ -51,6 +51,7 @@ MEMORY_BYTES = 2 * 1024 ** 3
 SECONDS_PER_CALL = 5.0
 STARTUP_SECONDS = 20.0      # a fresh interpreter importing numpy
 MAX_RESTARTS = 5            # processes started again after one died during a call
+MAX_RESULT_CHARS = 64_000_000   # the most a caller may ask the child to read of one answer
 
 
 @dataclass
@@ -93,16 +94,18 @@ def _ended(returncode: int, hard: float) -> str:
 
 
 def _segment(code: str, function: str, calls: Sequence[Sequence[Any]], seconds_per_call: float,
-             memory_bytes: int) -> tuple[list[dict[str, Any]], str]:
+             memory_bytes: int, result_chars: int | None = None) -> tuple[list[dict[str, Any]], str]:
     """One process for ``calls``: the lines it wrote, and why it ended early (or ``""``)."""
     hard = 2.0 * seconds_per_call + 1.0
     budget = STARTUP_SECONDS + 1.2 * seconds_per_call * (len(calls) + 1) + hard     # one more for defining it
+    limits: dict[str, float] = {"seconds_per_call": seconds_per_call, "cpu_seconds_per_call": hard,
+                                "memory_bytes": memory_bytes, "cpu_seconds": int(budget) + 5}
+    if result_chars is not None:
+        limits["result_chars"] = min(int(result_chars), MAX_RESULT_CHARS)
     request = {"code": code, "function": function,
                "builtins": sorted(restricted.ALLOWED_BUILTINS | restricted.ALLOWED_EXCEPTIONS),
                "attributes": sorted(restricted.ALLOWED_ATTRIBUTES),
-               "calls": [[_encode(a) for a in call] for call in calls],
-               "limits": {"seconds_per_call": seconds_per_call, "cpu_seconds_per_call": hard,
-                          "memory_bytes": memory_bytes, "cpu_seconds": int(budget) + 5}}
+               "calls": [[_encode(a) for a in call] for call in calls], "limits": limits}
     with tempfile.TemporaryDirectory(prefix="jail-") as directory:
         try:
             done = subprocess.run(  # noqa: S603 - this interpreter, the child script of this package, no shell
@@ -129,13 +132,13 @@ def _segment(code: str, function: str, calls: Sequence[Sequence[Any]], seconds_p
 
 
 def run_unchecked(code: str, function: str, calls: Sequence[Sequence[Any]], *, seconds_per_call: float = SECONDS_PER_CALL,
-                  memory_bytes: int = MEMORY_BYTES) -> JailRun:
+                  memory_bytes: int = MEMORY_BYTES, result_chars: int | None = None) -> JailRun:
     """``run`` without the syntax check: the second barrier alone. For the tests of that barrier."""
     started = time.perf_counter()
     results: list[CallResult] = []
     restarts = 0
     while True:
-        lines, ended = _segment(code, function, calls[len(results):], seconds_per_call, memory_bytes)
+        lines, ended = _segment(code, function, calls[len(results):], seconds_per_call, memory_bytes, result_chars)
         if not lines or not lines[0].get("defined"):
             error = str(lines[0].get("error", "")) if lines else ""
             error = error or ended or "the process wrote nothing"
@@ -157,12 +160,15 @@ def run_unchecked(code: str, function: str, calls: Sequence[Sequence[Any]], *, s
 
 
 def run(code: str, function: str, calls: Sequence[Sequence[Any]], *, parameters: int | None = None,
-        seconds_per_call: float = SECONDS_PER_CALL, memory_bytes: int = MEMORY_BYTES) -> JailRun:
+        seconds_per_call: float = SECONDS_PER_CALL, memory_bytes: int = MEMORY_BYTES,
+        result_chars: int | None = None) -> JailRun:
     """Check ``code``, then call ``function`` once per entry of ``calls`` in a jailed process.
 
     Raises ``restricted.RejectedCodeError`` if the code is outside the allowed subset; that is the
     one thing reported by exception, because nothing was run. Arrays among the arguments are sent
-    as numbers; everything else has to be JSON.
+    as numbers; everything else has to be JSON. An answer longer than 200,000 characters is not
+    read unless ``result_chars`` allows more (a task whose answers are whole circuits does).
     """
     restricted.check(code, function, parameters)
-    return run_unchecked(code, function, calls, seconds_per_call=seconds_per_call, memory_bytes=memory_bytes)
+    return run_unchecked(code, function, calls, seconds_per_call=seconds_per_call, memory_bytes=memory_bytes,
+                         result_chars=result_chars)

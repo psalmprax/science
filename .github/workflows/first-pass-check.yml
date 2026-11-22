@@ -22,8 +22,10 @@ jobs:
         seed: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v7
-      # The hosted runner's preinstalled toolchains conflict with a fresh install of the pinned one
-      # ("detected conflict: bin/cargo-fmt"); test.yml installs into an empty home for the same reason.
+      # rust-toolchain.toml asks for rustfmt and clippy. If the install below does not bring them, the
+      # first `rustc` run in this directory installs them a second time and fails on "detected
+      # conflict: bin/cargo-clippy" (five of eight jobs, twice). So they are named here, as in test.yml,
+      # and the toolchain goes into an empty home of the job's own.
       - name: Isolate Rust toolchain home
         run: |
           rm -rf "$RUNNER_TEMP/rustup"
@@ -32,6 +34,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: '1.99.0'
+          components: rustfmt, clippy
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
