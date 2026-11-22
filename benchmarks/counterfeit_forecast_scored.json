@@ -1,0 +1,704 @@
+{
+ "brier": 0.0069,
+ "brier_of_even_odds": 0.25,
+ "cells": {
+  "0.01|offered": {
+   "best_fit": {
+    "forecast_share": [
+     0.997,
+     0.003,
+     0.0,
+     0.0
+    ],
+    "seen": [
+     59,
+     1,
+     0,
+     0
+    ],
+    "seen_share": [
+     0.9833,
+     0.0167,
+     0.0,
+     0.0
+    ]
+   },
+   "cases": 60,
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "route": {
+    "forecast_share": [
+     0.8817,
+     0.0913,
+     0.0,
+     0.0269
+    ],
+    "seen": [
+     49,
+     11,
+     0,
+     0
+    ],
+    "seen_share": [
+     0.8167,
+     0.1833,
+     0.0,
+     0.0
+    ]
+   },
+   "validated": {
+    "forecast_share": [
+     0.985,
+     0.003,
+     0.0,
+     0.012
+    ],
+    "seen": [
+     59,
+     1,
+     0,
+     0
+    ],
+    "seen_share": [
+     0.9833,
+     0.0167,
+     0.0,
+     0.0
+    ]
+   },
+   "vouched": {
+    "forecast_share": [
+     0.9045,
+     0.0571,
+     0.0,
+     0.0383
+    ],
+    "seen": [
+     53,
+     7,
+     0,
+     0
+    ],
+    "seen_share": [
+     0.8833,
+     0.1167,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "0.01|withheld": {
+   "best_fit": {
+    "forecast_share": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ],
+    "seen": [
+     0,
+     0,
+     60,
+     0
+    ],
+    "seen_share": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ]
+   },
+   "cases": 60,
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "route": {
+    "forecast_share": [
+     0.0252,
+     0.2381,
+     0.0,
+     0.7367
+    ],
+    "seen": [
+     1,
+     18,
+     0,
+     41
+    ],
+    "seen_share": [
+     0.0167,
+     0.3,
+     0.0,
+     0.6833
+    ]
+   },
+   "validated": {
+    "forecast_share": [
+     0.0,
+     0.0,
+     0.9468,
+     0.0532
+    ],
+    "seen": [
+     0,
+     0,
+     57,
+     3
+    ],
+    "seen_share": [
+     0.0,
+     0.0,
+     0.95,
+     0.05
+    ]
+   },
+   "vouched": {
+    "forecast_share": [
+     0.0252,
+     0.176,
+     0.0,
+     0.7988
+    ],
+    "seen": [
+     1,
+     13,
+     0,
+     46
+    ],
+    "seen_share": [
+     0.0167,
+     0.2167,
+     0.0,
+     0.7667
+    ]
+   }
+  },
+  "0.05|offered": {
+   "best_fit": {
+    "forecast_share": [
+     0.9299,
+     0.061,
+     0.0091,
+     0.0
+    ],
+    "seen": [
+     53,
+     7,
+     0,
+     0
+    ],
+    "seen_share": [
+     0.8833,
+     0.1167,
+     0.0,
+     0.0
+    ]
+   },
+   "cases": 60,
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "route": {
+    "forecast_share": [
+     0.5838,
+     0.2027,
+     0.1738,
+     0.0396
+    ],
+    "seen": [
+     34,
+     20,
+     3,
+     3
+    ],
+    "seen_share": [
+     0.5667,
+     0.3333,
+     0.05,
+     0.05
+    ]
+   },
+   "validated": {
+    "forecast_share": [
+     0.9116,
+     0.0595,
+     0.0091,
+     0.0198
+    ],
+    "seen": [
+     52,
+     7,
+     0,
+     1
+    ],
+    "seen_share": [
+     0.8667,
+     0.1167,
+     0.0,
+     0.0167
+    ]
+   },
+   "vouched": {
+    "forecast_share": [
+     0.4784,
+     0.0869,
+     0.0,
+     0.4347
+    ],
+    "seen": [
+     30,
+     12,
+     0,
+     18
+    ],
+    "seen_share": [
+     0.5,
+     0.2,
+     0.0,
+     0.3
+    ]
+   }
+  },
+  "0.05|withheld": {
+   "best_fit": {
+    "forecast_share": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ],
+    "seen": [
+     0,
+     0,
+     60,
+     0
+    ],
+    "seen_share": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ]
+   },
+   "cases": 60,
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "route": {
+    "forecast_share": [
+     0.0511,
+     0.2222,
+     0.3303,
+     0.3964
+    ],
+    "seen": [
+     1,
+     17,
+     13,
+     29
+    ],
+    "seen_share": [
+     0.0167,
+     0.2833,
+     0.2167,
+     0.4833
+    ]
+   },
+   "validated": {
+    "forecast_share": [
+     0.0,
+     0.0,
+     0.973,
+     0.027
+    ],
+    "seen": [
+     0,
+     0,
+     57,
+     3
+    ],
+    "seen_share": [
+     0.0,
+     0.0,
+     0.95,
+     0.05
+    ]
+   },
+   "vouched": {
+    "forecast_share": [
+     0.0511,
+     0.1054,
+     0.022,
+     0.8215
+    ],
+    "seen": [
+     1,
+     10,
+     2,
+     47
+    ],
+    "seen_share": [
+     0.0167,
+     0.1667,
+     0.0333,
+     0.7833
+    ]
+   }
+  },
+  "0|offered": {
+   "best_fit": {
+    "forecast_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "seen": [
+     60,
+     0,
+     0,
+     0
+    ],
+    "seen_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "cases": 60,
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "route": {
+    "forecast_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "seen": [
+     60,
+     0,
+     0,
+     0
+    ],
+    "seen_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "validated": {
+    "forecast_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "seen": [
+     60,
+     0,
+     0,
+     0
+    ],
+    "seen_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "vouched": {
+    "forecast_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "seen": [
+     60,
+     0,
+     0,
+     0
+    ],
+    "seen_share": [
+     1.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "0|withheld": {
+   "best_fit": {
+    "forecast_share": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ],
+    "seen": [
+     0,
+     0,
+     60,
+     0
+    ],
+    "seen_share": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ]
+   },
+   "cases": 60,
+   "outcomes": [
+    "the law",
+    "accurate, not the law",
+    "wrong",
+    "nothing"
+   ],
+   "route": {
+    "forecast_share": [
+     0.0632,
+     0.0,
+     0.0,
+     0.9368
+    ],
+    "seen": [
+     1,
+     1,
+     0,
+     58
+    ],
+    "seen_share": [
+     0.0167,
+     0.0167,
+     0.0,
+     0.9667
+    ]
+   },
+   "validated": {
+    "forecast_share": [
+     0.0,
+     0.0,
+     0.9605,
+     0.0395
+    ],
+    "seen": [
+     0,
+     0,
+     59,
+     1
+    ],
+    "seen_share": [
+     0.0,
+     0.0,
+     0.9833,
+     0.0167
+    ]
+   },
+   "vouched": {
+    "forecast_share": [
+     0.0632,
+     0.0,
+     0.0,
+     0.9368
+    ],
+    "seen": [
+     1,
+     1,
+     0,
+     58
+    ],
+    "seen_share": [
+     0.0167,
+     0.0167,
+     0.0,
+     0.9667
+    ]
+   }
+  }
+ },
+ "expectations": {
+  "1": {
+   "brier": 0.0,
+   "chance": 1.0,
+   "held": true
+  },
+  "2": {
+   "brier": 0.0,
+   "chance": 1.0,
+   "held": true
+  },
+  "3": {
+   "brier": 0.0346,
+   "chance": 0.814,
+   "held": true
+  },
+  "4": {
+   "brier": 0.0,
+   "chance": 1.0,
+   "held": true
+  },
+  "5": {
+   "brier": 0.0,
+   "chance": 1.0,
+   "held": true
+  }
+ },
+ "forecast": "preregistration/FORECAST-COUNTERFEIT-2026-11.json",
+ "result": "preregistration/RESULT-COUNTERFEIT-2026-11",
+ "totals": {
+  "best_fit": {
+   "right": {
+    "expected": 175.43,
+    "inside": true,
+    "interval": [
+     172.0,
+     178.0
+    ],
+    "level": 0.8,
+    "seen": 172.0
+   },
+   "score": {
+    "expected": -18.01,
+    "inside": true,
+    "interval": [
+     -18.15,
+     -17.811
+    ],
+    "level": 0.8,
+    "seen": -18.0444
+   },
+   "wrong": {
+    "expected": 179.85,
+    "inside": true,
+    "interval": [
+     178.0,
+     181.0
+    ],
+    "level": 0.8,
+    "seen": 180.0
+   }
+  },
+  "route": {
+   "right": {
+    "expected": 156.24,
+    "inside": false,
+    "interval": [
+     149.0,
+     163.0
+    ],
+    "level": 0.8,
+    "seen": 146.0
+   },
+   "score": {
+    "expected": -2.36,
+    "inside": false,
+    "interval": [
+     -3.05,
+     -1.661
+    ],
+    "level": 0.8,
+    "seen": -0.8778
+   },
+   "wrong": {
+    "expected": 30.55,
+    "inside": false,
+    "interval": [
+     24.0,
+     37.0
+    ],
+    "level": 0.8,
+    "seen": 16.0
+   }
+  },
+  "validated": {
+   "right": {
+    "expected": 173.64,
+    "inside": true,
+    "interval": [
+     170.0,
+     177.0
+    ],
+    "level": 0.8,
+    "seen": 171.0
+   },
+   "score": {
+    "expected": -17.26,
+    "inside": true,
+    "interval": [
+     -17.7,
+     -16.85
+    ],
+    "level": 0.8,
+    "seen": -17.3111
+   },
+   "wrong": {
+    "expected": 172.7,
+    "inside": true,
+    "interval": [
+     169.0,
+     177.0
+    ],
+    "level": 0.8,
+    "seen": 173.0
+   }
+  },
+  "vouched": {
+   "right": {
+    "expected": 151.36,
+    "inside": true,
+    "interval": [
+     144.0,
+     159.0
+    ],
+    "level": 0.8,
+    "seen": 146.0
+   },
+   "score": {
+    "expected": 0.7,
+    "inside": true,
+    "interval": [
+     0.506,
+     0.861
+    ],
+    "level": 0.8,
+    "seen": 0.6
+   },
+   "wrong": {
+    "expected": 1.29,
+    "inside": true,
+    "interval": [
+     0.0,
+     3.0
+    ],
+    "level": 0.8,
+    "seen": 2.0
+   }
+  }
+ },
+ "totals_inside_their_intervals": [
+  9,
+  12
+ ],
+ "what": "The forecast filed before PREREG-COUNTERFEIT-2026-11 against the run. Totals against their 80 % intervals, the chance given to each expectation against whether it held, and each cell's outcomes against the shares of the forecast's source."
+}

@@ -48,6 +48,38 @@ def test_a_law_found_without_the_search_stage_is_tentative_and_not_reported():
     assert not (earlier["reported"] and earlier["tentative"])
 
 
+def test_the_reading_goes_through_the_last_checks_and_says_what_they_did(monkeypatch):
+    """Since PREREG-COUNTERFEIT's result the route's last step is ``vouching``; a law it withholds is shown, not reported."""
+    from apedp_dyn.discovery_l2 import vouched_route, vouching
+
+    columns, target = _kinetic()
+    reading = route_endpoint.route_reading(columns, target)
+    state = reading["vouching"]
+    assert state["in_force"] is True and state["evidence"].endswith("RESULT-COUNTERFEIT-2026-11.md")
+    assert state["applied"] is False and state["why_not"] == "the route reported no law"      # no search stage: nothing reported
+
+    # with a law reported by the route, checks that do not vouch for it make it tentative, with the reason
+    def as_if_reported(*args, **kwargs):
+        out = real(*args, **kwargs)
+        out.update({"law": out["law_as_confirmed"], "reported": True, "tentative_law": None, "tentative_reason": None})
+        return out
+
+    real = default_route.discover_law
+    monkeypatch.setattr(default_route, "discover_law", as_if_reported)
+    passed = route_endpoint.route_reading(columns, target)
+    assert passed["reported"] is True and passed["vouching"]["applied"] is True and "m*v**2" in passed["law"]
+    monkeypatch.setattr(vouching, "vouch", lambda law, *a, **k: vouching.Vouched(None, "every candidate left structure in its residuals"))
+    withheld = route_endpoint.route_reading(columns, target)
+    assert withheld["reported"] is False and withheld["law"] is None and withheld["tentative"] is True
+    assert withheld["tentative_reason"] == "not vouched for: every candidate left structure in its residuals"
+    assert "m*v**2" in withheld["law_as_confirmed"]                                           # still shown
+    monkeypatch.setenv(vouched_route.ENVIRONMENT_VARIABLE, "off")
+    off = route_endpoint.route_reading(columns, target)
+    assert off["reported"] is True and off["vouching"]["in_force"] is False
+    block = route_endpoint.status_block()["last_step"]
+    assert block["in_force"] is False and block["evidence"] == vouched_route.EVIDENCE and "2 of 191" in block["measured"]
+
+
 def test_bad_data_gives_a_record_with_the_reason_and_no_law():
     for columns, target in (({"x": [1.0, 2.0, 3.0]}, [1.0, 2.0, 3.0]),          # too few rows
                             ({"x": [1.0] * 40}, [1.0] * 39),                     # misaligned

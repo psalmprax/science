@@ -35,6 +35,25 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The counterfeit benchmark run, and the checks put in force for tables (2026-11-22).**
+  PREREG-COUNTERFEIT-2026-11, run once: all five expectations held. Handed counterfeits of 60
+  new laws, the route in force reported no wrong law in 141 reports at noise up to 1 % and 16
+  in 88 at 5 %; after the checks of `discovery_l2/vouching.py`, 2 in 55 there, with 139 of 146
+  right laws kept and 7 other reports turned into the law. Scored with a wrong law costing
+  nineteen right ones: -0.88 for the route, 0.60 after the checks, -18.04 for the best fit and
+  -17.31 for the best fit confirmed on fresh rows. **As fixed before the run, the checks are the
+  last step of the table route**: `discovery_l2/vouched_route.py`, a new module around the
+  frozen ones, which the UI's route endpoint now calls; a law that fails them is shown as not
+  vouched for, with the reason; `APEDP_TABLE_VOUCHING=off` turns them off. **What the run also
+  showed:** twelve of the route's sixteen wrong laws were forms of its own first pass, not the
+  counterfeits it was handed; both wrong laws the checks passed are the route's own and wrong
+  by a small margin; for one of them the rule that estimates whether such an error could have
+  been seen was too confident (audit M-33, open); at 5 % noise the interval for the checks'
+  wrong share reaches 12.5 % and their score there is still below zero. The forecast filed
+  before the run put the route's wrong laws at 31 and there were 16; its other nine totals fell
+  inside their intervals (`scripts/score_counterfeit_forecast.py`,
+  `benchmarks/counterfeit_forecast_scored.json`). Not measured: the checks behind a search
+  engine or on the physics benchmark.
 - **The red-team campaign recorded, the checks built from it, and the counterfeit benchmark
   redesigned before freezing (2026-11-22).** The campaign (34,728 worlds,
   `benchmarks/red_team_campaign.json`): on worlds drawn at random under the preregistered runs'

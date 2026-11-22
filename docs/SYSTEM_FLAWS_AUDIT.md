@@ -307,9 +307,28 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-33 the power rule's estimate is too high for an error of another shape
+  than those it plants — FOUND 2026-11-22 IN THE BLIND RUN OF THE CHECKS,
+  OPEN.** `vouching.power_to_see` plants an error of the size that makes a
+  law wrong in the shapes of the rivals' differences from it and of low-order
+  polynomials of the inputs, and passes the law if the structure test sees
+  such an error at least four times in five. **Evidence**
+  (`preregistration/RESULT-COUNTERFEIT-2026-11.md`): of the 16 wrong laws the
+  route reported, the checks passed 2, both forms of the route's own stages,
+  both wrong by a small margin. For one (a four-term form of the first pass,
+  test R² 0.9989) the rule had put the chance at 91 %; refitted to fresh
+  noisy rows of its law a hundred times (after the run, development) the
+  structure test refuses it 63 times. For the other (a thirteen-term cubic,
+  R² 0.9982) the rule said 97 % and the refits give 95: that one was the miss
+  the rule permits. **Effect:** at 5 % noise 2 of the 55 laws the checks
+  passed were wrong (3.6 %, interval 0.4 to 12.5 %); the limit is 5 % and was
+  met on the count. **Not repaired.** A repair would plant the error, refit
+  the law and test again, in the shape the law's own form leaves; it has to
+  be written and then run on laws drawn after it.
 - **M-32 the path's last check lets through an error a third the size of the
-  noise — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN; A REPAIR IS BUILT AND
-  UNDER TEST; the frozen path is unchanged.** `main_search.adequacy` passes a
+  noise — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN; REPAIRED FOR TABLES
+  2026-11-22 BY CHECKS AROUND THE PATH, on a preregistered run; the frozen
+  path is unchanged.** `main_search.adequacy` passes a
   law if the leave-one-out R² of each residual from its eight nearest rows'
   residuals is at most 0. For noise alone that statistic is about -1/8, so
   the check only refuses structure worth an eighth of the residual variance.
@@ -325,12 +344,19 @@ three preregistered expectations missed.
   to make it wrong would have been missed more often than the canonical power
   minimum allows. Replayed on 3,000 randomly drawn worlds of the campaign in
   which the route had reported a law: 118 wrong laws became 3, and the laws
-  recovered rose from 1,825 to 1,841. **Development on worlds whose answers
-  were known**; under test in PREREG-COUNTERFEIT-2026-11.
+  recovered rose from 1,825 to 1,841. That was development on worlds whose
+  answers were known. **On 60 laws drawn afterwards**
+  (PREREG-COUNTERFEIT-2026-11, run once, all five expectations held): the
+  route reported no wrong law in 141 reports at noise up to 1 % and 16 in 88
+  at 5 %; after the checks 2 in 55 there, with 139 of 146 right laws kept.
+  As fixed before the run the checks are the last step of the table route
+  (`discovery_l2/vouched_route.py`). **What remains:** the trajectory and
+  series routes do not have them; they were measured on candidates handed
+  over, not behind a search engine; and see M-33.
 - **M-31 when candidates cannot be told apart the route reports the one with
   the shortest description — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN AND IN
-  TWO BLIND RUNS THE SAME DAY; A REPAIR IS BUILT AND UNDER TEST; the frozen
-  path is unchanged.** `contrast_confirmation` may measure thirty rows; where
+  TWO BLIND RUNS THE SAME DAY; REPAIRED FOR TABLES 2026-11-22 BY CHECKS AROUND
+  THE PATH, on a preregistered run; the frozen path is unchanged.** `contrast_confirmation` may measure thirty rows; where
   that does not separate the candidates the verdict is `equivalent_class` and
   the simplest member is reported. **Evidence:** of the 13,426 wrong laws the
   campaign found, 11,929 came out of such a class, and in 5,365 of them the
@@ -345,8 +371,13 @@ three preregistered expectations missed.
   dropped, the simplest that remains is reported. In the replay 68 reports on
   randomly drawn worlds changed from another candidate into the law.
   **What it does not repair:** an approximation inside the accuracy line is,
-  by that line, not an error, and stays reportable. **Development**; under
-  test in PREREG-COUNTERFEIT-2026-11.
+  by that line, not an error, and stays reportable. **On 60 laws drawn
+  afterwards** (PREREG-COUNTERFEIT-2026-11): 14 of the route's 16 wrong laws
+  came out of such a class, and **12 of the 16 were forms of its own first
+  pass**, not the counterfeits it was handed; in two cases the law was in
+  the class and a shorter form was named. The checks withheld 14 of the 16,
+  and passed 7 reports on to a member of the class that is the law. In force
+  for tables since then (`discovery_l2/vouched_route.py`).
 - **M-30 the quantum ledger says the inverse-square-root verifier does not
   simulate shots; it does — FOUND 2026-11-22 WHILE WIRING THAT VERIFIER INTO
   THE VARIATION LOOP, OPEN.** `quantum_compilation/candidates.py` lists

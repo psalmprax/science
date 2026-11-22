@@ -12,10 +12,12 @@ M-10), and return-like series need their own route (PREREG-MARKET-PLANTED).
 
 This module is what the endpoints call for that. It decides nothing itself:
 
-* ``route_reading`` runs ``discovery_l2.default_route.discover_law`` on tabular
-  rows (the default route unless one is named) and returns a JSON-safe record.
-  The UI has no physical units for a table, so the refined path runs without
-  its units reduction here.
+* ``route_reading`` runs ``discovery_l2.vouched_route.discover_law`` on tabular
+  rows (the default route unless one is named, with the checks of
+  ``discovery_l2/vouching.py`` as its last step since 2026-11-22) and returns a
+  JSON-safe record. A law the checks do not let through is shown as tentative,
+  with the check it failed. The UI has no physical units for a table, so the
+  refined path runs without its units reduction here.
 * ``series_reading`` runs ``discovery_l2.series_route`` on rows in time order;
   ``market_series_reading`` does that on a market window's train slice.
 * ``status_block`` is the list the status page shows: the default route, the
@@ -48,7 +50,7 @@ from typing import Any
 import numpy as np
 from fastapi import Depends, FastAPI
 
-from apedp_dyn.discovery_l2 import default_route, series_route
+from apedp_dyn.discovery_l2 import default_route, series_route, vouched_route
 from apedp_dyn.market.assets import compute_strictly_causal_features, load_series_with_dates
 from apedp_dyn.orchestration.competition import RETIRED_ENGINES
 from apedp_dyn.ui.helpers import _audit, _json_obj, _require_api_key
@@ -80,7 +82,8 @@ def _proposer(budget: float) -> tuple[Any, str]:
         return None, f"unavailable: PySR could not be loaded ({type(exc).__name__}); first pass alone"
     from apedp_dyn.discovery_l2 import stage_in_force
 
-    return stage_in_force.search_stage(budget)
+    stage: tuple[Any, str] = stage_in_force.search_stage(budget)
+    return stage
 
 
 def _clean(X: Mapping[str, Any], y: Any) -> tuple[list[str], np.ndarray, np.ndarray]:
@@ -111,15 +114,16 @@ def route_reading(X: Mapping[str, Any], y: Any, *, route_name: str | None = None
         dev, pool = order[:cut], order[cut:]
         pool_y = target[pool]
         proposer, stage = _proposer(_search_budget(search_seconds))
-        out = default_route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
+        out = vouched_route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
                                          lambda rows: pool_y[rows], ledger=None, search_id="ui", route_name=chosen,
                                          proposer=proposer, noise=noise, seed=seed)
         result = out["main_search"]
         record.update({
             "route": out["route"], "action": out["action"], "law": out["law"], "law_as_confirmed": out["law_as_confirmed"],
             # a law that is not reported is shown apart, with the reason: nothing challenged it (audit M-14),
-            # or the search stage did not run
+            # the search stage did not run, or the last checks did not vouch for it (audit M-31, M-32)
             "reported": bool(out["reported"]),
+            "vouching": dict(out.get("vouching") or {}),
             "tentative": out.get("tentative_law") is not None,
             "tentative_reason": out.get("tentative_reason"),
             "dropped_terms": [str(t) for t in out.get("dropped_terms", [])],
@@ -275,7 +279,18 @@ def status_block() -> dict[str, Any]:
             "/api/discover/registry": ("template engine and referee only: its data is one trajectory of a driven system, "
                                        "which the ODE route was not measured on (ODEBench systems are autonomous, several trajectories)"),
         },
-        "caution": ("A law marked tentative was not challenged by any rival. On return-like data use the series route; "
+        "last_step": {
+            "in_force": vouched_route.vouching_in_force(),
+            "what": ("checks on a law the refined path is about to report: structure left in its residuals, members of "
+                     "an unseparated class that disagree, and whether an error large enough to make it wrong could "
+                     "have been seen. A law that fails is shown as tentative with the reason"),
+            "measured": ("60 new laws handed over with their counterfeits, noise 0, 1 % and 5 %: wrong laws 16 of 229 "
+                         "reports before the checks and 2 of 191 after, all at 5 % noise; 139 of 146 right laws kept. "
+                         "Not measured behind a search engine or on the physics benchmark"),
+            "evidence": vouched_route.EVIDENCE,
+            "switch": f"{vouched_route.ENVIRONMENT_VARIABLE}={vouched_route.OFF}"},
+        "caution": ("A law marked tentative was not challenged by any rival, or the last checks did not vouch for it: "
+                    "the reason is shown with it. On return-like data use the series route; "
                     "the search alone reports laws in pure noise there. The UI passes no physical units, so the "
                     "refined path runs here without its units reduction."),
     }

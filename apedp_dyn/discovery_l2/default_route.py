@@ -38,6 +38,12 @@ pendulum at 5 % noise: a cubic in the angle for the sine). So when no proposer
 is given this module returns the law as ``tentative_law`` with the reason, and
 ``reported`` is false. The earlier routes are handed on as they were measured:
 the main search reported laws its first pass had settled without the search.
+
+**Since 2026-11-22 the route in force for a table is this one with a last
+step**: ``discovery_l2/vouched_route.discover_law`` calls ``discover_law`` here
+and reports a law of the refined path only if the checks of
+``discovery_l2/vouching.py`` let it through (PREREG-COUNTERFEIT-2026-11). This
+module is as it was measured.
 """
 from __future__ import annotations
 
