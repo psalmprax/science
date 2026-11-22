@@ -1,0 +1,65 @@
+# Does the native first pass return what the Python reference returns? (scripts/check_fast_first_pass.py)
+# Both are run on many datasets and compared field by field, on a machine that is not the one it was written on:
+# NumPy picks its transcendental routines by processor, so agreement on one machine is weaker evidence than on two.
+#   push to first-pass-check-*  -> build the kernel in release mode, then eight seeds of 150 datasets each.
+name: Native first pass against the reference
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['first-pass-check-*']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust/apedp-kernel -> target
+      - name: Build and install the native kernel, optimised
+        run: |
+          source .venv/bin/activate
+          maturin develop --release --locked --manifest-path rust/apedp-kernel/Cargo.toml
+      - name: The first pass's own tests, with the kernel
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_fast_first_pass.py -q -rs
+      - name: 150 datasets, seed ${{ matrix.seed }}
+        env:
+          SEED: ${{ matrix.seed }}
+        run: |
+          source .venv/bin/activate
+          python -c "import platform, numpy; print(platform.processor() or platform.machine(), numpy.__version__)"
+          grep -m1 "model name" /proc/cpuinfo || true
+          python scripts/check_fast_first_pass.py --datasets 150 --seed "$SEED" --out "first-pass-check-$SEED.json"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: first-pass-check-${{ matrix.seed }}
+          path: first-pass-check-*.json
+          if-no-files-found: warn
