@@ -97,6 +97,24 @@ def laws() -> list[dict[str, Any]]:
     return out
 
 
+def differences(filed: list[dict[str, Any]], drawn: list[dict[str, Any]]) -> list[str]:
+    """How the laws on file differ from a fresh draw: for a machine on which the generator does not give the file."""
+    by_id = {law["id"]: law for law in drawn}
+    other_law = [law["id"] for law in filed if by_id.get(law["id"], {}).get("law") != law["law"]]
+    same_law = [law for law in filed if law["id"] not in other_law]
+    fakes = [(law["id"], sum(a != b for a, b in zip(law["counterfeits"], by_id[law["id"]]["counterfeits"], strict=False))
+              + abs(len(law["counterfeits"]) - len(by_id[law["id"]]["counterfeits"]))) for law in same_law]
+    changed = [(law_id, count) for law_id, count in fakes if count]
+    out = [f"{len(filed)} laws on file, {len(drawn)} drawn here",
+           f"another law under the same number: {len(other_law)} {other_law[:5]}",
+           f"the same law with other counterfeits: {len(changed)} laws, {sum(count for _, count in changed)} counterfeits"]
+    if changed:
+        law = next(law for law in same_law if law["id"] == changed[0][0])
+        pair = next((a, b) for a, b in zip(law["counterfeits"], by_id[law["id"]]["counterfeits"], strict=False) if a != b)
+        out.append(f"for example law {law['id']}: on file {json.dumps(pair[0])}; here {json.dumps(pair[1])}")
+    return out
+
+
 # ---------------------------------------------------------------- one world
 def rule(reason: str) -> str:
     """Which check a report was stopped by, from the reason ``vouching.vouch`` gives; ``passed`` if none."""
@@ -282,7 +300,9 @@ def main(argv: list[str] | None = None) -> int:
         text = json.dumps(build_laws(), indent=1, sort_keys=True) + "\n"
         if args.check:
             if LAWS_FILE.read_text(encoding="utf-8") != text:
-                print(f"{LAWS_FILE.relative_to(ROOT)} is not what the generator gives")
+                print(f"{LAWS_FILE.relative_to(ROOT)} is not what the generator gives here")
+                for line in differences(laws(), json.loads(text)["laws"]):
+                    print("  " + line)
                 return 1
             print(f"{LAWS_FILE.relative_to(ROOT)}: as generated")
             return 0

@@ -35,6 +35,19 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **PREREG-VOUCHED-SRBENCH-2026-11 frozen (2026-11-22): what the last checks cost on the
+  physics benchmark, behind the four searches.** The checks went in force on a run with
+  candidates handed over. This run uses the recorded protocol of the route in force on SRBench;
+  each run searches once and yields the route's report and the same report after the checks.
+  Three expectations: at most 5 % of the checked route's reports inaccurate; at least 75 % of
+  the laws the route recovers kept; at least 95 % kept. What follows is fixed: if fewer than
+  75 % are kept the checks are taken out of the route in force; between 75 and 95 % they stay
+  until the owner decides, with the cost stated first.
+- **The second campaign's laws file is its definition, not a generator check (2026-11-22).** On
+  GitHub's runners the generator did not give `benchmarks/red_team_checks_laws.json` byte for
+  byte (it fits every counterfeit by least squares and rounds the constants), so the campaign's
+  first attempt stopped before any world was run. The comparison is now a job of its own that
+  prints how a fresh draw differs, and the campaign does not wait for it.
 - **The quantum ledger now says what the inverse-square-root verifier checks (audit M-30,
   2026-11-22).** `quantum_compilation/candidates.py` listed `invsqrt` as priced only, with the
   reason that its verifier "does not simulate it on shots". It simulates every shot and raises
