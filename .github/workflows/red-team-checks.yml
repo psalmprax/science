@@ -1,0 +1,107 @@
+name: Red team against the checked route
+# A second campaign (scripts/run_red_team_checks.py): a search for data on which the table route, with the last
+# checks of discovery_l2/vouching.py, reports a wrong law. Development by its nature: worlds are chosen to defeat
+# the decision. No search engine runs: the candidates are handed over, so the jobs need Python only.
+#   red-team-checks-smoke-*  the unit tests, the laws against their generator, and five worlds
+#   red-team-checks-run-*    smoke, then 24 shards (a survey, then a climb from its own worst worlds), then collect
+
+on:
+  push:
+    branches: ['red-team-checks-smoke-*', 'red-team-checks-run-*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: red-team-checks-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Tests
+        run: python -m pytest tests/test_red_team.py tests/test_vouching.py tests/test_red_team_checks.py -q -p no:cacheprovider
+      - name: The laws are what the generator gives
+        run: python scripts/run_red_team_checks.py laws --check
+      - name: Five worlds
+        run: python scripts/run_red_team_checks.py smoke
+
+  shard:
+    if: startsWith(github.ref_name, 'red-team-checks-run-')
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Survey
+        run: python scripts/run_red_team_checks.py survey --shard ${{ matrix.shard }}/24 --minutes 30 --out out
+      - name: Climb
+        run: python scripts/run_red_team_checks.py climb --shard ${{ matrix.shard }}/24 --minutes 20 --out out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: red-team-checks-${{ matrix.shard }}
+          path: out
+          retention-days: 30
+
+  collect:
+    if: always() && startsWith(github.ref_name, 'red-team-checks-run-')
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v4
+        with:
+          path: shards
+          pattern: red-team-checks-*
+      - name: Collect
+        run: |
+          mkdir -p collected
+          python scripts/run_red_team_checks.py collect shards --out collected/red_team_checks_campaign.json
+          cat shards/*/*.jsonl.gz > collected/red_team_checks_worlds.jsonl.gz
+      - name: Print the result for retrieval
+        run: |
+          cd collected
+          sha256sum ./*
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 76
+          echo "=====END-TAR====="
+      - uses: actions/upload-artifact@v4
+        with:
+          name: red-team-checks-collected
+          path: collected
+          retention-days: 90

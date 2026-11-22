@@ -35,6 +35,11 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **A second red-team campaign, aimed at the checks (2026-11-22).** `scripts/run_red_team_checks.py`:
+  the first campaign's survey and climb, on 150 new laws, with the route's report after the
+  checks as the decision under attack and a wrong law that passes them as what the climb pushes
+  towards. Development by its nature; the first campaign's runner is frozen and is used as it
+  is. Its result is recorded when it has run.
 - **The counterfeit benchmark run, and the checks put in force for tables (2026-11-22).**
   PREREG-COUNTERFEIT-2026-11, run once: all five expectations held. Handed counterfeits of 60
   new laws, the route in force reported no wrong law in 141 reports at noise up to 1 % and 16
