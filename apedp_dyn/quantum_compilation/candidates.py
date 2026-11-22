@@ -74,11 +74,33 @@ class EvidenceIncompleteError(RuntimeError):
 #: What each benchmark's verifier can actually establish about correctness. A verifier
 #: that simulates the circuit per shot can supply value/phase evidence; one that only
 #: prices it cannot, and says so rather than leaving the checks silently absent.
+#:
+#: The Benchmark I verifier (``verify_submission_invsqrt.verify``) simulates every shot and
+#: raises on the first one whose x register is not restored, whose scratch qubits are not all
+#: back at |0>, or whose tracked phase is outside the tolerance. Its PASS summary therefore
+#: carries no error counts (there were none) and does establish all three checks over
+#: ``verified_shots`` shots. Until 2026-11-22 it was listed here as ``cost-model-only`` with the
+#: reason that it "does not simulate it on shots", which it does (audit M-30).
 BENCHMARK_EVIDENCE_MODEL: dict[str, str | None] = {
     "dqi": "per-shot",
-    "invsqrt": "cost-model-only",
+    "invsqrt": "every-shot-or-fail",
     "dfthcsos": "cost-model-only",
 }
+
+_EVERY_SHOT_SOURCES: dict[str, str] = {
+    "value": "verify_submission_invsqrt.verify raises on the first shot whose x register is not restored; "
+             "status PASS over receipt.metrics['verified_shots'] shots",
+    "junk": "verify_submission_invsqrt.verify raises on the first shot with a scratch qubit that did not return "
+            "to |0>; status PASS over receipt.metrics['verified_shots'] shots",
+    "phase": "verify_submission_invsqrt.verify raises on the first shot whose tracked phase is outside the "
+             "tolerance; status PASS over receipt.metrics['verified_shots'] shots "
+             "(receipt.metrics['worst_error_over_tolerance'])",
+}
+
+_NO_SHOT_COUNT_REASON = (
+    "the {benchmark} receipt is not a PASS that says how many shots were verified, so what "
+    "its verifier checked cannot be read from it"
+)
 
 _COST_MODEL_REASON = (
     "the {benchmark} verifier reports `status` and `score` only: it builds the circuit "
@@ -201,8 +223,11 @@ def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict
     For a per-shot verifier (DQI) the receipt's own error counts are the evidence, and
     the ancilla read is folded into ``value_errors`` by the verifier's own rule
     (``val_err = reg_diff.any(axis=0) | junk.any(axis=0)``), so junk is `covered_by`
-    value with that reason. A cost-model verifier supplies no per-shot evidence, and the
-    three checks come back `not_applicable` with that stated as the reason.
+    value with that reason. The Benchmark I verifier stops at the first failing shot, so
+    its PASS over a stated number of shots is a passed measurement of all three checks;
+    a receipt of it that is not such a PASS says nothing about them. A cost-model
+    verifier supplies no per-shot evidence, and the three checks come back
+    `not_applicable` with that stated as the reason.
     """
     metrics = dict(receipt.metrics or {})
     family = _benchmark_family(benchmark)
@@ -226,6 +251,15 @@ def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict
                       "(`val_err = reg_diff.any(axis=0) | junk.any(axis=0)`), so a zero "
                       "value count is also a clean workspace",
         }
+    if not evidence and BENCHMARK_EVIDENCE_MODEL.get(family) == "every-shot-or-fail":
+        shots = metrics.get("verified_shots")
+        counted = isinstance(shots, int) and not isinstance(shots, bool) and shots > 0
+        if counted and str(receipt.status).upper() == "PASS":
+            evidence = {check: {"measured": True, "passed": True, "source": _EVERY_SHOT_SOURCES[check]}
+                        for check in CORRECTNESS_CHECKS}
+        else:
+            reason = _NO_SHOT_COUNT_REASON.format(benchmark=family)
+            evidence = {check: {"not_applicable": reason} for check in CORRECTNESS_CHECKS}
     if not evidence and BENCHMARK_EVIDENCE_MODEL.get(family) == "cost-model-only":
         reason = _COST_MODEL_REASON.format(benchmark=family)
         evidence = {check: {"not_applicable": reason} for check in CORRECTNESS_CHECKS}

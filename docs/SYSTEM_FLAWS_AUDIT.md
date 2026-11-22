@@ -380,7 +380,7 @@ three preregistered expectations missed.
   for tables since then (`discovery_l2/vouched_route.py`).
 - **M-30 the quantum ledger says the inverse-square-root verifier does not
   simulate shots; it does — FOUND 2026-11-22 WHILE WIRING THAT VERIFIER INTO
-  THE VARIATION LOOP, OPEN.** `quantum_compilation/candidates.py` lists
+  THE VARIATION LOOP, FIXED THE SAME DAY.** `quantum_compilation/candidates.py` lists
   `invsqrt` as `cost-model-only` and gives the reason "it builds the circuit
   and prices it, and does not simulate it on shots". The verifier
   (`verifiers/invsqrt/verify_submission_invsqrt.py`, `verify`) simulates every
@@ -389,9 +389,15 @@ three preregistered expectations missed.
   tolerance; a `PASS` summary means none did over `verified_shots` shots.
   **Effect:** a pass is recorded with value, workspace and phase "not
   applicable" where they were measured and passed: an understatement, never
-  an overstatement, so no recorded status is too generous. **Not changed
-  here:** the evidence a receipt carries decides ledger statuses, and that
-  belongs with the quantum arm's own tests.
+  an overstatement, so no recorded status is too generous. **Fixed:**
+  `invsqrt` is listed as `every-shot-or-fail`, and a receipt that is a `PASS`
+  over a stated number of shots carries value, workspace and phase as
+  measured and passed, each with the verifier's own check as its source. A
+  receipt that is not such a pass says nothing about them and says that.
+  Which statuses can be reached is unchanged, and records written under the
+  earlier label keep their entries. `dfthcsos` is still listed as priced only;
+  its verifier has not been read for this.
+  `tests/test_candidate_correctness_evidence.py`.
 - **M-29 the native first pass returned another law than the reference on
   another processor — FOUND 2026-11-22 BY RUNNING BOTH ON GITHUB'S MACHINES,
   FIXED THE SAME DAY; nothing had used it.** `discovery_l2/fast_first_pass.py`

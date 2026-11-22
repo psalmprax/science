@@ -35,6 +35,13 @@ inferred releases.
   a tenth of it cannot be seen. A share measured against medians fixed on the whole panel needed
   a first-order correction in every resample, or its interval is several times too wide. The run
   shares the first batch's job and follows it; both wait for the owner.
+- **The quantum ledger now says what the inverse-square-root verifier checks (audit M-30,
+  2026-11-22).** `quantum_compilation/candidates.py` listed `invsqrt` as priced only, with the
+  reason that its verifier "does not simulate it on shots". It simulates every shot and raises
+  on the first that fails. A `PASS` over a stated number of shots is now recorded as a passed
+  measurement of value, workspace and phase, with the verifier's check as the source of each;
+  a receipt that is not such a pass says nothing about them. Which statuses can be reached is
+  unchanged, and no recorded ledger carried the old text.
 - **A second red-team campaign, aimed at the checks (2026-11-22).** `scripts/run_red_team_checks.py`:
   the first campaign's survey and climb, on 150 new laws, with the route's report after the
   checks as the decision under attack and a wrong law that passes them as what the climb pushes

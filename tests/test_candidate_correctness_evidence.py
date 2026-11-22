@@ -107,15 +107,39 @@ def test_a_per_shot_verifier_cannot_waive_all_three_checks():
 
 
 def test_a_cost_model_verifier_states_that_it_does_not_measure_them():
-    evidence = evidence_from_receipt(_receipt({"verified_shots": 200_000_000}),
-                                     "invsqrt")
+    evidence = evidence_from_receipt(_receipt({"score": 1.0}), "dfthcsos")
     assert set(evidence) == set(CORRECTNESS_CHECKS)
     assert all("not_applicable" in entry for entry in evidence.values())
     assert "reports `status` and `score` only" in evidence["phase"]["not_applicable"]
-    updated = _candidate("invsqrt").with_status(
+    updated = _candidate("dfthcsos").with_status(
         CandidateStatus.VERIFIED_NONIMPROVING,
-        receipt=_receipt({"verified_shots": 200_000_000}))
+        receipt=_receipt({"score": 1.0}))
     assert updated.status is CandidateStatus.VERIFIED_NONIMPROVING
+
+
+def test_the_inverse_square_root_verifier_checks_every_shot_and_its_pass_says_so():
+    """Audit M-30: it was listed as pricing the circuit only. It raises on the first shot that fails a check."""
+    from apedp_dyn.quantum_compilation.candidates import BENCHMARK_EVIDENCE_MODEL
+
+    assert BENCHMARK_EVIDENCE_MODEL["invsqrt"] == "every-shot-or-fail"
+    passed = _receipt({"verified_shots": 200_540_928, "worst_error_over_tolerance": 0.9996})
+    evidence = evidence_from_receipt(passed, "invsqrt")
+    assert set(evidence) == set(CORRECTNESS_CHECKS)
+    assert all(entry == {"measured": True, "passed": True, "source": entry["source"]} for entry in evidence.values())
+    assert "x register is not restored" in evidence["value"]["source"]
+    assert "scratch qubit" in evidence["junk"]["source"] and "tolerance" in evidence["phase"]["source"]
+    assert all("verified_shots" in entry["source"] for entry in evidence.values())
+    normalise_correctness_evidence(evidence, benchmark="invsqrt")
+    updated = _candidate("invsqrt").with_status(CandidateStatus.VERIFIED_NONIMPROVING, receipt=passed)
+    assert updated.status is CandidateStatus.VERIFIED_NONIMPROVING
+    assert updated.correctness_evidence["phase"]["measured"] is True
+    # a receipt that is not a PASS over a stated number of shots says nothing about the checks, and says that
+    for receipt in (_receipt({"score": 1.0}), _receipt({"verified_shots": 0}), _receipt({"verified_shots": True}),
+                    _receipt({"verified_shots": 4096}, status="FAIL")):
+        unsaid = evidence_from_receipt(receipt, "invsqrt")
+        assert all("not_applicable" in entry for entry in unsaid.values())
+        assert "how many shots were verified" in unsaid["value"]["not_applicable"]
+        assert not any(entry.get("measured") for entry in unsaid.values())
 
 
 def test_an_unknown_benchmark_cannot_claim_correctness():
