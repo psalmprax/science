@@ -1,6 +1,13 @@
-"""The route in force for tables since 2026-11-23: the default route, with the last checks on request only.
+"""The route for tables for part of 2026-11-23: the default route, with the last checks on request only.
 
-Status: experimental
+Status: deprecated
+
+**Superseded the same day** by ``vouched_route_v2``, which puts the second
+version of the last checks in force as PREREG-VOUCHING-V2-2026-11 fixed before
+its run (``preregistration/RESULT-VOUCHING-V2-2026-11.md``). Nothing calls this
+module; it is kept for the record of the owner's decision, and its tests pin
+what it did. Where the text below says "the route in force", read "the route
+in force until the second version".
 
 **Why this module exists.** The checks of ``discovery_l2/vouching.py`` became the
 last step of the table route on 2026-11-22 (``vouched_route.py``, on

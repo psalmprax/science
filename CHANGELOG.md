@@ -56,6 +56,19 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **The second version of the last checks is the table route's last step (2026-11-23).**
+  PREREG-VOUCHING-V2-2026-11 was run once on GitHub Actions (run 45114039485) on 100 laws drawn
+  after the module's last change, and all five expectations held. As fixed before the run,
+  `discovery_l2/vouched_route_v2.py` puts it in force for tables; the UI's table reading calls it,
+  and `table_route.py` is superseded. **Cost first:** behind the search stage on 40 new laws it
+  kept 26 of 27 recovered laws at noise up to 1 % and 3 of 4 at 5 %. Of handed right laws it kept
+  109 of 110 and 29 of 30. **Benefit:** on handed counterfeits of 60 new laws it passed no wrong
+  law in 189 reports, where the route reported 19 in 231. Behind the search stage at 5 % noise,
+  run there for the first time, the route reported 11 inaccurate laws in 31 and the second version
+  none in 17. **Open:** above 5 % noise it is weaker than the first version (audit M-36). A law
+  with a pole in the domain can pass (M-34). `APEDP_TABLE_VOUCHING=off` turns the checks off;
+  `=first`, or `=on` as before, applies the first version. Audit M-31, M-32 and M-33 are marked
+  repaired by this run; for M-35 the physics benchmark's 192 of 193 remains development.
 - **A second version of the last checks, and its blind test frozen (2026-11-23).**
   `discovery_l2/vouching_v2.py` repairs two of the three faults the first version showed. Errors
   are planted only where the law's constants cannot follow them, tested by an F test on

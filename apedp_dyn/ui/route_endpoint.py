@@ -12,13 +12,15 @@ M-10), and return-like series need their own route (PREREG-MARKET-PLANTED).
 
 This module is what the endpoints call for that. It decides nothing itself:
 
-* ``route_reading`` runs ``discovery_l2.table_route.discover_law`` on tabular
+* ``route_reading`` runs ``discovery_l2.vouched_route_v2.discover_law`` on tabular
   rows (the default route unless one is named) and returns a JSON-safe record.
-  The last checks of ``discovery_l2/vouching.py`` were its last step from
-  2026-11-22 and were taken out on 2026-11-23 by the owner's decision on
-  PREREG-VOUCHED-SRBENCH; with ``APEDP_TABLE_VOUCHING=on`` they run, and a law
-  they do not let through is shown as tentative, with the check it failed. The UI has no physical units for a table, so the
-  refined path runs without its units reduction here.
+  The first version of the last checks was its last step from 2026-11-22 and
+  was taken out on 2026-11-23 by the owner's decision on PREREG-VOUCHED-SRBENCH.
+  The second version (``discovery_l2/vouching_v2.py``) is its last step since
+  2026-11-23, on PREREG-VOUCHING-V2. A law it does not let through is shown as
+  tentative, with the test it failed. ``APEDP_TABLE_VOUCHING=off`` turns the
+  checks off; ``=first`` applies the first version. The UI has no physical
+  units for a table, so the refined path runs without its units reduction here.
 * ``series_reading`` runs ``discovery_l2.series_route`` on rows in time order;
   ``market_series_reading`` does that on a market window's train slice.
 * ``status_block`` is the list the status page shows: the default route, the
@@ -51,7 +53,7 @@ from typing import Any
 import numpy as np
 from fastapi import Depends, FastAPI
 
-from apedp_dyn.discovery_l2 import default_route, series_route, table_route, vouched_route
+from apedp_dyn.discovery_l2 import default_route, series_route, vouched_route_v2
 from apedp_dyn.market.assets import compute_strictly_causal_features, load_series_with_dates
 from apedp_dyn.orchestration.competition import RETIRED_ENGINES
 from apedp_dyn.ui.helpers import _audit, _json_obj, _require_api_key
@@ -115,14 +117,14 @@ def route_reading(X: Mapping[str, Any], y: Any, *, route_name: str | None = None
         dev, pool = order[:cut], order[cut:]
         pool_y = target[pool]
         proposer, stage = _proposer(_search_budget(search_seconds))
-        out = table_route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
-                                         lambda rows: pool_y[rows], ledger=None, search_id="ui", route_name=chosen,
+        out = vouched_route_v2.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
+                                              lambda rows: pool_y[rows], ledger=None, search_id="ui", route_name=chosen,
                                          proposer=proposer, noise=noise, seed=seed)
         result = out["main_search"]
         record.update({
             "route": out["route"], "action": out["action"], "law": out["law"], "law_as_confirmed": out["law_as_confirmed"],
             # a law that is not reported is shown apart, with the reason: nothing challenged it (audit M-14),
-            # the search stage did not run, or the last checks, where requested, did not vouch for it
+            # the search stage did not run, or the last checks did not vouch for it
             "reported": bool(out["reported"]),
             "vouching": dict(out.get("vouching") or {}),
             "tentative": out.get("tentative_law") is not None,
@@ -281,20 +283,24 @@ def status_block() -> dict[str, Any]:
                                        "which the ODE route was not measured on (ODEBench systems are autonomous, several trajectories)"),
         },
         "last_step": {
-            "in_force": table_route.checks_requested(),
-            "decision": table_route.DECISION,
+            "in_force": vouched_route_v2.in_force(),
+            "version": vouched_route_v2.version(),
+            "decision": vouched_route_v2.DECISION,
             "what": ("checks on a law the refined path is about to report: structure left in its residuals, members of "
                      "an unseparated class that disagree, and whether an error large enough to make it wrong could "
                      "have been seen. A law that fails is shown as tentative with the reason"),
-            "measured": ("Cost first: on SRBench behind the four searches they kept 150 of the 193 laws the route "
-                         "recovered (47 of 90 at 1 % noise) and stopped nothing, since no report there was inaccurate; "
-                         "one expectation missed, and the owner took them out of the route in force on 2026-11-23 "
-                         "(preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md). On 60 new laws handed over with their "
-                         "counterfeits, noise 0, 1 % and 5 %: wrong laws 16 of 229 reports before the checks and 2 of "
-                         "191 after, all at 5 % noise; 139 of 146 right laws kept"),
-            "evidence": vouched_route.EVIDENCE,
-            "cost": "preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md",
-            "switch": f"{table_route.ENVIRONMENT_VARIABLE}={table_route.ON}"},
+            "measured": ("Cost first: behind the search stage on 40 new laws they kept 26 of the 27 laws the route "
+                         "recovered at noise up to 1 % and 3 of 4 at 5 %; of handed right laws, 109 of 110 and 29 of "
+                         "30. Benefit: at 5 % noise behind the search the route reported 31 laws, 11 inaccurate, and "
+                         "after the checks 17, none inaccurate; on 60 new laws handed over with their counterfeits, "
+                         "19 wrong laws in 231 reports before the checks and none in 189 after "
+                         "(preregistration/RESULT-VOUCHING-V2-2026-11.md). Tested up to 5 % noise only; above it "
+                         "they are known to be weaker than the first version (audit M-36), and a law with a pole in "
+                         "the domain can pass (M-34)"),
+            "evidence": vouched_route_v2.EVIDENCE,
+            "cost": vouched_route_v2.EVIDENCE,
+            "switch": f"{vouched_route_v2.ENVIRONMENT_VARIABLE}={vouched_route_v2.OFF}",
+            "first_version": f"{vouched_route_v2.ENVIRONMENT_VARIABLE}={vouched_route_v2.FIRST}"},
         "caution": ("A law marked tentative was not challenged by any rival, or the last checks did not vouch for it: "
                     "the reason is shown with it. On return-like data use the series route; "
                     "the search alone reports laws in pure noise there. The UI passes no physical units, so the "

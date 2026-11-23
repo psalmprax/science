@@ -56,8 +56,9 @@ Frozen and not yet run: an audit of five published laws of asset returns on the 
 ([`PREREG-LAW-AUDIT-FINANCE-2026-11`](preregistration/PREREG-LAW-AUDIT-FINANCE-2026-11.md)). What
 it can and cannot tell was measured first, on simulated panels, and is on the full page.
 
-For tabular data `apedp_dyn/discovery_l2/table_route.py` runs the refined path unless the main
-search or the template engine is named (the last checks only with `APEDP_TABLE_VOUCHING=on`);
+For tabular data `apedp_dyn/discovery_l2/vouched_route_v2.py` runs the refined path unless the main
+search or the template engine is named, with the second version of the last checks as its last
+step (tested up to 5 % noise; `APEDP_TABLE_VOUCHING=off` turns them off);
 trajectories and return-like series have their own entry points
 (`apedp_dyn/ode/route_in_force.py`, `apedp_dyn/discovery_l2/series_route.py`). The UI shows the
 default route beside the template engine's verdict (`apedp_dyn/ui/route_endpoint.py`).

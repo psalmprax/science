@@ -48,13 +48,13 @@ def test_a_law_found_without_the_search_stage_is_tentative_and_not_reported():
     assert not (earlier["reported"] and earlier["tentative"])
 
 
-def test_the_last_checks_run_only_on_request_since_the_owners_decision(monkeypatch):
-    """Taken out of the route in force on 2026-11-23 (RESULT-VOUCHED-SRBENCH); ``APEDP_TABLE_VOUCHING=on`` applies them."""
+def test_the_second_version_of_the_last_checks_is_in_force(monkeypatch):
+    """In force since 2026-11-23 (RESULT-VOUCHING-V2); ``=off`` turns the checks off, ``=first``/``=on`` the first version."""
     from pathlib import Path
 
-    from apedp_dyn.discovery_l2 import table_route, vouching
+    from apedp_dyn.discovery_l2 import vouched_route_v2, vouching, vouching_v2
 
-    monkeypatch.delenv(table_route.ENVIRONMENT_VARIABLE, raising=False)
+    monkeypatch.delenv(vouched_route_v2.ENVIRONMENT_VARIABLE, raising=False)
 
     def as_if_reported(*args, **kwargs):
         out = real(*args, **kwargs)
@@ -63,22 +63,30 @@ def test_the_last_checks_run_only_on_request_since_the_owners_decision(monkeypat
 
     real = default_route.discover_law
     monkeypatch.setattr(default_route, "discover_law", as_if_reported)
+    monkeypatch.setattr(vouching_v2, "vouch", lambda law, *a, **k: vouching_v2.Vouched(None, "every candidate failed a test of its residuals"))
     monkeypatch.setattr(vouching, "vouch", lambda law, *a, **k: vouching.Vouched(None, "every candidate left structure in its residuals"))
     columns, target = _kinetic()
-    # by default the checks do not run, and the record says why
+    # by default the second version runs, and a law it does not vouch for is shown as tentative, with the reason
+    withheld = route_endpoint.route_reading(columns, target)
+    assert withheld["vouching"]["applied"] is True and withheld["vouching"]["version"] == "second"
+    assert withheld["reported"] is False and withheld["law"] is None
+    assert withheld["tentative_reason"] == "not vouched for: every candidate failed a test of its residuals"
+    assert "m*v**2" in withheld["law_as_confirmed"]
+    block = route_endpoint.status_block()["last_step"]
+    assert block["in_force"] is True and block["version"] == "second" and "2026-11-23" in block["decision"]
+    assert block["switch"] == "APEDP_TABLE_VOUCHING=off" and block["first_version"] == "APEDP_TABLE_VOUCHING=first"
+    assert block["measured"].startswith("Cost first") and (Path(__file__).resolve().parents[1] / block["cost"]).is_file()
+    # switched off, the route's law is reported as it is, and the record says why
+    monkeypatch.setenv(vouched_route_v2.ENVIRONMENT_VARIABLE, "off")
     plain = route_endpoint.route_reading(columns, target)
     assert plain["reported"] is True and "m*v**2" in plain["law"]
     assert plain["vouching"]["in_force"] is False and plain["vouching"]["applied"] is False
-    assert "owner's decision" in plain["vouching"]["why_not"] and plain["vouching"]["evidence"] == table_route.EVIDENCE
-    block = route_endpoint.status_block()["last_step"]
-    assert block["in_force"] is False and "2026-11-23" in block["decision"] and block["switch"] == "APEDP_TABLE_VOUCHING=on"
-    assert block["measured"].startswith("Cost first") and (Path(__file__).resolve().parents[1] / block["cost"]).is_file()
-    # on request they run, and a law they do not vouch for is shown as tentative, with the reason
-    monkeypatch.setenv(table_route.ENVIRONMENT_VARIABLE, "on")
-    withheld = route_endpoint.route_reading(columns, target)
-    assert withheld["vouching"]["applied"] is True and withheld["reported"] is False and withheld["law"] is None
-    assert withheld["tentative_reason"] == "not vouched for: every candidate left structure in its residuals"
-    assert "m*v**2" in withheld["law_as_confirmed"] and route_endpoint.status_block()["last_step"]["in_force"] is True
+    assert route_endpoint.status_block()["last_step"]["in_force"] is False
+    # "on", which asked for the first version while it was on request only, still does
+    monkeypatch.setenv(vouched_route_v2.ENVIRONMENT_VARIABLE, "on")
+    first = route_endpoint.route_reading(columns, target)
+    assert first["vouching"]["version"] == "first" and first["vouching"]["applied"] is True
+    assert first["tentative_reason"] == "not vouched for: every candidate left structure in its residuals"
 
 
 def test_bad_data_gives_a_record_with_the_reason_and_no_law():

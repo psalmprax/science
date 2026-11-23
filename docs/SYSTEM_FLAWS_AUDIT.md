@@ -308,7 +308,9 @@ three preregistered expectations missed.
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
 - **M-36 the second version of the last checks lets more wrong laws through
-  than the first above 5 % noise — FOUND 2026-11-23 IN DEVELOPMENT, OPEN.**
+  than the first above 5 % noise — FOUND 2026-11-23 IN DEVELOPMENT, OPEN; the
+  second version has been the route's last step since the same day, tested up
+  to 5 % noise only.**
   Replayed on 1,500 of the second red-team campaign's worlds
   (`benchmarks/vouching_v2_dev_campaign2.json`), it let 70 wrong laws through
   above 5 % noise, where the first version let 29 and the route alone
@@ -334,7 +336,11 @@ three preregistered expectations missed.
   and under test** (`discovery_l2/vouching_v2.py`, PREREG-VOUCHING-V2-2026-11):
   the rivals are no longer planted as shapes; generic shapes are tested by an
   F test whose power is computed. Replayed on this run's rows (development):
-  192 of 193 kept. **Evidence**
+  192 of 193 kept. **In force since 2026-11-23** (`discovery_l2/vouched_route_v2.py`,
+  PREREG-VOUCHING-V2-2026-11, all five expectations held): behind the search
+  stage on 40 new laws it kept 26 of 27 recovered laws at noise up to 1 %.
+  It has not been run again on the physics benchmark; there the 192 is
+  development. **Evidence**
   (`preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md`): 43 of 193 recovered
   laws withheld, all at 1 % noise (47 of 90 kept); in 42 the only shapes the
   rule could not see were rivals' differences. No inaccurate law was stopped.
@@ -364,8 +370,8 @@ three preregistered expectations missed.
   orders of magnitude would have to be written and run on laws drawn after
   it.
 - **M-33 the power rule's estimate is too high for an error of another shape
-  than those it plants — FOUND 2026-11-22 IN THE BLIND RUN OF THE CHECKS,
-  OPEN.** `vouching.power_to_see` plants an error of the size that makes a
+  than those it plants — FOUND 2026-11-22 IN THE BLIND RUN OF THE CHECKS;
+  REPAIRED 2026-11-23 BY THE SECOND VERSION, on a preregistered run.** `vouching.power_to_see` plants an error of the size that makes a
   law wrong in the shapes of the rivals' differences from it and of low-order
   polynomials of the inputs, and passes the law if the structure test sees
   such an error at least four times in five. **Evidence**
@@ -391,8 +397,13 @@ three preregistered expectations missed.
   laws kept, 36 of 43 approximations kept. **Built since** as
   `discovery_l2/vouching_v2.py`, with an F test on those shapes and its power
   computed from the noncentral F distribution; replayed on the counterfeit
-  benchmark (development) it let no wrong law through in 193 reports. Under
-  test in PREREG-VOUCHING-V2-2026-11. **The second red-team
+  benchmark (development) it let no wrong law through in 193 reports.
+  **On 100 laws drawn after it** (PREREG-VOUCHING-V2-2026-11, run once, all five expectations
+  held): of 60 laws' handed counterfeits, the route reported 19 wrong laws in 231 reports and the
+  second version none in 189, keeping 109 of 110 right laws at noise up to 1 % and 29 of 30 at 5 %;
+  behind the search stage on 40 laws, at 5 % noise the route reported 11 inaccurate laws of 31 and
+  the second version none of 17, and it kept 26 of 27 recovered laws at noise up to 1 %, 3 of 4 at
+  5 %. In force since then (`discovery_l2/vouched_route_v2.py`). **The second red-team
   campaign** (2026-11-23) found 259 more of this kind among the wrong laws
   it got past the checks: polynomials of the route's own library with test
   R² between 0.99 and 0.999, on 60 to 300 rows or at several per cent of
@@ -401,7 +412,8 @@ three preregistered expectations missed.
   noise — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN; REPAIRED FOR TABLES
   2026-11-22 BY CHECKS AROUND THE PATH, on a preregistered run; REOPENED
   2026-11-23: the checks were taken out of the route in force for their cost
-  (M-35) and are applied on request; the frozen path is unchanged.** `main_search.adequacy` passes a
+  (M-35) and are applied on request; the frozen path is unchanged; REPAIRED
+  AGAIN THE SAME DAY BY THE SECOND VERSION, on a preregistered run (see M-33).** `main_search.adequacy` passes a
   law if the leave-one-out R² of each residual from its eight nearest rows'
   residuals is at most 0. For noise alone that statistic is about -1/8, so
   the check only refuses structure worth an eighth of the residual variance.
@@ -431,7 +443,8 @@ three preregistered expectations missed.
   TWO BLIND RUNS THE SAME DAY; REPAIRED FOR TABLES 2026-11-22 BY CHECKS AROUND
   THE PATH, on a preregistered run; REOPENED 2026-11-23: the checks were taken
   out of the route in force for their cost (M-35) and are applied on request;
-  the frozen path is unchanged.** `contrast_confirmation` may measure thirty rows; where
+  the frozen path is unchanged; REPAIRED AGAIN THE SAME DAY BY THE SECOND
+  VERSION, on a preregistered run (see M-33).** `contrast_confirmation` may measure thirty rows; where
   that does not separate the candidates the verdict is `equivalent_class` and
   the simplest member is reported. **Evidence:** of the 13,426 wrong laws the
   campaign found, 11,929 came out of such a class, and in 5,365 of them the
