@@ -1,0 +1,85 @@
+{
+ "per_cell": 150,
+ "source": "campaign2",
+ "summary": {
+  "cells": {
+   "all": {
+    "n": 1500,
+    "right": 769,
+    "route_wrong": 387,
+    "second": {
+     "kept": 758,
+     "reported": 1223,
+     "the_law": 796,
+     "wrong": 168
+    },
+    "switch": {
+     "kept": 747,
+     "reported": 1167,
+     "the_law": 785,
+     "wrong": 126
+    },
+    "third": {
+     "kept": 726,
+     "reported": 1031,
+     "the_law": 764,
+     "wrong": 19
+    }
+   },
+   "noise above 5 %": {
+    "n": 178,
+    "right": 25,
+    "route_wrong": 126,
+    "second": {
+     "kept": 20,
+     "reported": 114,
+     "the_law": 20,
+     "wrong": 70
+    },
+    "switch": {
+     "kept": 9,
+     "reported": 59,
+     "the_law": 9,
+     "wrong": 29
+    },
+    "third": {
+     "kept": 12,
+     "reported": 33,
+     "the_law": 12,
+     "wrong": 4
+    }
+   },
+   "noise up to 5 %": {
+    "n": 1322,
+    "right": 744,
+    "route_wrong": 261,
+    "second": {
+     "kept": 738,
+     "reported": 1109,
+     "the_law": 776,
+     "wrong": 98
+    },
+    "switch": {
+     "kept": 738,
+     "reported": 1108,
+     "the_law": 776,
+     "wrong": 97
+    },
+    "third": {
+     "kept": 714,
+     "reported": 998,
+     "the_law": 752,
+     "wrong": 15
+    }
+   }
+  },
+  "errors": 0,
+  "pole_withheld": {
+   "accurate, not the law": 11,
+   "the law": 32,
+   "wrong": 149
+  },
+  "records": 1500
+ },
+ "what": "development replay of the last checks' second and third versions and a switch by noise; not a result"
+}

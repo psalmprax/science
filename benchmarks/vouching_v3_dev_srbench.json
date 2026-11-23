@@ -1,0 +1,61 @@
+{
+ "per_cell": 150,
+ "source": "srbench",
+ "summary": {
+  "cells": {
+   "all": {
+    "n": 229,
+    "right": 193,
+    "route_wrong": 0,
+    "second": {
+     "kept": 192,
+     "reported": 226,
+     "the_law": 192,
+     "wrong": 0
+    },
+    "switch": {
+     "kept": 192,
+     "reported": 226,
+     "the_law": 192,
+     "wrong": 0
+    },
+    "third": {
+     "kept": 187,
+     "reported": 216,
+     "the_law": 187,
+     "wrong": 0
+    }
+   },
+   "noise up to 5 %": {
+    "n": 229,
+    "right": 193,
+    "route_wrong": 0,
+    "second": {
+     "kept": 192,
+     "reported": 226,
+     "the_law": 192,
+     "wrong": 0
+    },
+    "switch": {
+     "kept": 192,
+     "reported": 226,
+     "the_law": 192,
+     "wrong": 0
+    },
+    "third": {
+     "kept": 187,
+     "reported": 216,
+     "the_law": 187,
+     "wrong": 0
+    }
+   }
+  },
+  "errors": 0,
+  "pole_withheld": {
+   "accurate, not the law": 5,
+   "the law": 5
+  },
+  "records": 229
+ },
+ "what": "development replay of the last checks' second and third versions and a switch by noise; not a result"
+}

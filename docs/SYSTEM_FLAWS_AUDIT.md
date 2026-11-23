@@ -345,10 +345,16 @@ three preregistered expectations missed.
   a rival's difference would not have been seen. The second version computes
   its power for errors of polynomial shape only, so it does not see that
   difference. PREREG-VOUCHING-V2-2026-11 tests up to 5 % noise and does not
-  measure this. **Repair, not built:** compute the power for the rival's own
-  difference as a known direction (an analytic 1-degree test). That only
-  withholds; no test in a rival's direction refuses. It has to be run on laws
-  drawn after it.
+  measure this. **Diagnosed later the same day: it is mostly M-34.** 66 of the
+  70 wrong laws it passed above 5 % noise have a pole among the rows, and so do
+  83 of the 98 it passed at lower noise. On their own rows their error is a
+  quarter of what would make them wrong; on test rows near the pole it is
+  unbounded. The first version did better there only by refusing nearly every
+  law (9 of 25 right laws kept, against 20). **Candidate repair, development
+  only:** `discovery_l2/vouching_v3.py` withholds a law with a pole among the
+  rows. Replayed: 4 wrong laws above 5 % noise instead of 70, 15 below it
+  instead of 98; 5 of the physics benchmark's 193 recovered laws lost. It was
+  designed after reading these records, and needs a blind test.
 - **M-35 the last checks withhold right laws whose rivals part from them on a
   few rows — FOUND 2026-11-23 IN PREREG-VOUCHED-SRBENCH, OPEN; the owner took
   the checks out of the route in force the same day

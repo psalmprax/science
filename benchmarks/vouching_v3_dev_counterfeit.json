@@ -1,0 +1,58 @@
+{
+ "per_cell": 150,
+ "source": "counterfeit",
+ "summary": {
+  "cells": {
+   "all": {
+    "n": 229,
+    "right": 146,
+    "route_wrong": 16,
+    "second": {
+     "kept": 140,
+     "reported": 193,
+     "the_law": 150,
+     "wrong": 0
+    },
+    "switch": {
+     "kept": 139,
+     "reported": 191,
+     "the_law": 148,
+     "wrong": 1
+    },
+    "third": {
+     "kept": 140,
+     "reported": 193,
+     "the_law": 150,
+     "wrong": 0
+    }
+   },
+   "noise up to 5 %": {
+    "n": 229,
+    "right": 146,
+    "route_wrong": 16,
+    "second": {
+     "kept": 140,
+     "reported": 193,
+     "the_law": 150,
+     "wrong": 0
+    },
+    "switch": {
+     "kept": 139,
+     "reported": 191,
+     "the_law": 148,
+     "wrong": 1
+    },
+    "third": {
+     "kept": 140,
+     "reported": 193,
+     "the_law": 150,
+     "wrong": 0
+    }
+   }
+  },
+  "errors": 0,
+  "pole_withheld": {},
+  "records": 229
+ },
+ "what": "development replay of the last checks' second and third versions and a switch by noise; not a result"
+}

@@ -56,6 +56,17 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **A third version of the last checks, in development (2026-11-23).** The second version's weakness
+  above 5 % noise (M-36) turned out to be mostly the pole problem (M-34). Of the 70 wrong laws it
+  passed there, 66 have a pole among the rows. `discovery_l2/vouching_v3.py` is the second version
+  plus a rule that withholds such a law. Development replay (`scripts/replay_vouching_v3.py`):
+  - **Second red-team campaign:** 15 wrong laws instead of 98 at noise up to 5 %, and 4 instead of
+    70 above it. Right laws kept: 714 instead of 738, and 12 instead of 20.
+  - **Physics benchmark:** 187 of 193 recovered laws kept, instead of 192.
+  - **Other sets:** unchanged.
+  - A switch to the first version above 5 % noise did worse everywhere.
+  The rule was designed after reading the campaign, so this is not a test of it. Not in force: a
+  blind test and the owner's word come first.
 - **Misalignments addressed, as far as they are in the agent's control (2026-11-23).**
   - *The owner decides what is in force* (AGENTS.md 1.5): a consequence fixed before a run only
     proposes. The second version of the last checks was put in force without the owner's word;
