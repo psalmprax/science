@@ -307,6 +307,21 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-36 the second version of the last checks lets more wrong laws through
+  than the first above 5 % noise — FOUND 2026-11-23 IN DEVELOPMENT, OPEN.**
+  Replayed on 1,500 of the second red-team campaign's worlds
+  (`benchmarks/vouching_v2_dev_campaign2.json`), it let 70 wrong laws through
+  above 5 % noise, where the first version let 29 and the route alone
+  reported 126. Up to 5 % noise it let 98 through against the first version's
+  107. Nearly all the difference is on worlds at 7 % and 10 % noise on 1,000
+  rows, where the first version withheld the law because an error the size of
+  a rival's difference would not have been seen. The second version computes
+  its power for errors of polynomial shape only, so it does not see that
+  difference. PREREG-VOUCHING-V2-2026-11 tests up to 5 % noise and does not
+  measure this. **Repair, not built:** compute the power for the rival's own
+  difference as a known direction (an analytic 1-degree test). That only
+  withholds; no test in a rival's direction refuses. It has to be run on laws
+  drawn after it.
 - **M-35 the last checks withhold right laws whose rivals part from them on a
   few rows — FOUND 2026-11-23 IN PREREG-VOUCHED-SRBENCH, OPEN; the owner took
   the checks out of the route in force the same day
@@ -315,14 +330,19 @@ three preregistered expectations missed.
   structure test would miss it. On the physics benchmark the rivals come from
   four searches, and many part from the law sharply on a few rows (a median
   56 % of a rival's squared difference on 1 % of the rows). The structure
-  test cannot see such an error, so the law is withheld. **Evidence**
+  test cannot see such an error, so the law is withheld. **A repair is built
+  and under test** (`discovery_l2/vouching_v2.py`, PREREG-VOUCHING-V2-2026-11):
+  the rivals are no longer planted as shapes; generic shapes are tested by an
+  F test whose power is computed. Replayed on this run's rows (development):
+  192 of 193 kept. **Evidence**
   (`preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md`): 43 of 193 recovered
   laws withheld, all at 1 % noise (47 of 90 kept); in 42 the only shapes the
   rule could not see were rivals' differences. No inaccurate law was stopped.
-  **The same blindness as M-34**, with the opposite effect. **Repair, not
-  built:** judge a rival-shaped error by the rival's own fit to the rows (it
-  fits worse, or it does not) rather than by the neighbour statistic; it has
-  to be run on this benchmark and on laws drawn after it.
+  **The same blindness as M-34**, with the opposite effect. The repair first
+  tried, a test of the residuals in each rival's direction, refused right laws
+  instead (8 of 90, and 7 after refitting on half the rows): the searches' choice
+  of form carries the rows' noise. That is why the second version leaves the
+  rivals to the class rule.
 - **M-34 the last checks do not see an error concentrated near a pole of the
   law — FOUND 2026-11-23 BY THE SECOND RED-TEAM CAMPAIGN, OPEN.** A law whose
   denominator reaches zero inside the domain (`3.7/((x0 + 3.7)*(sin(2.9*x1) +
@@ -368,8 +388,11 @@ three preregistered expectations missed.
   no shape is left to try. Tried in a scratch script on the benchmark's own
   rows after its run (development, and chosen after reading the two
   failures): both wrong laws would have been withheld, 144 of the 146 right
-  laws kept, 36 of 43 approximations kept. That proves nothing until it is
-  written as a module and run on laws drawn after it. **The second red-team
+  laws kept, 36 of 43 approximations kept. **Built since** as
+  `discovery_l2/vouching_v2.py`, with an F test on those shapes and its power
+  computed from the noncentral F distribution; replayed on the counterfeit
+  benchmark (development) it let no wrong law through in 193 reports. Under
+  test in PREREG-VOUCHING-V2-2026-11. **The second red-team
   campaign** (2026-11-23) found 259 more of this kind among the wrong laws
   it got past the checks: polynomials of the route's own library with test
   R² between 0.99 and 0.999, on 60 to 300 rows or at several per cent of

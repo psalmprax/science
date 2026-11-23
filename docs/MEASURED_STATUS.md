@@ -24,7 +24,10 @@ of checks (`apedp_dyn/discovery_l2/vouched_route.py`, on the counterfeit benchma
 (`apedp_dyn/discovery_l2/table_route.py`; `APEDP_TABLE_VOUCHING=on` applies them): on the physics
 benchmark behind the four searches they withheld 43 of the 193 laws the route recovered (47 of 90
 at 1 % noise) and stopped no inaccurate law, because there was none (PREREG-VOUCHED-SRBENCH, third
-expectation missed; audit M-35).
+expectation missed; audit M-35). A second version (`apedp_dyn/discovery_l2/vouching_v2.py`) is
+**under test, not measured**: in development replays it kept 192 of those 193 laws and let no
+handed counterfeit through, and above 5 % noise it is weaker than the first version (audit M-36).
+Its blind test is PREREG-VOUCHING-V2-2026-11.
 
 | Route | For | What it does | Measured | Result file |
 | :--- | :--- | :--- | :--- | :--- |

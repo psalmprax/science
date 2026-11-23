@@ -56,6 +56,20 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **A second version of the last checks, and its blind test frozen (2026-11-23).**
+  `discovery_l2/vouching_v2.py` repairs two of the three faults the first version showed. Errors
+  are planted only where the law's constants cannot follow them, tested by an F test on
+  polynomials up to the fourth degree, with the power of that test computed (M-33). The rivals
+  proposed by the searches are no longer planted as shapes, since their forms carry the rows'
+  noise (M-35). M-34 (a pole a little off) is not repaired. Development replays
+  (`scripts/replay_vouching_v2.py`): on the physics benchmark's recorded run it keeps 192 of the
+  193 laws the route recovered, where the first version kept 150. On the counterfeit benchmark it
+  lets no wrong law through, where the first let 2. Three changes were made while replaying, and
+  are disclosed: a rival-direction test removed, the polynomial degree raised to four, a
+  largest-residual test dropped because it refused right laws under non-Gaussian noise.
+  PREREG-VOUCHING-V2-2026-11 is frozen: 60 new laws handed over as counterfeits and 40 new laws
+  behind the search stage in force, at noise 0, 1 % and 5 %, with five expectations and what
+  follows from each.
 - **The last checks taken out of the table route in force, by the owner's decision (2026-11-23).**
   PREREG-VOUCHED-SRBENCH fixed that with its third expectation missed and its second held the
   owner would decide. The owner decided to take them out. `discovery_l2/table_route.py`, a new
