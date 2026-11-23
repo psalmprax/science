@@ -66,7 +66,11 @@ inferred releases.
   - starting from the memory in force, the two arms were equal after 19 laws (4 recovered each, no
     wrong law), because that memory already held every part of this grammar's laws
     (`benchmarks/learning_stream/dev_recorded_memory_partial.json`);
-  - starting from an empty memory, the first pass alone found too few laws to learn from.
+  - starting from an empty memory over 40 new laws, the learning arm recovered 4 and the frozen arm 1.
+    The learning arm gained 3 laws, all in the second half of the stream, and lost none. Neither arm
+    reported a wrong law, and the learning arm reported 14 laws against 3. Three gained against none
+    lost is too few to tell from chance (a sign test gives one-sided p = 0.125)
+    (`benchmarks/learning_stream/dev_empty_memory.json`).
   `.github/workflows/learning-stream.yml` runs the stream with the default four searches. Not in force.
 - **A third version of the last checks, in development (2026-11-23).** The second version's weakness
   above 5 % noise (M-36) turned out to be mostly the pole problem (M-34). Of the 70 wrong laws it
