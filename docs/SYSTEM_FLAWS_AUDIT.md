@@ -307,6 +307,21 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-35 the last checks withhold right laws whose rivals part from them on a
+  few rows — FOUND 2026-11-23 IN PREREG-VOUCHED-SRBENCH, OPEN; the checks stay
+  in force until the owner decides.** The power rule plants an error in the
+  shape of each rival's difference from the law and withholds the law if the
+  structure test would miss it. On the physics benchmark the rivals come from
+  four searches, and many part from the law sharply on a few rows (a median
+  56 % of a rival's squared difference on 1 % of the rows). The structure
+  test cannot see such an error, so the law is withheld. **Evidence**
+  (`preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md`): 43 of 193 recovered
+  laws withheld, all at 1 % noise (47 of 90 kept); in 42 the only shapes the
+  rule could not see were rivals' differences. No inaccurate law was stopped.
+  **The same blindness as M-34**, with the opposite effect. **Repair, not
+  built:** judge a rival-shaped error by the rival's own fit to the rows (it
+  fits worse, or it does not) rather than by the neighbour statistic; it has
+  to be run on this benchmark and on laws drawn after it.
 - **M-34 the last checks do not see an error concentrated near a pole of the
   law — FOUND 2026-11-23 BY THE SECOND RED-TEAM CAMPAIGN, OPEN.** A law whose
   denominator reaches zero inside the domain (`3.7/((x0 + 3.7)*(sin(2.9*x1) +

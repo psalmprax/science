@@ -78,6 +78,10 @@ def test_the_reading_goes_through_the_last_checks_and_says_what_they_did(monkeyp
     assert off["reported"] is True and off["vouching"]["in_force"] is False
     block = route_endpoint.status_block()["last_step"]
     assert block["in_force"] is False and block["evidence"] == vouched_route.EVIDENCE and "2 of 191" in block["measured"]
+    # the cost on the physics benchmark is stated first, as PREREG-VOUCHED-SRBENCH fixed for a missed third expectation
+    assert block["measured"].startswith("Cost first") and block["cost"].endswith("RESULT-VOUCHED-SRBENCH-2026-11.md")
+    from pathlib import Path
+    assert (Path(__file__).resolve().parents[1] / block["cost"]).is_file()
 
 
 def test_bad_data_gives_a_record_with_the_reason_and_no_law():

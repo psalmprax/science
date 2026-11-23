@@ -284,10 +284,14 @@ def status_block() -> dict[str, Any]:
             "what": ("checks on a law the refined path is about to report: structure left in its residuals, members of "
                      "an unseparated class that disagree, and whether an error large enough to make it wrong could "
                      "have been seen. A law that fails is shown as tentative with the reason"),
-            "measured": ("60 new laws handed over with their counterfeits, noise 0, 1 % and 5 %: wrong laws 16 of 229 "
-                         "reports before the checks and 2 of 191 after, all at 5 % noise; 139 of 146 right laws kept. "
-                         "Not measured behind a search engine or on the physics benchmark"),
+            "measured": ("Cost first: on SRBench behind the four searches they kept 150 of the 193 laws the route "
+                         "recovered (47 of 90 at 1 % noise) and stopped nothing, since no report there was inaccurate; "
+                         "one expectation missed, in force until the owner decides "
+                         "(preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md). On 60 new laws handed over with their "
+                         "counterfeits, noise 0, 1 % and 5 %: wrong laws 16 of 229 reports before the checks and 2 of "
+                         "191 after, all at 5 % noise; 139 of 146 right laws kept"),
             "evidence": vouched_route.EVIDENCE,
+            "cost": "preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md",
             "switch": f"{vouched_route.ENVIRONMENT_VARIABLE}={vouched_route.OFF}"},
         "caution": ("A law marked tentative was not challenged by any rival, or the last checks did not vouch for it: "
                     "the reason is shown with it. On return-like data use the series route; "

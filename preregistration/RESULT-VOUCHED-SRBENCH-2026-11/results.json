@@ -1,0 +1,457 @@
+{
+ "frozen": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/default_route.py": "7a984f9fe659c0857088ef8b7bf9f6f090a755189ae4eb6338153db4c07c5033",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/vouched_route.py": "d15d43d868a99681c32d71b8146416c762fb68ef3ade021d49f1267e78c4d22b",
+  "apedp_dyn/discovery_l2/vouching.py": "513763de3fa266ff3b18416f644919efaf1342ab98539a9a45e57f42c83e1292",
+  "apedp_dyn/proposers/composed.py": "eca6edc35ea1155039acb4c4745231bc4e84e8d1b9333540828ac89d9751e6e3",
+  "apedp_dyn/proposers/deep_pass.py": "2a7018dd93053ba81354c5ed9fad64467a86104d546e44e49a83c945c1ffa430",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-VOUCHED-SRBENCH-2026-11.md": "172427a7fd1b3b82ed40be66bab086417f1c7052b6e9f78d4459fb62418cb434",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36",
+  "scripts/run_srbench_portfolio.py": "1a6c5ead7433ac5967d4a93e8e75e5ee12fff54d9180658c0c1835d23bddd458",
+  "scripts/run_srbench_refined.py": "807ccdcae77b6d09bf83a36e07108da8b407ed86d2912ae1a262cd39c173ec9a",
+  "scripts/run_srbench_vouched.py": "4bff07d3436038d1cf7b4bd186ed686b03a8d5c0872bd4a7aba94779aa48ccea"
+ },
+ "preregistration": "PREREG-VOUCHED-SRBENCH-2026-11",
+ "summary": {
+  "all": {
+   "route": {
+    "accurate_not_the_law": 36,
+    "errors": 1,
+    "n": 266,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 193,
+    "recovered_by_form": 192,
+    "reported": 229,
+    "timeouts": 1
+   },
+   "vouched": {
+    "accurate_not_the_law": 32,
+    "errors": 1,
+    "n": 266,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 150,
+    "recovered_by_form": 149,
+    "reported": 182,
+    "timeouts": 1
+   }
+  },
+  "checks": {
+   "applied": 229,
+   "gained": [],
+   "not_accurate_before_and_withheld": 0,
+   "passed_to_another_member": 2,
+   "passed_unchanged": 180,
+   "recovered_laws_lost": [
+    {
+     "law": "0.999917533942122*x0*x1*x2*sin(x3)",
+     "noise": 0.01,
+     "problem": "feynman_I_18_14",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.15911695820236*x0*x1",
+     "noise": 0.01,
+     "problem": "feynman_III_12_43",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "6.28698863584759*x0*x2*x3*x4/x1",
+     "noise": 0.01,
+     "problem": "feynman_II_34_29b",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "1.00083400570632*cos(x0)*cos(x1)/sin(x1)",
+     "noise": 0.01,
+     "problem": "strogatz_shearflow1",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "12.5746496877993*x0*x1**2*x2/x3",
+     "noise": 0.01,
+     "problem": "feynman_III_13_18",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.249871974692996*x0*x1**2*x3**2 + 0.249802929708995*x0*x2**2*x3**2",
+     "noise": 0.01,
+     "problem": "feynman_I_24_6",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "1.0006100139293*x0*exp(x1*x2/(x3*x4)) - 1.00521762845988*x0",
+     "noise": 0.01,
+     "problem": "feynman_III_14_14",
+     "reason": "an error large enough to make it wrong would have been seen 59% of the time, not 80%"
+    },
+    {
+     "law": "-3.33274091153614*x0**3 + 3.33400806432683*x0 + 9.99127440564851*x1",
+     "noise": 0.01,
+     "problem": "strogatz_vdp1",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "-0.0999104832429199*x0",
+     "noise": 0.01,
+     "problem": "strogatz_vdp2",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "1.00013330957923*x0*x1/(x2*x3) + 1.0011751148225*x0*x4*x7/(x2*x3*x5*x6**2)",
+     "noise": 0.01,
+     "problem": "feynman_II_36_38",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "6.28344185011004*x0/(x1*x2)",
+     "noise": 0.01,
+     "problem": "feynman_III_15_27",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.998356819701849*x0*x1*x2 + 1.00658636072517*x0*x1",
+     "noise": 0.01,
+     "problem": "feynman_II_37_1",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.500134009114114*x0/(x1 + 0.998231395834882)",
+     "noise": 0.01,
+     "problem": "feynman_II_38_14",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "-0.999731539457452*x0*cos(x1*x2)/(sin(x1 - 1.57039925951925) + 0.999279349226244) + 0.99914226886129*x0/(sin(x1 - 1.57039925951925) + 0.999279349226244)",
+     "noise": 0.01,
+     "problem": "feynman_I_30_3",
+     "reason": "an error large enough to make it wrong would have been seen 16% of the time, not 80%"
+    },
+    {
+     "law": "4.1841078197122*x0*x1*x2**2*x3**2/(1.00057084113696 - 2.0005707596953*x5**2/x4**2 + x5**4/x4**4)",
+     "noise": 0.01,
+     "problem": "feynman_I_32_17",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.0796209829121095*x1*cos(x2)/(x0*x3**2)",
+     "noise": 0.01,
+     "problem": "feynman_II_6_11",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.119444531617881*x1*x4**2/(x0*x2**2) + 0.119448656161977*x3**2/x0",
+     "noise": 0.01,
+     "problem": "feynman_test_18",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.119362813759015*x1*sin(2.00003411357917*x2)/(x0*x3**3)",
+     "noise": 0.01,
+     "problem": "feynman_II_6_15b",
+     "reason": "an error large enough to make it wrong would have been seen 47% of the time, not 80%"
+    },
+    {
+     "law": "-0.0397877949892229*x1*x5**4/(x0*x2**2) + 0.0795461858242252*x3**2*x4*x5**2/x0 - 0.0395949298122374*x3**2*x5**2/x0",
+     "noise": 0.01,
+     "problem": "feynman_test_19",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.998386210485527*x0/(x1*x2 + 0.996364457492392*x1)",
+     "noise": 0.01,
+     "problem": "feynman_II_10_9",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.333024179326229*x0*x1**2*x2/(x3*x4)",
+     "noise": 0.01,
+     "problem": "feynman_II_11_20",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.999999999999135*x0*x1*x2*x3/(-0.333786890587496*x0*x1 + 1.00070855553927)",
+     "noise": 0.01,
+     "problem": "feynman_II_11_27",
+     "reason": "an error large enough to make it wrong would have been seen 72% of the time, not 80%"
+    },
+    {
+     "law": "0.998668581848163*x0*x3 + 0.997336399088005*x1*x4 + 1.00238624859513*x2*x5",
+     "noise": 0.01,
+     "problem": "feynman_I_11_19",
+     "reason": "an error large enough to make it wrong would have been seen 3% of the time, not 80%"
+    },
+    {
+     "law": "0.999612940858123*x0*x1",
+     "noise": 0.01,
+     "problem": "feynman_I_12_1",
+     "reason": "an error large enough to make it wrong would have been seen 38% of the time, not 80%"
+    },
+    {
+     "law": "0.999805004724977*x0*x1/(x2*x3**2 - 0.998815354179592*x2*x4**2)",
+     "noise": 0.01,
+     "problem": "feynman_II_11_3",
+     "reason": "an error large enough to make it wrong would have been seen 6% of the time, not 80%"
+    },
+    {
+     "law": "1.00159737848093*x1*x2/(x0 - 0.998736001881187)",
+     "noise": 0.01,
+     "problem": "feynman_I_39_11",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "1.00000000000327*sqrt(1.99520007918649*x0**2*x1**2*x6/(x2*x3**2*x4**2*x5**4) + 1.00121793371046)",
+     "noise": 0.01,
+     "problem": "feynman_test_6",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.0795327082931063*x0*x1/(x2*x3**2)",
+     "noise": 0.01,
+     "problem": "feynman_I_12_2",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.999569742419187*x0*x1*x3/x2",
+     "noise": 0.01,
+     "problem": "feynman_I_39_22",
+     "reason": "an error large enough to make it wrong would have been seen 34% of the time, not 80%"
+    },
+    {
+     "law": "1.00070314071524*x0*exp(-x1*x2*x4/(x3*x5))",
+     "noise": 0.01,
+     "problem": "feynman_I_40_1",
+     "reason": "an error large enough to make it wrong would have been seen 22% of the time, not 80%"
+    },
+    {
+     "law": "1.0001173636028*x0*x1*cos(x2 + 5155.35369854324)",
+     "noise": 0.01,
+     "problem": "feynman_II_15_4",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "-0.99996768630493*x0*x1*cos(x2)",
+     "noise": 0.01,
+     "problem": "feynman_II_15_5",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "0.99924618719878*x1*x3/(x0*x2 - 1.00152256676665*x2)",
+     "noise": 0.01,
+     "problem": "feynman_I_43_43",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "-1.00003131023691*sin(x0) + 0.500254184683565*sin(x0 - x1)",
+     "noise": 0.01,
+     "problem": "strogatz_barmag1",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "-1.0007210419639*x0*x1*x2*log(x3/x4)",
+     "noise": 0.01,
+     "problem": "feynman_I_44_4",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "-0.999791540333963*sin(x1) - 0.499721692405742*sin(x0 - x1)",
+     "noise": 0.01,
+     "problem": "strogatz_barmag2",
+     "reason": "an error large enough to make it wrong would have been seen 3% of the time, not 80%"
+    },
+    {
+     "law": "1.00020164061765*sqrt(x0*x1/x2)",
+     "noise": 0.01,
+     "problem": "feynman_I_47_23",
+     "reason": "an error large enough to make it wrong would have been seen 3% of the time, not 80%"
+    },
+    {
+     "law": "-0.0500014594669994*x0**2 - 1.00098141507781*sin(x1)",
+     "noise": 0.01,
+     "problem": "strogatz_glider1",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "1.00046334687379*x0 - 0.999783988895486*cos(x1)/x0",
+     "noise": 0.01,
+     "problem": "strogatz_glider2",
+     "reason": "2 candidates passed every check and differ by more than the accuracy claimed"
+    },
+    {
+     "law": "-0.999503727843204*x0*x1*sqrt(x3)*sqrt(x3/x4**2) + 0.999472397296992*x0*x2*sqrt(x3)*sqrt(x3/x4**2)",
+     "noise": 0.01,
+     "problem": "feynman_II_2_42",
+     "reason": "an error large enough to make it wrong would have been seen 6% of the time, not 80%"
+    },
+    {
+     "law": "-1.0048071490707*x0**2 - 2.00789082255823*x0*x1 + 3.01553199285396*x0",
+     "noise": 0.01,
+     "problem": "strogatz_lv1",
+     "reason": "an error large enough to make it wrong would have been seen 38% of the time, not 80%"
+    },
+    {
+     "law": "0.500093621631073*x0*x1*x2/x3",
+     "noise": 0.01,
+     "problem": "feynman_II_34_11",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    },
+    {
+     "law": "1.00035162387042*x0**2/(x0**2/x2 + 1.00055710518014*x1) + 0.999599693218992*x0**2/(x0**2/x1 + 1.00055710518014*x2)",
+     "noise": 0.01,
+     "problem": "feynman_I_16_6",
+     "reason": "an error large enough to make it wrong would have been seen 0% of the time, not 80%"
+    }
+   ],
+   "seconds": {
+    "median": 290.35
+   },
+   "withheld": 47,
+   "withheld_by_reason": {
+    "2 candidates passed every check and differ by more than the ": 1,
+    "an error large enough to make it wrong would have been seen ": 46
+   }
+  },
+  "expectations": {
+   "1_holds": true,
+   "1_limit": 0.05,
+   "1_not_accurate_share_of_vouched_reports": 0.0,
+   "2_holds": true,
+   "2_limit": 0.75,
+   "2_recovered_laws_of_the_route_kept": [
+    150,
+    193
+   ],
+   "3_holds": false,
+   "3_limit": 0.95,
+   "route_not_accurate_share": 0.0
+  },
+  "feynman": {
+   "route": {
+    "accurate_not_the_law": 34,
+    "errors": 1,
+    "n": 238,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 168,
+    "recovered_by_form": 167,
+    "reported": 202,
+    "timeouts": 1
+   },
+   "vouched": {
+    "accurate_not_the_law": 31,
+    "errors": 1,
+    "n": 238,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 133,
+    "recovered_by_form": 132,
+    "reported": 164,
+    "timeouts": 1
+   }
+  },
+  "held_out": {
+   "route": {
+    "accurate_not_the_law": 33,
+    "errors": 1,
+    "n": 206,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 141,
+    "recovered_by_form": 140,
+    "reported": 174,
+    "timeouts": 1
+   },
+   "vouched": {
+    "accurate_not_the_law": 29,
+    "errors": 1,
+    "n": 206,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 109,
+    "recovered_by_form": 108,
+    "reported": 138,
+    "timeouts": 1
+   }
+  },
+  "noise 0": {
+   "route": {
+    "accurate_not_the_law": 12,
+    "errors": 1,
+    "n": 133,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 103,
+    "recovered_by_form": 102,
+    "reported": 115,
+    "timeouts": 1
+   },
+   "vouched": {
+    "accurate_not_the_law": 12,
+    "errors": 1,
+    "n": 133,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 103,
+    "recovered_by_form": 102,
+    "reported": 115,
+    "timeouts": 1
+   }
+  },
+  "noise 0.01": {
+   "route": {
+    "accurate_not_the_law": 24,
+    "errors": 0,
+    "n": 133,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 90,
+    "recovered_by_form": 90,
+    "reported": 114,
+    "timeouts": 0
+   },
+   "vouched": {
+    "accurate_not_the_law": 20,
+    "errors": 0,
+    "n": 133,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 47,
+    "recovered_by_form": 47,
+    "reported": 67,
+    "timeouts": 0
+   }
+  },
+  "strogatz": {
+   "route": {
+    "accurate_not_the_law": 2,
+    "errors": 0,
+    "n": 28,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 25,
+    "recovered_by_form": 25,
+    "reported": 27,
+    "timeouts": 0
+   },
+   "vouched": {
+    "accurate_not_the_law": 1,
+    "errors": 0,
+    "n": 28,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 17,
+    "recovered_by_form": 17,
+    "reported": 18,
+    "timeouts": 0
+   }
+  }
+ }
+}

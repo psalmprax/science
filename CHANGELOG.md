@@ -56,6 +56,14 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **What the last checks cost on the physics benchmark, recorded (2026-11-23).**
+  PREREG-VOUCHED-SRBENCH-2026-11, run once: behind the four searches the checks kept 150 of the
+  193 laws the route recovered (47 of 90 at 1 % noise) and stopped no inaccurate law, since none
+  of the route's 229 reports was inaccurate. Expectations 1 and 2 held (2 narrowly) and 3 (95 %
+  kept) missed. As fixed before the run they stay in force until the owner decides, and the cost
+  is stated first wherever the route is described (the status page, the README, the UI's status
+  block, the documentation). Cause: the power rule cannot see an error shaped like a rival that
+  parts from the law on a few rows (audit M-35, the blindness of M-34).
 - **The second red-team campaign recorded (2026-11-23).** 17,077 worlds on 150 new laws
   against the table route with its last checks. On randomly drawn worlds the checks let 17 wrong
   laws through in 3,980 reports, where the route alone reported 238 in 4,654; under the
