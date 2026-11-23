@@ -56,6 +56,18 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **A learning loop: the system learning from the laws its referee confirms (2026-11-23, development).**
+  `discovery_l2/learning_loop.py` feeds every law the route reports, the last checks vouch for and the
+  measured range allows into two learners. The memory of confirmed laws grows, which adds candidates.
+  The law language model (MMLM-L) orders the first pass, which only adds speed. The referee, the
+  checks and the thresholds never learn. Every learned law is journaled and can be retracted.
+  `scripts/run_learning_stream.py` compares a learning and a frozen arm over a stream of new laws.
+  Locally, without a search engine:
+  - starting from the memory in force, the two arms were equal after 19 laws (4 recovered each, no
+    wrong law), because that memory already held every part of this grammar's laws
+    (`benchmarks/learning_stream/dev_recorded_memory_partial.json`);
+  - starting from an empty memory, the first pass alone found too few laws to learn from.
+  `.github/workflows/learning-stream.yml` runs the stream with the default four searches. Not in force.
 - **A third version of the last checks, in development (2026-11-23).** The second version's weakness
   above 5 % noise (M-36) turned out to be mostly the pole problem (M-34). Of the 70 wrong laws it
   passed there, 66 have a pole among the rows. `discovery_l2/vouching_v3.py` is the second version
