@@ -1,11 +1,23 @@
 # What has been measured, and where the system stands
 
-Last updated 2026-11-22. This page is the short answer to "what does this system do, and how do you
+Last updated 2026-11-23. This page is the short answer to "what does this system do, and how do you
 know". Every line points at a preregistered run: the question, the method and the pass criteria were
 frozen by digest before the run, the run was made once, and the outputs are committed unedited under
 [`preregistration/`](../preregistration/). Where an expectation was missed, the result file says so
 and so does this page. The register of known defects is
 [`SYSTEM_FLAWS_AUDIT.md`](SYSTEM_FLAWS_AUDIT.md).
+
+**How to read "wrong", "accurate" and "recovered".** A reported law is *wrong* or *inaccurate* when
+its test R² on noise-free rows held back from the fit is below 0.999, the benchmarks' accuracy line.
+A law that is not wrong is either *recovered*, meaning the law itself up to its constants, or an
+*accurate approximation*. The headline wrong-law rates therefore say how often a reported law misled
+by more than the accuracy line. They do not say how often it was the law. Read the two together. In
+the last blind run behind the search (PREREG-VOUCHING-V2), 30 of the 61 laws the route in force
+reported were the law. The other 31 were accurate approximations: the law in 19 of 20 reports at
+noise 0, 8 of 24 at 1 % and 3 of 17 at 5 %. The UI's route record (`/api/discover/route`) states
+this claim with each reported table law. It also marks a table inside, at the edge of, or outside
+the conditions the route was measured on (`discovery_l2/measured_range.py`). The dashboard page
+does not show either yet, because it is in the v1.18 freeze record.
 
 ## The discovery routes
 
@@ -393,14 +405,15 @@ Nothing here changes what is in force; both kinds are open.
   report such a law, and reports nothing at all when no search stage was given.
 - **The main search alone reports laws in pure noise on return-like data** (M-16). Use the series
   route there.
-- **Above 1 % noise the table route's reports are not measured to hold, and at 5 % they did
-  not** (M-31, M-32): 16 of 88 laws wrong on handed counterfeits. The last checks, on request
-  since the owner took them out of the route in force on 2026-11-23, bring that to 2 of 55, at
-  the price of nearly half the laws recovered at 1 % noise on the physics benchmark (M-35); the interval for their rate reaches 12.5 %,
-  and the rule that decides whether an error could have been seen is too confident for errors of
-  shapes it does not try (M-33). A second red-team campaign found that they do not see an error
-  concentrated near a pole of the law, and are weaker on 60 to 300 rows (M-34). The trajectory and
-  series routes do not have these checks.
+- **Without last checks the table route's reports do not hold at 5 % noise** (M-31, M-32): 16 of
+  88 laws wrong on handed counterfeits, and behind the search 11 of 31 inaccurate. The second
+  version of the last checks, the route's last step since 2026-11-23, brought those to none of 189
+  handed reports and none of 17 behind the search (PREREG-VOUCHING-V2). **Above 5 % noise nothing
+  is measured to hold**, and there the second version is known to be weaker than the first (M-36).
+  Both versions miss an error concentrated near a pole of the law (M-34). The first version, now
+  only on request with `APEDP_TABLE_VOUCHING=first`, cost nearly half the laws recovered at 1 %
+  noise on the physics benchmark (M-35), and its rule for whether an error could have been seen
+  was too confident (M-33). The trajectory and series routes have no last checks.
 - **An exact fit can carry a term that contributes nothing** (M-15) in the main search and the ODE
   route; the refined path drops such terms on tables (nothing inaccurate in 212 reports on
   SRBench) and did not on window rows of trajectories: in PREREG-ODE-REFINED it kept

@@ -147,6 +147,8 @@ def _task(tmp_path: Path | None = None, **options) -> tuple[RewriteTask, StandIn
     check = options.pop("check", None) or StandIn()
     start = Start("the tiny circuit", START_BODY, INPUTS)
     options.setdefault("scopes", (SMALL, ALL))
+    # one draw a check: these tests count the checker's runs; the judge's re-draws are tested in test_judge_adversary.py
+    options.setdefault("redraws", 1)
     return RewriteTask(start, check, seconds_per_call=10.0, keep=tmp_path, **options), check
 
 

@@ -22,10 +22,22 @@ When modifying, auditing, or extending this codebase, you **MUST** follow these 
 - All preregistered thresholds (e.g. tactical active window $[5\%, 90\%]$, $DSR \ge 0.95$, Diebold-Mariano $p < 0.01$, literature $R^2 < 0.85$, referee FPR/CAR/VRR) are defined in [`specifications/canonical_preregistered_spec_v1.json`](specifications/canonical_preregistered_spec_v1.json).
 - `apedp_referee/canonical_spec.py` (also importable as `apedp_dyn.conf.canonical_spec`, the same module) enforces a SHA-256 hash check upon import. The referee package ships a byte-identical copy of the specification at `apedp_referee/canonical_preregistered_spec_v1.json`.
 - **Rule:** Never define arbitrary hardcoded threshold literals. Always import from `apedp_dyn.conf.canonical_spec` (or `apedp_referee.canonical_spec` inside the referee package). Never modify `canonical_preregistered_spec_v1.json` without updating its pinned hash, copying it into `apedp_referee/`, and documenting the rationale in `CHANGELOG.md`.
+- The discovery routes' thresholds are named in [`specifications/discovery_checks_v1.json`](specifications/discovery_checks_v1.json) and pinned by `apedp_dyn/conf/discovery_checks.py`: the accuracy line that defines a wrong law, and the last checks' level and power. The signed governance manifest does not cover that file yet.
+- **Rule:** Import a threshold by what it means. Never borrow an entry defined for another test because its value fits; if no named threshold means what is needed, add one, with a new pin, a `CHANGELOG.md` entry and the owner's word.
 
 ### 1.4 Documentary & Repository Integrity
 - **Rule:** Never claim a documentation file exists unless it is verified on disk within the repository workspace (e.g. `docs/`, `specifications/`, or the repo root). Do not confuse temporary IDE/CLI artifact folders (`~/.gemini/antigravity-cli/brain/...`) with the git repository workspace.
 - **Rule:** Keep `docs/DOCUMENTATION.md` updated whenever new modules, proposers, or epistemic gates are introduced.
+
+### 1.5 The Owner Decides What Is in Force
+- A preregistration fixes, before its run, what each outcome *proposes*: adopt, keep on request, not adopt. Fixing it in advance stops the result from being read to suit; it does not give the agent who wrote the plan the authority to change what the system runs.
+- **Rule:** A change to what is in force — a route, a default, a check added to or taken out of a path, a threshold — waits for the owner's explicit word, even where a preregistration fixed the consequence. Record the result, write the proposed change (as a module or a branch if useful), state it to the owner, and leave the default unchanged until they agree. An owner's decision is not reversed by a consequence written before or after it.
+- **Rule:** Where an agent has already changed what is in force without that word, it says so plainly and offers the switch that undoes it.
+
+### 1.6 Independent Review and Blind Tests the Builder Did Not Shape
+- The agent that builds a check also writes its benchmark, its expectations and its record. A preregistration stops goalposts moving after a run, not easy goalposts chosen before it.
+- **Rule:** Before a preregistration is frozen, and before its result is recorded, a separate reviewer that did not take part in the work checks it cold: the plan's denominators, limits and consequences against what the runner computes, and every number of the record against the raw outputs. Its findings, and what was done about each, go into the record.
+- **Rule:** A blind test of a check includes traps the check was not developed against: at least one arm drawn from a red-team search aimed at the frozen check after freezing, or from a generator other than the one used in development. A test whose traps all come from the development generator measures in-distribution performance and says so.
 
 ---
 

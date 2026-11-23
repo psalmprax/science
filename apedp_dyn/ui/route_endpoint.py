@@ -127,6 +127,8 @@ def route_reading(X: Mapping[str, Any], y: Any, *, route_name: str | None = None
             # the search stage did not run, or the last checks did not vouch for it
             "reported": bool(out["reported"]),
             "vouching": dict(out.get("vouching") or {}),
+            "measured_range": dict(out.get("measured_range") or {}),
+            "claim": vouched_route_v2.CLAIM if out["route"] == default_route.REFINED and out["reported"] else None,
             "tentative": out.get("tentative_law") is not None,
             "tentative_reason": out.get("tentative_reason"),
             "dropped_terms": [str(t) for t in out.get("dropped_terms", [])],
@@ -300,7 +302,11 @@ def status_block() -> dict[str, Any]:
             "evidence": vouched_route_v2.EVIDENCE,
             "cost": vouched_route_v2.EVIDENCE,
             "switch": f"{vouched_route_v2.ENVIRONMENT_VARIABLE}={vouched_route_v2.OFF}",
-            "first_version": f"{vouched_route_v2.ENVIRONMENT_VARIABLE}={vouched_route_v2.FIRST}"},
+            "first_version": f"{vouched_route_v2.ENVIRONMENT_VARIABLE}={vouched_route_v2.FIRST}",
+            "claim": vouched_route_v2.CLAIM,
+            "measured_range": ("each reading is marked inside, at the edge of, or outside the conditions the route was "
+                               "measured on: noise up to 5 %, up to three inputs, 700 rows to fit on; Gaussian noise and "
+                               "evenly spread rows cannot be checked from one table. The mark refuses nothing")},
         "caution": ("A law marked tentative was not challenged by any rival, or the last checks did not vouch for it: "
                     "the reason is shown with it. On return-like data use the series route; "
                     "the search alone reports laws in pure noise there. The UI passes no physical units, so the "

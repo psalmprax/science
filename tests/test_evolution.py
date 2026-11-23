@@ -526,12 +526,17 @@ def _problems() -> list[ep.Problem]:
 
 
 @needs_linux
-def test_the_judge_counts_the_laws_a_version_proposes_and_names_the_ones_it_missed():
+def test_the_judge_counts_the_laws_a_version_proposes_and_names_only_the_teaching_laws_it_missed():
     script = _script("run_search_evolution")
-    task = ep.CandidateGeneratorTask(_problems(), script.recovered, seconds_per_call=3.0)
+    problems = _problems()
+    task = ep.CandidateGeneratorTask(problems, script.recovered, seconds_per_call=3.0, teaching=problems[1:2])
     seed = task.evaluate(SEED_GENERATOR)
     assert seed.ran and seed.score[0] == 1.0 and seed.details["problems"]["reachable"]["solved"]
-    assert "2 problems where the law was not among the candidates" in seed.feedback and "exp(-0.7*x0)" in seed.feedback
+    assert "2 scored problems where the law was not among the candidates (their laws are not shown)" in seed.feedback
+    # a scored problem's law is never printed; the same law as a teaching problem is, apart from the score
+    scored_part, taught_part = seed.feedback.split("laws to learn from")
+    assert str(problems[1].truth) not in scored_part and str(problems[1].truth) in taught_part
+    assert all(str(p.truth) not in scored_part for p in problems)
     better = task.evaluate(script.IMPROVED_GENERATOR)
     assert better.ran and better.score[0] >= 2.0 and better.details["problems"]["inside"]["solved"]
     assert better.score > seed.score and "law proposed in" in better.summary

@@ -56,6 +56,32 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **Misalignments addressed, as far as they are in the agent's control (2026-11-23).**
+  - *The owner decides what is in force* (AGENTS.md 1.5): a consequence fixed before a run only
+    proposes. The second version of the last checks was put in force without the owner's word;
+    that is now stated with it, and `APEDP_TABLE_VOUCHING=off` undoes it.
+  - *Independent review and traps the builder did not shape* (AGENTS.md 1.6). The independent
+    review of RESULT-VOUCHING-V2 stopped on a usage limit before it reported. Until it can run,
+    `tests/test_result_vouching_v2_numbers.py` recomputes every count in that record's tables from
+    the raw rows, and all match. `preregistration/REVIEW-VOUCHING-V2-2026-11.md` says what is and is
+    not checked, and what rereading the record against the new rules shows.
+  - *Marking tables outside what was measured*: `discovery_l2/measured_range.py` marks each table
+    reading inside, at the edge of, or outside the measured conditions (noise up to 5 %, up to three
+    inputs, 700 rows to fit on). The route in force and the UI's route record (`/api/discover/route`)
+    carry the mark. It refuses nothing. The dashboard page does not show it yet: `ui/dashboard.html`
+    is in the v1.18 freeze record, and changing it needs a new freeze record, which is the owner's
+    call.
+  - *What a reported law claims*: the UI and the status page state that a reported law was accurate,
+    not that it is the law. In the last blind run behind the search, 30 of 61 reports were the law.
+  - *Thresholds named, not borrowed*: `specifications/discovery_checks_v1.json`, pinned by
+    `apedp_dyn/conf/discovery_checks.py`, names the accuracy line and the last checks' level and
+    power. The values are unchanged. Frozen modules are tested against the names, and the route in
+    force refuses to load if they differ. The trustees' signed manifest does not cover the file yet.
+  - *A scripted adversary against the evolution judges* (`tests/test_judge_adversary.py`) found two
+    holes, both repaired: the search judge showed the laws that scored it (M-37), and the circuit
+    judge could be won by drawing its cost again (M-38). Neither loop has met a real model yet.
+  - Text that disagreed with the code was corrected in `table_route.py`, the README and the status
+    page.
 - **The second version of the last checks is the table route's last step (2026-11-23).**
   PREREG-VOUCHING-V2-2026-11 was run once on GitHub Actions (run 45114039485) on 100 laws drawn
   after the module's last change, and all five expectations held. As fixed before the run,

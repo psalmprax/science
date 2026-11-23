@@ -307,6 +307,31 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-38 the circuit judge could be won by drawing its cost again — FOUND
+  AND REPAIRED 2026-11-23 BY A SCRIPTED ADVERSARY; not yet met by a real
+  model.** The checker's cost is one draw seeded by the circuit's bytes. A
+  version could return the given circuit with a new note (`INFO_TAG`) and so
+  draw again. With a stand-in checker whose noise is ten times the margin,
+  such no-op variants led the loop on lucky draws (`tests/test_judge_adversary.py`).
+  With noise as narrow as the ten recorded copies they could not, but the real
+  verifier's tails are not known. **Repair:** `RewriteTask` draws a circuit's
+  cost four times before it may lead or tie, the later draws with a note of the
+  judge's own, and scores the mean. If the draws differ by more than the margin,
+  the circuit counts as equal to the leader. This assumes the verifier seeds on
+  a note's bytes; the record says when every draw comes out the same.
+- **M-37 the search judge showed the model the laws that scored it — FOUND AND
+  REPAIRED 2026-11-23 BY A SCRIPTED ADVERSARY; not yet met by a real model.**
+  `CandidateGeneratorTask` printed the true law of each scored problem a
+  version missed. A version that kept a library of the laws it had been shown,
+  and returned whichever fit the rows, raised its score from 1 to 3 of 4
+  problems without proposing any new law; against the repaired judge it stays at 1 (`tests/test_judge_adversary.py`). The
+  validation laws still chose the champion, but the loop's search was steered
+  by a score that could be copied. **Repair:** a scored problem's law is never
+  shown. The model sees the true laws only of `teaching` problems
+  (`run_search_evolution.TEACH`, 20 laws drawn after the others), and those
+  count for nothing. What this does not repair: training, validation and
+  teaching laws all come from one grammar, so a version that learns the
+  grammar is rewarded everywhere (stated in the runner since it was written).
 - **M-36 the second version of the last checks lets more wrong laws through
   than the first above 5 % noise — FOUND 2026-11-23 IN DEVELOPMENT, OPEN; the
   second version has been the route's last step since the same day, tested up

@@ -1,0 +1,132 @@
+{
+ "summary": {
+  "cells": {
+   "blind handed | 1 to 5 % | not wrong": {
+    "estimate_over_truth_median": 0.9979,
+    "n": 74,
+    "states": {
+     "edge": 66,
+     "inside": 3,
+     "outside": 5
+    },
+    "truly_inside": 74
+   },
+   "blind handed | 1 to 5 % | wrong law": {
+    "estimate_over_truth_median": 1.0366,
+    "n": 18,
+    "states": {
+     "edge": 10,
+     "inside": 1,
+     "outside": 7
+    },
+    "truly_inside": 18
+   },
+   "blind handed | noise 0 | not wrong": {
+    "estimate_over_truth_median": null,
+    "n": 62,
+    "states": {
+     "inside": 62
+    },
+    "truly_inside": 62
+   },
+   "blind handed | up to 1 % | not wrong": {
+    "estimate_over_truth_median": 1.0055,
+    "n": 76,
+    "states": {
+     "inside": 76
+    },
+    "truly_inside": 76
+   },
+   "blind handed | up to 1 % | wrong law": {
+    "estimate_over_truth_median": 1.064,
+    "n": 1,
+    "states": {
+     "inside": 1
+    },
+    "truly_inside": 1
+   },
+   "campaign2 | 1 to 5 % | not wrong": {
+    "estimate_over_truth_median": 0.9959019763061021,
+    "n": 64,
+    "states": {
+     "edge": 1,
+     "inside": 63
+    },
+    "truly_inside": 64
+   },
+   "campaign2 | 1 to 5 % | wrong law": {
+    "estimate_over_truth_median": 1.0378386697344575,
+    "n": 25,
+    "states": {
+     "edge": 5,
+     "inside": 20
+    },
+    "truly_inside": 25
+   },
+   "campaign2 | above 5 % | not wrong": {
+    "estimate_over_truth_median": 0.9859778423060672,
+    "n": 32,
+    "states": {
+     "edge": 2,
+     "outside": 30
+    },
+    "truly_inside": 0
+   },
+   "campaign2 | above 5 % | wrong law": {
+    "estimate_over_truth_median": 1.0047961582166198,
+    "n": 79,
+    "states": {
+     "edge": 2,
+     "outside": 77
+    },
+    "truly_inside": 0
+   },
+   "campaign2 | noise 0 | not wrong": {
+    "estimate_over_truth_median": null,
+    "n": 117,
+    "states": {
+     "inside": 93,
+     "outside": 24
+    },
+    "truly_inside": 93
+   },
+   "campaign2 | noise 0 | wrong law": {
+    "estimate_over_truth_median": null,
+    "n": 20,
+    "states": {
+     "outside": 20
+    },
+    "truly_inside": 0
+   },
+   "campaign2 | up to 1 % | not wrong": {
+    "estimate_over_truth_median": 0.9981956766720572,
+    "n": 539,
+    "states": {
+     "inside": 438,
+     "outside": 101
+    },
+    "truly_inside": 438
+   },
+   "campaign2 | up to 1 % | wrong law": {
+    "estimate_over_truth_median": 1.0713880313609818,
+    "n": 124,
+    "states": {
+     "inside": 69,
+     "outside": 55
+    },
+    "truly_inside": 69
+   }
+  },
+  "false_alarms_inside": [
+   5,
+   807
+  ],
+  "missed_outside": [
+   0,
+   311
+  ],
+  "missed_outside_by_reason": {},
+  "records": 1231
+ },
+ "what": "development check of discovery_l2/measured_range.py on recorded worlds; not a result"
+}

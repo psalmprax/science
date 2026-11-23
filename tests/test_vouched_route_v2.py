@@ -47,6 +47,8 @@ def test_by_default_a_wrong_law_is_withheld_and_the_law_is_kept(monkeypatch) -> 
     assert wrong["vouching"]["evidence"] == vouched_route_v2.EVIDENCE
     right = vouched_route_v2.checked(_record(LAW), X, y, pool)
     assert right["reported"] is True and right["law"] == LAW and right["vouching"]["applied"] is True
+    # every record carries the mark; this table lies inside what was measured
+    assert right["measured_range"]["state"] == "inside" and wrong["measured_range"]["state"] in ("outside", "edge")
 
 
 def test_off_gives_the_route_as_it_is_and_first_gives_the_first_version(monkeypatch) -> None:
@@ -61,7 +63,7 @@ def test_off_gives_the_route_as_it_is_and_first_gives_the_first_version(monkeypa
     assert mine["vouching"]["version"] == "first"
     strip = {"version", "note"}
     assert {k: v for k, v in mine["vouching"].items() if k not in strip} == theirs["vouching"]
-    assert {k: v for k, v in mine.items() if k not in ("refined", "vouching")} == {
+    assert {k: v for k, v in mine.items() if k not in ("refined", "vouching", "measured_range")} == {
         k: v for k, v in theirs.items() if k not in ("refined", "vouching")}
 
 
@@ -84,7 +86,8 @@ def test_the_whole_route_and_what_it_stands_on(monkeypatch) -> None:
     columns = {"a": X[:, 0], "b": X[:, 1]}
     out = vouched_route_v2.discover_law(columns, y, pool, lambda rows: -4.0 * pool[rows, 0] - 0.2 * pool[rows, 1])
     plain = default_route.discover_law(columns, y, pool, lambda rows: -4.0 * pool[rows, 0] - 0.2 * pool[rows, 1])
-    assert set(out) == set(plain) | {"vouching"} and out["law_as_confirmed"] == plain["law_as_confirmed"]
+    assert set(out) == set(plain) | {"vouching", "measured_range"} and out["law_as_confirmed"] == plain["law_as_confirmed"]
+    assert out["measured_range"]["state"] in ("inside", "edge", "outside", "unknown")
     # it stands on a recorded run in which all five expectations held
     summary = json.loads((ROOT / "preregistration" / "RESULT-VOUCHING-V2-2026-11" / "results.json").read_text())["summary"]
     assert all(summary["expectations"][f"{k}_holds"] for k in range(1, 6))

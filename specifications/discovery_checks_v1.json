@@ -1,0 +1,29 @@
+{
+ "name": "discovery_checks_v1",
+ "thresholds": {
+  "DISCOVERY_ACCURACY_R2": {
+   "defined_before_as": [
+    "scripts/run_srbench_baseline.py R2_ACCURACY",
+    "apedp_dyn/discovery_l2/vouching.py ACCURACY_R2",
+    "apedp_dyn/evolution/evolved_proposer.py ACCURATE_R2"
+   ],
+   "meaning": "A reported law is accurate when its R-squared on noise-free rows held back from the fit is at least this; below it the law is wrong. It defines 'wrong' and 'inaccurate' in every discovery benchmark.",
+   "value": 0.999
+  },
+  "LAST_CHECKS_MIN_POWER": {
+   "defined_before_as": [
+    "apedp_dyn/discovery_l2/vouching.py POWER = canonical TEMPORAL_RATE_CALIBRATION_POWER_MIN, a threshold for calibrating temporal rate models"
+   ],
+   "meaning": "The power the last checks must have against an error large enough to make a law wrong; with less, the law is withheld.",
+   "value": 0.8
+  },
+  "LAST_CHECKS_TEST_LEVEL": {
+   "defined_before_as": [
+    "apedp_dyn/discovery_l2/vouching.py LEVEL = canonical DIEBOLD_MARIANO_P_VALUE_THRESHOLD, a threshold for comparing forecasts"
+   ],
+   "meaning": "The family level at which the last checks' tests refuse a law; the second version runs two tests at half of it each.",
+   "value": 0.01
+  }
+ },
+ "what": "Thresholds of the discovery routes' last checks and of their benchmarks, each named by what it means. Until 2026-11-23 the accuracy line was a bare literal in three files and the checks' level and power were borrowed from canonical-spec entries defined for other tests. The values are unchanged; only their names and their pin are new. Loaded by apedp_dyn/conf/discovery_checks.py, which checks this file's SHA-256. Not covered by the signed governance manifest until the trustees sign it."
+}

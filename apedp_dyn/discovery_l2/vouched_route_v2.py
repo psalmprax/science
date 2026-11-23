@@ -8,7 +8,11 @@ last step of the route in force for tables, in a new module around the frozen
 ones, with its cost and benefit here stated wherever the route is described,
 and M-34 and M-36 stated as open: it was tested up to 5 % noise only, and
 above that it is known to be weaker than the first version." All five held.
-``default_route``, ``vouching``, ``vouching_v2``, ``vouched_route`` and
+**It was put in force by the agent on that consequence, without the owner's
+word, hours after the owner had taken the first version out.** AGENTS.md 1.5,
+written afterwards, says that a consequence fixed before a run only proposes:
+it stays in force until the owner says, and ``APEDP_TABLE_VOUCHING=off``
+undoes it. ``default_route``, ``vouching``, ``vouching_v2``, ``vouched_route`` and
 ``table_route`` are not edited. Code that wants "the route for a table" calls
 ``discover_law`` here.
 
@@ -49,7 +53,8 @@ from typing import Any
 
 import numpy as np
 
-from apedp_dyn.discovery_l2 import default_route, vouched_route, vouching_v2
+from apedp_dyn.conf import discovery_checks
+from apedp_dyn.discovery_l2 import default_route, measured_range, vouched_route, vouching_v2
 from apedp_dyn.grammar.proposer_interface import ProposerBase
 
 ENVIRONMENT_VARIABLE = vouched_route.ENVIRONMENT_VARIABLE
@@ -62,6 +67,15 @@ EVIDENCE = "preregistration/RESULT-VOUCHING-V2-2026-11.md"
 DECISION = ("the second version is the last step of the route in force since 2026-11-23, by the consequence "
             "PREREG-VOUCHING-V2-2026-11 fixed before its run; all five expectations held")
 NOT_VOUCHED = vouched_route.NOT_VOUCHED
+#: what a reported law claims, and what it does not; the numbers are RESULT-VOUCHING-V2's searched part
+if (vouching_v2.ACCURACY_R2, vouching_v2.LEVEL, vouching_v2.POWER) != (
+        discovery_checks.DISCOVERY_ACCURACY_R2, discovery_checks.LAST_CHECKS_TEST_LEVEL, discovery_checks.LAST_CHECKS_MIN_POWER):
+    raise discovery_checks.DiscoveryChecksIntegrityError(
+        "the checks in force no longer use the named thresholds of specifications/discovery_checks_v1.json")
+CLAIM = ("Measured claim: the laws this route reports were accurate on noise-free rows held back from the fit "
+         f"(test R\u00b2 at least {discovery_checks.DISCOVERY_ACCURACY_R2}), within the measured range. It is not a claim that this is the law: in the last "
+         "blind run behind the search, 30 of the 61 laws reported were the law itself and the other 31 accurate "
+         "approximations (the law in 19 of 20 at noise 0, 8 of 24 at 1 %, 3 of 17 at 5 %).")
 
 
 def version() -> str:
@@ -80,6 +94,24 @@ def in_force() -> bool:
 
 
 def checked(record: Mapping[str, Any], X: Mapping[str, np.ndarray], Y: np.ndarray, pool_X: np.ndarray) -> dict[str, Any]:
+    """The record after the last checks in force, with ``measured_range``: whether this table lies inside what was measured.
+
+    The mark (``discovery_l2/measured_range.py``) reads the reported law, or
+    the tentative one, on the rows it was fitted on. It refuses nothing.
+    """
+    out = _checked(record, X, Y, pool_X)
+    names = [str(name) for name in X]
+    law = out.get("law") or out.get("tentative_law")
+    rows_X = np.column_stack([np.asarray(X[name], dtype=float) for name in X]) if names else np.empty((len(Y), 0))
+    try:
+        out["measured_range"] = measured_range.assess(str(law) if law else None, names, rows_X, np.asarray(Y, dtype=float),
+                                                      route=out.get("route"), measured_route=default_route.REFINED)
+    except Exception as exc:  # noqa: BLE001 - a mark that cannot be made says so; the law is not touched
+        out["measured_range"] = {"state": measured_range.UNKNOWN, "reasons": [f"{type(exc).__name__}: {exc}"[:200]]}
+    return out
+
+
+def _checked(record: Mapping[str, Any], X: Mapping[str, np.ndarray], Y: np.ndarray, pool_X: np.ndarray) -> dict[str, Any]:
     """The record of ``default_route.discover_law`` after the last checks in force.
 
     As in ``vouched_route.checked``: a reported law stays, gives way to another

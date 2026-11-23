@@ -76,10 +76,12 @@ def test_the_second_version_of_the_last_checks_is_in_force(monkeypatch):
     assert block["in_force"] is True and block["version"] == "second" and "2026-11-23" in block["decision"]
     assert block["switch"] == "APEDP_TABLE_VOUCHING=off" and block["first_version"] == "APEDP_TABLE_VOUCHING=first"
     assert block["measured"].startswith("Cost first") and (Path(__file__).resolve().parents[1] / block["cost"]).is_file()
+    assert block["claim"] == vouched_route_v2.CLAIM and "refuses nothing" in block["measured_range"]
+    assert withheld["claim"] is None and withheld["measured_range"]["state"] in ("inside", "edge", "outside", "unknown")
     # switched off, the route's law is reported as it is, and the record says why
     monkeypatch.setenv(vouched_route_v2.ENVIRONMENT_VARIABLE, "off")
     plain = route_endpoint.route_reading(columns, target)
-    assert plain["reported"] is True and "m*v**2" in plain["law"]
+    assert plain["reported"] is True and "m*v**2" in plain["law"] and plain["claim"] == vouched_route_v2.CLAIM
     assert plain["vouching"]["in_force"] is False and plain["vouching"]["applied"] is False
     assert route_endpoint.status_block()["last_step"]["in_force"] is False
     # "on", which asked for the first version while it was on request only, still does

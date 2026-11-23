@@ -13,9 +13,12 @@ checks around it.
 
 **Problems.** ``TRAIN + VALIDATION`` laws drawn by the invented-law generator
 (``build_invented_laws``) with another seed. A structure that occurs in the benchmark is left out,
-by its fingerprint: no law of the benchmark is read, held back or not. The model is shown what a
-version missed on the training laws; the validation laws are never shown to it and only choose the
-champion among the leading versions.
+by its fingerprint: no law of the benchmark is read, held back or not. The training laws score a
+version; the model is told what a version returned on the ones it missed, never their laws. The
+``TEACH`` laws after them are run too and count for nothing: those are the laws the model is shown
+when a version misses them. Until 2026-11-23 the training laws' own truths were shown, and a
+scripted adversary memorised them (``tests/test_judge_adversary.py``). The validation laws are
+never shown to it and only choose the champion among the leading versions.
 
 **The judge** (``evolved_proposer.CandidateGeneratorTask``): on each law, 300 rows with 1 % noise
 go to the candidate in its jail; it returns up to four candidate laws as text; the law counts as
@@ -66,6 +69,7 @@ from apedp_dyn.evolution.seed_generator import SEED_GENERATOR  # noqa: E402
 TAG = "DEV-SEARCH-EVOLUTION-2026-11"
 PROBLEM_SEED = 20261122         # not the benchmark's
 TRAIN, VALIDATION = 40, 40
+TEACH = 20                      # laws whose truths the model may see; they count for nothing (drawn after the others)
 ROWS, TEST_ROWS = 300, 200
 NOISE = 0.01
 SECONDS_PER_CALL = 3.0
@@ -113,12 +117,13 @@ def recovered(expr: sp.Expr, problem: Problem) -> bool:
     return bool(base.symbolic_recovery(expr, problem.truth, problem.names, problem.X_test)["recovered"])
 
 
-def tasks(train: int = TRAIN, validation: int = VALIDATION, seconds_per_call: float = SECONDS_PER_CALL
-          ) -> tuple[CandidateGeneratorTask, CandidateGeneratorTask]:
-    """The judge on the training laws (whose misses the model is shown) and on the validation laws (never shown)."""
-    problems = [problem_of(law) for law in draw_laws(train + validation)]
-    return (CandidateGeneratorTask(problems[:train], recovered, seconds_per_call=seconds_per_call),
-            CandidateGeneratorTask(problems[train:], recovered, seconds_per_call=seconds_per_call))
+def tasks(train: int = TRAIN, validation: int = VALIDATION, seconds_per_call: float = SECONDS_PER_CALL,
+          teach: int = TEACH) -> tuple[CandidateGeneratorTask, CandidateGeneratorTask]:
+    """The judge on the training laws (scored; their laws never shown) with the teaching laws beside them, and on the validation laws."""
+    problems = [problem_of(law) for law in draw_laws(train + validation + teach)]
+    return (CandidateGeneratorTask(problems[:train], recovered, seconds_per_call=seconds_per_call,
+                                   teaching=problems[train + validation:]),
+            CandidateGeneratorTask(problems[train:train + validation], recovered, seconds_per_call=seconds_per_call))
 
 
 def choose_champion(archive: loop.Archive, validation: CandidateGeneratorTask, among: int = CHAMPION_AMONG

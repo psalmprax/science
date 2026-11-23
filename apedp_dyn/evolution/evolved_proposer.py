@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 import sympy as sp
 
+from apedp_dyn.conf import discovery_checks
 from apedp_dyn.evolution import jail, restricted
 from apedp_dyn.evolution.operator import Contract, Evaluation
 from apedp_dyn.grammar.proposer_interface import CandidateProposal, ProposerBase, StrategyArchetype
@@ -48,7 +49,7 @@ MAX_CANDIDATES = 4          # candidates of one call that are read; the path con
 MAX_TEXT = 400              # characters of one candidate that are read
 MAX_NUMBERS = 12            # constants one candidate may carry
 MAX_EXPONENT = 12.0         # the largest constant power
-ACCURATE_R2 = 0.999         # the benchmarks' own threshold for an accurate law
+ACCURATE_R2 = discovery_checks.DISCOVERY_ACCURACY_R2   # the benchmarks' own threshold for an accurate law
 WORTH_CHECKING_R2 = 0.9     # a candidate below this on clean rows is not checked for the law's form
 
 CONTRACT = Contract(
@@ -164,20 +165,32 @@ class Problem:
 
 
 class CandidateGeneratorTask:
-    """The judge of ``propose`` versions on problems with known laws."""
+    """The judge of ``propose`` versions on problems with known laws.
+
+    **The laws that score a version are never shown to the model** (since
+    2026-11-23). Before then the feedback printed the true law of each problem
+    a version missed. Those same problems made the score, so a version could
+    fingerprint a problem by its rows and return the law it had been shown. A
+    scripted adversary did exactly that (``tests/test_judge_adversary.py``).
+    Now the feedback names the true law only for ``teaching`` problems, which
+    are run and reported but count for nothing. For a scored problem it says
+    what the version returned and how accurate it was, never the law.
+    """
 
     contract = CONTRACT
 
     def __init__(self, problems: Sequence[Problem], recovered: Callable[[sp.Expr, Problem], bool], *,
-                 seconds_per_call: float = 3.0, shown_failures: int = 6) -> None:
+                 seconds_per_call: float = 3.0, shown_failures: int = 6, teaching: Sequence[Problem] = ()) -> None:
         self.problems = list(problems)
+        self.teaching = list(teaching)
         self._recovered = recovered
         self._seconds = float(seconds_per_call)
         self._shown = int(shown_failures)
 
     def evaluate(self, code: str) -> Evaluation:
+        everything = self.problems + self.teaching
         try:
-            run = jail.run(code, FUNCTION, [[p.X, p.y, p.names] for p in self.problems], parameters=3,
+            run = jail.run(code, FUNCTION, [[p.X, p.y, p.names] for p in everything], parameters=3,
                            seconds_per_call=self._seconds)
         except restricted.RejectedCodeError as exc:
             return Evaluation(False, error=f"refused before running: {exc}")
@@ -189,13 +202,16 @@ class CandidateGeneratorTask:
             return Evaluation(False, error=f"failed on every problem; the first: {first}")
         solved = accurate = returned = refused_total = 0
         missed: list[str] = []
+        taught: list[str] = []
         per_problem: dict[str, dict[str, Any]] = {}
-        errors = [c.error for c in run.calls if not c.ok]
-        for problem, call in zip(self.problems, run.calls, strict=True):
+        errors = [c.error for c in run.calls[:len(self.problems)] if not c.ok]
+        for index, (problem, call) in enumerate(zip(everything, run.calls, strict=True)):
+            teaching = index >= len(self.problems)
             n_vars = problem.X.shape[1]
             expressions, refused = read_candidates(call.result, n_vars) if call.ok else ([], 0)
-            refused_total += refused
-            returned += len(expressions)
+            if not teaching:                             # the score's counts are the scored problems' alone
+                refused_total += refused
+                returned += len(expressions)
             truth = _values(problem.truth, n_vars, problem.X_test)
             spread = float(np.sum((truth - truth.mean()) ** 2))
             best_r2, best_text, found = -np.inf, "", False
@@ -206,15 +222,19 @@ class CandidateGeneratorTask:
                     best_r2, best_text = r2, str(expr)
                 if not found and r2 >= WORTH_CHECKING_R2 and self._recovered(expr, problem):
                     found = True
+            per_problem[f"teaching: {problem.name}" if teaching else problem.name] = {"solved": found, "best_r2": None if not np.isfinite(best_r2) else round(best_r2, 6),
+                                         "candidates": len(expressions), "refused": refused, "teaching": teaching,
+                                         "error": "" if call.ok else call.error}
+            shown = f"best returned: {best_text[:120]} (R2 {best_r2:.4f})" if best_text else \
+                ("returned nothing usable" if call.ok else f"failed: {call.error[:80]}")
+            if teaching:
+                if not found:
+                    taught.append(f"  law {problem.truth} | {shown}")
+                continue
             solved += found
             accurate += bool(best_r2 >= ACCURATE_R2)
-            per_problem[problem.name] = {"solved": found, "best_r2": None if not np.isfinite(best_r2) else round(best_r2, 6),
-                                         "candidates": len(expressions), "refused": refused,
-                                         "error": "" if call.ok else call.error}
             if not found:
-                shown = f"best returned: {best_text[:120]} (R2 {best_r2:.4f})" if best_text else \
-                    ("returned nothing usable" if call.ok else f"failed: {call.error[:80]}")
-                missed.append(f"  law {problem.truth} | {shown}")
+                missed.append(f"  a problem with {n_vars} input{'s' if n_vars != 1 else ''} | {shown}")
         n = len(self.problems)
         average = returned / n
         summary = (f"law proposed in {solved} of {n} problems, an accurate candidate in {accurate}, "
@@ -224,8 +244,14 @@ class CandidateGeneratorTask:
             notes.append(f"  {len(errors)} calls failed; the first: {errors[0][:120]}")
         if refused_total:
             notes.append(f"  {refused_total} returned strings were not readable as expressions and were dropped")
-        feedback = "\n".join([f"  {n - solved} problems where the law was not among the candidates; some of them:",
-                              *missed[: self._shown], *notes]) if missed else "  the law was proposed in every problem"
+        feedback = "\n".join([f"  {n - solved} scored problems where the law was not among the candidates (their laws "
+                              "are not shown); some of them:", *missed[: self._shown]]) if missed else \
+            "  the law was proposed in every scored problem"
+        if taught:
+            feedback += "\n" + "\n".join(["  laws to learn from, which count for nothing in the score; missed here:",
+                                          *taught[: self._shown]])
+        if notes:
+            feedback += "\n" + "\n".join(notes)
         return Evaluation(True, (float(solved), float(accurate), -round(average, 2)), summary, feedback,
                           details={"problems": per_problem, "seconds": round(run.seconds, 2), "failed_calls": len(errors),
                                    "refused_strings": refused_total, "processes_killed": run.restarts})

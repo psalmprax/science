@@ -86,6 +86,9 @@ SECONDS_PER_CALL = 60.0
 INPUTS = 22                          # Benchmark I: x has 2 * 10 + 2 bits
 GENERATOR = "circuit-rewrite-v1"
 MIN_GAIN = 2e-4                      # of the leading cost: what a circuit has to save to lead (see "a sample" above)
+#: draws of the cost a circuit gets on the deciding check before it may lead or tie (see ``RewriteTask``)
+REDRAWS = 4
+REDRAW_NOTE = "judge redraw {k}"
 PASS_STATUS, FAIL_STATUS, ERROR_STATUS = "PASS", "FAIL", "ERROR"
 
 
@@ -161,10 +164,27 @@ def _table(profile: dict[str, Any]) -> str:
 
 
 class RewriteTask:
-    """The judge of ``rewrite`` versions: a strict reader and a checker behind a starting circuit."""
+    """The judge of ``rewrite`` versions: a strict reader and a checker behind a starting circuit.
+
+    **Cost shopping** (since 2026-11-23). The checker's cost is one draw, seeded
+    by the circuit's bytes. A version can change the bytes without changing
+    the circuit, by a note (``INFO_TAG``) or a pair of gates that cancel, and
+    so draw again. Returned many times, such no-op variants eventually draw a
+    cost low enough to lead by ``MIN_GAIN``. A scripted adversary showed it
+    (``tests/test_judge_adversary.py``). So before a circuit may lead or tie,
+    the judge draws its cost ``redraws`` times on the deciding check. The draws
+    after the first are the same circuit with a note of the judge's own
+    appended. The circuit's score is the mean of the draws. Notes do nothing to
+    a circuit, so this assumes the verifier seeds on the note's bytes as on
+    any other. If every draw comes out the same, the record says so, and then
+    the draws protect nothing. If the draws of one circuit differ among
+    themselves by more than the margin, the margin is too small for this
+    checker's noise. The circuit then counts as equal to the leading one, and
+    the record and the feedback say so.
+    """
 
     def __init__(self, start: Start, check: Checker, *, scopes: Sequence[Scope] = DEVELOPMENT, keep: Path | None = None,
-                 seconds_per_call: float = SECONDS_PER_CALL, min_gain: float = MIN_GAIN) -> None:
+                 seconds_per_call: float = SECONDS_PER_CALL, min_gain: float = MIN_GAIN, redraws: int = REDRAWS) -> None:
         if not scopes:
             raise ValueError("a judge needs at least one scope")
         self.start = start
@@ -173,6 +193,7 @@ class RewriteTask:
         self._keep = keep
         self._seconds = float(seconds_per_call)
         self._min_gain = float(min_gain)
+        self._redraws = max(1, int(redraws))
         self._judged: dict[str, Evaluation] = {}
         self._leader: list[float] | None = None        #: the leading circuit's cost on every scope
         self.checked: Counter[str] = Counter()         #: how often the checker was run, by scope
@@ -255,6 +276,24 @@ class RewriteTask:
         except (OSError, subprocess.SubprocessError, ValueError, RuntimeError) as exc:
             return Verdict(ERROR_STATUS, said=f"the checker could not be run: {type(exc).__name__}: {exc}"[:300])
 
+    def _redrawn(self, text: str, directory: str, digest: str, passed: list[tuple[Scope, Verdict]]) -> list[float]:
+        """The deciding check's cost drawn ``redraws`` times, if the first draw would lead or tie; else nothing."""
+        if self._redraws < 2 or not passed or passed[-1][1].cost is None:
+            return []
+        first = float(passed[-1][1].cost)
+        level = len(passed) - 1
+        if self._leader is not None and first > self._leader[level] * (1.0 + self._min_gain):
+            return []                                    # clearly worse: a lucky draw could not make it lead
+        draws = [first]
+        for k in range(1, self._redraws):
+            path = Path(directory) / f"{digest[:16]}-{k}.kmx"
+            path.write_text(text + f'INFO_TAG "{REDRAW_NOTE.format(k=k)}"\n', encoding="utf-8")
+            verdict = self._checked(path, passed[-1][0])
+            if verdict.status != PASS_STATUS or verdict.cost is None:
+                return []                                # the same circuit with a note failed: keep the one draw
+            draws.append(float(verdict.cost))
+        return draws
+
     def _leads(self, cost: float, level: int) -> bool:
         """Cheaper than the leading circuit on scope ``level`` by more than two like circuits differ."""
         return self._leader is None or cost < self._leader[level] * (1.0 - self._min_gain)
@@ -278,15 +317,23 @@ class RewriteTask:
                 verdicts.append((scope, verdict))
                 if verdict.status != PASS_STATUS or verdict.cost is None:
                     break
+            passed = [(scope, verdict) for scope, verdict in verdicts if verdict.status == PASS_STATUS and verdict.cost is not None]
+            draws = self._redrawn(text, directory, digest, passed) if len(passed) == len(self.scopes) else []
         passed = [(scope, verdict) for scope, verdict in verdicts if verdict.status == PASS_STATUS and verdict.cost is not None]
         complete = len(passed) == len(self.scopes)
         level = len(passed) - 1
         last_cost = float(passed[-1][1].cost or 0.0) if passed else 0.0
+        if draws:
+            last_cost = sum(draws) / len(draws)
+            passed[-1] = (passed[-1][0], dataclasses.replace(passed[-1][1], cost=last_cost))
+        # the margin is what two like circuits differ by; if one circuit's own draws differ by more, it is too small
+        noisy = len(draws) > 1 and (max(draws) - min(draws)) > self._min_gain * last_cost
         leader_cost = self._leader[level] if passed and self._leader is not None else None
-        tied = leader_cost is not None and abs(last_cost - leader_cost) <= leader_cost * self._min_gain
+        tied = leader_cost is not None and (abs(last_cost - leader_cost) <= leader_cost * self._min_gain
+                                            or (noisy and last_cost < leader_cost))
         if complete:
             costs = [float(verdict.cost) for _, verdict in passed if verdict.cost is not None]
-            if self._leads(costs[-1], level):
+            if self._leads(costs[-1], level) and not (noisy and self._leader is not None):
                 self._leader = costs
             if self._keep is not None:
                 self._keep.mkdir(parents=True, exist_ok=True)
@@ -296,7 +343,9 @@ class RewriteTask:
                    "profile": {k: v for k, v in profile.items() if k not in ("along", "stages", "instructions")},
                    "verdicts": [{"scope": scope.name, "status": v.status, "cost": v.cost, "qubits": v.qubits,
                                  "toffoli": v.toffoli, "said": v.said, **v.facts} for scope, v in verdicts],
-                   "skipped": skipped}
+                   "skipped": skipped, "cost_draws": draws,
+                   "draws_all_equal": bool(len(draws) > 1 and len(set(draws)) == 1),
+                   "draws_differ_by_more_than_the_margin": bool(noisy)}
         change = (f"  the circuit you returned: {_numbers(profile)}\n"
                   f"  the circuit you were given: {_numbers(self.profile)}")
         if not passed:
@@ -321,6 +370,9 @@ class RewriteTask:
             summary += f"; then {word} on {failed_scope.name}"
         if skipped:
             lines.append(f"  {skipped}")
+        if noisy:
+            lines.append(f"  the judge drew its cost {len(draws)} times and the draws differ by more than {self._min_gain:.2%}: "
+                         "a difference this size cannot be told from the checker's noise")
         if tied and leader_cost is not None:
             lines.append(f"  the leading circuit costs {leader_cost:,.2f} on the same check; two circuits that behave alike "
                          f"differ by up to {self._min_gain:.2%}, so this one counts as equal to it")

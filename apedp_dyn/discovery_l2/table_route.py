@@ -17,8 +17,8 @@ advance that if they kept at least 75 % but less than 95 % of the laws the
 route recovers, they would stay in force until the repository's owner
 decided. They kept 78 %. **On 2026-11-23 the owner decided to take them out of
 the route in force.** ``vouched_route`` and ``vouching`` are frozen by that
-run's digest and are not edited; code that wants "the route for a table" calls
-``discover_law`` here.
+run's digest and are not edited; code that wanted "the route for a table"
+called ``discover_law`` here until the second version replaced it.
 
 **The evidence behind the decision**
 (``preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md``): on SRBench, 133 laws at
@@ -33,9 +33,10 @@ M-35). Their measured benefit is elsewhere: on counterfeits of 60 new laws at
 where the preregistered runs measured (noise up to 1 %), and at 5 % noise they
 did not (16 of 88 wrong on counterfeits; audit M-31, M-32).
 
-``APEDP_TABLE_VOUCHING=on`` applies the checks, exactly as ``vouched_route``
-does. A repaired version goes back in force only after it has been run on both
-benchmarks and on laws drawn after it was written.
+In this module ``APEDP_TABLE_VOUCHING=on`` applies the checks, exactly as
+``vouched_route`` does. The repaired version went back in force the same day,
+after it had been run on laws drawn after it was written; on the physics
+benchmark it was only replayed, in development (``vouched_route_v2``).
 """
 from __future__ import annotations
 
