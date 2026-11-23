@@ -12,11 +12,12 @@ M-10), and return-like series need their own route (PREREG-MARKET-PLANTED).
 
 This module is what the endpoints call for that. It decides nothing itself:
 
-* ``route_reading`` runs ``discovery_l2.vouched_route.discover_law`` on tabular
-  rows (the default route unless one is named, with the checks of
-  ``discovery_l2/vouching.py`` as its last step since 2026-11-22) and returns a
-  JSON-safe record. A law the checks do not let through is shown as tentative,
-  with the check it failed. The UI has no physical units for a table, so the
+* ``route_reading`` runs ``discovery_l2.table_route.discover_law`` on tabular
+  rows (the default route unless one is named) and returns a JSON-safe record.
+  The last checks of ``discovery_l2/vouching.py`` were its last step from
+  2026-11-22 and were taken out on 2026-11-23 by the owner's decision on
+  PREREG-VOUCHED-SRBENCH; with ``APEDP_TABLE_VOUCHING=on`` they run, and a law
+  they do not let through is shown as tentative, with the check it failed. The UI has no physical units for a table, so the
   refined path runs without its units reduction here.
 * ``series_reading`` runs ``discovery_l2.series_route`` on rows in time order;
   ``market_series_reading`` does that on a market window's train slice.
@@ -50,7 +51,7 @@ from typing import Any
 import numpy as np
 from fastapi import Depends, FastAPI
 
-from apedp_dyn.discovery_l2 import default_route, series_route, vouched_route
+from apedp_dyn.discovery_l2 import default_route, series_route, table_route, vouched_route
 from apedp_dyn.market.assets import compute_strictly_causal_features, load_series_with_dates
 from apedp_dyn.orchestration.competition import RETIRED_ENGINES
 from apedp_dyn.ui.helpers import _audit, _json_obj, _require_api_key
@@ -114,14 +115,14 @@ def route_reading(X: Mapping[str, Any], y: Any, *, route_name: str | None = None
         dev, pool = order[:cut], order[cut:]
         pool_y = target[pool]
         proposer, stage = _proposer(_search_budget(search_seconds))
-        out = vouched_route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
+        out = table_route.discover_law({n: columns[dev, i] for i, n in enumerate(names)}, target[dev], columns[pool],
                                          lambda rows: pool_y[rows], ledger=None, search_id="ui", route_name=chosen,
                                          proposer=proposer, noise=noise, seed=seed)
         result = out["main_search"]
         record.update({
             "route": out["route"], "action": out["action"], "law": out["law"], "law_as_confirmed": out["law_as_confirmed"],
             # a law that is not reported is shown apart, with the reason: nothing challenged it (audit M-14),
-            # the search stage did not run, or the last checks did not vouch for it (audit M-31, M-32)
+            # the search stage did not run, or the last checks, where requested, did not vouch for it
             "reported": bool(out["reported"]),
             "vouching": dict(out.get("vouching") or {}),
             "tentative": out.get("tentative_law") is not None,
@@ -280,19 +281,20 @@ def status_block() -> dict[str, Any]:
                                        "which the ODE route was not measured on (ODEBench systems are autonomous, several trajectories)"),
         },
         "last_step": {
-            "in_force": vouched_route.vouching_in_force(),
+            "in_force": table_route.checks_requested(),
+            "decision": table_route.DECISION,
             "what": ("checks on a law the refined path is about to report: structure left in its residuals, members of "
                      "an unseparated class that disagree, and whether an error large enough to make it wrong could "
                      "have been seen. A law that fails is shown as tentative with the reason"),
             "measured": ("Cost first: on SRBench behind the four searches they kept 150 of the 193 laws the route "
                          "recovered (47 of 90 at 1 % noise) and stopped nothing, since no report there was inaccurate; "
-                         "one expectation missed, in force until the owner decides "
+                         "one expectation missed, and the owner took them out of the route in force on 2026-11-23 "
                          "(preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md). On 60 new laws handed over with their "
                          "counterfeits, noise 0, 1 % and 5 %: wrong laws 16 of 229 reports before the checks and 2 of "
                          "191 after, all at 5 % noise; 139 of 146 right laws kept"),
             "evidence": vouched_route.EVIDENCE,
             "cost": "preregistration/RESULT-VOUCHED-SRBENCH-2026-11.md",
-            "switch": f"{vouched_route.ENVIRONMENT_VARIABLE}={vouched_route.OFF}"},
+            "switch": f"{table_route.ENVIRONMENT_VARIABLE}={table_route.ON}"},
         "caution": ("A law marked tentative was not challenged by any rival, or the last checks did not vouch for it: "
                     "the reason is shown with it. On return-like data use the series route; "
                     "the search alone reports laws in pure noise there. The UI passes no physical units, so the "

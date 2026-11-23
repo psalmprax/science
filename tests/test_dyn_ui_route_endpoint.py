@@ -48,17 +48,14 @@ def test_a_law_found_without_the_search_stage_is_tentative_and_not_reported():
     assert not (earlier["reported"] and earlier["tentative"])
 
 
-def test_the_reading_goes_through_the_last_checks_and_says_what_they_did(monkeypatch):
-    """Since PREREG-COUNTERFEIT's result the route's last step is ``vouching``; a law it withholds is shown, not reported."""
-    from apedp_dyn.discovery_l2 import vouched_route, vouching
+def test_the_last_checks_run_only_on_request_since_the_owners_decision(monkeypatch):
+    """Taken out of the route in force on 2026-11-23 (RESULT-VOUCHED-SRBENCH); ``APEDP_TABLE_VOUCHING=on`` applies them."""
+    from pathlib import Path
 
-    columns, target = _kinetic()
-    reading = route_endpoint.route_reading(columns, target)
-    state = reading["vouching"]
-    assert state["in_force"] is True and state["evidence"].endswith("RESULT-COUNTERFEIT-2026-11.md")
-    assert state["applied"] is False and state["why_not"] == "the route reported no law"      # no search stage: nothing reported
+    from apedp_dyn.discovery_l2 import table_route, vouching
 
-    # with a law reported by the route, checks that do not vouch for it make it tentative, with the reason
+    monkeypatch.delenv(table_route.ENVIRONMENT_VARIABLE, raising=False)
+
     def as_if_reported(*args, **kwargs):
         out = real(*args, **kwargs)
         out.update({"law": out["law_as_confirmed"], "reported": True, "tentative_law": None, "tentative_reason": None})
@@ -66,22 +63,22 @@ def test_the_reading_goes_through_the_last_checks_and_says_what_they_did(monkeyp
 
     real = default_route.discover_law
     monkeypatch.setattr(default_route, "discover_law", as_if_reported)
-    passed = route_endpoint.route_reading(columns, target)
-    assert passed["reported"] is True and passed["vouching"]["applied"] is True and "m*v**2" in passed["law"]
     monkeypatch.setattr(vouching, "vouch", lambda law, *a, **k: vouching.Vouched(None, "every candidate left structure in its residuals"))
-    withheld = route_endpoint.route_reading(columns, target)
-    assert withheld["reported"] is False and withheld["law"] is None and withheld["tentative"] is True
-    assert withheld["tentative_reason"] == "not vouched for: every candidate left structure in its residuals"
-    assert "m*v**2" in withheld["law_as_confirmed"]                                           # still shown
-    monkeypatch.setenv(vouched_route.ENVIRONMENT_VARIABLE, "off")
-    off = route_endpoint.route_reading(columns, target)
-    assert off["reported"] is True and off["vouching"]["in_force"] is False
+    columns, target = _kinetic()
+    # by default the checks do not run, and the record says why
+    plain = route_endpoint.route_reading(columns, target)
+    assert plain["reported"] is True and "m*v**2" in plain["law"]
+    assert plain["vouching"]["in_force"] is False and plain["vouching"]["applied"] is False
+    assert "owner's decision" in plain["vouching"]["why_not"] and plain["vouching"]["evidence"] == table_route.EVIDENCE
     block = route_endpoint.status_block()["last_step"]
-    assert block["in_force"] is False and block["evidence"] == vouched_route.EVIDENCE and "2 of 191" in block["measured"]
-    # the cost on the physics benchmark is stated first, as PREREG-VOUCHED-SRBENCH fixed for a missed third expectation
-    assert block["measured"].startswith("Cost first") and block["cost"].endswith("RESULT-VOUCHED-SRBENCH-2026-11.md")
-    from pathlib import Path
-    assert (Path(__file__).resolve().parents[1] / block["cost"]).is_file()
+    assert block["in_force"] is False and "2026-11-23" in block["decision"] and block["switch"] == "APEDP_TABLE_VOUCHING=on"
+    assert block["measured"].startswith("Cost first") and (Path(__file__).resolve().parents[1] / block["cost"]).is_file()
+    # on request they run, and a law they do not vouch for is shown as tentative, with the reason
+    monkeypatch.setenv(table_route.ENVIRONMENT_VARIABLE, "on")
+    withheld = route_endpoint.route_reading(columns, target)
+    assert withheld["vouching"]["applied"] is True and withheld["reported"] is False and withheld["law"] is None
+    assert withheld["tentative_reason"] == "not vouched for: every candidate left structure in its residuals"
+    assert "m*v**2" in withheld["law_as_confirmed"] and route_endpoint.status_block()["last_step"]["in_force"] is True
 
 
 def test_bad_data_gives_a_record_with_the_reason_and_no_law():

@@ -56,6 +56,13 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **The last checks taken out of the table route in force, by the owner's decision (2026-11-23).**
+  PREREG-VOUCHED-SRBENCH fixed that with its third expectation missed and its second held the
+  owner would decide. The owner decided to take them out. `discovery_l2/table_route.py`, a new
+  module around the frozen ones, is the route in force for tables: the default route, with the
+  checks applied only when `APEDP_TABLE_VOUCHING=on`. The UI's route endpoint calls it and its
+  status block says so. Audit M-31 and M-32 are reopened. A repaired version returns only after
+  it has been run on both benchmarks and on laws drawn after it was written.
 - **What the last checks cost on the physics benchmark, recorded (2026-11-23).**
   PREREG-VOUCHED-SRBENCH-2026-11, run once: behind the four searches the checks kept 150 of the
   193 laws the route recovered (47 of 90 at 1 % noise) and stopped no inaccurate law, since none

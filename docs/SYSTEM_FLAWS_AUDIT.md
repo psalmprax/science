@@ -308,8 +308,9 @@ three preregistered expectations missed.
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
 - **M-35 the last checks withhold right laws whose rivals part from them on a
-  few rows — FOUND 2026-11-23 IN PREREG-VOUCHED-SRBENCH, OPEN; the checks stay
-  in force until the owner decides.** The power rule plants an error in the
+  few rows — FOUND 2026-11-23 IN PREREG-VOUCHED-SRBENCH, OPEN; the owner took
+  the checks out of the route in force the same day
+  (`discovery_l2/table_route.py`; on request with `APEDP_TABLE_VOUCHING=on`).** The power rule plants an error in the
   shape of each rival's difference from the law and withholds the law if the
   structure test would miss it. On the physics benchmark the rivals come from
   four searches, and many part from the law sharply on a few rows (a median
@@ -375,8 +376,9 @@ three preregistered expectations missed.
   noise.
 - **M-32 the path's last check lets through an error a third the size of the
   noise — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN; REPAIRED FOR TABLES
-  2026-11-22 BY CHECKS AROUND THE PATH, on a preregistered run; the frozen
-  path is unchanged.** `main_search.adequacy` passes a
+  2026-11-22 BY CHECKS AROUND THE PATH, on a preregistered run; REOPENED
+  2026-11-23: the checks were taken out of the route in force for their cost
+  (M-35) and are applied on request; the frozen path is unchanged.** `main_search.adequacy` passes a
   law if the leave-one-out R² of each residual from its eight nearest rows'
   residuals is at most 0. For noise alone that statistic is about -1/8, so
   the check only refuses structure worth an eighth of the residual variance.
@@ -404,7 +406,9 @@ three preregistered expectations missed.
 - **M-31 when candidates cannot be told apart the route reports the one with
   the shortest description — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN AND IN
   TWO BLIND RUNS THE SAME DAY; REPAIRED FOR TABLES 2026-11-22 BY CHECKS AROUND
-  THE PATH, on a preregistered run; the frozen path is unchanged.** `contrast_confirmation` may measure thirty rows; where
+  THE PATH, on a preregistered run; REOPENED 2026-11-23: the checks were taken
+  out of the route in force for their cost (M-35) and are applied on request;
+  the frozen path is unchanged.** `contrast_confirmation` may measure thirty rows; where
   that does not separate the candidates the verdict is `equivalent_class` and
   the simplest member is reported. **Evidence:** of the 13,426 wrong laws the
   campaign found, 11,929 came out of such a class, and in 5,365 of them the
