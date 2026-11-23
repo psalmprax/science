@@ -307,6 +307,26 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-34 the last checks do not see an error concentrated near a pole of the
+  law — FOUND 2026-11-23 BY THE SECOND RED-TEAM CAMPAIGN, OPEN.** A law whose
+  denominator reaches zero inside the domain (`3.7/((x0 + 3.7)*(sin(2.9*x1) +
+  0.7))`) has counterfeits that put the pole slightly off: wrong by orders of
+  magnitude on the rows next to it, right elsewhere. The structure test asks
+  whether a residual is predicted by its neighbours', and an error on one or
+  two rows is not; the power rule plants smooth shapes and is confident.
+  **Evidence** (`benchmarks/red_team_checks_campaign.json`): 1,468 of the
+  1,816 wrong laws the climb got past the checks are of three such laws,
+  most with 60 to 140 rows, and 7 of the 17 the random survey found. On
+  randomly drawn worlds of all arenas the checks let through 17 wrong laws
+  in 3,980 reports, where the route alone reported 238 in 4,654; under the
+  measured conditions none. **Effect:** a law with a pole is not vouched for
+  by these checks near the pole; and whether a law that is wrong only there
+  should count as wrong is itself a question the accuracy line answers
+  crudely (one test row near the pole decides it). **Not repaired.** A rule
+  for heavy-tailed residuals (the largest residuals' share, against the same
+  sign-flip null) or a refusal to vouch where the law's own values span many
+  orders of magnitude would have to be written and run on laws drawn after
+  it.
 - **M-33 the power rule's estimate is too high for an error of another shape
   than those it plants — FOUND 2026-11-22 IN THE BLIND RUN OF THE CHECKS,
   OPEN.** `vouching.power_to_see` plants an error of the size that makes a
@@ -322,9 +342,22 @@ three preregistered expectations missed.
   R² 0.9982) the rule said 97 % and the refits give 95: that one was the miss
   the rule permits. **Effect:** at 5 % noise 2 of the 55 laws the checks
   passed were wrong (3.6 %, interval 0.4 to 12.5 %); the limit is 5 % and was
-  met on the count. **Not repaired.** A repair would plant the error, refit
-  the law and test again, in the shape the law's own form leaves; it has to
-  be written and then run on laws drawn after it.
+  met on the count. **Not repaired.** Why the estimate is too high: fitting
+  a law's constants removes from its residuals whatever part of an error
+  those constants can absorb, so what is left of a real error is rougher
+  than the shapes the rule plants, and harder to see. **A repair, sketched
+  and not built:** plant only the part of each shape that the law's own
+  constants cannot absorb (the shape made orthogonal to the law's gradient
+  in its constants), with shapes up to the fourth degree, and withhold where
+  no shape is left to try. Tried in a scratch script on the benchmark's own
+  rows after its run (development, and chosen after reading the two
+  failures): both wrong laws would have been withheld, 144 of the 146 right
+  laws kept, 36 of 43 approximations kept. That proves nothing until it is
+  written as a module and run on laws drawn after it. **The second red-team
+  campaign** (2026-11-23) found 259 more of this kind among the wrong laws
+  it got past the checks: polynomials of the route's own library with test
+  R² between 0.99 and 0.999, on 60 to 300 rows or at several per cent of
+  noise.
 - **M-32 the path's last check lets through an error a third the size of the
   noise — FOUND 2026-11-22 BY THE RED-TEAM CAMPAIGN; REPAIRED FOR TABLES
   2026-11-22 BY CHECKS AROUND THE PATH, on a preregistered run; the frozen

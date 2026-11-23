@@ -44,10 +44,11 @@ inferred releases.
   75 % are kept the checks are taken out of the route in force; between 75 and 95 % they stay
   until the owner decides, with the cost stated first.
 - **The second campaign's laws file is its definition, not a generator check (2026-11-22).** On
-  GitHub's runners the generator did not give `benchmarks/red_team_checks_laws.json` byte for
-  byte (it fits every counterfeit by least squares and rounds the constants), so the campaign's
-  first attempt stopped before any world was run. The comparison is now a job of its own that
-  prints how a fresh draw differs, and the campaign does not wait for it.
+  the runner of the campaign's first attempt the generator did not give
+  `benchmarks/red_team_checks_laws.json` byte for byte (it fits every counterfeit by least
+  squares and rounds the constants), so that attempt stopped before any world was run. On the
+  second attempt's runner it did. The comparison is now a job of its own that prints how a
+  fresh draw differs, and the campaign does not wait for it.
 - **The quantum ledger now says what the inverse-square-root verifier checks (audit M-30,
   2026-11-22).** `quantum_compilation/candidates.py` listed `invsqrt` as priced only, with the
   reason that its verifier "does not simulate it on shots". It simulates every shot and raises
@@ -55,6 +56,14 @@ inferred releases.
   measurement of value, workspace and phase, with the verifier's check as the source of each;
   a receipt that is not such a pass says nothing about them. Which statuses can be reached is
   unchanged, and no recorded ledger carried the old text.
+- **The second red-team campaign recorded (2026-11-23).** 17,077 worlds on 150 new laws
+  against the table route with its last checks. On randomly drawn worlds the checks let 17 wrong
+  laws through in 3,980 reports, where the route alone reported 238 in 4,654; under the
+  conditions of the preregistered runs none (the route alone 2); 2,885 of 3,012 right laws kept.
+  The climb found 1,816 wrong laws that pass them, of two kinds: laws with a pole inside the
+  domain, whose counterfeits are wrong only next to it (1,468; audit M-34, open), and
+  polynomials just inside the accuracy line on few rows or more noise (259; M-33). Nothing in
+  force is changed by it.
 - **A second red-team campaign, aimed at the checks (2026-11-22).** `scripts/run_red_team_checks.py`:
   the first campaign's survey and climb, on 150 new laws, with the route's report after the
   checks as the decision under attack and a wrong law that passes them as what the climb pushes

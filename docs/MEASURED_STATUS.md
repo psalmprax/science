@@ -293,6 +293,40 @@ As fixed before the run the checks are now the last step of the table route
   that are not uniform or noise that is not Gaussian, on trajectories or series; and nothing has
   searched for data that defeats them.
 
+## A second search, aimed at the checks: they hold where the runs measured, and two ways around them were found
+
+**Development by its nature.** `scripts/run_red_team_checks.py`, run once on 2026-11-23 (GitHub
+Actions run `45081289544`): 17,077 worlds on 150 laws the checks had never met
+(`benchmarks/red_team_checks_campaign.json`, every world in
+`benchmarks/red_team_checks_worlds.jsonl.gz`). The decision under attack is the table route's
+report after its last checks; the climb pushed towards a wrong law that passes them.
+
+| Worlds drawn at random | Route: reported, wrong | After the checks: reported, wrong | Right laws kept |
+| :--- | ---: | ---: | ---: |
+| The conditions of the preregistered runs | 1,353, 2 | 1,262, **0** | 1,052 of 1,061 |
+| Fewer rows (60 to 300) | 690, 35 | 612, 10 | 439 of 464 |
+| Rows that do not cover the box evenly | 929, 11 | 874, 0 | 597 of 600 |
+| Noise of another shape | 553, 8 | 496, 0 | 377 of 383 |
+| More noise (1 to 10 %) | 1,129, 182 | 736, 7 | 420 of 504 |
+| All | 4,654, 238 (5.1 %) | 3,980, **17 (0.4 %)** | 2,885 of 3,012 (96 %) |
+
+On the worlds changed step by step the climb found 1,816 wrong laws the checks passed, all of 8
+laws. **Two kinds account for nearly all of them** (audit M-34, M-33):
+
+- **A law with a pole in the domain** (a denominator such as `sin(2.9*x1) + 0.7` that reaches
+  zero): 1,468. A counterfeit that puts the pole a little off is wrong by thousands of times the
+  law's spread on the few rows near it and right everywhere else. The checks look for an error
+  that is smooth across neighbouring rows, and an error on two rows is not; with 60 to 140 rows
+  there is often no row near the pole at all.
+- **A polynomial of the route's own library inside 1 % of the accuracy line**, on few rows or at
+  several per cent of noise: 259, test R² between 0.99 and 0.999. This is M-33 again.
+
+The checks never failed on a world and never let a wrong law through where the climb started
+from the measured conditions (1,322 worlds). **What it means:** the checks hold where the
+preregistered runs measured and where they were tested blind; they do not protect a law whose
+error sits in a corner of the data, and with few rows they are weaker than the record suggests.
+Nothing here changes what is in force; both kinds are open.
+
 ## Developed and not taken to a preregistered run
 
 | What | What development showed | Why it stopped there |
@@ -334,7 +368,9 @@ As fixed before the run the checks are now the last step of the table route
   not** (M-31, M-32): 16 of 88 laws wrong on handed counterfeits. The last checks, in force for
   tables since 2026-11-22, brought that to 2 of 55; the interval for their rate reaches 12.5 %,
   and the rule that decides whether an error could have been seen is too confident for errors of
-  shapes it does not try (M-33). The trajectory and series routes do not have these checks.
+  shapes it does not try (M-33). A second red-team campaign found that they do not see an error
+  concentrated near a pole of the law, and are weaker on 60 to 300 rows (M-34). The trajectory and
+  series routes do not have these checks.
 - **An exact fit can carry a term that contributes nothing** (M-15) in the main search and the ODE
   route; the refined path drops such terms on tables (nothing inaccurate in 212 reports on
   SRBench) and did not on window rows of trajectories: in PREREG-ODE-REFINED it kept
