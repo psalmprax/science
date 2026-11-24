@@ -33,6 +33,9 @@ a run in which the judge moved cannot report a gain.
 **Settings.** A searcher's settings are checked against ``SETTINGS``: only the
 names listed there, inside their bounds. No setting names a threshold, a test
 level or anything the referee reads, so a search over settings cannot reach them.
+``search_seconds`` is the time given to the route's own search stage
+(``discovery_l2.search_stage``, as measured and in force); a searcher may give
+it less or more time inside the bounds, and cannot change what it is.
 """
 from __future__ import annotations
 
@@ -69,6 +72,7 @@ SEALED_TREES = ("apedp_referee",)
 
 #: the only settings a searcher has: name -> (lowest, highest, whole number)
 SETTINGS: dict[str, tuple[float, float, bool]] = {
+    "search_seconds": (0.0, 120.0, False),      # the route's search stage; 0 leaves it out
     "memory_seconds": (0.0, 120.0, False),
     "library_seconds": (0.0, 120.0, False),
     "library_blocks": (0, 48, True),

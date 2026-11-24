@@ -62,8 +62,8 @@ import numpy as np
 
 from apedp_dyn.conf.discovery_checks import DISCOVERY_ACCURACY_R2
 from apedp_dyn.discovery_l2 import learning_loop
-from apedp_dyn.discovery_l2.evolved_stage import SideBySide
 from apedp_dyn.grammar.proposer_interface import ProposerBase
+from apedp_dyn.proposers.composed import CompositeProposer
 from apedp_dyn.proposers.fit_guard import FitGuardProposer
 from apedp_dyn.proposers.structure_memory import Memory
 from apedp_dyn.recursion import judge
@@ -72,8 +72,9 @@ from apedp_dyn.recursion.library import Library, LibraryProposer
 from apedp_dyn.recursion.progress import Measurement, verdict
 
 TARGET = "__target__"
-DEFAULT_SETTINGS: dict[str, float | int] = {"memory_seconds": 10.0, "library_seconds": 10.0, "library_blocks": 16,
-                                            "library_top": 6, "library_proposals": 3}
+DEFAULT_SETTINGS: dict[str, float | int] = {"search_seconds": 0.0, "memory_seconds": 10.0, "library_seconds": 10.0,
+                                            "library_blocks": 16, "library_top": 6, "library_proposals": 3}
+MAX_PROPOSALS = 10      # candidates of a stage the path confirms, as in the measured search stage
 NO_MODEL = "no coding model was provided; the code of the generator was not varied"
 
 
@@ -97,8 +98,17 @@ class Searcher:
             state.learn(law, source="recursion")
         return state
 
-    def proposer(self) -> ProposerBase | None:
+    def proposer(self, seed: int = 0) -> ProposerBase | None:
+        """What stands beside the first pass and the memory: the route's searches, the library, a generator's code.
+
+        The searches are the stage in force (``search_stage.default_search_stage``: four different searches where four
+        cores are free, else one), unchanged, for ``search_seconds``. Members answer in turn, each one's best first.
+        """
         parts: list[ProposerBase] = []
+        if self.settings["search_seconds"] > 0:
+            from apedp_dyn.discovery_l2.search_stage import default_search_stage
+
+            parts.append(default_search_stage(float(self.settings["search_seconds"]), seed=seed)[0])
         if self.settings["library_seconds"] > 0 and self.settings["library_blocks"] > 0 and self.laws:
             parts.append(FitGuardProposer(LibraryProposer(
                 self.library(), max_proposals=int(self.settings["library_proposals"]),
@@ -109,7 +119,7 @@ class Searcher:
             parts.append(FitGuardProposer(EvolvedProposer(self.code, target_col=TARGET), target_col=TARGET))
         if not parts:
             return None
-        return parts[0] if len(parts) == 1 else SideBySide(parts[0], parts[1])
+        return parts[0] if len(parts) == 1 else CompositeProposer(parts, max_proposals=MAX_PROPOSALS)
 
     def as_dict(self) -> dict[str, Any]:
         return {"settings": dict(self.settings), "laws": list(self.laws), "code": self.code}
@@ -133,7 +143,7 @@ def solve(searcher: Searcher, problem: Problem) -> dict[str, Any]:
     try:
         record = learning_loop.discover_law(
             {n: rows["X"][:, i] for i, n in enumerate(names)}, rows["y"], rows["pool_X"], lambda idx: rows["pool_y"][idx],
-            state=searcher.state(), proposer=searcher.proposer(), learn=False, source=problem.key, seed=seed,
+            state=searcher.state(), proposer=searcher.proposer(seed), learn=False, source=problem.key, seed=seed,
             memory_seconds=float(searcher.settings["memory_seconds"]))
     except Exception as exc:  # noqa: BLE001 - a problem the route cannot run is counted unsolved, with its error
         return {"key": problem.key, "level": problem.level, "noise": problem.noise, "reported": False, "solved": False,
@@ -163,7 +173,7 @@ def tally(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     cpu = float(sum(r["cpu_seconds"] for r in rows))
     solved = sum(r["solved"] for r in rows)
     return {"problems": len(rows), "solved": solved, "accurate": sum(r.get("accurate", r["solved"]) for r in rows),
-            "wrong": sum(r["wrong"] for r in rows),
+            "wrong": sum(r["wrong"] for r in rows), "errors": sum("error" in r for r in rows),
             "reported": sum(r["reported"] for r in rows), "cpu_seconds": round(cpu, 2),
             "per_cpu_hour": round(solved / (cpu / 3600.0), 3) if cpu > 0 else 0.0}
 
@@ -250,10 +260,13 @@ def code_step(searcher: Searcher, client: Callable[[str], str] | None, teaching:
     return best.code, report
 
 
-def generation(searcher: Searcher, curriculum: Curriculum, meta: Meta, k: int, *, measure: int, workers: int = 1,
-               client: Callable[[str], str] | None = None, carried: Sequence[Problem] = (), sealed: dict[str, str] | None = None,
-               rng: np.random.Generator | None = None) -> tuple[Searcher, dict[str, Any], list[Problem]]:
-    """One generation of Level 1; returns the searcher that came out, the record, and the study problems left unsolved."""
+def improve(searcher: Searcher, curriculum: Curriculum, meta: Meta, k: int, *, workers: int = 1,
+            client: Callable[[str], str] | None = None, carried: Sequence[Problem] = (), sealed: dict[str, str] | None = None,
+            rng: np.random.Generator | None = None) -> tuple[Searcher, dict[str, Any], list[Problem]]:
+    """Steps 1 to 3 of a generation: study, vary the settings, vary the code. No measurement.
+
+    Returns the searcher that came out, the record, and the study problems left unsolved.
+    """
     if sealed is not None:
         judge.check(sealed)
     rng = rng or np.random.default_rng(k)
@@ -278,7 +291,12 @@ def generation(searcher: Searcher, curriculum: Curriculum, meta: Meta, k: int, *
     incumbent, chosen = tally(incumbent_rows), grown
     tried = []
     for _ in range(meta.variants):
-        copy = replace(grown, settings=vary_settings(dict(grown.settings), meta.step, rng))
+        moved = vary_settings(dict(grown.settings), meta.step, rng)
+        for _again in range(20):                       # a copy equal to the incumbent would be run for nothing
+            if moved != grown.settings:
+                break
+            moved = vary_settings(dict(grown.settings), meta.step, rng)
+        copy = replace(grown, settings=moved)
         copy_rows = run_batch(copy, deciding, workers)
         spent += sum(r["cpu_seconds"] for r in copy_rows)
         score = tally(copy_rows)
@@ -300,14 +318,26 @@ def generation(searcher: Searcher, curriculum: Curriculum, meta: Meta, k: int, *
         if report["selection"]["adopted"]:
             chosen = with_code
     record["code"] = report
-    # 4. measure
+    record["cpu_seconds_improving"] = round(spent, 2)
+    return chosen, record, unsolved
+
+
+def measurement_of(k: int, rows: Sequence[dict[str, Any]]) -> Measurement:
+    counts = tally(rows)
+    return Measurement(k, counts["problems"], counts["solved"], counts["wrong"], counts["reported"], counts["cpu_seconds"],
+                       counts["accurate"])
+
+
+def generation(searcher: Searcher, curriculum: Curriculum, meta: Meta, k: int, *, measure: int, workers: int = 1,
+               client: Callable[[str], str] | None = None, carried: Sequence[Problem] = (), sealed: dict[str, str] | None = None,
+               rng: np.random.Generator | None = None) -> tuple[Searcher, dict[str, Any], list[Problem]]:
+    """One generation of Level 1: ``improve``, then the measurement on problems drawn for it alone."""
+    chosen, record, unsolved = improve(searcher, curriculum, meta, k, workers=workers, client=client, carried=carried,
+                                       sealed=sealed, rng=rng)
     if sealed is not None:
         judge.check(sealed)
     measured = run_batch(chosen, curriculum.measurement(measure, f"measurement {k}"), workers)
-    counts = tally(measured)
-    record["measurement"] = Measurement(k, counts["problems"], counts["solved"], counts["wrong"], counts["reported"],
-                                        counts["cpu_seconds"], counts["accurate"]).as_dict()
-    record["cpu_seconds_improving"] = round(spent, 2)
+    record["measurement"] = measurement_of(k, measured).as_dict()
     record["rows"] = {"measurement": measured}
     return chosen, record, unsolved
 
@@ -361,6 +391,35 @@ def vary_meta(meta: Meta, rng: np.random.Generator) -> Meta:
     return replace(meta, retry=not meta.retry)
 
 
+def metas_for_round(incumbent: Meta, metas: int, seed: int, r: int) -> list[Meta]:
+    """The ways compared in round ``r``: the incumbent first, then variants of it. The same in every process."""
+    rng = np.random.default_rng([seed, r])
+    tried = [incumbent]
+    for _ in range(200):
+        if len(tried) == max(metas, 1):
+            break
+        copy = vary_meta(incumbent, rng)
+        if copy not in tried:
+            tried.append(copy)
+    return tried
+
+
+def level2_tag(r: int, index: int) -> str:
+    return f"level2 round {r} meta {index}"
+
+
+def round_record(r: int, tried: Sequence[Meta], runs: Sequence[dict[str, Any]]) -> tuple[dict[str, Any], Meta]:
+    """One round's entry and the way it chose: the largest gain in ``g`` per CPU-hour spent."""
+    best = max(range(len(runs)), key=lambda i: runs[i]["gain_per_cpu_hour"])
+    entry = {"round": r, "incumbent": tried[0].as_dict(), "chosen": tried[best].as_dict(), "changed": best != 0,
+             "runs": [{"meta": run["meta"], "gain_per_cpu_hour": run["gain_per_cpu_hour"],
+                       "g": run["progress"].get("g"), "verdict": run["progress"]["verdict"],
+                       "cpu_seconds": run["cpu_seconds"], "measurements": run["measurements"],
+                       "settings": run["searcher"]["settings"], "laws_known": len(run["searcher"]["laws"])}
+                      for run in runs]}
+    return entry, tried[best]
+
+
 def run_level2(start: Searcher, *, rounds: int, metas: int, generations: int, seed: int, meta: Meta | None = None,
                measure: int = 20, workers: int = 1, client: Callable[[str], str] | None = None, first_round: int = 1,
                on_run: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
@@ -377,31 +436,18 @@ def run_level2(start: Searcher, *, rounds: int, metas: int, generations: int, se
     incumbent = meta or Meta()
     history = []
     for r in range(first_round, first_round + rounds):
-        rng = np.random.default_rng([seed, r])
         judge.check(sealed)
-        tried = [incumbent]
-        for _ in range(200):
-            if len(tried) == max(metas, 1):
-                break
-            copy = vary_meta(incumbent, rng)
-            if copy not in tried:
-                tried.append(copy)
+        tried = metas_for_round(incumbent, metas, seed, r)
         runs = []
         for i, m in enumerate(tried):
             runs.append(run_level1(start, generations=generations, meta=m, seed=seed, measure=measure, workers=workers,
-                                   client=client, tag=f"level2 round {r} meta {i}"))
+                                   client=client, tag=level2_tag(r, i)))
             if on_run is not None:
                 on_run({"round": r, "index": i, "meta": m.as_dict(), "gain_per_cpu_hour": runs[-1]["gain_per_cpu_hour"],
                         "measurements": runs[-1]["measurements"], "progress": runs[-1]["progress"],
                         "cpu_seconds": runs[-1]["cpu_seconds"], "settings": runs[-1]["searcher"]["settings"]})
-        best = max(range(len(runs)), key=lambda i: runs[i]["gain_per_cpu_hour"])
-        history.append({"round": r, "incumbent": incumbent.as_dict(), "chosen": tried[best].as_dict(), "changed": best != 0,
-                        "runs": [{"meta": run["meta"], "gain_per_cpu_hour": run["gain_per_cpu_hour"],
-                                  "g": run["progress"].get("g"), "verdict": run["progress"]["verdict"],
-                                  "cpu_seconds": run["cpu_seconds"], "measurements": run["measurements"],
-                                  "settings": run["searcher"]["settings"], "laws_known": len(run["searcher"]["laws"])}
-                                 for run in runs]})
-        incumbent = tried[best]
+        entry, incumbent = round_record(r, tried, runs)
+        history.append(entry)
     judge.check(sealed)
     return {"rounds": history, "meta": incumbent.as_dict(), "sealed_files": len(sealed),
             "note": "the chosen way of improving won on the runs that chose it; a round in which the incumbent wins "

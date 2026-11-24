@@ -186,6 +186,16 @@ class Curriculum:
     used_up: set[int] = field(default_factory=set)         #: levels with no law left to draw
     _excluded: frozenset[str] = field(default_factory=benchmark_fingerprints)
 
+    def as_dict(self) -> dict[str, Any]:
+        """Everything a later process needs to go on drawing without repeating a law."""
+        return {"seed": self.seed, "level": self.level, "seen": sorted(self.seen), "history": list(self.history),
+                "used_up": sorted(self.used_up)}
+
+    @classmethod
+    def from_dict(cls, record: dict[str, Any]) -> Curriculum:
+        return cls(int(record["seed"]), float(record["level"]), set(record.get("seen", [])), list(record.get("history", [])),
+                   {int(level) for level in record.get("used_up", [])})
+
     def _open_level(self, level: int) -> int | None:
         """The nearest level at or above ``level`` with laws left (below it if none above); ``None`` if none is left."""
         order = [*range(level, len(LEVELS)), *range(level - 1, -1, -1)]

@@ -60,13 +60,24 @@ inferred releases.
   the library only, without the searches that recover most laws on the physics benchmark, so
   the finder solved 8 of the 120 measurement problems and gives the library almost nothing to
   learn from.
+  **With the route's searches (asked for by the owner, 2026-11-24).** `search_seconds` is a sixth
+  bounded setting: the search stage in force (four searches side by side) beside the memory and
+  the library, off unless asked for. A problem then costs minutes of CPU, so Level 1 runs as
+  steps in separate jobs (`recursion/chain.py`, `.github/workflows/recursion-searches.yml`):
+  every generation's measurement problems are drawn before anything runs, 48 a generation, and
+  each generation is measured twice on the same problems, with the searcher as it stands and
+  with the searcher the run began with. That second arm is new: the rate moved between
+  generations with how hard a batch happened to be, and a comparison problem by problem takes
+  that out. Level 2's three ways are three jobs a round. Running on GitHub
+  (`recursion-search-run-1`); no result yet.
   **What the loop cannot change** (`judge`): the referee package, both threshold files, the
   route, the last checks, the measured range, the learning gate, the curriculum and the progress
   test are sealed by SHA-256 at the start of a run and checked at every generation; a searcher
-  has five bounded settings and none is a threshold. The generator's code is varied only with a
+  has bounded settings only (five at first, six with the search stage's seconds) and none is a
+  threshold. The generator's code is varied only with a
   coding model the owner provides; none has been, and the step records that it did not run.
   `z3-solver` joins the `test` extra; `smt` answers "not decided" without it.
-  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (55).
+  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (61).
   The first GitHub run (`recursion-run-1`) stopped at its second study batch: the curriculum had
   moved down to level 0, which has under ten distinct laws, and asked it for more. A study batch
   now takes such a slot from the next level up and records the level as used up; a measurement

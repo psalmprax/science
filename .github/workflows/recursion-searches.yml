@@ -1,0 +1,546 @@
+name: Recursion levels with the route's searches (development)
+
+# Development, not a result: scripts/run_recursion.py with the search stage in force (four searches side
+# by side for SEARCHES seconds) switched on in Level 0. A problem then costs minutes, so the levels are
+# cut into jobs.
+#
+# Level 1 (apedp_dyn/recursion/chain.py): `plan` seals the judge and draws every generation's measurement
+# problems before anything runs; `improve-k` is generation k's study and settings copies, from generation
+# k-1's state; `measure-k` runs, in two shards, the searcher as it stands and the starting searcher on the
+# same problems; `collect` joins them, gives the verdict on the rate, and counts problem by problem what
+# the current searcher gained and lost against the starting one.
+#
+# Level 2: each round's three ways of running Level 1 are three jobs; `choose` keeps the best; round 2
+# starts from what round 1 chose.
+#
+# No coding model is given, so the generator's code is not varied. Each run step has its own time limit
+# below the job's, so what finished is still printed and uploaded. Started by pushing a branch
+# recursion-search-run-*.
+
+on:
+  push:
+    branches: ['recursion-search-run-*']
+
+permissions:
+  contents: read
+
+env:
+  SEARCHES: '90'
+  LEVEL1: --generations 4 --measure 48 --study 12 --selection 10 --variants 1
+  LEVEL2: --generations 2 --measure 12 --study 8 --selection 6 --variants 1 --metas 3
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Seal the judge and draw every measurement
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py plan --out out --searches "$SEARCHES" $LEVEL1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: chain-state-0
+          path: out
+
+  measure-0:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-0
+          path: in
+      - name: Generation 0, shard ${{ matrix.shard }}
+        timeout-minutes: 320
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py measure --state in/state_0.json --generation 0 --shard "$SHARD" --shards 2 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-measure-0-current-${{ matrix.shard }}
+          path: out
+
+  improve-1:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-0
+          path: in
+      - name: Generation 1, study and settings copies
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py improve --state in/state_0.json --generation 1 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-state-1
+          path: out
+
+  measure-1:
+    needs: improve-1
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [current, start]
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-1
+          path: in
+      - name: Generation 1, ${{ matrix.arm }}, shard ${{ matrix.shard }}
+        timeout-minutes: 320
+        env:
+          ARM: ${{ matrix.arm }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py measure --state in/state_1.json --generation 1 --arm "$ARM" --shard "$SHARD" --shards 2 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-measure-1-${{ matrix.arm }}-${{ matrix.shard }}
+          path: out
+
+  improve-2:
+    needs: improve-1
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-1
+          path: in
+      - name: Generation 2, study and settings copies
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py improve --state in/state_1.json --generation 2 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-state-2
+          path: out
+
+  measure-2:
+    needs: improve-2
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [current, start]
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-2
+          path: in
+      - name: Generation 2, ${{ matrix.arm }}, shard ${{ matrix.shard }}
+        timeout-minutes: 320
+        env:
+          ARM: ${{ matrix.arm }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py measure --state in/state_2.json --generation 2 --arm "$ARM" --shard "$SHARD" --shards 2 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-measure-2-${{ matrix.arm }}-${{ matrix.shard }}
+          path: out
+
+  improve-3:
+    needs: improve-2
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-2
+          path: in
+      - name: Generation 3, study and settings copies
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py improve --state in/state_2.json --generation 3 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-state-3
+          path: out
+
+  measure-3:
+    needs: improve-3
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [current, start]
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-3
+          path: in
+      - name: Generation 3, ${{ matrix.arm }}, shard ${{ matrix.shard }}
+        timeout-minutes: 320
+        env:
+          ARM: ${{ matrix.arm }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py measure --state in/state_3.json --generation 3 --arm "$ARM" --shard "$SHARD" --shards 2 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-measure-3-${{ matrix.arm }}-${{ matrix.shard }}
+          path: out
+
+  improve-4:
+    needs: improve-3
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-3
+          path: in
+      - name: Generation 4, study and settings copies
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py improve --state in/state_3.json --generation 4 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-state-4
+          path: out
+
+  measure-4:
+    needs: improve-4
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [current, start]
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: chain-state-4
+          path: in
+      - name: Generation 4, ${{ matrix.arm }}, shard ${{ matrix.shard }}
+        timeout-minutes: 320
+        env:
+          ARM: ${{ matrix.arm }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py measure --state in/state_4.json --generation 4 --arm "$ARM" --shard "$SHARD" --shards 2 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: chain-measure-4-${{ matrix.arm }}-${{ matrix.shard }}
+          path: out
+
+  collect:
+    needs: [measure-0, measure-1, measure-2, measure-3, measure-4]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: chain-*
+          merge-multiple: true
+          path: got
+      - name: Join the pieces
+        run: python scripts/run_recursion.py chain-collect --inputs got --out out
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN chain====="
+          if [ -f out/chain.json ]; then gzip -9c out/chain.json | base64 -w 0; echo; fi
+          echo "=====END chain====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: recursion-search-level1
+          path: out
+
+  level2-round1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        index: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Level 2, round 1, way ${{ matrix.index }}
+        timeout-minutes: 320
+        env:
+          INDEX: ${{ matrix.index }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py level2-one --round 1 --index "$INDEX" --searches "$SEARCHES" $LEVEL2 --out out
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN level2 round 1 way ${{ matrix.index }} partial====="
+          if [ -f out/level2-one_partial.jsonl ]; then cat out/level2-one_partial.jsonl; fi
+          echo "=====END level2 round 1 way ${{ matrix.index }} partial====="
+          echo "=====BEGIN level2 round 1 way ${{ matrix.index }}====="
+          if [ -f out/level2_r1_m${{ matrix.index }}.json ]; then gzip -9c out/level2_r1_m${{ matrix.index }}.json | base64 -w 0; echo; fi
+          echo "=====END level2 round 1 way ${{ matrix.index }}====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: l2-r1-${{ matrix.index }}
+          path: out
+
+  level2-choose-1:
+    needs: level2-round1
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: l2-r1-*
+          merge-multiple: true
+          path: got
+      - name: Choose
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py level2-choose --round 1 --inputs got --out out $LEVEL2
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN level2 round 1====="
+          if [ -f out/level2.json ]; then gzip -9c out/level2.json | base64 -w 0; echo; fi
+          echo "=====END level2 round 1====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: recursion-search-level2-round1
+          path: out
+
+  level2-round2:
+    needs: level2-choose-1
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        index: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: recursion-search-level2-round1
+          path: round1
+      - name: Level 2, round 2, way ${{ matrix.index }}
+        timeout-minutes: 320
+        env:
+          INDEX: ${{ matrix.index }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py level2-one --round 2 --index "$INDEX" --searches "$SEARCHES" $LEVEL2 --meta-from round1/level2.json --out out
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN level2 round 2 way ${{ matrix.index }} partial====="
+          if [ -f out/level2-one_partial.jsonl ]; then cat out/level2-one_partial.jsonl; fi
+          echo "=====END level2 round 2 way ${{ matrix.index }} partial====="
+          echo "=====BEGIN level2 round 2 way ${{ matrix.index }}====="
+          if [ -f out/level2_r2_m${{ matrix.index }}.json ]; then gzip -9c out/level2_r2_m${{ matrix.index }}.json | base64 -w 0; echo; fi
+          echo "=====END level2 round 2 way ${{ matrix.index }}====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: l2-r2-${{ matrix.index }}
+          path: out
+
+  level2-choose-2:
+    needs: level2-round2
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: recursion-search-level2-round1
+          path: round1
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: l2-r2-*
+          merge-multiple: true
+          path: got
+      - name: Choose
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py level2-choose --round 2 --inputs got --out out $LEVEL2 --meta-from round1/level2.json
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN level2 round 2====="
+          if [ -f out/level2.json ]; then gzip -9c out/level2.json | base64 -w 0; echo; fi
+          echo "=====END level2 round 2====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: recursion-search-level2-round2
+          path: out

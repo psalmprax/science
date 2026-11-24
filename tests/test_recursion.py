@@ -414,3 +414,152 @@ def test_a_varied_meta_differs_in_exactly_one_thing() -> None:
         copy = levels.vary_meta(meta, rng)
         changed = [k for k in meta.as_dict() if meta.as_dict()[k] != copy.as_dict()[k]]
         assert len(changed) <= 1
+
+
+# ------------------------------------------------- with the route's searches
+def test_the_search_stage_is_a_bounded_setting_and_stands_first_beside_the_library() -> None:
+    assert levels.DEFAULT_SETTINGS["search_seconds"] == 0.0            # off unless asked for
+    with pytest.raises(judge.SettingRefused):
+        levels.Searcher({"search_seconds": 500})
+    alone = levels.Searcher({"search_seconds": 30}).proposer(3)
+    assert alone is not None and type(alone).__name__ == "FitGuardProposer"
+    both = levels.Searcher({"search_seconds": 30}, laws=LAWS).proposer(3)
+    assert type(both).__name__ == "CompositeProposer" and len(both._members) == 2 and both._max == levels.MAX_PROPOSALS
+    rng = np.random.default_rng(0)                                     # a searcher without searches cannot switch them on
+    assert all(levels.vary_settings(dict(levels.DEFAULT_SETTINGS), 0.9, rng)["search_seconds"] == 0.0 for _ in range(50))
+
+
+# ------------------------------------------------------------------- chain
+def _through_json(record: dict[str, object]) -> dict[str, object]:
+    import json
+
+    return json.loads(json.dumps(record))
+
+
+def test_level_one_in_steps_hands_its_state_on_and_measures_both_arms_on_the_same_problems(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from apedp_dyn.recursion import chain
+
+    monkeypatch.setattr(levels, "run_batch", _fake_batch)
+    state = _through_json(chain.plan(levels.Searcher(), generations=2, measure=6,
+                                     meta=levels.Meta(variants=1, study=4, selection=4), seed=3))
+    drawn_first = {p["key"] for problems in state["measurement"].values() for p in problems}
+    assert len(drawn_first) == 18 and set(state["measurement"]) == {"0", "1", "2"}
+    measured = [chain.measure_step(state, 0)]
+    improved = []
+    for k in (1, 2):
+        state, record = chain.improve_step(state, k)
+        state = _through_json(state)
+        improved.append(record)
+        for arm in chain.ARMS:
+            measured += [chain.measure_step(state, k, arm=arm, shard=shard, shards=2) for shard in (0, 1)]
+    assert state["generation"] == 2 and len(state["searcher"]["laws"]) > 0 and state["start"]["laws"] == []
+    measured_shapes = {curriculum.structure(curriculum.Problem(**p).truth) for ps in state["measurement"].values() for p in ps}
+    assert measured_shapes <= set(state["curriculum"]["seen"])                 # so no later batch could draw one of them
+    record = chain.collect(state, improved, measured)
+    assert [m["generation"] for m in record["measurements"]] == [0, 1, 2] == [m["generation"] for m in record["measurements_start"]]
+    assert record["incomplete"] == [] and record["measurements_start"][0] == record["measurements"][0]
+    assert all(m["problems"] == 6 for m in record["measurements"])
+    for pair in record["paired"]:
+        assert pair["solved_current"] - pair["solved_start"] == pair["gained"] - pair["lost"]
+    assert sum(pair["gained"] for pair in record["paired"]) > 0               # the fake searcher solves more once it has learned
+    assert record["progress"]["verdict"] in ("recursive", "improved, not shown recursive", "not shown")
+
+
+def test_a_step_refuses_the_wrong_generation_a_missing_shard_is_listed_and_a_changed_judge_stops_it(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from apedp_dyn.recursion import chain
+
+    monkeypatch.setattr(levels, "run_batch", _fake_batch)
+    state = chain.plan(levels.Searcher(), generations=1, measure=4, meta=levels.Meta(variants=1, study=4, selection=4), seed=8)
+    with pytest.raises(ValueError, match="cannot follow"):
+        chain.improve_step(state, 2)
+    with pytest.raises(ValueError, match="not 1"):
+        chain.measure_step(state, 1, arm="current")
+    after, record = chain.improve_step(state, 1)
+    pieces = [chain.measure_step(state, 0), chain.measure_step(after, 1, shard=0, shards=2),
+              chain.measure_step(after, 1, arm="start")]
+    collected = chain.collect(after, [record], pieces)
+    assert collected["incomplete"] == [{"generation": 1, "arm": "current", "rows": 2, "expected": 4}]
+    assert [m["generation"] for m in collected["measurements"]] == [0] and collected["paired"][-1]["generation"] == 0
+    tampered = {**after, "sealed": {**after["sealed"], "apedp_dyn/recursion/judge.py": "changed"}}
+    with pytest.raises(judge.JudgeChanged):
+        chain.measure_step(tampered, 1)
+    with pytest.raises(judge.JudgeChanged):
+        chain.improve_step({**state, "sealed": tampered["sealed"]}, 1)
+
+
+def _script() -> object:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("run_recursion", ROOT / "scripts" / "run_recursion.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_script_runs_the_steps_as_separate_calls_and_collects_them(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                                         capsys: pytest.CaptureFixture[str]) -> None:
+    import json
+
+    monkeypatch.setattr(levels, "run_batch", _fake_batch)
+    script = _script()
+    sizes = ["--measure", "4", "--study", "4", "--selection", "4", "--variants", "1"]
+    everything = tmp_path / "all"
+    assert script.main(["plan", "--out", str(everything), "--generations", "2", *sizes]) == 0
+    script.main(["measure", "--state", str(everything / "state_0.json"), "--generation", "0", "--out", str(everything)])
+    for k in (1, 2):
+        script.main(["improve", "--state", str(everything / f"state_{k - 1}.json"), "--generation", str(k), "--out", str(everything)])
+        for arm in ("current", "start"):
+            for shard in ("0", "1"):
+                script.main(["measure", "--state", str(everything / f"state_{k}.json"), "--generation", str(k), "--arm", arm,
+                             "--shard", shard, "--shards", "2", "--out", str(everything)])
+    assert script.main(["chain-collect", "--inputs", str(everything), "--out", str(tmp_path / "out")]) == 0
+    record = json.loads((tmp_path / "out" / "chain.json").read_text(encoding="utf-8"))
+    assert [m["generation"] for m in record["measurements"]] == [0, 1, 2] and record["incomplete"] == []
+    assert len(record["paired"]) == 3 and len(record["generations"]) == 2
+    capsys.readouterr()
+
+
+def test_the_script_runs_a_round_of_level_two_as_separate_runs_and_chooses_as_one_process_would(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    import json
+
+    monkeypatch.setattr(levels, "run_batch", _fake_batch)
+    script = _script()
+    sizes = ["--generations", "2", "--measure", "5", "--study", "4", "--selection", "4", "--variants", "1", "--metas", "3",
+             "--seed", "4"]
+    runs = tmp_path / "runs"
+    for index in ("0", "1", "2"):
+        script.main(["level2-one", "--round", "1", "--index", index, "--out", str(runs), *sizes])
+    script.main(["level2-choose", "--round", "1", "--inputs", str(runs), "--out", str(tmp_path / "r1"), *sizes])
+    apart = json.loads((tmp_path / "r1" / "level2.json").read_text(encoding="utf-8"))
+    together = levels.run_level2(levels.Searcher(), rounds=1, metas=3, generations=2, seed=4, measure=5,
+                                 meta=levels.Meta(variants=1, study=4, selection=4))
+    assert apart["meta"] == together["meta"] and apart["rounds"][0]["missing"] == []
+    assert [run["meta"] for run in apart["rounds"][0]["runs"]] == [run["meta"] for run in together["rounds"][0]["runs"]]
+    assert [run["g"] for run in apart["rounds"][0]["runs"]] == [run["g"] for run in together["rounds"][0]["runs"]]
+    second = tmp_path / "runs2"                                             # round 2 starts from what round 1 chose
+    script.main(["level2-one", "--round", "2", "--index", "0", "--meta-from", str(tmp_path / "r1" / "level2.json"),
+                 "--out", str(second), *sizes])
+    assert json.loads((second / "level2_r2_m0.json").read_text(encoding="utf-8"))["meta"] == apart["meta"]
+    with pytest.raises(SystemExit):
+        script.main(["level2-one", "--round", "1", "--index", "7", "--out", str(runs), *sizes])
+    capsys.readouterr()
+
+
+def test_asking_for_searches_without_pysr_stops_before_anything_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import builtins
+
+    real = builtins.__import__
+
+    def no_pysr(name: str, *args: object, **kwargs: object) -> object:
+        if name == "pysr":
+            raise ImportError("no pysr here")
+        return real(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_pysr)
+    monkeypatch.delitem(__import__("sys").modules, "pysr", raising=False)
+    with pytest.raises(SystemExit, match="PySR cannot be imported"):
+        _script().main(["plan", "--out", str(tmp_path), "--searches", "90"])
+    assert not (tmp_path / "state_0.json").exists()
