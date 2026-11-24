@@ -17,6 +17,11 @@ Beside each law the route gave (reported, or tentative): whether it has the know
 rows beside the known form's. Nothing here is a threshold; the numbers are for reading.
 
     python scripts/run_real_data.py dev --out DIR [--searches 90]
+    python scripts/run_real_data.py small --out DIR [--searches 90]
+
+``small`` is the small-table reading (``apedp_dyn/discovery_l2/small_table.py``) on the same three tables: with
+nothing stated, and with what is known about each law beforehand (``benchmarks/real_data/known_beforehand.json``);
+with ``--searches`` the search stage's candidates take part in both.
 """
 from __future__ import annotations
 
@@ -38,7 +43,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import real_data  # noqa: E402
 import run_srbench_baseline as base  # noqa: E402
 
-from apedp_dyn.discovery_l2 import vouched_route_v2  # noqa: E402
+from apedp_dyn.discovery_l2 import small_table, vouched_route_v2  # noqa: E402
 from apedp_dyn.ui import route_endpoint  # noqa: E402
 
 SEEDS = (0, 1, 2, 3, 4)
@@ -174,13 +179,48 @@ def run_table(key: str, searches: float) -> dict[str, Any]:
                         "direct_errors": sum("error" in (r.get("direct") or {}) for r in readings)}}
 
 
+KNOWN = ROOT / "benchmarks" / "real_data" / "known_beforehand.json"
+
+
+def small_readings(key: str, searches: float) -> dict[str, Any]:
+    """The small-table reading on one development table: nothing stated, and what is known stated."""
+    loaded = real_data.load(key)
+    table, X, y = loaded["table"], loaded["X"], loaded["y"]
+    stated = json.loads(KNOWN.read_text(encoding="utf-8"))["tables"][key]
+    statements = [{k: v for k, v in s.items() if k != "why"} for s in stated["known"]]
+    truth, truth_r2 = fitted_law(table, X, y)
+    out: dict[str, Any] = {"key": key, "rows": len(y), "known_law": table["law"], "known_law_fitted": str(truth),
+                           "known_law_r2_all_rows": None if truth_r2 is None else round(truth_r2, 6), "readings": {}}
+    for name, options in (("plain", {"known": (), "units": None}), ("informed", {"known": statements, "units": stated["units"]})):
+        proposer = route_endpoint._proposer(searches)[0] if searches > 0 else None
+        reading = small_table.read(X, y, noise=stated["noise"], proposer=proposer, seed=0, **options)
+        keep_names = ("action", "law", "reported", "tentative", "tentative_reasons", "errors", "chosen", "class_size", "class",
+                      "best_by_left_out_error", "stability", "accuracy", "known_checks_on_the_law", "candidates", "error", "seconds")
+        entry = json.loads(json.dumps({k: reading[k] for k in keep_names if k in reading}, default=str))
+        entry["set_aside_by_what_is_known"] = (reading.get("set_aside_by_what_is_known") or {}).get("forms")
+        entry["judged"] = judged(reading.get("law"), truth, X, y)
+        out["readings"][name] = entry
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("command", choices=("dev",))
+    parser.add_argument("command", choices=("dev", "small"))
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--searches", type=float, default=0.0, help="seconds for the search stage in force (0: first pass alone)")
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
+    if args.command == "small":
+        readings = [small_readings(key, args.searches) for key in DEVELOPMENT]
+        record = {"what": "development: the small-table reading on three tables of real measurements; not a result",
+                  "search_seconds": args.searches, "tables": readings}
+        (args.out / "real_data_small.json").write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        for table in readings:
+            for name, entry in table["readings"].items():
+                print(table["key"], name, entry.get("action"), "reported" if entry.get("reported") else "tentative",
+                      "| known form:", entry["judged"].get("same_form_as_the_known_law"), "|", str(entry.get("law"))[:80],
+                      "|", (entry.get("chosen") or {}).get("source"))
+        return 0
     tables = [run_table(key, args.searches) for key in DEVELOPMENT]
     record = {"what": "development: the table route in force on three tables of real measurements; not a result",
               "search_seconds": args.searches, "min_rows_of_the_product": route_endpoint.MIN_ROWS,

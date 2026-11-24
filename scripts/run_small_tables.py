@@ -52,12 +52,12 @@ TEST_ROWS = 400
 ARMS = ("small", "direct")
 
 
-def draw_laws(count: int, seed: int = SEED) -> list[dict[str, Any]]:
-    """Invented laws for development, none with a structure of the benchmark, each with its table's size and noise."""
+def draw_laws(count: int, seed: int = SEED, leave_out: frozenset[str] = frozenset()) -> list[dict[str, Any]]:
+    """Invented laws, none with a structure of the benchmark or of ``leave_out``, each with its table's size and noise."""
     excluded = curriculum.benchmark_fingerprints()
     rng = np.random.default_rng(seed)
     laws: list[dict[str, Any]] = []
-    seen: set[str] = set()
+    seen: set[str] = set(leave_out)
     for _ in range(200_000):
         if len(laws) == count:
             break
@@ -80,7 +80,7 @@ def table_of(law: dict[str, Any]) -> dict[str, Any]:
     names = [f"x{i}" for i in range(law["inputs"])]
     symbols = [sp.Symbol(n) for n in names]
     truth = sp.sympify(law["text"], locals=dict(zip(names, symbols, strict=True)))
-    key = hashlib.sha256(f"small-tables-dev|{law['index']}".encode()).digest()[:8]
+    key = hashlib.sha256(f"{law.get('tag', 'small-tables-dev')}|{law['index']}".encode()).digest()[:8]
     rng = np.random.default_rng(int.from_bytes(key, "big"))
     X = rng.uniform(curriculum.LOW, curriculum.HIGH, (law["rows"] + TEST_ROWS, law["inputs"]))
     clean = np.asarray(sp.lambdify(symbols, truth, "numpy")(*X.T), dtype=float) * np.ones(len(X))

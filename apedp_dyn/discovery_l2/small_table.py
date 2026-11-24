@@ -515,7 +515,8 @@ def read(X: Mapping[str, Any], y: Any, *, units: Mapping[str, str] | None = None
         forms, report = candidates({n: columns[:, i] for i, n in enumerate(names)}, target, units=units, proposer=proposer,
                                    memory=memory, w=w)
         record["candidates"] = {"forms": len(forms), **report}
-        scored = score_all(forms, columns, target, seed, deadline=started + 0.5 * seconds, w=w)
+        clock = time.monotonic()                        # the time given is for scoring and the repeats, not for the sources
+        scored = score_all(forms, columns, target, seed, deadline=clock + 0.5 * seconds, w=w)
         record["candidates"]["scored"] = len(scored)
         ranges = {n: (float(np.min(columns[:, i])), float(np.max(columns[:, i]))) for i, n in enumerate(names)}
         size = float(np.max(np.abs(target)))
@@ -543,7 +544,7 @@ def read(X: Mapping[str, Any], y: Any, *, units: Mapping[str, str] | None = None
         checked = 0
         removals = folds_of(len(target), seed)          # each row in turn; ten folds on a larger table
         for row, removed in enumerate(removals):
-            if time.monotonic() > started + seconds:
+            if time.monotonic() > clock + seconds:
                 break
             rest: np.ndarray = np.ones(len(target), dtype=bool)
             rest[removed] = False

@@ -1,0 +1,229 @@
+{
+ "note": "What is known about each table's law before its rows are read, as statements for apedp_dyn/discovery_l2/known_beforehand.py, and the units of its columns. Written on 2026-11-24 from general physics and the sources' README files. For the held-back tables no row had been read when this was written (the registry notes one exception, the first row of the chronometer file).",
+ "tables": {
+  "kepler_solar_system": {
+   "units": {
+    "d": "astronomical units"
+   },
+   "noise": "auto",
+   "known": [
+    {
+     "kind": "zero_at_zero",
+     "why": "an orbit of no size takes no time"
+    },
+    {
+     "kind": "increasing",
+     "input": "d",
+     "why": "a wider orbit takes longer"
+    }
+   ]
+  },
+  "langmuir_table_ix": {
+   "units": {
+    "p": "bars"
+   },
+   "noise": "auto",
+   "known": [
+    {
+     "kind": "zero_at_zero",
+     "why": "no pressure, no gas on the surface"
+    },
+    {
+     "kind": "increasing",
+     "input": "p",
+     "over_times": [
+      0.0,
+      4.0
+     ],
+     "why": "more pressure never means less gas adsorbed"
+    },
+    {
+     "kind": "concave",
+     "input": "p",
+     "over_times": [
+      0.0,
+      4.0
+     ],
+     "why": "each further bar adds less as the surface fills"
+    },
+    {
+     "kind": "levels_off",
+     "input": "p",
+     "why": "a surface has a finite number of places"
+    }
+   ]
+  },
+  "leavitt": {
+   "units": {
+    "logP": "log10 of days"
+   },
+   "noise": "auto",
+   "known": [
+    {
+     "kind": "decreasing",
+     "input": "logP",
+     "why": "a longer period goes with a brighter star, and brighter is a smaller magnitude"
+    }
+   ]
+  },
+  "kepler_exoplanets": {
+   "units": {
+    "m1": "solar masses",
+    "m2": "solar masses",
+    "d": "astronomical units"
+   },
+   "noise": "auto",
+   "known": [
+    {
+     "kind": "increasing",
+     "input": "d",
+     "why": "a wider orbit takes longer"
+    },
+    {
+     "kind": "decreasing",
+     "input": "m1",
+     "why": "a heavier star pulls harder, so the orbit is faster"
+    }
+   ]
+  },
+  "kepler_binary_stars": {
+   "units": {
+    "m1": "solar masses",
+    "m2": "solar masses",
+    "d": "astronomical units"
+   },
+   "noise": "auto",
+   "known": [
+    {
+     "kind": "increasing",
+     "input": "d",
+     "why": "a wider orbit takes longer"
+    },
+    {
+     "kind": "decreasing",
+     "input": "m1",
+     "why": "heavier stars orbit faster"
+    }
+   ]
+  },
+  "langmuir_sun_et_al": {
+   "units": {
+    "p": "kPa"
+   },
+   "noise": "auto",
+   "known": [
+    {
+     "kind": "zero_at_zero",
+     "why": "no pressure, no gas on the surface"
+    },
+    {
+     "kind": "increasing",
+     "input": "p",
+     "over_times": [
+      0.0,
+      4.0
+     ],
+     "why": "more pressure never means less gas adsorbed"
+    },
+    {
+     "kind": "concave",
+     "input": "p",
+     "over_times": [
+      0.0,
+      4.0
+     ],
+     "why": "each further unit of pressure adds less as the surface fills"
+    },
+    {
+     "kind": "levels_off",
+     "input": "p",
+     "why": "a surface has a finite number of places"
+    }
+   ]
+  },
+  "time_dilation": {
+   "units": {
+    "v": "m/s"
+   },
+   "noise": "absolute",
+   "known": [
+    {
+     "kind": "zero_at_zero",
+     "why": "a clock at rest is not slowed"
+    },
+    {
+     "kind": "decreasing",
+     "input": "v",
+     "why": "the faster the clock, the more it is slowed; the table's quantity is negative"
+    },
+    {
+     "kind": "concave",
+     "input": "v",
+     "why": "the slowing grows faster than the speed"
+    }
+   ]
+  },
+  "hubble_1929": {
+   "units": {
+    "D": "Mpc"
+   },
+   "noise": "absolute",
+   "known": [
+    {
+     "kind": "zero_at_zero",
+     "why": "a nebula at no distance has no recession"
+    },
+    {
+     "kind": "increasing",
+     "input": "D",
+     "why": "farther nebulae recede faster"
+    }
+   ]
+  },
+  "tully_fisher": {
+   "units": {
+    "DV": "km/s"
+   },
+   "noise": "absolute",
+   "known": [
+    {
+     "kind": "decreasing",
+     "input": "DV",
+     "why": "a galaxy that rotates faster is more luminous, and more luminous is a smaller magnitude"
+    }
+   ]
+  },
+  "nikuradse_superpipe": {
+   "units": {},
+   "noise": "absolute",
+   "known": [],
+   "why_nothing": "in rough pipes the friction factor falls, rises and levels off with the Reynolds number: nothing simple holds throughout"
+  },
+  "cosmic_chronometers": {
+   "units": {
+    "z": "redshift"
+   },
+   "noise": "stated errors",
+   "known": [
+    {
+     "kind": "positive",
+     "input": "z",
+     "over_times": [
+      0.0,
+      1.2
+     ],
+     "why": "the universe is expanding at every redshift observed"
+    },
+    {
+     "kind": "increasing",
+     "input": "z",
+     "over_times": [
+      0.0,
+      1.2
+     ],
+     "why": "with matter in it, the expansion rate was higher in the past"
+    }
+   ]
+  }
+ }
+}
