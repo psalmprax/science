@@ -1,0 +1,316 @@
+{
+ "date": "2026-11-24",
+ "tag": "DEV-FAST-GENERATOR-LOOP-2026-11",
+ "what": "development, not a result: the loop that rewrites the search's candidate generator, driven for the first time by a real model, a hosted one picked for speed (GitHub run 45498161317, branch fast-generator-loop-run-1). Nothing is installed.",
+ "how": "python scripts/run_fast_generator_loop.py speed, then evolve --steps 100 --max-calls 300, then fresh --laws 60",
+ "speed": {
+  "models_the_key_reaches": 30,
+  "prompt_characters": 5804,
+  "judge": "16 training laws, 1.5 s a call",
+  "seed": "law proposed in 0 of 16 problems, an accurate candidate in 1, 4.0 candidates a problem, 0.2 s",
+  "rows": [
+   {
+    "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "answered": true,
+    "seconds": 4.896,
+    "completion_tokens": 945,
+    "tokens_a_second": 193.0,
+    "code": true,
+    "ran": true,
+    "score": [
+     0.0,
+     7.0,
+     -3.12
+    ],
+    "summary": "law proposed in 0 of 16 problems, an accurate candidate in 7, 3.1 candidates a problem, 0.3 s",
+    "error": ""
+   },
+   {
+    "model": "minimaxai/minimax-m3.1-flash",
+    "answered": true,
+    "seconds": 58.574,
+    "completion_tokens": 1302,
+    "tokens_a_second": 22.2,
+    "code": true,
+    "ran": true,
+    "score": [
+     0.0,
+     3.0,
+     -4.0
+    ],
+    "summary": "law proposed in 0 of 16 problems, an accurate candidate in 3, 4.0 candidates a problem, 0.3 s",
+    "error": ""
+   },
+   {
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "answered": true,
+    "seconds": 29.917,
+    "completion_tokens": 1181,
+    "tokens_a_second": 39.5,
+    "code": true,
+    "ran": false,
+    "score": [],
+    "summary": "",
+    "error": "refused before running: line 91: the name '_' starts with an underscore"
+   },
+   {
+    "model": "bigcode/starcoder2-15b",
+    "answered": false,
+    "seconds": 0.112,
+    "error": "LlmUnavailableError: bigcode/starcoder2-15b: HTTP 404 404 page not found\n"
+   },
+   {
+    "model": "fastino/gliner2-pii",
+    "answered": false,
+    "seconds": 0.214,
+    "error": "LlmUnavailableError: fastino/gliner2-pii: HTTP 422 {\"error\":{\"message\":\"invalid extraction request; check model, messages, labels and parameters\"}}"
+   },
+   {
+    "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "answered": true,
+    "seconds": 6.118,
+    "completion_tokens": 850,
+    "tokens_a_second": 138.9,
+    "code": true,
+    "ran": false,
+    "score": [],
+    "summary": "",
+    "error": "refused before running: line 44: the name '_' starts with an underscore"
+   }
+  ],
+  "picked": "nvidia/nemotron-3.5-lightning-30b-a3b",
+  "picked_by": "the shortest time to a version that ran"
+ },
+ "loop": {
+  "adopted": false,
+  "best": {
+   "id": 107,
+   "origin": "model",
+   "score": [
+    1.0,
+    13.0,
+    -2.85
+   ],
+   "sha256": "4ab7a8b2a5d0551853970a866457b3f994c661fe856c348c996a416e292b8d27",
+   "summary": "law proposed in 1 of 40 problems, an accurate candidate in 13, 2.9 candidates a problem, 15.4 s"
+  },
+  "by_model": 118,
+  "ceiling_on_calls": 300,
+  "champion": {
+   "id": 107,
+   "origin": "model",
+   "sha256": "4ab7a8b2a5d0551853970a866457b3f994c661fe856c348c996a416e292b8d27"
+  },
+  "leading_versions_on_validation": [
+   {
+    "id": 107,
+    "origin": "model",
+    "sha256": "4ab7a8b2a5d0551853970a866457b3f994c661fe856c348c996a416e292b8d27",
+    "training_rank": 0,
+    "training_score": [
+     1.0,
+     13.0,
+     -2.85
+    ],
+    "validation_ran": true,
+    "validation_score": [
+     0.0,
+     10.0,
+     -2.92
+    ],
+    "validation_summary": "law proposed in 0 of 40 problems, an accurate candidate in 10, 2.9 candidates a problem, 8.5 s"
+   },
+   {
+    "id": 115,
+    "origin": "model",
+    "sha256": "0580e468f5b21684f91816395ab4f142d4556d1827969f8a4c059c7c4bf7ea5f",
+    "training_rank": 1,
+    "training_score": [
+     1.0,
+     13.0,
+     -2.85
+    ],
+    "validation_ran": true,
+    "validation_score": [
+     0.0,
+     10.0,
+     -2.92
+    ],
+    "validation_summary": "law proposed in 0 of 40 problems, an accurate candidate in 10, 2.9 candidates a problem, 8.6 s"
+   },
+   {
+    "id": 93,
+    "origin": "model",
+    "sha256": "d8962833be00a0b7ee058cc42c0cd0b5446a51429bb26d1ecbb3971f3dead86d",
+    "training_rank": 2,
+    "training_score": [
+     1.0,
+     13.0,
+     -2.98
+    ],
+    "validation_ran": true,
+    "validation_score": [
+     0.0,
+     10.0,
+     -3.1
+    ],
+    "validation_summary": "law proposed in 0 of 40 problems, an accurate candidate in 10, 3.1 candidates a problem, 1.8 s"
+   },
+   {
+    "id": 97,
+    "origin": "model",
+    "sha256": "a4836d650e80b48043679a0f3e99ac143a9850919ff87598c16262855b9e53a5",
+    "training_rank": 3,
+    "training_score": [
+     1.0,
+     13.0,
+     -2.98
+    ],
+    "validation_ran": true,
+    "validation_score": [
+     0.0,
+     10.0,
+     -3.1
+    ],
+    "validation_summary": "law proposed in 0 of 40 problems, an accurate candidate in 10, 3.1 candidates a problem, 1.9 s"
+   },
+   {
+    "id": 87,
+    "origin": "model",
+    "sha256": "df809023773ba3d314b2c227777673aed50d7478aa648281e68eed6da1f55c7d",
+    "training_rank": 4,
+    "training_score": [
+     1.0,
+     13.0,
+     -3.0
+    ],
+    "validation_ran": true,
+    "validation_score": [
+     0.0,
+     10.0,
+     -3.08
+    ],
+    "validation_summary": "law proposed in 0 of 40 problems, an accurate candidate in 10, 3.1 candidates a problem, 4.1 s"
+   },
+   {
+    "id": 0,
+    "origin": "seed",
+    "sha256": "4036c4405dcfa6ac5f7a4e0c75dd7cb0b3225f262baea8d747ef92e8924df830",
+    "training_rank": 5,
+    "training_score": [
+     0.0,
+     5.0,
+     -4.0
+    ],
+    "validation_ran": true,
+    "validation_score": [
+     0.0,
+     7.0,
+     -4.0
+    ],
+    "validation_summary": "law proposed in 0 of 40 problems, an accurate candidate in 7, 4.0 candidates a problem, 0.2 s"
+   }
+  ],
+  "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+  "model_calls": 217,
+  "ran": 54,
+  "refused_or_failed": 65,
+  "repaired": 12,
+  "seconds": 1714.3,
+  "seconds_per_call": 3.0,
+  "seed_score": [
+   0.0,
+   5.0,
+   -4.0
+  ],
+  "steps": 100,
+  "time": {
+   "answered": 217,
+   "calls": 217,
+   "completion_tokens": 133168,
+   "everything_else_seconds": 1038.9,
+   "loop_seconds": 1714.3,
+   "median_seconds_a_call": 0.86,
+   "model_seconds": 675.4,
+   "seconds_a_version_outside_the_model": 8.7,
+   "share_of_the_time_spent_waiting_for_the_model": 0.394,
+   "slowest_call_seconds": 18.51,
+   "tokens_a_second": 197.2,
+   "what_an_instant_model_would_save": "at most the model's seconds: the rest is the judge scoring each version, and the wait between calls"
+  },
+  "training_laws": 40,
+  "validation_laws": 40,
+  "versions": 119
+ },
+ "versions_that_did_not_run": {
+  "changed what 'propose' takes": 38,
+  "refused for another reason": 9,
+  "a name starting with an underscore": 8,
+  "not Python": 6,
+  "does not define 'propose'": 2,
+  "failed when run": 2
+ },
+ "fresh_laws": {
+  "on_github": {
+   "tag": "DEV-FAST-GENERATOR-LOOP-2026-11",
+   "what": "development: the champion and the seed on laws drawn after the run with another seed, none with a structure the loop was scored or taught on; the same grammar",
+   "laws": 60,
+   "seed": {
+    "ran": true,
+    "laws_proposed": 0,
+    "summary": "law proposed in 0 of 60 problems, an accurate candidate in 6, 4.0 candidates a problem, 0.5 s",
+    "error": ""
+   },
+   "champion": {
+    "ran": true,
+    "laws_proposed": 0,
+    "summary": "law proposed in 0 of 60 problems, an accurate candidate in 15, 3.1 candidates a problem, 19.4 s",
+    "error": ""
+   },
+   "the_champion_is_the_seed": false,
+   "gained_by_the_champion": 0,
+   "lost_by_the_champion": 0,
+   "could_be_chance_p": 1.0
+  },
+  "recomputed_in_the_development_workspace_with_the_pairing_of_accurate_candidates": {
+   "tag": "DEV-FAST-GENERATOR-LOOP-2026-11",
+   "what": "development: the champion and the seed on laws drawn after the run with another seed, none with a structure the loop was scored or taught on; the same grammar",
+   "laws": 60,
+   "seed": {
+    "ran": true,
+    "laws_proposed": 0,
+    "accurate_candidates": 6,
+    "summary": "law proposed in 0 of 60 problems, an accurate candidate in 6, 4.0 candidates a problem, 0.5 s",
+    "error": ""
+   },
+   "champion": {
+    "ran": true,
+    "laws_proposed": 0,
+    "accurate_candidates": 15,
+    "summary": "law proposed in 0 of 60 problems, an accurate candidate in 15, 3.1 candidates a problem, 23.3 s",
+    "error": ""
+   },
+   "the_champion_is_the_seed": false,
+   "gained_by_the_champion": 0,
+   "lost_by_the_champion": 0,
+   "could_be_chance_p": 1.0,
+   "accurate_candidate_gained_by_the_champion": 13,
+   "accurate_candidate_lost_by_the_champion": 4,
+   "accurate_candidate_could_be_chance_p": 0.049
+  }
+ },
+ "files": {
+  "champion": "benchmarks/fast_generator_loop/dev_run1_champion.txt",
+  "champion_sha256": "4ab7a8b2a5d0551853970a866457b3f994c661fe856c348c996a416e292b8d27",
+  "every_version": "benchmarks/fast_generator_loop/dev_run1_versions.jsonl.gz"
+ },
+ "reading": [
+  "The key reaches 30 models. Six were tried on the loop's first prompt. nemotron-3.5-lightning gave a version that ran in 4.9 s (193 tokens a second) and was picked. minimax-m3.1-flash took 58.6 s. The largest model, nemotron-3-ultra, took 29.9 s and its code was refused (a name starting with an underscore), as was a fourth model's; two names were not chat models.",
+  "The loop: 100 steps, 217 calls of the 300 allowed, 133,168 tokens written, 29 minutes. The model answered in a median of 0.86 s. 39 % of the time was the model; 61 % was everything else, about 9 s for each version scored. An instant model would shorten this run by at most 39 %.",
+  "Of the model's 118 versions 53 ran and 65 did not. 38 of the 65 changed what the function takes; the others were not Python, used a name the checker refuses, or did not define the function. 12 were repaired on a second or third try.",
+  "The champion proposes the law itself on 1 of the 40 training laws (the seed: 0), on none of the 40 validation laws (the seed: 0), and on none of 60 laws drawn afterwards (the seed: 0). No gain in laws proposed.",
+  "It does return an accurate candidate, which is not the law, on more of the 60 fresh laws: 15 against 6 (13 gained, 4 lost; could be chance, p = 0.049). On the validation laws: 10 against 7.",
+  "So the loop runs end to end with a real model at a cost of minutes, and what it improved is the part of the score it could move, accurate candidates. It did not find laws. One model, one run, one grammar."
+ ],
+ "not_shown": "that a champion helps the route. That needs the champion beside the searches, through the referee, on laws from elsewhere; it was not run."
+}

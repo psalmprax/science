@@ -1,0 +1,168 @@
+def fit(columns, y):
+    """Least squares of y on the columns and a constant: the coefficients and the error left."""
+    A = np.column_stack(columns + [np.ones(len(y))])
+    coef = np.linalg.lstsq(A, y, rcond=None)[0]
+    rest = y - A.dot(coef)
+    return coef, float(np.sqrt(np.mean(rest ** 2)))
+
+
+def written(coef, terms):
+    """The fitted law as text: coefficient times term, added up, and the constant."""
+    if not terms:
+        return str(coef[len(terms)])
+    parts = [f"{coef[i]}*{terms[i]}" for i in range(len(terms))]
+    return " + ".join(parts + [f"{coef[len(terms)]}"])
+
+
+def shapes(name, x):
+    """A few fixed shapes of one variable: the text and the values."""
+    return [(name, x), (f"{name}**2", x ** 2), (f"1/{name}", 1.0 / np.where(x == 0, 1e-12, x)),
+            (f"sqrt({name})", np.sqrt(np.abs(x) + 1e-12)), (f"log({name})", np.log(np.abs(x) + 1e-12)),
+            (f"exp(-{name})", np.exp(-x)), (f"sin({name})", np.sin(x)), (f"cos({name})", np.cos(x)),
+            (f"tanh({name})", np.tanh(x))]
+
+
+def propose(X, y, names):
+    found = []
+    n_vars = X.shape[1]
+
+    # Helper to fit a single column and append if finite
+    def try_fit(colist, text):
+        if not colist:
+            return
+        coef, err = fit(colist, y)
+        if np.all(np.isfinite(coef)):
+            found.append((err, written(coef, [text])))
+
+    # Generate single-variable candidates for each variable
+    for i in range(n_vars):
+        combo = [shape for shape in shapes(names[i], X[:, i])]
+        texts = [text for text, values in combo]
+        vals = [values for text, values in combo]
+        # Fit constant + linear combination of shapes
+        A = np.column_stack(vals + [np.ones(len(y))])
+        coef = np.linalg.lstsq(A, y, rcond=None)[0]
+        if np.all(np.isfinite(coef)):
+            parts = [f"{coef[i]}*{texts[i]}" for i in range(len(texts))]
+            found.append((float(np.sqrt(np.mean((y - A.dot(coef)) ** 2)), ), " + ".join(parts + [f"{coef[len(texts)]}"])))
+
+    # Generate two-variable interaction candidates
+    for i in range(n_vars):
+        for j in range(i + 1, n_vars):
+            xi, xj = X[:, i], X[:, j]
+            n_i, n_j = names[i], names[j]
+            shapes_i = shapes(n_i, xi)
+            shapes_j = shapes(n_j, xj)
+
+            # Product, difference, sum
+            for text_i, vals_i in shapes_i:
+                for text_j, vals_j in shapes_j:
+                    # Product
+                    try_fit([vals_i * vals_j], f"{text_i}*{text_j}")
+                    # Difference i - j
+                    try_fit([vals_i - vals_j], f"{text_i}-{text_j}")
+                    # Difference j - i
+                    try_fit([vals_j - vals_i], f"{text_j}-{text_i}")
+                    # Sum
+                    try_fit([vals_i + vals_j], f"{text_i}+{text_j}")
+
+            # Ratio i / j and j / i (with safe denominator)
+            for text_src, text_dst, vals_src, vals_dst in [
+                (n_i, n_j, xi, xj), (n_j, n_i, xj, xi)
+            ]:
+                denom = vals_dst + 1e-12 if np.any(np.abs(vals_dst) <= 1e-12) else vals_dst
+                try_fit([vals_src / denom], f"{text_src}/{text_dst}")
+
+            # Nested functions: f(vals_i) and f(vals_j)
+            for f_name, f_vals in [("sin", np.sin), ("cos", np.cos), ("tan", np.tan),
+                                   ("sqrt", lambda x: np.sqrt(np.abs(x) + 1e-12)),
+                                   ("exp", np.exp), ("log", lambda x: np.log(np.abs(x) + 1e-12)),
+                                   ("tanh", np.tanh)]:
+                # sin/cos/tan/sqrt/exp/log/tanh of vals_i
+                try:
+                    nvals_i = f_vals(xi)
+                    try_fit([nvals_i], f"{f_name}({n_i})")
+                except Exception:
+                    pass
+                # sin/cos/tan/sqrt/exp/log/tanh of vals_j
+                try:
+                    nvals_j = f_vals(xj)
+                    try_fit([nvals_j], f"{f_name}({n_j})")
+                except Exception:
+                    pass
+                # Nested: f(g(vals_i)) and f(g(vals_j)) using precomputed shapes
+                for g_name, g_vals in shapes_i:
+                    try:
+                        nvals_gi = f_vals(g_vals)
+                        try_fit([nvals_gi], f"{f_name}({g_name})")
+                    except Exception:
+                        pass
+                for g_name, g_vals in shapes_j:
+                    try:
+                        nvals_gj = f_vals(g_vals)
+                        try_fit([nvals_gj], f"{f_name}({g_name})")
+                    except Exception:
+                        pass
+
+            # Division of one function of a variable by another function of the other variable (f(x)/g(y))
+            for text_i, vals_i in shapes_i:
+                for text_j, vals_j in shapes_j:
+                    # f(vals_i) / vals_j (raw ratio)
+                    denom_j = vals_j + 1e-12 if np.any(np.abs(vals_j) <= 1e-12) else vals_j
+                    try_fit([vals_i / denom_j], f"{text_i}/{text_j}")
+                    # vals_i / f(vals_j)
+                    for f_name, f_vals in [("sin", np.sin), ("cos", np.cos), ("tan", np.tan),
+                                           ("sqrt", lambda x: np.sqrt(np.abs(x) + 1e-12)),
+                                           ("exp", np.exp), ("log", lambda x: np.log(np.abs(x) + 1e-12)),
+                                           ("tanh", np.tanh)]:
+                        try:
+                            nvals_j = f_vals(vals_j)
+                            try_fit([vals_i / nvals_j], f"{text_i}/{f_name}({text_j})")
+                        except Exception:
+                            pass
+                    # f(vals_j) / vals_i
+                    for f_name, f_vals in [("sin", np.sin), ("cos", np.cos), ("tan", np.tan),
+                                           ("sqrt", lambda x: np.sqrt(np.abs(x) + 1e-12)),
+                                           ("exp", np.exp), ("log", lambda x: np.log(np.abs(x) + 1e-12)),
+                                           ("tanh", np.tanh)]:
+                        try:
+                            nvals_i = f_vals(vals_i)
+                            try_fit([nvals_i / vals_j], f"{f_name}({text_i})/{text_j}")
+                        except Exception:
+                            pass
+                    # f(vals_i) / f(vals_j)
+                    for f_name_i, f_vals_i in [("sin", np.sin), ("cos", np.cos), ("tan", np.tan),
+                                                ("sqrt", lambda x: np.sqrt(np.abs(x) + 1e-12)),
+                                                ("exp", np.exp), ("log", lambda x: np.log(np.abs(x) + 1e-12)),
+                                                ("tanh", np.tanh)]:
+                        for f_name_j, f_vals_j in [("sin", np.sin), ("cos", np.cos), ("tan", np.tan),
+                                                    ("sqrt", lambda x: np.sqrt(np.abs(x) + 1e-12)),
+                                                    ("exp", np.exp), ("log", lambda x: np.log(np.abs(x) + 1e-12)),
+                                                    ("tanh", np.tanh)]:
+                            try:
+                                nvals_i = f_vals_i(vals_i)
+                                nvals_j = f_vals_j(vals_j)
+                                try_fit([nvals_i / nvals_j], f"{f_name_i}({text_i})/{f_name_j}({text_j})")
+                            except Exception:
+                                pass
+
+    # Generate three-variable interaction candidates (sum of three single-variable shapes)
+    for i in range(n_vars):
+        for j in range(i + 1, n_vars):
+            for k in range(j + 1, n_vars):
+                xi, xj, xk = X[:, i], X[:, j], X[:, k]
+                n_i, n_j, n_k = names[i], names[j], names[k]
+                shapes_i = shapes(n_i, xi)
+                shapes_j = shapes(n_j, xj)
+                shapes_k = shapes(n_k, xk)
+                for text_i, vals_i in shapes_i:
+                    for text_j, vals_j in shapes_j:
+                        for text_k, vals_k in shapes_k:
+                            combined_vals = vals_i + vals_j + vals_k
+                            try_fit([combined_vals], f"{text_i}+{text_j}+{text_k}")
+
+    # Sort by error, then by fewer candidates, then by simpler form
+    found.sort(key=lambda x: (x[0], len(x[1])))
+    # Return up to 4 candidates
+    result = [text for err, text in found[:4]]
+    return result

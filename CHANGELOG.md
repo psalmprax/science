@@ -46,6 +46,13 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **The generator loop's first run with a real model (2026-11-24, development).**
+  `benchmarks/fast_generator_loop/dev_run1.json` (GitHub run 45498161317). Of 30 models the key
+  reaches, six were tried; nemotron-3.5-lightning gave a running version in 4.9 s and was picked.
+  100 steps, 217 calls, 29 minutes; the model answered in a median of 0.86 s and took 39 % of the
+  time, the judge most of the rest. The champion proposes the law itself on none of 60 laws drawn
+  afterwards, like the seed; it returns an accurate candidate, which is not the law, on 15 of them
+  against 6 (13 gained, 4 lost). No gain in laws; nothing installed.
 - **The product can be asked for search processes that cannot hang; a proposal for signed
   evidence (2026-11-24).** The wider-conditions run (45444150935) stopped for ever in every shard
   after one to four searches: it calls the product's own reading, so the product's search on

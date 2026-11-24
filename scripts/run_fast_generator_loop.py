@@ -56,7 +56,7 @@ import build_invented_laws as grammar  # noqa: E402
 import run_search_evolution as rse  # noqa: E402
 
 from apedp_dyn.evolution import operator as loop  # noqa: E402
-from apedp_dyn.evolution.evolved_proposer import CandidateGeneratorTask  # noqa: E402
+from apedp_dyn.evolution.evolved_proposer import ACCURATE_R2, CandidateGeneratorTask  # noqa: E402
 from apedp_dyn.evolution.seed_generator import SEED_GENERATOR  # noqa: E402
 
 TAG = "DEV-FAST-GENERATOR-LOOP-2026-11"
@@ -259,19 +259,27 @@ def compare_on_fresh(champion: str, count: int, seconds_per_call: float = rse.SE
     task = CandidateGeneratorTask([rse.problem_of(law) for law in laws], rse.recovered, seconds_per_call=seconds_per_call)
     of: dict[str, Any] = {}
     solved: dict[str, set[str]] = {}
+    accurate: dict[str, set[str]] = {}
     for label, code in (("seed", SEED_GENERATOR), ("champion", champion)):
         evaluation = task.evaluate(code)
         per_problem = (evaluation.details or {}).get("problems") or {}
         solved[label] = {name for name, row in per_problem.items() if row.get("solved")}
-        of[label] = {"ran": bool(evaluation.ran), "laws_proposed": len(solved[label]), "summary": evaluation.summary,
+        accurate[label] = {name for name, row in per_problem.items()
+                           if row.get("best_r2") is not None and row["best_r2"] >= ACCURATE_R2}
+        of[label] = {"ran": bool(evaluation.ran), "laws_proposed": len(solved[label]),
+                     "accurate_candidates": len(accurate[label]), "summary": evaluation.summary,
                      "error": evaluation.error[:160]}
     gained, lost = sorted(solved["champion"] - solved["seed"]), sorted(solved["seed"] - solved["champion"])
+    more, fewer = sorted(accurate["champion"] - accurate["seed"]), sorted(accurate["seed"] - accurate["champion"])
     return {"tag": TAG, "what": "development: the champion and the seed on laws drawn after the run with another seed, none "
                                 "with a structure the loop was scored or taught on; the same grammar",
             "laws": count, "seed": of["seed"], "champion": of["champion"],
             "the_champion_is_the_seed": champion.strip() == SEED_GENERATOR.strip(),
             "gained_by_the_champion": len(gained), "lost_by_the_champion": len(lost),
-            "could_be_chance_p": round(sign_test(len(gained), len(lost)), 4)}
+            "could_be_chance_p": round(sign_test(len(gained), len(lost)), 4),
+            # an accurate candidate is not the law: it fits the clean rows and has another form
+            "accurate_candidate_gained_by_the_champion": len(more), "accurate_candidate_lost_by_the_champion": len(fewer),
+            "accurate_candidate_could_be_chance_p": round(sign_test(len(more), len(fewer)), 4)}
 
 
 def main(argv: list[str] | None = None) -> int:
