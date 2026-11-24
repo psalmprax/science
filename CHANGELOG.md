@@ -23,6 +23,29 @@ inferred releases.
 
 ### Added
 
+- **A real language model in MMLM, in two places (2026-11-24, asked for by the owner;
+  development, nothing in force).**
+  *MMLM-POC-001.* An outside audit found that the arm labelled "Frontier LLM Agent" in
+  `scripts/run_mmlm_poc_001.py` is hand-written algebra with made-up token counts, that the
+  arms start from different products, and that Gate 0 stops nothing. The label and docstrings
+  now say what the arm is, a diagnostic-guided heuristic, and the arms can be given a common
+  start. `apedp_dyn/quantum/llm_decomposition_arm.py` is the arm the label promised: a
+  language model is shown the products and the exact checker's failure report and replies with
+  one move; the checker applies it and keeps it only if the exact count of wrong entries falls.
+  `scripts/run_mmlm_poc_001_llm.py` compares it with the heuristic and the random walk from the
+  same products with the same number of moves, with the service's own token counts. Gate 0
+  stops that runner unless the run is called development: **the repository holds no copy of
+  the published 51-product decomposition** (its loader returns zeros), so nothing found can be
+  compared with it. From the shared start (64 wrong entries) the heuristic made no progress in
+  60 moves on three seeds and the random walk ended worse.
+  *MMLM itself.* MMLM's equation model orders the search without looking at the data.
+  `apedp_mmlm/llm_expert.py` adds an expert that does: a language model shown rows of the
+  table names shapes of law; those are tried first and a copy of the equation model is taught
+  them. `scripts/study_mmlm_llm_expert.py` measures where the true law then stands in the
+  search, against the equation model alone and the language model alone.
+  Both run on GitHub with the `NVIDIA_API_KEY` secret (`.github/workflows/mmlm-llm.yml`); the
+  key is never written anywhere. Tested with a scripted model
+  (`tests/test_mmlm_poc_001_llm.py`, 6; `tests/test_mmlm_llm_expert.py`, 7). No result yet.
 - **PREREG-REAL-TABLES-2026-11: the small-table reading's blind test, frozen (2026-11-24; nothing
   in force).** Six held-back tables with a known law, pipe friction and the expansion rate
   against published formulas on rows left out, 360 generated small tables drawn after freezing

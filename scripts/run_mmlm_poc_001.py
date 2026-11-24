@@ -3,9 +3,21 @@
 
 Implements the three experimental arms under matched computational budget:
 - Arm A: Conventional Search (Combinatorial Flip-Graph & Random Walk over GF(2))
-- Arm B: Frontier LLM Agent (High-Reasoning Discovery Engine with failure diagnostics,
-         subspace nullity elimination, targeted rank-1 substitution, and Frobenius orbits)
-- Arm C: Mathematical Heuristics (Alternating Least-Squares & Rank-1 Peeling over GF(2))
+- Arm B: a diagnostic-guided heuristic (failure diagnostics, subspace nullity elimination,
+         targeted rank-1 substitution, and Frobenius orbits). **No language model runs in it.**
+- Arm C: Mathematical Heuristics (random rank-1 replacement over GF(2))
+
+**Correction, 2026-11-24.** Arm B was labelled "Frontier LLM Agent" until an outside audit pointed out
+that it is hand-written algebra choosing among four fixed strategies, and that its "tokens" are fixed
+step weights (120, +50, +60, ...) and not a model's tokens. A result in which arm B beats arm A says
+that the diagnostic-guided heuristic beats the random walk; it says nothing about language models.
+The key names (``arm_b_tokens`` and the like) are kept so that old ledgers still read, and now carry
+that meaning. The arm in which a real language model chooses the moves is
+``apedp_dyn/quantum/llm_decomposition_arm.py``, run by ``scripts/run_mmlm_poc_001_llm.py``.
+Two more things the audit found stand as they are here and are handled in that runner: the arms do not
+start from the same products unless ``start`` is given, and Gate 0 is recorded but stops nothing. The
+repository holds no copy of the published 51-term decomposition (``load_published_51_reference`` returns
+zeros), so Gate 0 cannot be cleared.
 
 Adheres strictly to APEDP_QUANTUM_DISCOVERY_V1.md §6, AGENTS.md, and empirical verification guardrails.
 """
@@ -134,8 +146,12 @@ def run_arm_a_conventional(
     max_steps: int = 150,
     seed: int = 42,
     budget: Optional[BudgetAccountant] = None,
+    start: Optional[Tuple[np.ndarray, np.ndarray]] = None,
 ) -> Dict[str, Any]:
-    """Arm A: Conventional Search (Combinatorial Flip-Graph & Random Walk over GF(2))."""
+    """Arm A: Conventional Search (Combinatorial Flip-Graph & Random Walk over GF(2)).
+
+    ``start`` gives the products to start from, so that arms can be compared from the same place.
+    """
     if budget is None:
         budget = BudgetAccountant(
             wall_clock_limit_sec=time_limit_sec,
@@ -148,6 +164,8 @@ def run_arm_a_conventional(
     k54 = build_54_reference()
     current_U = k54.U[:target_rank].copy()
     current_V = k54.V[:target_rank].copy()
+    if start is not None:
+        current_U, current_V = start[0].copy(), start[1].copy()
 
     best_defect = 9999
     best_decomp: Optional[TensorDecomposition] = None
@@ -217,10 +235,15 @@ def run_arm_b_mmlm(
     max_steps: int = 150,
     seed: int = 42,
     budget: Optional[BudgetAccountant] = None,
+    start: Optional[Tuple[np.ndarray, np.ndarray]] = None,
 ) -> Dict[str, Any]:
-    """Arm B: Frontier LLM Agent (High-Reasoning Tool-Assisted Discovery Engine).
+    """Arm B: a diagnostic-guided heuristic. No language model runs here (see the module's correction).
 
-    Employs 6 core mathematical reasoning capabilities:
+    ``start`` gives the products to start from; without it this arm picks its own 50 of the 54 by weight,
+    which the other arms do not, so a difference between arms may then be the start and not the search.
+    Its "tokens" are fixed weights per step, not a model's tokens.
+
+    The strategies it chooses among, written by hand:
     1. Understands field structure: GF(2^12) modulus 4179, symmetric bilinear tensor T_ijk.
     2. Develops hypotheses: analyzes subspace nullity (redundant products) vs rank deficiency.
     3. Designs transformations: targeted rank-1 substitutions on failing (i, j) coordinates,
@@ -235,7 +258,7 @@ def run_arm_b_mmlm(
             max_evaluations=max_steps,
             max_verifier_calls=max_steps,
             max_tokens=200_000,
-            arm_name="Arm B: Frontier LLM Agent",
+            arm_name="Arm B: diagnostic-guided heuristic (no language model)",
         )
     rng = np.random.default_rng(seed)
 
@@ -246,6 +269,8 @@ def run_arm_b_mmlm(
     keep_indices = np.argsort(col_norms)[-target_rank:]
     current_U = k54.U[keep_indices].copy()
     current_V = k54.V[keep_indices].copy()
+    if start is not None:
+        current_U, current_V = start[0].copy(), start[1].copy()
 
     def frobenius_permute(vec: np.ndarray) -> np.ndarray:
         """Applies field Frobenius automorphism beta -> beta^2 mod 4179."""
@@ -388,7 +413,7 @@ def run_arm_b_mmlm(
         circuit_eval = evaluate_multiplier(circ)
 
     return {
-        "arm": "Arm B: Frontier LLM Agent",
+        "arm": "Arm B: diagnostic-guided heuristic (no language model)",
         "target_rank": target_rank,
         "best_defect": best_defect,
         "solved": best_defect == 0,
@@ -414,6 +439,7 @@ def run_arm_c_algebraic(
     max_steps: int = 150,
     seed: int = 42,
     budget: Optional[BudgetAccountant] = None,
+    start: Optional[Tuple[np.ndarray, np.ndarray]] = None,
 ) -> Dict[str, Any]:
     """Arm C: Mathematical Heuristics (Alternating Least-Squares & Rank-1 Peeling over GF(2))."""
     if budget is None:
@@ -428,6 +454,8 @@ def run_arm_c_algebraic(
     k54 = build_54_reference()
     current_U = k54.U[:target_rank].copy()
     current_V = k54.V[:target_rank].copy()
+    if start is not None:
+        current_U, current_V = start[0].copy(), start[1].copy()
 
     best_defect = 9999
     best_decomp: Optional[TensorDecomposition] = None
@@ -565,7 +593,7 @@ def run_mmlm_poc_001_matched_benchmark(
         max_evaluations=max_steps_per_arm,
         max_verifier_calls=max_steps_per_arm,
         max_tokens=200_000,
-        arm_name="Arm B: Frontier LLM Agent",
+        arm_name="Arm B: diagnostic-guided heuristic (no language model)",
     )
     budget_c = BudgetAccountant(
         wall_clock_limit_sec=budget_sec_per_arm,

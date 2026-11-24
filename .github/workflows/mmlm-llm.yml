@@ -1,0 +1,110 @@
+# Development, not a result: a real language model (NVIDIA's hosted API) in two places of MMLM.
+#   poc     MMLM-POC-001 with the language model choosing each move, beside the hand-written heuristic and the
+#           random walk, from the same products with the same number of moves (scripts/run_mmlm_poc_001_llm.py)
+#   expert  the language model as one of MMLM's experts: it reads a table and names shapes of law to try first
+#           (scripts/study_mmlm_llm_expert.py)
+# Push a branch mmlm-llm-run-*. Needs the repository secret NVIDIA_API_KEY; the key is never echoed and GitHub
+# masks it in logs. The first run is capped at about 270 calls: 3 x 60 moves, about 80 tables, a few to pick the model.
+name: MMLM with a real language model (development)
+
+on:
+  push:
+    branches: ['mmlm-llm-run-*']
+
+permissions:
+  contents: read
+
+env:
+  NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+
+jobs:
+  models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Require the secret
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "::error::The repository secret NVIDIA_API_KEY is not set (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The models the key reaches, and the one that is used
+        run: python scripts/run_mmlm_poc_001_llm.py --models --out out
+      - name: Print the list for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN mmlm llm models====="
+          if [ -f out/models.json ]; then gzip -9c out/models.json | base64 -w 0; echo; fi
+          echo "=====END mmlm llm models====="
+
+  poc:
+    needs: models
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: MMLM-POC-001, the language model choosing the moves, 3 runs of 60 moves
+        timeout-minutes: 220
+        run: python scripts/run_mmlm_poc_001_llm.py --development --out out --seeds 3 --steps 60
+      - name: Print the record for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN mmlm poc 001 llm====="
+          if [ -f out/mmlm_poc_001_llm.json ]; then gzip -9c out/mmlm_poc_001_llm.json | base64 -w 0; echo; fi
+          echo "=====END mmlm poc 001 llm====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mmlm-poc-001-llm
+          path: out
+          if-no-files-found: warn
+
+  expert:
+    needs: models
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The language model as one of MMLM's experts, 60 invented laws and the other-field laws
+        timeout-minutes: 220
+        run: python scripts/study_mmlm_llm_expert.py --out out --laws 60
+      - name: Print the record for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN mmlm llm expert====="
+          if [ -f out/mmlm_llm_expert.json ]; then gzip -9c out/mmlm_llm_expert.json | base64 -w 0; echo; fi
+          echo "=====END mmlm llm expert====="
+          echo "=====BEGIN mmlm llm expert rows====="
+          if [ -f out/mmlm_llm_expert_rows.jsonl ]; then gzip -9c out/mmlm_llm_expert_rows.jsonl | base64 -w 0; echo; fi
+          echo "=====END mmlm llm expert rows====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mmlm-llm-expert
+          path: out
+          if-no-files-found: warn
