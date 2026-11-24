@@ -761,13 +761,264 @@
   "sealed_files": 25,
   "what": "development; not a result"
  },
+ "level2_round2": {
+  "coding_model": null,
+  "meta": {
+   "retry": false,
+   "selection": 4,
+   "step": 0.5,
+   "study": 8,
+   "variants": 2
+  },
+  "note": "the chosen way of improving won on the runs that chose it; a round in which the incumbent wins again on new problems is the only confirmation here",
+  "rounds": [
+   {
+    "changed": true,
+    "chosen": {
+     "retry": false,
+     "selection": 4,
+     "step": 0.5,
+     "study": 8,
+     "variants": 2
+    },
+    "incumbent": {
+     "retry": false,
+     "selection": 6,
+     "step": 0.5,
+     "study": 8,
+     "variants": 2
+    },
+    "round": 2,
+    "runs": [
+     {
+      "cpu_seconds": 3799.0,
+      "g": [
+       10.143,
+       0.0,
+       9.513,
+       0.0
+      ],
+      "gain_per_cpu_hour": -9.6113,
+      "laws_known": 7,
+      "measurements": [
+       {
+        "accurate": 2,
+        "cpu_seconds": 354.94,
+        "g": 10.143,
+        "generation": 0,
+        "problems": 12,
+        "reported": 2,
+        "solved": 1,
+        "standard_error": 9.711,
+        "wrong": 0
+       },
+       {
+        "accurate": 0,
+        "cpu_seconds": 389.85,
+        "g": 0.0,
+        "generation": 1,
+        "problems": 12,
+        "reported": 0,
+        "solved": 0,
+        "standard_error": 6.392,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 378.44,
+        "g": 9.513,
+        "generation": 2,
+        "problems": 12,
+        "reported": 1,
+        "solved": 1,
+        "standard_error": 9.108,
+        "wrong": 0
+       },
+       {
+        "accurate": 4,
+        "cpu_seconds": 534.55,
+        "g": 0.0,
+        "generation": 3,
+        "problems": 12,
+        "reported": 4,
+        "solved": 0,
+        "standard_error": 4.662,
+        "wrong": 0
+       }
+      ],
+      "meta": {
+       "retry": false,
+       "selection": 6,
+       "step": 0.5,
+       "study": 8,
+       "variants": 2
+      },
+      "settings": {
+       "library_blocks": 16,
+       "library_proposals": 3,
+       "library_seconds": 10.0,
+       "library_top": 6,
+       "memory_seconds": 10.0
+      },
+      "verdict": "not shown"
+     },
+     {
+      "cpu_seconds": 3680.3,
+      "g": [
+       32.179,
+       0.0,
+       10.096,
+       7.412
+      ],
+      "gain_per_cpu_hour": -24.2266,
+      "laws_known": 3,
+      "measurements": [
+       {
+        "accurate": 3,
+        "cpu_seconds": 335.62,
+        "g": 32.179,
+        "generation": 0,
+        "problems": 12,
+        "reported": 3,
+        "solved": 3,
+        "standard_error": 16.09,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 345.24,
+        "g": 0.0,
+        "generation": 1,
+        "problems": 12,
+        "reported": 1,
+        "solved": 0,
+        "standard_error": 7.218,
+        "wrong": 0
+       },
+       {
+        "accurate": 2,
+        "cpu_seconds": 356.57,
+        "g": 10.096,
+        "generation": 2,
+        "problems": 12,
+        "reported": 2,
+        "solved": 1,
+        "standard_error": 9.666,
+        "wrong": 0
+       },
+       {
+        "accurate": 4,
+        "cpu_seconds": 485.67,
+        "g": 7.412,
+        "generation": 3,
+        "problems": 12,
+        "reported": 4,
+        "solved": 1,
+        "standard_error": 7.097,
+        "wrong": 0
+       }
+      ],
+      "meta": {
+       "retry": false,
+       "selection": 6,
+       "step": 0.5,
+       "study": 12,
+       "variants": 2
+      },
+      "settings": {
+       "library_blocks": 16,
+       "library_proposals": 3,
+       "library_seconds": 10.0,
+       "library_top": 6,
+       "memory_seconds": 10.0
+      },
+      "verdict": "not shown"
+     },
+     {
+      "cpu_seconds": 2743.8,
+      "g": [
+       0.0,
+       0.0,
+       9.673,
+       0.0
+      ],
+      "gain_per_cpu_hour": 0.0,
+      "laws_known": 4,
+      "measurements": [
+       {
+        "accurate": 0,
+        "cpu_seconds": 359.76,
+        "g": 0.0,
+        "generation": 0,
+        "problems": 12,
+        "reported": 0,
+        "solved": 0,
+        "standard_error": 6.927,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 385.1,
+        "g": 0.0,
+        "generation": 1,
+        "problems": 12,
+        "reported": 1,
+        "solved": 0,
+        "standard_error": 6.471,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 372.17,
+        "g": 9.673,
+        "generation": 2,
+        "problems": 12,
+        "reported": 1,
+        "solved": 1,
+        "standard_error": 9.261,
+        "wrong": 0
+       },
+       {
+        "accurate": 2,
+        "cpu_seconds": 386.68,
+        "g": 0.0,
+        "generation": 3,
+        "problems": 12,
+        "reported": 2,
+        "solved": 0,
+        "standard_error": 6.445,
+        "wrong": 0
+       }
+      ],
+      "meta": {
+       "retry": false,
+       "selection": 4,
+       "step": 0.5,
+       "study": 8,
+       "variants": 2
+      },
+      "settings": {
+       "library_blocks": 16,
+       "library_proposals": 3,
+       "library_seconds": 10.0,
+       "library_top": 6,
+       "memory_seconds": 10.0
+      },
+      "verdict": "not shown"
+     }
+    ]
+   }
+  ],
+  "sealed_files": 25,
+  "what": "development; not a result"
+ },
  "reading": [
   "Level 1, solved of 24 fresh problems a generation (accurate and no longer than the true law): 1, 3, 0, 3, 1. Accurate: 1, 5, 3, 10, 6. No wrong law. g: 11.3, 33.0, 0.0, 18.5, 7.6 per CPU-hour; no step rose by more than two standard errors. progress.verdict: not shown.",
   "The searcher learned six laws in four generations and the library never chose a block: no part was shared by two learned laws with a positive worth. The curriculum moved down to level 0, because fewer than 40 % of a study batch was solved even at level 1. There was nothing to compound.",
   "No settings copy solved more than the incumbent; one was adopted for using 21 % less CPU with as many solved (memory_seconds 10 to 5). The earlier drift on timing noise is gone.",
   "Level 2, round 1, three ways of running Level 1 from the same start, 12 measurement problems a generation: g ended at 0 in all three and every gain per CPU-hour was negative (-10.8, -11.0, -23.8). The incumbent was kept as the least negative. With one or two laws solved of 12 at the start, this compares noise; it says nothing about which way is better.",
   "What limits it: Level 0 here has no search engine. The four searches that recover most laws on the physics benchmark were left out to keep a problem to seconds of CPU, so the finder being improved solved 8 of the 120 measurement problems and feeds the library almost nothing.",
-  "Round 2 of Level 2 was still running when this was written."
+  "Level 2, round 2, on new problems: the incumbent's gain was -9.6 per CPU-hour, a larger study batch -24.2, a smaller selection batch 0.0 (none solved of 12 at the start and none at the end), and the last was chosen. One or no law solved of 12 in most measurements: this is noise again, and the way chosen is not a finding."
  ],
  "run": {
   "branch": "recursion-run-3",
@@ -775,6 +1026,7 @@
   "commit": "27af32b",
   "level1": "--generations 4 --measure 24; study 12, selection 10, variants 2",
   "level2_round1": "--metas 3 --generations 3 --measure 12 --study 8 --selection 6 --rounds 1",
+  "level2_round2": "--metas 3 --generations 3 --measure 12 --study 8 --selection 6 --rounds 1 --first-round 2, from round 1's choice",
   "run_id": 45382934021,
   "search_engines_in_level_0": "none: the first pass, the memory and the library only",
   "workflow": "recursion.yml"

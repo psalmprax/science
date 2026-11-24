@@ -56,7 +56,8 @@ inferred releases.
   Six laws were learned in four generations, the library never found a part worth naming, and
   the curriculum sank to its lowest level. Level 2's first round compared three ways of running
   Level 1 on 12 problems a generation; all ended at `g` = 0, which is noise, and the incumbent
-  was kept. The limit is plain in the record: Level 0 ran with the first pass, the memory and
+  was kept. The second round, on new problems, chose a smaller selection batch whose gain was
+  exactly zero (no law solved of 12 at the start or the end): noise again, not a finding. The limit is plain in the record: Level 0 ran with the first pass, the memory and
   the library only, without the searches that recover most laws on the physics benchmark, so
   the finder solved 8 of the 120 measurement problems and gives the library almost nothing to
   learn from.
