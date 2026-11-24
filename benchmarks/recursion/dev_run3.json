@@ -1,0 +1,783 @@
+{
+ "level1": {
+  "coding_model": null,
+  "cpu_seconds": 4675.0,
+  "curriculum": [
+   {
+    "level_after": 1.0,
+    "level_before": 2.0,
+    "of": 12,
+    "purpose": "study 1",
+    "solved": 0
+   },
+   {
+    "level_used_up": 0,
+    "purpose": "study 2"
+   },
+   {
+    "level_after": 0.0,
+    "level_before": 1.0,
+    "of": 12,
+    "purpose": "study 2",
+    "solved": 3
+   },
+   {
+    "level_after": 0.0,
+    "level_before": 0.0,
+    "of": 12,
+    "purpose": "study 3",
+    "solved": 1
+   },
+   {
+    "level_after": 0.0,
+    "level_before": 0.0,
+    "of": 12,
+    "purpose": "study 4",
+    "solved": 2
+   }
+  ],
+  "gain_per_cpu_hour": -2.8385,
+  "generation_0": {
+   "accurate": 1,
+   "cpu_seconds": 318.72,
+   "g": 11.295,
+   "generation": 0,
+   "problems": 24,
+   "reported": 1,
+   "solved": 1,
+   "standard_error": 11.057,
+   "wrong": 0
+  },
+  "generations": [
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 482.76,
+    "generation": 1,
+    "laws_known": 0,
+    "library_blocks": 0,
+    "measurement": {
+     "accurate": 5,
+     "cpu_seconds": 326.93,
+     "g": 33.035,
+     "generation": 1,
+     "problems": 24,
+     "reported": 5,
+     "solved": 3,
+     "standard_error": 17.841,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "accurate": 1,
+      "cpu_seconds": 129.93,
+      "per_cpu_hour": 27.708,
+      "problems": 10,
+      "reported": 1,
+      "solved": 1,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 3,
+      "library_seconds": 10.0,
+      "library_top": 6,
+      "memory_seconds": 10.0
+     },
+     "variants": [
+      {
+       "accurate": 1,
+       "adopted": false,
+       "cpu_seconds": 127.93,
+       "per_cpu_hour": 28.14,
+       "problems": 10,
+       "reported": 1,
+       "settings": {
+        "library_blocks": 8,
+        "library_proposals": 3,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 10.0
+       },
+       "solved": 1,
+       "wrong": 0
+      },
+      {
+       "accurate": 1,
+       "adopted": false,
+       "cpu_seconds": 128.04,
+       "per_cpu_hour": 28.116,
+       "problems": 10,
+       "reported": 1,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 15.0
+       },
+       "solved": 1,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "accurate": 1,
+     "cpu_seconds": 96.86,
+     "learned": 0,
+     "level": 1.0,
+     "per_cpu_hour": 0.0,
+     "problems": 12,
+     "reported": 1,
+     "retried": 0,
+     "solved": 0,
+     "wrong": 0
+    }
+   },
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 476.85,
+    "generation": 2,
+    "laws_known": 3,
+    "library_blocks": 0,
+    "measurement": {
+     "accurate": 3,
+     "cpu_seconds": 358.75,
+     "g": 0.0,
+     "generation": 2,
+     "problems": 24,
+     "reported": 3,
+     "solved": 0,
+     "standard_error": 7.021,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "accurate": 0,
+      "cpu_seconds": 139.82,
+      "per_cpu_hour": 0.0,
+      "problems": 10,
+      "reported": 0,
+      "solved": 0,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 3,
+      "library_seconds": 10.0,
+      "library_top": 6,
+      "memory_seconds": 10.0
+     },
+     "variants": [
+      {
+       "accurate": 0,
+       "adopted": false,
+       "cpu_seconds": 142.19,
+       "per_cpu_hour": 0.0,
+       "problems": 10,
+       "reported": 0,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 3,
+        "library_seconds": 15.0,
+        "library_top": 6,
+        "memory_seconds": 5.0
+       },
+       "solved": 0,
+       "wrong": 0
+      },
+      {
+       "accurate": 0,
+       "adopted": false,
+       "cpu_seconds": 140.09,
+       "per_cpu_hour": 0.0,
+       "problems": 10,
+       "reported": 0,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 3,
+        "library_seconds": 10.0,
+        "library_top": 9,
+        "memory_seconds": 10.0
+       },
+       "solved": 0,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "accurate": 3,
+     "cpu_seconds": 54.74,
+     "learned": 3,
+     "level": 0.0,
+     "per_cpu_hour": 197.282,
+     "problems": 12,
+     "reported": 3,
+     "retried": 0,
+     "solved": 3,
+     "wrong": 0
+    }
+   },
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 819.85,
+    "generation": 3,
+    "laws_known": 4,
+    "library_blocks": 0,
+    "measurement": {
+     "accurate": 10,
+     "cpu_seconds": 585.01,
+     "g": 18.461,
+     "generation": 3,
+     "problems": 24,
+     "reported": 10,
+     "solved": 3,
+     "standard_error": 9.97,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "accurate": 1,
+      "cpu_seconds": 255.41,
+      "per_cpu_hour": 0.0,
+      "problems": 10,
+      "reported": 1,
+      "solved": 0,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 3,
+      "library_seconds": 10.0,
+      "library_top": 6,
+      "memory_seconds": 10.0
+     },
+     "variants": [
+      {
+       "accurate": 1,
+       "adopted": false,
+       "cpu_seconds": 257.24,
+       "per_cpu_hour": 0.0,
+       "problems": 10,
+       "reported": 1,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 4,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 10.0
+       },
+       "solved": 0,
+       "wrong": 0
+      },
+      {
+       "accurate": 2,
+       "adopted": false,
+       "cpu_seconds": 254.09,
+       "per_cpu_hour": 0.0,
+       "problems": 10,
+       "reported": 2,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 3,
+        "library_seconds": 5.0,
+        "library_top": 6,
+        "memory_seconds": 10.0
+       },
+       "solved": 0,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "accurate": 2,
+     "cpu_seconds": 53.11,
+     "learned": 1,
+     "level": 0.0,
+     "per_cpu_hour": 67.779,
+     "problems": 12,
+     "reported": 2,
+     "retried": 0,
+     "solved": 1,
+     "wrong": 0
+    }
+   },
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 832.97,
+    "generation": 4,
+    "laws_known": 6,
+    "library_blocks": 0,
+    "measurement": {
+     "accurate": 6,
+     "cpu_seconds": 473.12,
+     "g": 7.609,
+     "generation": 4,
+     "problems": 24,
+     "reported": 6,
+     "solved": 1,
+     "standard_error": 7.449,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "accurate": 2,
+      "cpu_seconds": 238.1,
+      "per_cpu_hour": 15.119,
+      "problems": 10,
+      "reported": 2,
+      "solved": 1,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 3,
+      "library_seconds": 10.0,
+      "library_top": 6,
+      "memory_seconds": 5.0
+     },
+     "variants": [
+      {
+       "accurate": 2,
+       "adopted": true,
+       "cpu_seconds": 187.39,
+       "per_cpu_hour": 19.211,
+       "problems": 10,
+       "reported": 2,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 3,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 5.0
+       },
+       "solved": 1,
+       "wrong": 0
+      },
+      {
+       "accurate": 2,
+       "adopted": false,
+       "cpu_seconds": 242.89,
+       "per_cpu_hour": 14.822,
+       "problems": 10,
+       "reported": 2,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 10.0
+       },
+       "solved": 1,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "accurate": 4,
+     "cpu_seconds": 164.59,
+     "learned": 2,
+     "level": 0.0,
+     "per_cpu_hour": 43.746,
+     "problems": 12,
+     "reported": 4,
+     "retried": 0,
+     "solved": 2,
+     "wrong": 0
+    }
+   }
+  ],
+  "measurements": [
+   {
+    "accurate": 1,
+    "cpu_seconds": 318.72,
+    "g": 11.295,
+    "generation": 0,
+    "problems": 24,
+    "reported": 1,
+    "solved": 1,
+    "standard_error": 11.057,
+    "wrong": 0
+   },
+   {
+    "accurate": 5,
+    "cpu_seconds": 326.93,
+    "g": 33.035,
+    "generation": 1,
+    "problems": 24,
+    "reported": 5,
+    "solved": 3,
+    "standard_error": 17.841,
+    "wrong": 0
+   },
+   {
+    "accurate": 3,
+    "cpu_seconds": 358.75,
+    "g": 0.0,
+    "generation": 2,
+    "problems": 24,
+    "reported": 3,
+    "solved": 0,
+    "standard_error": 7.021,
+    "wrong": 0
+   },
+   {
+    "accurate": 10,
+    "cpu_seconds": 585.01,
+    "g": 18.461,
+    "generation": 3,
+    "problems": 24,
+    "reported": 10,
+    "solved": 3,
+    "standard_error": 9.97,
+    "wrong": 0
+   },
+   {
+    "accurate": 6,
+    "cpu_seconds": 473.12,
+    "g": 7.609,
+    "generation": 4,
+    "problems": 24,
+    "reported": 6,
+    "solved": 1,
+    "standard_error": 7.449,
+    "wrong": 0
+   }
+  ],
+  "meta": {
+   "retry": false,
+   "selection": 10,
+   "step": 0.5,
+   "study": 12,
+   "variants": 2
+  },
+  "progress": {
+   "g": [
+    11.295,
+    33.035,
+    0.0,
+    18.461,
+    7.609
+   ],
+   "overall_rose": false,
+   "steps_rose": [
+    false,
+    false,
+    false,
+    false
+   ],
+   "verdict": "not shown",
+   "wrong_share": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "sealed_files": 25,
+  "searcher": {
+   "code": null,
+   "laws": [
+    "0.300270540182325/x0",
+    "2.9*x0**2",
+    "3.70213481131806*x0**3",
+    "(0.215963221821303 + 0.508809306103178/x0)/(0.200074354301548 + 1/x0)",
+    "1.51465371887715*x0 + 1.75109996348567*log(x0) + 2.66295078733923",
+    "2.85697503406576/(3.63554959355356*x0 + 1)"
+   ],
+   "settings": {
+    "library_blocks": 16,
+    "library_proposals": 3,
+    "library_seconds": 10.0,
+    "library_top": 6,
+    "memory_seconds": 5.0
+   }
+  },
+  "seconds": 1365.7,
+  "seed": 20261124,
+  "tag": "level1",
+  "what": "development; not a result"
+ },
+ "level2_round1": {
+  "coding_model": null,
+  "meta": {
+   "retry": false,
+   "selection": 6,
+   "step": 0.5,
+   "study": 8,
+   "variants": 2
+  },
+  "note": "the chosen way of improving won on the runs that chose it; a round in which the incumbent wins again on new problems is the only confirmation here",
+  "rounds": [
+   {
+    "changed": false,
+    "chosen": {
+     "retry": false,
+     "selection": 6,
+     "step": 0.5,
+     "study": 8,
+     "variants": 2
+    },
+    "incumbent": {
+     "retry": false,
+     "selection": 6,
+     "step": 0.5,
+     "study": 8,
+     "variants": 2
+    },
+    "round": 1,
+    "runs": [
+     {
+      "cpu_seconds": 3513.1,
+      "g": [
+       10.575,
+       18.738,
+       0.0,
+       0.0
+      ],
+      "gain_per_cpu_hour": -10.837,
+      "laws_known": 7,
+      "measurements": [
+       {
+        "accurate": 1,
+        "cpu_seconds": 340.41,
+        "g": 10.575,
+        "generation": 0,
+        "problems": 12,
+        "reported": 1,
+        "solved": 1,
+        "standard_error": 10.125,
+        "wrong": 0
+       },
+       {
+        "accurate": 3,
+        "cpu_seconds": 384.25,
+        "g": 18.738,
+        "generation": 1,
+        "problems": 12,
+        "reported": 3,
+        "solved": 2,
+        "standard_error": 12.095,
+        "wrong": 0
+       },
+       {
+        "accurate": 0,
+        "cpu_seconds": 397.61,
+        "g": 0.0,
+        "generation": 2,
+        "problems": 12,
+        "reported": 0,
+        "solved": 0,
+        "standard_error": 6.267,
+        "wrong": 0
+       },
+       {
+        "accurate": 0,
+        "cpu_seconds": 418.95,
+        "g": 0.0,
+        "generation": 3,
+        "problems": 12,
+        "reported": 0,
+        "solved": 0,
+        "standard_error": 5.948,
+        "wrong": 0
+       }
+      ],
+      "meta": {
+       "retry": false,
+       "selection": 6,
+       "step": 0.5,
+       "study": 8,
+       "variants": 2
+      },
+      "settings": {
+       "library_blocks": 16,
+       "library_proposals": 3,
+       "library_seconds": 10.0,
+       "library_top": 6,
+       "memory_seconds": 10.0
+      },
+      "verdict": "not shown"
+     },
+     {
+      "cpu_seconds": 3447.0,
+      "g": [
+       10.527,
+       0.0,
+       9.864,
+       0.0
+      ],
+      "gain_per_cpu_hour": -10.9938,
+      "laws_known": 3,
+      "measurements": [
+       {
+        "accurate": 1,
+        "cpu_seconds": 341.99,
+        "g": 10.527,
+        "generation": 0,
+        "problems": 12,
+        "reported": 1,
+        "solved": 1,
+        "standard_error": 10.078,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 368.17,
+        "g": 0.0,
+        "generation": 1,
+        "problems": 12,
+        "reported": 1,
+        "solved": 0,
+        "standard_error": 6.769,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 364.95,
+        "g": 9.864,
+        "generation": 2,
+        "problems": 12,
+        "reported": 1,
+        "solved": 1,
+        "standard_error": 9.444,
+        "wrong": 0
+       },
+       {
+        "accurate": 0,
+        "cpu_seconds": 387.12,
+        "g": 0.0,
+        "generation": 3,
+        "problems": 12,
+        "reported": 0,
+        "solved": 0,
+        "standard_error": 6.437,
+        "wrong": 0
+       }
+      ],
+      "meta": {
+       "retry": true,
+       "selection": 6,
+       "step": 0.5,
+       "study": 8,
+       "variants": 2
+      },
+      "settings": {
+       "library_blocks": 16,
+       "library_proposals": 3,
+       "library_seconds": 10.0,
+       "library_top": 6,
+       "memory_seconds": 10.0
+      },
+      "verdict": "not shown"
+     },
+     {
+      "cpu_seconds": 3515.1,
+      "g": [
+       23.257,
+       0.0,
+       9.154,
+       0.0
+      ],
+      "gain_per_cpu_hour": -23.8183,
+      "laws_known": 4,
+      "measurements": [
+       {
+        "accurate": 3,
+        "cpu_seconds": 309.59,
+        "g": 23.257,
+        "generation": 0,
+        "problems": 12,
+        "reported": 3,
+        "solved": 2,
+        "standard_error": 15.012,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 339.48,
+        "g": 0.0,
+        "generation": 1,
+        "problems": 12,
+        "reported": 1,
+        "solved": 0,
+        "standard_error": 7.341,
+        "wrong": 0
+       },
+       {
+        "accurate": 1,
+        "cpu_seconds": 393.29,
+        "g": 9.154,
+        "generation": 2,
+        "problems": 12,
+        "reported": 1,
+        "solved": 1,
+        "standard_error": 8.764,
+        "wrong": 0
+       },
+       {
+        "accurate": 3,
+        "cpu_seconds": 458.95,
+        "g": 0.0,
+        "generation": 3,
+        "problems": 12,
+        "reported": 3,
+        "solved": 0,
+        "standard_error": 5.43,
+        "wrong": 0
+       }
+      ],
+      "meta": {
+       "retry": false,
+       "selection": 6,
+       "step": 0.5,
+       "study": 12,
+       "variants": 2
+      },
+      "settings": {
+       "library_blocks": 16,
+       "library_proposals": 3,
+       "library_seconds": 10.0,
+       "library_top": 6,
+       "memory_seconds": 10.0
+      },
+      "verdict": "not shown"
+     }
+    ]
+   }
+  ],
+  "sealed_files": 25,
+  "what": "development; not a result"
+ },
+ "reading": [
+  "Level 1, solved of 24 fresh problems a generation (accurate and no longer than the true law): 1, 3, 0, 3, 1. Accurate: 1, 5, 3, 10, 6. No wrong law. g: 11.3, 33.0, 0.0, 18.5, 7.6 per CPU-hour; no step rose by more than two standard errors. progress.verdict: not shown.",
+  "The searcher learned six laws in four generations and the library never chose a block: no part was shared by two learned laws with a positive worth. The curriculum moved down to level 0, because fewer than 40 % of a study batch was solved even at level 1. There was nothing to compound.",
+  "No settings copy solved more than the incumbent; one was adopted for using 21 % less CPU with as many solved (memory_seconds 10 to 5). The earlier drift on timing noise is gone.",
+  "Level 2, round 1, three ways of running Level 1 from the same start, 12 measurement problems a generation: g ended at 0 in all three and every gain per CPU-hour was negative (-10.8, -11.0, -23.8). The incumbent was kept as the least negative. With one or two laws solved of 12 at the start, this compares noise; it says nothing about which way is better.",
+  "What limits it: Level 0 here has no search engine. The four searches that recover most laws on the physics benchmark were left out to keep a problem to seconds of CPU, so the finder being improved solves about one law in ten at the measured levels and feeds the library almost nothing.",
+  "Round 2 of Level 2 was still running when this was written."
+ ],
+ "run": {
+  "branch": "recursion-run-3",
+  "coding_model": null,
+  "commit": "27af32b",
+  "level1": "--generations 4 --measure 24; study 12, selection 10, variants 2",
+  "level2_round1": "--metas 3 --generations 3 --measure 12 --study 8 --selection 6 --rounds 1",
+  "run_id": 45382934021,
+  "search_engines_in_level_0": "none: the first pass, the memory and the library only",
+  "workflow": "recursion.yml"
+ },
+ "what": "Development runs of apedp_dyn.recursion on GitHub after the changes that followed the first run; not a result. Nothing was preregistered and nothing is in force."
+}

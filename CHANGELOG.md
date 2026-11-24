@@ -50,6 +50,15 @@ inferred releases.
   as many solved needs 20 % less CPU to be adopted. Level 2 now runs one round a job and writes
   each run as it ends (the first Level 2 job would have reached its time limit with nothing
   written).
+  **The run after those changes** (`recursion-run-3`, `benchmarks/recursion/dev_run3.json`):
+  Level 1 solved 1, 3, 0, 3, 1 of 24 fresh problems a generation (accurate: 1, 5, 3, 10, 6), with
+  no wrong law; `g` = 11.3, 33.0, 0.0, 18.5, 7.6 and no step rose beyond its error: *not shown*.
+  Six laws were learned in four generations, the library never found a part worth naming, and
+  the curriculum sank to its lowest level. Level 2's first round compared three ways of running
+  Level 1 on 12 problems a generation; all ended at `g` = 0, which is noise, and the incumbent
+  was kept. The limit is plain in the record: Level 0 ran with the first pass, the memory and
+  the library only, without the searches that recover most laws on the physics benchmark, so
+  the finder solves about one law in ten and gives the library almost nothing to learn from.
   **What the loop cannot change** (`judge`): the referee package, both threshold files, the
   route, the last checks, the measured range, the learning gate, the curriculum and the progress
   test are sealed by SHA-256 at the start of a run and checked at every generation; a searcher
