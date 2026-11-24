@@ -51,7 +51,7 @@ jobs:
           python -m pip install --upgrade numpy pillow
 
       - name: Cache the blueprint PDF
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/sparrow
           key: arxiv-2507.16152v2
