@@ -1,0 +1,14 @@
+{
+  "patent_id": "US2017469A",
+  "source": "https://patents.google.com/patent/US2017469A/en",
+  "retrieved_utc": "2026-11-01T01:35:14+00:00",
+  "http_status": 200,
+  "bytes": 84261,
+  "html_sha256": "4fff6fa75ab40759580b3e608cf4f563da9449f3c155e85b772dcf05edd60827",
+  "jurisdiction": "US",
+  "title": "Container",
+  "abstract": "",
+  "claims": [],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "perishable food freshness prediction"
+}

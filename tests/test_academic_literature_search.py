@@ -7,8 +7,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from apedp.ingestion import LiteratureRecord, search_crossref
-from apedp.ingestion import ingestion_academic_apis
+from apedp.ingestion import LiteratureRecord, ingestion_academic_apis, search_crossref
 
 
 def _crossref_response(items: list[dict], total_results: int = 1) -> io.BytesIO:

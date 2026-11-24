@@ -1,0 +1,3066 @@
+{
+ "provenance": {
+  "branch": "agentic-variation-dev-2",
+  "collected": "2026-11-21T07:44Z",
+  "commit": "6cd88dd717ebdc8fe5903d13c8f06ce28128b97d",
+  "github_run": 44861670227,
+  "model": "nvidia/nemotron-3-ultra-550b-a55b",
+  "note": "runs_jsonl_sha256 and results_json_sha256 are the collect job's own files, rebuilt from its log; this record is derived from them and leaves out the candidates and the agent's replies",
+  "results_json_sha256": "5c2ab58913b09b7eac522ea456a8672579334decdabb80c3b131216a78909ac5",
+  "runs_jsonl_sha256": "3eab343d627ab920b28851871ce26eec175a9cf34a96b67cc680be7ceb072129",
+  "search_budget_seconds": 240,
+  "started": "2026-11-21T04:33Z"
+ },
+ "recovered_by_one_arm_and_not_the_other": {
+  "agent_alone and not agentic": [],
+  "agent_alone and not default": [],
+  "agentic and not agent_alone": [
+   "invented_9003 at noise 0",
+   "invented_9005 at noise 0",
+   "invented_9006 at noise 0",
+   "invented_9008 at noise 0",
+   "invented_9010 at noise 0",
+   "invented_9012 at noise 0",
+   "invented_9013 at noise 0",
+   "invented_9016 at noise 0",
+   "invented_9018 at noise 0",
+   "invented_9010 at noise 0.01",
+   "invented_9011 at noise 0.01",
+   "invented_9012 at noise 0.01",
+   "invented_9013 at noise 0.01",
+   "invented_9016 at noise 0.01",
+   "invented_9019 at noise 0.01"
+  ],
+  "agentic and not default": [
+   "invented_9008 at noise 0",
+   "invented_9016 at noise 0",
+   "invented_9016 at noise 0.01",
+   "invented_9019 at noise 0.01"
+  ],
+  "default and not agent_alone": [
+   "invented_9003 at noise 0",
+   "invented_9005 at noise 0",
+   "invented_9006 at noise 0",
+   "invented_9010 at noise 0",
+   "invented_9012 at noise 0",
+   "invented_9013 at noise 0",
+   "invented_9018 at noise 0",
+   "invented_9008 at noise 0.01",
+   "invented_9010 at noise 0.01",
+   "invented_9011 at noise 0.01",
+   "invented_9012 at noise 0.01",
+   "invented_9013 at noise 0.01"
+  ],
+  "default and not agentic": [
+   "invented_9008 at noise 0.01"
+  ]
+ },
+ "runs": [
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9000",
+   "reported": false,
+   "seconds": 189.06,
+   "sessions": [
+    [
+     12,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 5,
+   "structures_tried": 6,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9000",
+   "reported": false,
+   "seconds": 622.81,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ],
+    [
+     16,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 27,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9000",
+   "reported": false,
+   "seconds": 456.01,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9000",
+   "reported": false,
+   "seconds": 90.74,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.00751621098438718*log(x1*log(x1))*cos(x1) + 0.701098605213206*log(0.843295544993656*x0/x1 + 0.259008199596196/(x0*x1)) - 0.18950463324899/x0",
+   "found_by": "search",
+   "model_calls": 13,
+   "noise": 0.01,
+   "problem": "invented_9000",
+   "reported": true,
+   "seconds": 763.62,
+   "sessions": [
+    [
+     14,
+     "budget spent"
+    ],
+    [
+     16,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 22,
+   "structures_tried": 37,
+   "symbolic": false,
+   "test_r2": 0.9999784264326563,
+   "truth": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-0.691875518937714*log(x1*sin(1.20216189871133/x0)) + 0.0204233154827031*cos(2.51463221431734*sqrt(x1))**2*cos(sin(cos(5.77475458886751/x0))) - 0.185601241634279/x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9000",
+   "reported": true,
+   "seconds": 412.27,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999838852239191,
+   "truth": "2.9*x0/(x0 + 2.9) - 2.9*x1/(x1 + 2.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9001",
+   "reported": false,
+   "seconds": 122.78,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 14,
+   "structures_tried": 15,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9001",
+   "reported": false,
+   "seconds": 617.08,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ],
+    [
+     16,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 10,
+   "structures_tried": 22,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9001",
+   "reported": false,
+   "seconds": 296.97,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9001",
+   "reported": false,
+   "seconds": 143.36,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 13,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.01,
+   "problem": "invented_9001",
+   "reported": false,
+   "seconds": 840.39,
+   "sessions": [
+    [
+     12,
+     "budget spent"
+    ],
+    [
+     13,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 23,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9001",
+   "reported": false,
+   "seconds": 282.82,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*tanh(0.3*x0)/((x2**2 + 2.9)*(x1/(x1 + 0.45) + 0.3))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 6,
+   "noise": 0.0,
+   "problem": "invented_9002",
+   "reported": false,
+   "seconds": 132.01,
+   "sessions": [
+    [
+     13,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 10,
+   "structures_tried": 11,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 12,
+   "noise": 0.0,
+   "problem": "invented_9002",
+   "reported": false,
+   "seconds": 603.39,
+   "sessions": [
+    [
+     9,
+     "out of time"
+    ],
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 17,
+   "structures_tried": 29,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-8.88251735123868e-7*x0**8 + 2.88622433848754e-5*x0**7 - 0.00035713150327359*x0**6 + 0.00190878388179585*x0**5 - 0.00138242144943674*x0**4 - 0.025222692195239*x0**3 + 0.869825010126428*x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9002",
+   "reported": true,
+   "seconds": 276.88,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999999999880376,
+   "truth": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "1.37198021728928 - 1.27229215326446*sin(exp(x0**(1/4)))",
+   "found_by": "first_pass",
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9002",
+   "reported": true,
+   "seconds": 167.5,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 14,
+   "structures_tried": 15,
+   "symbolic": false,
+   "test_r2": 0.9998965133440654,
+   "truth": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "-0.0846628267668853*x0**2 + 0.944694452735404*x0",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9002",
+   "reported": true,
+   "seconds": 352.96,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     3,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 4,
+   "structures_tried": 12,
+   "symbolic": false,
+   "test_r2": 0.9998125353787866,
+   "truth": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-0.0846628267668853*x0**2 + 0.944694452735404*x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9002",
+   "reported": true,
+   "seconds": 266.85,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9998125353787866,
+   "truth": "2.9*tanh(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 6,
+   "noise": 0.0,
+   "problem": "invented_9003",
+   "reported": false,
+   "seconds": 163.07,
+   "sessions": [
+    [
+     14,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 13,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.999999999999997/(3.33333333333331*x1 + 9.66666666666677 + 1.50000000000017*x1/x0 + 4.34999999999933/x0)",
+   "found_by": "search",
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9003",
+   "reported": true,
+   "seconds": 617.98,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ],
+    [
+     14,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 11,
+   "structures_tried": 28,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "0.299999999737848/(x1 + 0.450082668629314*x1/(1.00018370807646*x0 - 0.00032806272263575*x0/x1 - 1.57343408091321e-11 + 2.80981151412669e-11/x1) + 2.89999999998746 + 1.30485235908046/x0)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9003",
+   "reported": true,
+   "seconds": 282.12,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "-0.0108946561479768/x0**0.484406486872899 - 0.0247381605292173*log(x1 + 1/x0) + 0.0805117681405182",
+   "found_by": "search",
+   "model_calls": 6,
+   "noise": 0.01,
+   "problem": "invented_9003",
+   "reported": true,
+   "seconds": 96.48,
+   "sessions": [
+    [
+     10,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 9,
+   "symbolic": false,
+   "test_r2": 0.9997327738768916,
+   "truth": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.0787986429458132 - 0.0257145792519808*log(x1 + sqrt(x1)/x0 + 0.72224288794208/x0)",
+   "found_by": "search",
+   "model_calls": 9,
+   "noise": 0.01,
+   "problem": "invented_9003",
+   "reported": true,
+   "seconds": 538.79,
+   "sessions": [
+    [
+     12,
+     "submitted"
+    ],
+    [
+     1,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 9,
+   "structures_tried": 23,
+   "symbolic": false,
+   "test_r2": 0.9998080440099053,
+   "truth": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-0.0106892094421717*sqrt(1/x0) - 0.0247381280632215*log(x1 + 1/x0) + 0.0802883479338499",
+   "found_by": "first_pass",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9003",
+   "reported": true,
+   "seconds": 273.22,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.99973118197744,
+   "truth": "0.3*x0/((x0 + 0.45)*(x1 + 2.9))"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9004",
+   "reported": false,
+   "seconds": 150.63,
+   "sessions": [
+    [
+     15,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 11,
+   "structures_tried": 12,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 9,
+   "noise": 0.0,
+   "problem": "invented_9004",
+   "reported": false,
+   "seconds": 435.09,
+   "sessions": [
+    [
+     15,
+     "budget spent"
+    ],
+    [
+     1,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 23,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9004",
+   "reported": false,
+   "seconds": 277.51,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "1.8125699032936*sqrt(sqrt(x0) + log(x0)) - 2.00583635507217",
+   "found_by": "first_pass",
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9004",
+   "reported": true,
+   "seconds": 115.89,
+   "sessions": [
+    [
+     14,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 10,
+   "structures_tried": 11,
+   "symbolic": false,
+   "test_r2": 0.9999622659279528,
+   "truth": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.89880413829387*log(x0 - 0.32155210679642) + 0.159345905850137",
+   "found_by": "search",
+   "model_calls": 9,
+   "noise": 0.01,
+   "problem": "invented_9004",
+   "reported": true,
+   "seconds": 502.74,
+   "sessions": [
+    [
+     9,
+     "submitted"
+    ],
+    [
+     9,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 9,
+   "structures_tried": 22,
+   "symbolic": false,
+   "test_r2": 0.9999603436591268,
+   "truth": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "0.898804138262698*log(x0 - 0.321552106862465) + 0.159345905905703",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9004",
+   "reported": true,
+   "seconds": 266.59,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999603436591223,
+   "truth": "1.7*log(0.3*x0 + 1) - 2.3*exp(-1.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 3,
+   "noise": 0.0,
+   "problem": "invented_9005",
+   "reported": false,
+   "seconds": 39.33,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 3,
+   "structures_tried": 4,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "1.0*sqrt(5.29/x0 + 19.573/x0**2)",
+   "found_by": "search",
+   "model_calls": 3,
+   "noise": 0.0,
+   "problem": "invented_9005",
+   "reported": true,
+   "seconds": 327.18,
+   "sessions": [
+    [
+     0,
+     "submitted"
+    ],
+    [
+     1,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 2,
+   "structures_tried": 18,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "1.0*sqrt(5.29/x0 + 19.573/x0**2)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9005",
+   "reported": true,
+   "seconds": 275.27,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "10.2751807142482 - 9.82914188140675*cos(x0**(-0.517415816562046))",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9005",
+   "reported": true,
+   "seconds": 139.24,
+   "sessions": [
+    [
+     9,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 7,
+   "structures_tried": 8,
+   "symbolic": false,
+   "test_r2": 0.9999768939637191,
+   "truth": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9005",
+   "reported": false,
+   "seconds": 389.24,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     3,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 5,
+   "structures_tried": 17,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9005",
+   "reported": false,
+   "seconds": 266.29,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.3*sqrt(x0 + 3.7)/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9006",
+   "reported": false,
+   "seconds": 170.43,
+   "sessions": [
+    [
+     13,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 7,
+   "structures_tried": 8,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.45*x0**2*sqrt(x0 + 1.3)",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.0,
+   "problem": "invented_9006",
+   "reported": true,
+   "seconds": 371.48,
+   "sessions": [
+    [
+     2,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 3,
+   "structures_tried": 10,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "0.45000000000001*x0**2*sqrt(x0 + 1.29999999999975)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9006",
+   "reported": true,
+   "seconds": 276.29,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "0.624234666805753*x0**2.36663805923885",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9006",
+   "reported": true,
+   "seconds": 71.64,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": 0.999975847531796,
+   "truth": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.101172061371615*x0**3 + 0.627606803080208*x0**2",
+   "found_by": "search",
+   "model_calls": 6,
+   "noise": 0.01,
+   "problem": "invented_9006",
+   "reported": true,
+   "seconds": 453.98,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     7,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 18,
+   "symbolic": false,
+   "test_r2": 0.9999667061594079,
+   "truth": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "0.101172061371615*x0**3 + 0.627606803080208*x0**2",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9006",
+   "reported": true,
+   "seconds": 268.46,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999667061594079,
+   "truth": "0.45*x0**2*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 6,
+   "noise": 0.0,
+   "problem": "invented_9007",
+   "reported": false,
+   "seconds": 162.54,
+   "sessions": [
+    [
+     14,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 14,
+   "structures_tried": 15,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "confirmed",
+   "arm": "agentic",
+   "formula": "3.88065735748498*x0*sin(2.299999996647*x1)/sqrt(-0.687425460993892*x0 + 5.04713886441567*x0/(4.30759241784937 - 0.770062019233439*log(x0 + 3.72104988348651)) + 0.651501479984746)",
+   "found_by": "search",
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9007",
+   "reported": true,
+   "seconds": 508.5,
+   "sessions": [
+    [
+     18,
+     "budget spent"
+    ],
+    [
+     15,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 21,
+   "structures_tried": 39,
+   "symbolic": false,
+   "test_r2": 0.999999999999072,
+   "truth": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9007",
+   "reported": false,
+   "seconds": 284.14,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9007",
+   "reported": false,
+   "seconds": 89.94,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 5,
+   "structures_tried": 6,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "8.91019533722449*x0**(1/4)*sin(2.30004580024455*x1) - 5.84910670449439*sin(2.30004580024455*x1)",
+   "found_by": "search",
+   "model_calls": 6,
+   "noise": 0.01,
+   "problem": "invented_9007",
+   "reported": true,
+   "seconds": 421.68,
+   "sessions": [
+    [
+     8,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 20,
+   "symbolic": false,
+   "test_r2": 0.9999981925472974,
+   "truth": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "1.00832762997651*x0*sin(2.30008552548197*x1) + 2.54312749207178*sin(2.30008552548197*x1) - 0.940590852075536*sin(2.30008552548197*x1)*cos(x0)/x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9007",
+   "reported": true,
+   "seconds": 274.73,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999851476205128,
+   "truth": "3.7*log(1.3*x0 + 1)*sin(2.3*x1)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 5,
+   "noise": 0.0,
+   "problem": "invented_9008",
+   "reported": false,
+   "seconds": 84.78,
+   "sessions": [
+    [
+     10,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 7,
+   "structures_tried": 8,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)",
+   "found_by": "search",
+   "model_calls": 8,
+   "noise": 0.0,
+   "problem": "invented_9008",
+   "reported": true,
+   "seconds": 427.67,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ],
+    [
+     1,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 28,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "confirmed",
+   "arm": "default",
+   "formula": "-3.70591370388219*sqrt(x0) + 0.449999938937719*x0*x1 + 0.000120538477390019*cos(x0) + 0.0351217035073234 + 0.0869376874344987/x0 - 0.63485930647646/sqrt(x0)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9008",
+   "reported": true,
+   "seconds": 283.34,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999999999979593,
+   "truth": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "-0.0132181374075605*x0**3 + 0.205472680287222*x0**2 + 0.450303244606479*x0*x1 - 1.89583283651252*x0 - 2.5315836105397",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9008",
+   "reported": true,
+   "seconds": 63.82,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": 0.9999934247688694,
+   "truth": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.45027447944796*x0*x1 - 0.597422875391174*x0 - 1.2285994119508*log(x0) - 3.57506405841272",
+   "found_by": "search",
+   "model_calls": 8,
+   "noise": 0.01,
+   "problem": "invented_9008",
+   "reported": true,
+   "seconds": 506.71,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     8,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 9,
+   "structures_tried": 22,
+   "symbolic": false,
+   "test_r2": 0.9999620733278809,
+   "truth": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "0.450355172721687*x0*x1 - 3.70358079668349*sqrt(x0 + 0.295341306943474)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9008",
+   "reported": true,
+   "seconds": 274.24,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 0.9999979717055771,
+   "truth": "0.45*x0*x1 - 3.7*sqrt(x0 + 0.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9009",
+   "reported": false,
+   "seconds": 184.16,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 15,
+   "structures_tried": 16,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9009",
+   "reported": false,
+   "seconds": 497.19,
+   "sessions": [
+    [
+     14,
+     "budget spent"
+    ],
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 13,
+   "structures_tried": 32,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9009",
+   "reported": false,
+   "seconds": 283.59,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "confirmed",
+   "arm": "agent_alone",
+   "formula": "0.00101936008096008*x0**3 + 0.00635959780513278*x0**2 - 0.148970557480208*x0 + 0.00327200545333757*x1**3 - 0.0491813729180798*x1**2 + 0.3639426177278*x1 + 0.0650247640668878",
+   "found_by": "search",
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9009",
+   "reported": true,
+   "seconds": 140.81,
+   "sessions": [
+    [
+     13,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 10,
+   "structures_tried": 11,
+   "symbolic": false,
+   "test_r2": 0.9999848806033245,
+   "truth": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.01,
+   "problem": "invented_9009",
+   "reported": false,
+   "seconds": 657.34,
+   "sessions": [
+    [
+     14,
+     "budget spent"
+    ],
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 29,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9009",
+   "reported": false,
+   "seconds": 273.09,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.7*log(0.7*x1 + 1) - 0.45*sin(0.3*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9010",
+   "reported": false,
+   "seconds": 185.08,
+   "sessions": [
+    [
+     18,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 10,
+   "structures_tried": 11,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "3.7*x1/(x0 + 2.3)",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.0,
+   "problem": "invented_9010",
+   "reported": true,
+   "seconds": 356.24,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 3,
+   "structures_tried": 13,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "0.999999999999999*x1/(0.27027027027027*x0 + 0.621621621621621)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9010",
+   "reported": true,
+   "seconds": 283.83,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "0.00413408327492905*x1 + 3.66279898773494*x1/(x0 + 2.27791051132756)",
+   "found_by": "search",
+   "model_calls": 6,
+   "noise": 0.01,
+   "problem": "invented_9010",
+   "reported": true,
+   "seconds": 184.18,
+   "sessions": [
+    [
+     14,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 13,
+   "structures_tried": 14,
+   "symbolic": false,
+   "test_r2": 0.9999994849720533,
+   "truth": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "3.70295321176216*x1/(x0 + 2.30305075354966)",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9010",
+   "reported": true,
+   "seconds": 341.77,
+   "sessions": [
+    [
+     1,
+     "submitted"
+    ],
+    [
+     3,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 4,
+   "structures_tried": 15,
+   "symbolic": true,
+   "test_r2": 0.9999997978870774,
+   "truth": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "3.70295321138396*x1/(x0 + 2.30305075308494)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9010",
+   "reported": true,
+   "seconds": 274.76,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 0.9999997978871119,
+   "truth": "3.7*x1/(x0 + 2.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "2.9/x1 + 1.3/x0",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.0,
+   "problem": "invented_9011",
+   "reported": true,
+   "seconds": 76.5,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 6,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "2.9/x1 + 1.3/x0",
+   "found_by": "search",
+   "model_calls": 3,
+   "noise": 0.0,
+   "problem": "invented_9011",
+   "reported": true,
+   "seconds": 319.08,
+   "sessions": [
+    [
+     1,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 0,
+   "structures_tried": 10,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "2.9/x1 + 1.3/x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9011",
+   "reported": true,
+   "seconds": 282.97,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "0.590347945019183*log(x0) - 2.27505529605252 + 2.9041912344794/x1 + 3.5587071270662/sqrt(x0)",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9011",
+   "reported": true,
+   "seconds": 76.35,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": 0.9999612144208145,
+   "truth": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "2.90325879698274/x1 + 1.29751080287258/x0",
+   "found_by": "search",
+   "model_calls": 3,
+   "noise": 0.01,
+   "problem": "invented_9011",
+   "reported": true,
+   "seconds": 354.7,
+   "sessions": [
+    [
+     0,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 1,
+   "structures_tried": 14,
+   "symbolic": true,
+   "test_r2": 0.9999982211470988,
+   "truth": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "2.90325879698274/x1 + 1.29751080287258/x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9011",
+   "reported": true,
+   "seconds": 274.45,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 0.9999982211470988,
+   "truth": "2.9/x1 + 1.3/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 5,
+   "noise": 0.0,
+   "problem": "invented_9012",
+   "reported": false,
+   "seconds": 108.36,
+   "sessions": [
+    [
+     8,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 5,
+   "structures_tried": 6,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "1.0*sqrt(1.69*x0 + 2.197)",
+   "found_by": "search",
+   "model_calls": 3,
+   "noise": 0.0,
+   "problem": "invented_9012",
+   "reported": true,
+   "seconds": 310.0,
+   "sessions": [
+    [
+     0,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 0,
+   "structures_tried": 9,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "1.0*sqrt(1.69*x0 + 2.197)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9012",
+   "reported": true,
+   "seconds": 276.12,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "0.67188636480551*x0**0.667329054332436 + 1.29609577460261",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9012",
+   "reported": true,
+   "seconds": 83.01,
+   "sessions": [
+    [
+     9,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 7,
+   "structures_tried": 8,
+   "symbolic": false,
+   "test_r2": 0.9999829470071925,
+   "truth": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "1.00000000000467*sqrt(1.68628666984727*x0 + 2.20479018709511)",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9012",
+   "reported": true,
+   "seconds": 349.83,
+   "sessions": [
+    [
+     0,
+     "submitted"
+    ],
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 16,
+   "symbolic": true,
+   "test_r2": 0.9999940022313206,
+   "truth": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "1.00000000000833*sqrt(1.68628667006244*x0 + 2.20479018640748)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9012",
+   "reported": true,
+   "seconds": 266.57,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 0.9999940022318475,
+   "truth": "1.3*sqrt(x0 + 1.3)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9013",
+   "reported": false,
+   "seconds": 140.8,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 13,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "3.7*sin(2.9*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "3.7*sin(2.9*x0)",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.0,
+   "problem": "invented_9013",
+   "reported": true,
+   "seconds": 335.94,
+   "sessions": [
+    [
+     0,
+     "submitted"
+    ],
+    [
+     3,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 4,
+   "structures_tried": 18,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "3.7*sin(2.9*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "3.7*sin(2.9*x0)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9013",
+   "reported": true,
+   "seconds": 276.16,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "3.7*sin(2.9*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9013",
+   "reported": false,
+   "seconds": 62.49,
+   "sessions": [
+    [
+     6,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "3.7*sin(2.9*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "3.70248000117536*sin(2.90002349280033*x0)",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9013",
+   "reported": true,
+   "seconds": 544.95,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     3,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 4,
+   "structures_tried": 18,
+   "symbolic": true,
+   "test_r2": 0.9999995415754374,
+   "truth": "3.7*sin(2.9*x0)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "3.70248000124517*sin(2.90002349271483*x0)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9013",
+   "reported": true,
+   "seconds": 268.89,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 0.9999995415754636,
+   "truth": "3.7*sin(2.9*x0)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 6,
+   "noise": 0.0,
+   "problem": "invented_9014",
+   "reported": false,
+   "seconds": 193.11,
+   "sessions": [
+    [
+     10,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 12,
+   "noise": 0.0,
+   "problem": "invented_9014",
+   "reported": false,
+   "seconds": 496.75,
+   "sessions": [
+    [
+     11,
+     "submitted"
+    ],
+    [
+     14,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 18,
+   "structures_tried": 35,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9014",
+   "reported": false,
+   "seconds": 275.25,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agent_alone",
+   "formula": "3.79023658814381/(x0 + 0.100181113746881)",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9014",
+   "reported": true,
+   "seconds": 167.83,
+   "sessions": [
+    [
+     9,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 9,
+   "structures_tried": 10,
+   "symbolic": false,
+   "test_r2": 0.9999799101180911,
+   "truth": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "3.79023658817057/(x0 + 0.100181113760354)",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.01,
+   "problem": "invented_9014",
+   "reported": true,
+   "seconds": 373.27,
+   "sessions": [
+    [
+     1,
+     "submitted"
+    ],
+    [
+     2,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 2,
+   "structures_tried": 14,
+   "symbolic": false,
+   "test_r2": 0.9999799101180888,
+   "truth": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "3.79023658659872/(x0 + 0.100181112968864)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9014",
+   "reported": true,
+   "seconds": 265.9,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.999979910118216,
+   "truth": "-1.3*exp(-1.7*x0) + 3.7/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9015",
+   "reported": false,
+   "seconds": 180.71,
+   "sessions": [
+    [
+     15,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 11,
+   "structures_tried": 12,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 9,
+   "noise": 0.0,
+   "problem": "invented_9015",
+   "reported": false,
+   "seconds": 693.35,
+   "sessions": [
+    [
+     11,
+     "submitted"
+    ],
+    [
+     6,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 12,
+   "structures_tried": 30,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9015",
+   "reported": false,
+   "seconds": 281.46,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9015",
+   "reported": false,
+   "seconds": 177.42,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 11,
+   "structures_tried": 12,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "-0.00951786963021796*x1**4 + 0.339133258214517*x1**3 + 1.85444753342135*x1**2 - 0.111502011084041*x1**3/x0 - 1.38115812228847*x1**2/x0 + 0.617832019495394*x1**2/x0**2",
+   "found_by": "search",
+   "model_calls": 13,
+   "noise": 0.01,
+   "problem": "invented_9015",
+   "reported": true,
+   "seconds": 652.53,
+   "sessions": [
+    [
+     14,
+     "budget spent"
+    ],
+    [
+     9,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 17,
+   "structures_tried": 34,
+   "symbolic": false,
+   "test_r2": 0.9999914052135334,
+   "truth": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-1.89809244164307*x1**4/(154.862482448319 + 92.0227437262812/x0 + 13.670492086001/x0**2) + 57.1969404527776*x1**3/(154.862482448319 + 92.0227437262812/x0 + 13.670492086001/x0**2) + 273.053838787097*x1**2/(154.862482448319 + 92.0227437262812/x0 + 13.670492086001/x0**2)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9015",
+   "reported": true,
+   "seconds": 274.13,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.999978071400141,
+   "truth": "1.3*x0*x1**2*sqrt(x1 + 1.7)/(x0 + 0.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9016",
+   "reported": false,
+   "seconds": 133.9,
+   "sessions": [
+    [
+     18,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 9,
+   "structures_tried": 10,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.449999999999999*x1 - 3.7*x2 - 0.699999999999998*sin(1.3*x0) - 2.9/x2",
+   "found_by": "search",
+   "model_calls": 8,
+   "noise": 0.0,
+   "problem": "invented_9016",
+   "reported": true,
+   "seconds": 504.33,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 22,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9016",
+   "reported": false,
+   "seconds": 295.49,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9016",
+   "reported": false,
+   "seconds": 176.89,
+   "sessions": [
+    [
+     18,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 11,
+   "structures_tried": 12,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "0.448255341846436*x1 - 3.69774828069093*x2 - 0.705126402446171*sin(1.31226613023428*x0) - 2.88926241750651/x2",
+   "found_by": "search",
+   "model_calls": 13,
+   "noise": 0.01,
+   "problem": "invented_9016",
+   "reported": true,
+   "seconds": 742.5,
+   "sessions": [
+    [
+     14,
+     "out of time"
+    ],
+    [
+     17,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 21,
+   "structures_tried": 35,
+   "symbolic": true,
+   "test_r2": 0.999967531914481,
+   "truth": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-0.737242764579325*x0**3/(x0 + 1.0241805510846) + 5.83811633412966*x0**2/(x0 + 1.0241805510846) - 18.1417323914275*x0/(x0 + 1.0241805510846) + 0.449456108393067*x1 - 3.69763415681735*x2 + 5.87133617808998 - 2.89088625352973/x2",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9016",
+   "reported": true,
+   "seconds": 281.46,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999343957604885,
+   "truth": "0.45*x1 - 3.7*x2 - 0.7*sin(1.3*x0) - 2.9/x2"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9017",
+   "reported": false,
+   "seconds": 167.93,
+   "sessions": [
+    [
+     15,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 9,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9017",
+   "reported": false,
+   "seconds": 609.97,
+   "sessions": [
+    [
+     13,
+     "budget spent"
+    ],
+    [
+     14,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 21,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9017",
+   "reported": false,
+   "seconds": 291.72,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9017",
+   "reported": false,
+   "seconds": 196.96,
+   "sessions": [
+    [
+     13,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 8,
+   "structures_tried": 9,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 14,
+   "noise": 0.01,
+   "problem": "invented_9017",
+   "reported": false,
+   "seconds": 795.62,
+   "sessions": [
+    [
+     14,
+     "budget spent"
+    ],
+    [
+     13,
+     "out of time"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 19,
+   "structures_tried": 36,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9017",
+   "reported": false,
+   "seconds": 282.58,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "2.9*x0*exp(-2.9*x1)*exp(-0.45*x2)/(x0 + 3.7)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9018",
+   "reported": false,
+   "seconds": 139.52,
+   "sessions": [
+    [
+     13,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 5,
+   "structures_tried": 6,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "-3.7/x1 + 1.7*log(x2 + 0.769230769230769)/x0 + 0.446019249594737/x0",
+   "found_by": "search",
+   "model_calls": 4,
+   "noise": 0.0,
+   "problem": "invented_9018",
+   "reported": true,
+   "seconds": 419.44,
+   "sessions": [
+    [
+     3,
+     "submitted"
+    ],
+    [
+     0,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 4,
+   "structures_tried": 14,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "confirmed",
+   "arm": "default",
+   "formula": "-3.70000000000005/x1 + 1.69999999998848*log(x2 + 0.769230769208887)/x0 + 0.446019249620504/x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9018",
+   "reported": true,
+   "seconds": 287.31,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": true,
+   "test_r2": 1.0,
+   "truth": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9018",
+   "reported": false,
+   "seconds": 180.11,
+   "sessions": [
+    [
+     12,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "-3.69939394705483/x1 + 1.89315858634925*log(x2 + 1.14491578035812)/x0",
+   "found_by": "search",
+   "model_calls": 5,
+   "noise": 0.01,
+   "problem": "invented_9018",
+   "reported": true,
+   "seconds": 507.24,
+   "sessions": [
+    [
+     4,
+     "submitted"
+    ],
+    [
+     2,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 2,
+   "structures_tried": 11,
+   "symbolic": false,
+   "test_r2": 0.9999764946689632,
+   "truth": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "-3.69939394704698/x1 + 1.89315858636575*log(x2 + 1.14491578029412)/x0",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9018",
+   "reported": true,
+   "seconds": 283.07,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999764946689823,
+   "truth": "-3.7/x1 + 1.7*log(1.3*x2 + 1)/x0"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.0,
+   "problem": "invented_9019",
+   "reported": false,
+   "seconds": 114.5,
+   "sessions": [
+    [
+     16,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 6,
+   "structures_tried": 7,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*exp(-0.7*x0)/(x1*x2)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agentic",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 13,
+   "noise": 0.0,
+   "problem": "invented_9019",
+   "reported": false,
+   "seconds": 633.16,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ],
+    [
+     13,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 21,
+   "structures_tried": 40,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*exp(-0.7*x0)/(x1*x2)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "default",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 0,
+   "noise": 0.0,
+   "problem": "invented_9019",
+   "reported": false,
+   "seconds": 299.09,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*exp(-0.7*x0)/(x1*x2)"
+  },
+  {
+   "accuracy_solution": false,
+   "action": "widen_search",
+   "arm": "agent_alone",
+   "formula": null,
+   "found_by": null,
+   "model_calls": 7,
+   "noise": 0.01,
+   "problem": "invented_9019",
+   "reported": false,
+   "seconds": 171.84,
+   "sessions": [
+    [
+     15,
+     "budget spent"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 11,
+   "structures_tried": 12,
+   "symbolic": false,
+   "test_r2": null,
+   "truth": "1.3*exp(-0.7*x0)/(x1*x2)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "agentic",
+   "formula": "1.30015620301341*exp(-0.699996184299956*x0)/(x1*x2)",
+   "found_by": "search",
+   "model_calls": 10,
+   "noise": 0.01,
+   "problem": "invented_9019",
+   "reported": true,
+   "seconds": 600.94,
+   "sessions": [
+    [
+     17,
+     "budget spent"
+    ],
+    [
+     4,
+     "submitted"
+    ]
+   ],
+   "status": "ok",
+   "structures_by_agent": 18,
+   "structures_tried": 36,
+   "symbolic": true,
+   "test_r2": 0.9999999731295615,
+   "truth": "1.3*exp(-0.7*x0)/(x1*x2)"
+  },
+  {
+   "accuracy_solution": true,
+   "action": "equivalent_class",
+   "arm": "default",
+   "formula": "5.83758265983962/(5.03409021493213e-12*x0**18*x1*x2 + x0**3*x1*x2 + 9.21254*x0**3*x1*x2/(x0**4 + 8.060521) + 7.0850253*x1*x2)",
+   "found_by": "search",
+   "model_calls": 0,
+   "noise": 0.01,
+   "problem": "invented_9019",
+   "reported": true,
+   "seconds": 281.31,
+   "sessions": [],
+   "status": "ok",
+   "structures_by_agent": null,
+   "structures_tried": null,
+   "symbolic": false,
+   "test_r2": 0.9999859436104318,
+   "truth": "1.3*exp(-0.7*x0)/(x1*x2)"
+  }
+ ],
+ "summary": {
+  "agent_alone|0.0": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 0,
+    "search": 1
+   },
+   "median_seconds": 145.715,
+   "model_calls": 125,
+   "n": 20,
+   "reported": 1,
+   "reported_wrong": 0,
+   "sessions": 20,
+   "sessions_submitted": 6,
+   "sessions_with_a_fit": 20,
+   "structures_by_agent": 176,
+   "symbolic": 1,
+   "timeouts": 0
+  },
+  "agent_alone|0.01": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 2,
+    "search": 9
+   },
+   "median_seconds": 140.025,
+   "model_calls": 114,
+   "n": 20,
+   "reported": 11,
+   "reported_wrong": 0,
+   "sessions": 20,
+   "sessions_submitted": 9,
+   "sessions_with_a_fit": 20,
+   "structures_by_agent": 172,
+   "symbolic": 0,
+   "timeouts": 0
+  },
+  "agent_alone|all": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 2,
+    "search": 10
+   },
+   "median_seconds": 140.805,
+   "model_calls": 239,
+   "n": 40,
+   "reported": 12,
+   "reported_wrong": 0,
+   "sessions": 40,
+   "sessions_submitted": 15,
+   "sessions_with_a_fit": 40,
+   "structures_by_agent": 348,
+   "symbolic": 1,
+   "timeouts": 0
+  },
+  "agentic|0.0": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 0,
+    "search": 11
+   },
+   "median_seconds": 496.97,
+   "model_calls": 174,
+   "n": 20,
+   "reported": 11,
+   "reported_wrong": 0,
+   "sessions": 40,
+   "sessions_submitted": 21,
+   "sessions_with_a_fit": 31,
+   "structures_by_agent": 185,
+   "symbolic": 10,
+   "timeouts": 0
+  },
+  "agentic|0.01": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 0,
+    "search": 16
+   },
+   "median_seconds": 506.975,
+   "model_calls": 163,
+   "n": 20,
+   "reported": 16,
+   "reported_wrong": 0,
+   "sessions": 40,
+   "sessions_submitted": 29,
+   "sessions_with_a_fit": 36,
+   "structures_by_agent": 186,
+   "symbolic": 6,
+   "timeouts": 0
+  },
+  "agentic|all": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 0,
+    "search": 27
+   },
+   "median_seconds": 503.53499999999997,
+   "model_calls": 337,
+   "n": 40,
+   "reported": 27,
+   "reported_wrong": 0,
+   "sessions": 80,
+   "sessions_submitted": 50,
+   "sessions_with_a_fit": 67,
+   "structures_by_agent": 371,
+   "symbolic": 16,
+   "timeouts": 0
+  },
+  "default|0.0": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 0,
+    "search": 10
+   },
+   "median_seconds": 283.155,
+   "model_calls": 0,
+   "n": 20,
+   "reported": 10,
+   "reported_wrong": 0,
+   "sessions": 0,
+   "sessions_submitted": 0,
+   "sessions_with_a_fit": 0,
+   "structures_by_agent": 0,
+   "symbolic": 8,
+   "timeouts": 0
+  },
+  "default|0.01": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 1,
+    "search": 15
+   },
+   "median_seconds": 274.185,
+   "model_calls": 0,
+   "n": 20,
+   "reported": 16,
+   "reported_wrong": 0,
+   "sessions": 0,
+   "sessions_submitted": 0,
+   "sessions_with_a_fit": 0,
+   "structures_by_agent": 0,
+   "symbolic": 5,
+   "timeouts": 0
+  },
+  "default|all": {
+   "errors": 0,
+   "laws_found_by": {
+    "first_pass": 1,
+    "search": 25
+   },
+   "median_seconds": 277.195,
+   "model_calls": 0,
+   "n": 40,
+   "reported": 26,
+   "reported_wrong": 0,
+   "sessions": 0,
+   "sessions_submitted": 0,
+   "sessions_with_a_fit": 0,
+   "structures_by_agent": 0,
+   "symbolic": 13,
+   "timeouts": 0
+  }
+ },
+ "tag": "DEV-INVENTED-AGENTIC-2026-11",
+ "what": "A development run on the twenty development laws: not a preregistered result."
+}

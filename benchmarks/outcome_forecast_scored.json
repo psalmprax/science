@@ -1,0 +1,117 @@
+{
+ "forecasts": [
+  {
+   "arm": "default",
+   "forecast": "FORECAST-ODE-ADDITIONS-2026-11.json",
+   "forecast_as": "ode_repaired",
+   "outcomes": {
+    "recovered": {
+     "averages_only_expected": 181.9,
+     "brier": 0.2435,
+     "brier_averages_only": 0.3007,
+     "brier_of_the_rate_seen_afterwards": 0.2436,
+     "expected": 89.99,
+     "inside": true,
+     "interval": [
+      51,
+      129
+     ],
+     "level": 0.8,
+     "ranks_the_runs": 0.597,
+     "seen": 116
+    },
+    "reported": {
+     "averages_only_expected": 215.2,
+     "brier": 0.2257,
+     "brier_averages_only": 0.2755,
+     "brier_of_the_rate_seen_afterwards": 0.2411,
+     "expected": 137.77,
+     "inside": true,
+     "interval": [
+      98,
+      177
+     ],
+     "level": 0.8,
+     "ranks_the_runs": 0.681,
+     "seen": 164
+    },
+    "wrong": {
+     "averages_only_expected": 1.8,
+     "brier": 0.0511,
+     "brier_averages_only": 0.0143,
+     "brier_of_the_rate_seen_afterwards": 0.0143,
+     "expected": 24.56,
+     "inside": true,
+     "interval": [
+      0,
+      63
+     ],
+     "level": 0.8,
+     "ranks_the_runs": 0.891,
+     "seen": 4
+    }
+   },
+   "result": "RESULT-ODE-ADDITIONS-2026-11",
+   "runs": 276
+  },
+  {
+   "arm": "default",
+   "forecast": "FORECAST-MEMORY-2026-11.json",
+   "forecast_as": "refined_portfolio",
+   "outcomes": {
+    "recovered": {
+     "averages_only_expected": 56.9,
+     "brier": 0.343,
+     "brier_averages_only": 0.4164,
+     "brier_of_the_rate_seen_afterwards": 0.1673,
+     "expected": 50.01,
+     "inside": false,
+     "interval": [
+      37,
+      62
+     ],
+     "level": 0.8,
+     "ranks_the_runs": 0.678,
+     "seen": 17
+    },
+    "reported": {
+     "averages_only_expected": 67.4,
+     "brier": 0.2223,
+     "brier_averages_only": 0.2389,
+     "brier_of_the_rate_seen_afterwards": 0.2148,
+     "expected": 64.13,
+     "inside": true,
+     "interval": [
+      52,
+      76
+     ],
+     "level": 0.8,
+     "ranks_the_runs": 0.682,
+     "seen": 55
+    },
+    "wrong": {
+     "averages_only_expected": 0.6,
+     "brier": 0.0001,
+     "brier_averages_only": 0.0001,
+     "brier_of_the_rate_seen_afterwards": 0.0,
+     "expected": 0.4,
+     "inside": true,
+     "interval": [
+      0,
+      12
+     ],
+     "level": 0.8,
+     "ranks_the_runs": null,
+     "seen": 0
+    }
+   },
+   "result": "RESULT-MEMORY-2026-11",
+   "runs": 80
+  }
+ ],
+ "totals_inside_their_intervals": [
+  5,
+  6
+ ],
+ "what": "Forecasts filed before a run, against that run. Each was frozen with its preregistration."
+}

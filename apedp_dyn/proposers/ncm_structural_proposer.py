@@ -135,6 +135,19 @@ class NCMStructuralProposer(ProposerBase):
             top_feat_idx = int(np.argmax(np.abs(pruned_coef))) if len(pruned_coef) > 0 else 0
             formula = f"RationalHill({feature_names[top_feat_idx]}, num_scale={pruned_coef[top_feat_idx]:.3f}, denom_sat=0.1)"
 
+            coefs = pruned_coef
+            intercept = float(r_num.intercept_)
+            columns = tuple(feature_names)
+
+            def score(frame: pd.DataFrame) -> np.ndarray:
+                """The fitted rational-hill prediction on a frame, zero where it cannot apply."""
+                if any(c not in frame.columns for c in columns) or len(frame) < 2:
+                    return np.zeros(len(frame))
+                matrix = np.nan_to_num(frame[list(columns)].to_numpy(dtype=float))
+                prediction: np.ndarray = ((matrix @ coefs + intercept)
+                                          / (1.0 + 0.1 * np.mean(np.abs(matrix), axis=1)))
+                return prediction
+
             return CandidateProposal(
                 proposer_id=self.proposer_id,
                 candidate_id=candidate_id,
@@ -142,14 +155,7 @@ class NCMStructuralProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=tuple(feature_names),
-                compute_score=lambda frame, _coefs=pruned_coef, _intercept=float(
-                    r_num.intercept_
-                ), _cols=tuple(feature_names): (
-                    np.zeros(len(frame))
-                    if any(c not in frame.columns for c in _cols) or len(frame) < 2
-                    else (np.nan_to_num(frame[list(_cols)].to_numpy(dtype=float)) @ _coefs + _intercept)
-                    / (1.0 + 0.1 * np.mean(np.abs(np.nan_to_num(frame[list(_cols)].to_numpy(dtype=float))), axis=1))
-                ),
+                compute_score=score,
                 parameters={
                     "r2": r2,
                     "coefs": pruned_coef.tolist(),
@@ -191,7 +197,8 @@ class NCMStructuralProposer(ProposerBase):
                     return np.zeros(len(frame))
                 x0 = np.nan_to_num(frame[feature_names[0]].to_numpy(dtype=float))
                 dx = np.gradient(x0)
-                return np.column_stack([x0, dx]) @ pruned_coef
+                _out: np.ndarray = np.column_stack([x0, dx]) @ pruned_coef
+                return _out
 
             return CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -243,7 +250,8 @@ class NCMStructuralProposer(ProposerBase):
                 g2 = np.gradient(g1, axis=0)
                 design = (np.column_stack([xf, g1[:, :2], g2[:, :2]])
                           if xf.shape[1] >= 2 else np.column_stack([xf, g1, g2]))
-                return design @ pruned_coef
+                _out: np.ndarray = design @ pruned_coef
+                return _out
 
             return CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -293,7 +301,8 @@ class NCMStructuralProposer(ProposerBase):
                 t_frame = np.linspace(0.0, 4.0 * np.pi, n_frame)
                 xf = np.nan_to_num(frame[feature_names[0]].to_numpy(dtype=float))
                 design = np.column_stack([np.sin(t_frame), np.cos(t_frame), xf])
-                return design @ pruned_coef
+                _out: np.ndarray = design @ pruned_coef
+                return _out
 
             return CandidateProposal(
                 proposer_id=self.proposer_id,

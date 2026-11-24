@@ -21,13 +21,15 @@ dependencies = [
     "uvicorn>=0.30",
     "scikit-learn>=1.3",
     "scipy>=1.10",
+    "pandas>=2.0",
     "cryptography>=41.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "ruff==0.17.4",
+    "pytest-cov==7.0.0",
+    "ruff==0.17.5",
     "mypy==2.4.1",
     "maturin==1.16.0",
     "PyYAML==6.0.3",
@@ -36,7 +38,7 @@ dev = [
 ]
 test = [
     "pytest>=8.0",
-    "torch==2.14.1",
+    "torch>=2.5",
     "jax>=0.4",
     "flax>=0.8",
     "optax>=0.2",
@@ -45,6 +47,11 @@ test = [
     "scipy>=1.10",
     "cryptography>=41.0",
     "pytest-xdist>=3.6",
+    "z3-solver>=4.12",    # apedp_dyn.recursion.smt; that module answers "not decided" without it
+]
+# The main symbolic search (apedp_dyn.proposers.pysr_proposer). PySR installs Julia on first use.
+search = [
+    "pysr>=2.7",
 ]
 bayesian = [
     "jax>=0.4",
@@ -56,7 +63,6 @@ neural = [
     "equinox>=0.11",      # PyTree-based models
     "blackjax>=1.0",      # MCMC/SVI
     "jaxopt>=0.8",        # Optimization
-    "optax-contrib>=0.1", # Extra schedulers
     "opendp>=0.1",        # Differential privacy (optional)
     "optuna>=3.5",        # Hyperopt
 ]
@@ -87,6 +93,9 @@ exclude = ["apedp_kernel*"]
 
 [tool.setuptools.package-data]
 apedp = ["py.typed"]
+# The referee core (apedp_referee/) is also its own distribution, built from
+# apedp_referee/pyproject.toml; the full distribution carries it too.
+apedp_referee = ["canonical_preregistered_spec_v1.json", "py.typed"]
 
 [tool.coverage.run]
 # Branch data, not just line data. A module can execute every one of its
@@ -98,7 +107,8 @@ apedp = ["py.typed"]
 branch = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# apedp_referee/tests ships with the referee package (apedp_referee/pyproject.toml).
+testpaths = ["tests", "apedp_referee/tests"]
 addopts = ["-v", "--tb=short"]
 # A test marked xfail that starts passing is a real signal (the bug it pinned
 # was fixed, or the mark is stale). Without strict, pytest reports XPASS and
@@ -124,8 +134,34 @@ markers = [
 [tool.ruff]
 target-version = "py310"
 line-length = 100
+# Vendored upstream checkout, not repository code: the shipped kickmix build
+# vendors Qualtran under this directory. Linting it would report thousands of
+# findings whose fix belongs upstream, and editing it would invalidate the
+# pinned .so build.
+extend-exclude = [
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src",
+    # The competition's official verifiers. Six records under
+    # benchmarks/quantum_compilation/ pin the bytes of
+    # verifiers/dqi/verify_submission_dqi.py, and
+    # docs/DQI_OFFICIAL_COMPATIBILITY.md rests on "every scoring line
+    # unmodified". The 2026-11-08 lint and type burn-down reformatted and
+    # annotated these files, which broke those pins while leaving the gates
+    # green. They are restored to the measured bytes and are not ours to
+    # restyle: a finding here is fixed upstream or not at all.
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers",
+]
 
 [tool.ruff.lint]
+# `# noqa: BLE001 - <reason>` is read by two tools. Ruff reads it as a
+# suppression. scripts/audit_exception_hygiene.py reads it as the *record* that
+# a blanket handler is deliberate, and tests/test_dyn_exception_hygiene.py
+# ratchets on it. The pinned ruff no longer raises BLE001 where the handler
+# logs or uses the exception, so it reports those 18 annotations as unused
+# (RUF100) -- and removing them to satisfy ruff makes the hygiene gate count 18
+# new silent handlers (done once, in 87d89b6, and caught by the first full
+# suite run). Declaring the code as externally consumed keeps the annotation
+# valid for RUF100; BLE001 itself still fires on an unannotated blind except.
+external = ["BLE001"]
 # Explicit rule set: the default (E4,E7,E9,F) is too thin to act as a CI gate,
 # and an implicit default means a ruff upgrade can silently change what blocks.
 select = ["E", "F", "W", "I", "UP", "B", "C4", "RUF", "BLE", "S"]
@@ -148,6 +184,15 @@ ignore = [
     # check reads them as homoglyph attacks; here they are the domain language.
     "RUF001", "RUF002", "RUF003",
 ]
+
+[tool.ruff.lint.isort]
+# `apedp_kernel` is this repository's own Rust kernel (rust/apedp-kernel, built
+# with maturin), so it sorts with the first-party imports. Declared rather than
+# detected: ruff infers "first-party" from a directory of that name in the
+# source root, which used to be a tracked symlink into one developer's .venv.
+# Where the link resolved, `import apedp_kernel` sorted as first-party; on a
+# clean checkout (CI) it dangled and the same 21 files were I001 findings.
+known-first-party = ["apedp_kernel"]
 
 [tool.ruff.lint.per-file-ignores]
 # Pure re-export surface: the unused imports ARE the public API.
@@ -205,9 +250,45 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-files = ["apedp_dyn/conf/paths.py", "apedp_dyn/conf/canonical_spec.py"]
+files = [
+    "apedp_dyn/conf/paths.py",
+    "apedp_referee/canonical_spec.py",
+    "apedp_dyn/conf/benchmark.py",
+    "apedp_dyn/quantum_compilation/faros_runtime.py",
+    "apedp_dyn/quantum_compilation/kickmix_builds.py",
+    "scripts/build_faros_candidate.py",
+    "scripts/check_verifier_environment.py",
+]
 strict = true
 # Phase 1 checks the path/specification integrity boundary strictly. Keep
 # imported legacy modules opaque until their typing debt is remediated.
 follow_imports = "skip"
-exclude = ["neural_discovery/"]
+# Vendored upstream Qualtran checkout shipped with kickmix: not repository
+# code, and 12,186 of the 14,486 package errors came from it. Excluded by
+# provenance, not because its errors are inconvenient.
+exclude = [
+    "neural_discovery/",
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/",
+    # The competition's official verifiers: pinned byte-for-byte by benchmark
+    # records, so annotating them is not an option (see [tool.ruff] above).
+    "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/",
+]
+
+# The web stack ships py.typed; follow it so FastAPI decorators and
+# pydantic models are real types in the UI server instead of Any.
+[[tool.mypy.overrides]]
+# torch ships its own ``py.typed``; following it types ``nn.Module`` so these subclasses
+# are real classes rather than ``Any`` bases.
+module = ["torch", "torch.*"]
+follow_imports = "normal"
+
+[[tool.mypy.overrides]]
+module = ["fastapi.*", "pydantic.*", "starlette.*", "sqlmodel.*"]
+follow_imports = "normal"
+
+[[tool.mypy.overrides]]
+# The referee is its own package; apedp_dyn reaches it through aliases whose
+# stubs re-export it. Follow it for its types; its own errors are counted when
+# it is checked as its own path (quality_baseline.json, "apedp_referee").
+module = ["apedp_referee", "apedp_referee.*"]
+follow_imports = "silent"

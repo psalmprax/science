@@ -14,6 +14,7 @@ prospectively without hindsight? Frozen, no new hypotheses (H-RV dropped:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -110,7 +111,7 @@ def run_asset(panels: dict[str, pd.DataFrame], asset: str) -> AssetOut:
         den = float(np.sum((yf - mu) ** 2))
         qfloor = float(np.quantile(yt[okt], 0.05))
 
-        def r2(p, yf=yf, den=den):
+        def r2(p: Any, yf:Any=yf, den:Any=den) -> Any:
             return 1 - float(np.sum((yf - p) ** 2)) / den if den > 0 else float("nan")
         out.origins.append(OriginOut(origin, gate, r2(p0), r2(p2), r2(pad),
                                      qlike(yf, p0, qfloor), qlike(yf, p2, qfloor), qlike(yf, pad, qfloor)))

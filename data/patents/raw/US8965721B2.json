@@ -1,0 +1,90 @@
+{
+  "patent_id": "US8965721B2",
+  "source": "https://patents.google.com/patent/US8965721B2/en",
+  "retrieved_utc": "2026-10-31T18:27:02+00:00",
+  "http_status": 200,
+  "bytes": 272233,
+  "html_sha256": "6ce7235525d29677fc6f5af6a96a6d7a022694998f992a60ae6019ea30cba2c1",
+  "jurisdiction": "US",
+  "title": "Determining battery DC impedance",
+  "abstract": "Abstract A method and apparatus for measuring battery cell DC impedance by controlling charging of the battery cell. The method includes real-time characterization of a battery, (a) measuring periodically a DC impedance of the battery to determine a measured DC impedance; (b) ratioing the measured DC impedance to a reference DC impedance for the battery to establish an impedance degradation factor; (c) obtaining, during use of the battery and responsive to a set of attributes of the battery, an operational reference impedance for the battery; and (d) applying the impedance degradation factor to the operational reference impedance to obtain a real-time effective impedance for the battery.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A method for real-time characterization of a propulsion battery providing an operational current to an electric propulsion motor of an electric vehicle, the method comprising: (a) measuring a DC impedance of the propulsion battery after a recharging sequence of the propulsion battery wherein said recharging sequence includes an intermediate depolarizing relaxation period in which a charging current of the propulsion battery is set to zero amperes for a predetermined length of time and establishes a relaxed parameter for the propulsion battery used in determining said measured DC impedance; (b) determining a ratio of said measured DC impedance to a reference DC impedance for the propulsion battery to establish an impedance degradation factor; (c) obtaining, during use of the propulsion battery providing the operational current to the electric propulsion motor after a lapse of a sustained peak power period of provision of the operational current to the electric propulsion motor and responsive to a set of operational attributes of the propulsion battery, an operational reference impedance for the propulsion battery; and (d) applying said impedance degradation factor to said operational reference impedance to obtain a real-time effective impedance for the propulsion battery during provision of the operational current to the electric propulsion motor and wherein the propulsion battery includes lithium-ion energy storage elements."
+    },
+    {
+      "num": "2",
+      "text": "2. The method of claim 1 wherein said determining step (a) is implemented no more frequently than once every week during a charging cycle for the propulsion battery when the propulsion battery has a state of charge below sixty percent."
+    },
+    {
+      "num": "3",
+      "text": "3. The method of claim 1 wherein said determining step (a) comprises: (a1) establishing a temperature of the propulsion battery at a desired temperature; (a2) charging the propulsion battery to a predetermined SOC before said relaxation period; (a3) applying zero amps to the propulsion battery during said relaxation period; (a4) measuring and storing cell voltage of the propulsion battery at an end of said relaxation period; and thereafter (a5) resuming charging at full charging current."
+    },
+    {
+      "num": "4",
+      "text": "4. The method of claim 3 wherein said predetermined SOC is in the range of sixty percent to seventy percent."
+    },
+    {
+      "num": "5",
+      "text": "5. The method of claim 1 wherein said set of operational attributes include one or more attributes selected from the group consisting of state of charge, temperature, and combinations thereof."
+    },
+    {
+      "num": "6",
+      "text": "6. The method of claim 5 wherein said obtaining step (c) employs a battery-in-use look-up table responsive to said set of operational attributes."
+    },
+    {
+      "num": "7",
+      "text": "7. The method of claim 1 further comprising: (e) calculating a current discharge limit for the propulsion battery by subtracting V cell from V min and then dividing by said real-time effective impedance."
+    },
+    {
+      "num": "8",
+      "text": "8. The method of claim 7 further comprising: (f) calculating a power discharge limit by multiplying said current discharge limit by V min ."
+    },
+    {
+      "num": "9",
+      "text": "9. The method of claim 1 wherein said sustained peak power period is at least 10 seconds."
+    },
+    {
+      "num": "10",
+      "text": "10. A battery charging system for a propulsion battery providing an operational current to an electric propulsion motor of an electric vehicle, comprising: a charger coupled to the propulsion battery, a controller, and a battery data acquisition and monitoring subsystem wherein said controller: measures a DC impedance of the propulsion battery after a recharging sequence of the propulsion battery wherein said recharging sequence includes an intermediate depolarizing relaxation period in which a charging current of the propulsion battery is set to zero amperes for a predetermined length of time and establishes a relaxed parameter for the propulsion battery used in determining said measured DC impedance; determines a ratio of said measured DC impedance to a reference DC impedance for the propulsion battery to establish an impedance degradation factor; obtains, during use of the propulsion battery providing the operational current to the electric propulsion motor after a lapse of a sustained peak power period of provision of the operational current to the electric propulsion motor and responsive to a set of operational attributes of the propulsion battery acquired by said battery data acquisition and monitoring subsystem during provision of the operational current to the electric propulsion motor, an operational reference impedance for the propulsion battery; and applies said impedance degradation factor to said operational reference impedance to obtain a real-time effective impedance for the propulsion battery during provision of the operational current to the electric propulsion motor and wherein the propulsion battery includes lithium-ion energy storage elements."
+    },
+    {
+      "num": "11",
+      "text": "11. A non-transitory computer readable medium containing computer executable instructions to perform a method of claim 1 ."
+    },
+    {
+      "num": "12",
+      "text": "12. The non-transitory computer readable medium of claim 11 wherein said measuring step (a) is implemented no more frequently than once every week during a charging cycle for the propulsion battery when the propulsion battery has a state of charge below sixty percent."
+    },
+    {
+      "num": "13",
+      "text": "13. The non-transitory computer readable medium of claim 11 wherein said sustained peak power period is at least 10 seconds."
+    },
+    {
+      "num": "14",
+      "text": "14. The non-transitory computer readable medium of claim 11 wherein said set of operational attributes include one or more attributes selected from the group consisting of state of charge, temperature, and combinations thereof."
+    },
+    {
+      "num": "15",
+      "text": "15. The non-transitory computer readable medium of claim 14 wherein said obtaining step (c) employs a battery-in-use look-up table responsive to said set of operational attributes."
+    },
+    {
+      "num": "16",
+      "text": "16. The non-transitory computer readable medium of claim 11 further comprising: (e) calculating a current discharge limit for the propulsion battery by subtracting V cell from V min and then dividing by said real-time effective impedance."
+    },
+    {
+      "num": "17",
+      "text": "17. The non-transitory computer readable medium of claim 16 further comprising: (f) calculating a power discharge limit by multiplying said current discharge limit by V min ."
+    },
+    {
+      "num": "18",
+      "text": "18. The non-transitory computer readable medium of claim 11 wherein said measuring step (a) comprises: (a1) establishing a temperature of the propulsion battery at a desired temperature; (a2) charging the propulsion battery to a predetermined SOC before said relaxation period; (a3) applying zero amps to the propulsion battery during said relaxation period; (a4) measuring and storing cell voltage of the propulsion battery at an end of said relaxation period; and thereafter (a5) resuming charging at full charging current."
+    },
+    {
+      "num": "19",
+      "text": "19. The non-transitory computer readable medium of claim 18 wherein said predetermined SOC is in the range of sixty percent to seventy percent."
+    }
+  ],
+  "extractor": "scripts/fetch_patent_corpus.py::_ClaimParser"
+}

@@ -1,0 +1,16 @@
+{
+ "preregistration": "PREREG-MMLM-L-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/confirmed_stop.py": "ce13a721d801c6db81d9bd2618b1aa252fba30ef5353100aadac145366148e66",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_mmlm/equation_language.py": "b65cf9e8de40190f1bc87671ca9be6e4ee9c99545a0d0a42d2d541dfb119e5a9",
+  "apedp_mmlm/law_corpora.py": "c389632c0d9140f592721c476ef4fec4e40acc7dd7c4f641fb441f78df847e95",
+  "apedp_mmlm/law_language.py": "b453e7d3ac042a57a2dc00409a5386a172e3eaee3dc1e1327f2f5bffcb201875",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-MMLM-L-2026-11.md": "a595413692d3de176cbd51225f43d76e7064985d9106e88f0c8c3334b5ed9144",
+  "scripts/run_prereg_mmlm_law.py": "891fe61332187957db92f0739ab64d58d638e751c4a56e65f23a1cd4f8d766a8",
+  "scripts/run_prereg_mmlm_track_s.py": "de1ff23f59739626edb5b3f33b9ec2ecda3558864da79306c8b91d8eaae9c6b6",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd"
+ }
+}

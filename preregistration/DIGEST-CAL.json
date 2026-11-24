@@ -1,0 +1,7 @@
+{
+ "preregistration": "PREREG-CRYPTO-CAL-2026-11",
+ "sha256": {
+  "preregistration/PREREG-CRYPTO-CAL-2026-11.md": "80d794fcf9dbf88417d17b0a51ac02224ed5aa18d9663ae8b64cc25ccb2a9e6b",
+  "scripts/run_calibration_crypto_dev.py": "28ed0b5e05507a23641f7aca4433754e0167d1d7340a5708d773e849fdd603d7"
+ }
+}

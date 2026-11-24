@@ -1,0 +1,51 @@
+{
+  "schema": "apedp.quantum-artifacts.v1",
+  "note": "Compiled .kmb circuits are build products and are never committed. This manifest is the record: sha256 and size for each one, so a 'present: false' row explains an empty proposal list instead of leaving it to look like a healthy run. Restore with scripts/verify_quantum_artifacts.py --materialize, or recompile from the builder the row's benchmark names.",
+  "policy": {
+    "committed": false,
+    "cache": "/home/psalmprax/.cache/apedp/artifacts",
+    "rationale": "The dqi reference decoder is 886 MB; the artifact set is multiple GB. Git is the wrong store for it, and a code checkout must not require it -- the code paths that need bytes are the ones that say so."
+  },
+  "artifacts": [
+    {
+      "path": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/sample_submission/invsqrt.kmb",
+      "benchmark": "invsqrt",
+      "role": "Benchmark I sample; small enough to ship in git (579 KB)",
+      "present": true,
+      "bytes": 579721,
+      "sha256": "e2bf8eb64350a4460a271fc7f1d591ef125b1e276377e9a0f64b96ab3ca321e1"
+    },
+    {
+      "path": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/sample_submission/dqi.kmb",
+      "benchmark": "dqi",
+      "role": "Benchmark II reference decoder, official PASS at 102,400 shots",
+      "present": true,
+      "bytes": 886118180,
+      "sha256": "959471d05a26373b4f14ca0cae2d8639ea25f18170d9f6532139aa51ccc04995"
+    },
+    {
+      "path": "artifacts/quantum_compilation/invsqrt/invsqrt_89q_shared_pddd.kmb",
+      "benchmark": "invsqrt",
+      "role": "Benchmark I champion (89 qubits, 1,466 static Toffolis, 157,605.52)",
+      "present": true,
+      "bytes": 245010,
+      "sha256": "ce04c9d54dc42e42455444022b6652a6efb0be2630aca7b485d3efd4e58fa9de"
+    },
+    {
+      "path": "artifacts/quantum_compilation/invsqrt/invsqrt_90q_affine_opt.kmb",
+      "benchmark": "invsqrt",
+      "role": "Benchmark I sealed 90Q champion receipt",
+      "present": true,
+      "bytes": 243417,
+      "sha256": "7bd8955e7bda35382f33ba6df6239c746bcb1adad627f585939db6bc1accc3d0"
+    },
+    {
+      "path": "artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_222.kmb",
+      "benchmark": "dqi",
+      "role": "Benchmark II iteration sweep winner (222 EEA iterations); same sha256 as sample_submission/dqi.kmb",
+      "present": false,
+      "bytes": 886118180,
+      "sha256": "959471d05a26373b4f14ca0cae2d8639ea25f18170d9f6532139aa51ccc04995"
+    }
+  ]
+}

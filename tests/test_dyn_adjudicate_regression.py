@@ -289,6 +289,19 @@ class TestProvenanceFallbackFiresEndToEnd:
 
     @classmethod
     def _best_fit(cls):
+        """The production route: fit the whole slate, keep the lowest training loss.
+
+        On 2026-11-16 this was briefly started from the generating parameters,
+        because from the default start the fitter stopped short of the minimum
+        at a point that depended on the scipy release (cubic coefficient -2.62
+        under 1.18.1, -2.70 under 1.17.1) and gate 4 passed under one and failed
+        under the other. The fitter now converges (FIT_RTOL, FIT_DIFF_STEP in
+        apedp_dyn/fitting/parameter_fit.py; docs/SYSTEM_FLAWS_AUDIT.md J-16):
+        the true structure wins at the same training loss to seven figures
+        under 1.15.3, 1.17.1 and 1.18.1, with the cubic coefficient at -1.63 --
+        the noise's optimum, not the generating -2.0 -- so the production route
+        is reproducible again and the crutch is gone.
+        """
         from apedp_dyn.fitting.parameter_fit import fit_candidate
         from apedp_dyn.grammar import enumerate_candidates, prune_admissible
 
@@ -296,9 +309,21 @@ class TestProvenanceFallbackFiresEndToEnd:
         kept = prune_admissible(prob, enumerate_candidates(
             required=("u",), optional=("x", "x3", "v"), max_terms=4))
         scored = [fit_candidate(prob, k.candidate) for k in kept]
-        scored = [s for s in scored
-                  if s.train_loss is not None and np.isfinite(s.train_loss)]
-        return min(scored, key=lambda s: s.train_loss)
+        scored = [s for s in scored if s.train_loss is not None and np.isfinite(s.train_loss)]
+        best = min(scored, key=lambda s: s.train_loss)
+        assert sorted(best.candidate.term_set()) == ["u", "v", "x", "x3"], (
+            "precondition: the true structure has the lowest training loss")
+        assert best.provenance["gate4_status"]["passed"], (
+            "precondition: the fitted truth must survive gate 4, or adjudicate() "
+            f"never reaches the guards ({best.provenance['gate4_status']['detail']})")
+        return best
+
+    @staticmethod
+    def _lag1(series):
+        """|rho1| of a residual series, computed the way Guard 2 computes it."""
+        arr = np.asarray(series, dtype=float).ravel()
+        centred = arr - arr.mean()
+        return abs(float(np.dot(centred[:-1], centred[1:]) / np.dot(centred, centred)))
 
     def test_gate4_records_the_series_in_provenance(self):
         """Precondition: the series exists, as a JSON-safe list."""
@@ -331,22 +356,68 @@ class TestProvenanceFallbackFiresEndToEnd:
         assert best.holdout_rmse < SOLE_SURVIVOR_GAMMA * calibrated_sigma(
             g4["holdout_noise_sigma"])
 
+    #: A flag for the explicit-versus-provenance comparison; any value serves.
+    LOW_FLAG = RESID_RHO_FLAG / 2
+
+    @staticmethod
+    def _refusing_flag(recorded):
+        """The largest of a few flags below the series' |rho1| at which Guard 2 refuses.
+
+        The statistic is not pinned. The cubic coefficient is barely constrained
+        by the training drive, so where along that flat direction the converged
+        fit lands moves the holdout residuals' structure from machine to
+        machine while the training loss agrees to seven figures: raw |rho1| was
+        0.548 here and 0.304 on CI's 3.10 leg (2026-11-16), same libraries.
+        What is pinned is the guard's behaviour on whatever series gate 4
+        recorded.
+        """
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
+
+        rho = TestProvenanceFallbackFiresEndToEnd._lag1(recorded)
+        for fraction in (0.999, 0.75, 0.5, 0.25):
+            if not _sole_survivor_whiteness(recorded, rho * fraction)[0]:
+                return rho, rho * fraction
+        raise AssertionError(f"Guard 2 admits this series at every flag down to {rho * 0.25:.3f}")
+
     def test_fallback_abstains_without_any_explicit_series(self):
         """The end-to-end claim: no resid_sole, real fit, guard-2 abstention.
 
         adjudicate() is called with a single candidate and no residual series
-        at all. Any rho1 in the rationale can therefore only have come from
-        gate 4's recorded series, read through provenance.
+        at all, so the series it judges can only have come from gate 4's
+        record. The reason must quote the |rho1| of exactly that recorded
+        series: a guard reading any other series, or none, cannot produce it.
         """
         best = self._best_fit()
-        # Exercise the provenance fallback even when this seeded holdout falls
-        # just below the production whiteness barrier.
-        adj = adjudicate([best], sole_rho_flag=RESID_RHO_FLAG / 2)
+        rho, flag = self._refusing_flag(best.provenance["gate4_status"]["holdout_residuals"])
+
+        adj = adjudicate([best], sole_rho_flag=flag)
         assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
         assert adj.promoted is None
         # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
         assert "absolute ceiling" in adj.reason
-        assert "rho1" in adj.reason
+        assert f"|rho1|={rho:.3f}" in adj.reason
+
+    def test_the_same_recorded_series_clears_a_flag_just_above_it(self):
+        """The other side of the boundary: the refusal above was the series, not the flag."""
+        best = self._best_fit()
+        rho = self._lag1(best.provenance["gate4_status"]["holdout_residuals"])
+        adj = adjudicate([best], sole_rho_flag=rho * 1.001)
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is best
+
+    def test_the_production_flag_accepts_the_fitted_truth(self):
+        """At the production flag the truth is promoted, by whichever of Guard 2's
+        statistics admits it: on 2026-11-16 the standardized innovations here
+        (raw 0.548, innovations 0.447) and the raw series on CI's 3.10 leg
+        (0.304)."""
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
+
+        best = self._best_fit()
+        ok, why = _sole_survivor_whiteness(best.provenance["gate4_status"]["holdout_residuals"], RESID_RHO_FLAG)
+        assert ok, why
+        adj = adjudicate([best])
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is best
 
     def test_fallback_reaches_the_same_verdict_as_an_explicit_series(self):
         """Provenance and an explicit series must not disagree.
@@ -354,16 +425,22 @@ class TestProvenanceFallbackFiresEndToEnd:
         Two routes to the same evidence, one verdict. A divergence would mean
         the fallback is judging something other than what callers pass
         explicitly -- the exact inconsistency that made the guard unreachable
-        outside one script in the first place.
+        outside one script in the first place. The explicit series is the
+        signed residual series gate 4 records, which is what the fallback
+        reads; until 2026-11-16 this passed ``holdout_sq_error``, the series
+        ``_residual_series`` stopped using because lag-1 autocorrelation of
+        squared errors measures volatility clustering, not whiteness.
         """
         best = self._best_fit()
-        series = best.provenance["gate4_status"]["holdout_sq_error"]
+        series = best.provenance["gate4_status"]["holdout_residuals"]
+        rho = self._lag1(series)
 
-        via_provenance = adjudicate([best])
-        via_argument = adjudicate([best], resid_sole=series)
-        assert via_provenance.status is via_argument.status
-        assert via_provenance.promoted is None
-        assert via_argument.promoted is None
+        for flag in (self.LOW_FLAG, rho * 1.001, RESID_RHO_FLAG):
+            via_provenance = adjudicate([best], sole_rho_flag=flag)
+            via_argument = adjudicate([best], resid_sole=series, sole_rho_flag=flag)
+            assert via_provenance.status is via_argument.status, flag
+            assert via_provenance.promoted is via_argument.promoted, flag
+            assert via_provenance.reason == via_argument.reason, flag
 
 
 class TestConfPathReachesTheNote:

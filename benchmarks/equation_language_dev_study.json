@@ -1,0 +1,313 @@
+{
+ "ranks": [
+  {
+   "automaton": 25,
+   "bayesian": 37,
+   "candidates": 61717,
+   "name": "feynman_III_15_27",
+   "size_order": 6540,
+   "tree": 70,
+   "unigram": 281
+  },
+  {
+   "automaton": 175,
+   "bayesian": 202,
+   "candidates": 61717,
+   "name": "feynman_III_7_38",
+   "size_order": 6269,
+   "tree": 1270,
+   "unigram": 278
+  },
+  {
+   "automaton": 178,
+   "bayesian": 241,
+   "candidates": 61717,
+   "name": "feynman_II_34_2",
+   "size_order": 6268,
+   "tree": 325,
+   "unigram": 154
+  },
+  {
+   "automaton": 157,
+   "bayesian": 1217,
+   "candidates": 61717,
+   "name": "feynman_II_8_7",
+   "size_order": 58358,
+   "tree": 344,
+   "unigram": 1092
+  },
+  {
+   "automaton": 5,
+   "bayesian": 5,
+   "candidates": 29593,
+   "name": "feynman_I_12_1",
+   "size_order": 87,
+   "tree": 1,
+   "unigram": 5
+  },
+  {
+   "automaton": 5,
+   "bayesian": 5,
+   "candidates": 29593,
+   "name": "feynman_I_12_5",
+   "size_order": 87,
+   "tree": 1,
+   "unigram": 5
+  },
+  {
+   "automaton": 5,
+   "bayesian": 5,
+   "candidates": 29593,
+   "name": "feynman_I_34_27",
+   "size_order": 87,
+   "tree": 1,
+   "unigram": 5
+  },
+  {
+   "automaton": 1129,
+   "bayesian": 665,
+   "candidates": 9560,
+   "name": "feynman_I_6_2a",
+   "size_order": 334,
+   "tree": 913,
+   "unigram": 1976
+  },
+  {
+   "automaton": 2783,
+   "bayesian": 2049,
+   "candidates": 61717,
+   "name": "feynman_III_15_14",
+   "size_order": 61468,
+   "tree": 9081,
+   "unigram": 2080
+  },
+  {
+   "automaton": 152,
+   "bayesian": 190,
+   "candidates": 61717,
+   "name": "feynman_II_34_29a",
+   "size_order": 6269,
+   "tree": 1324,
+   "unigram": 281
+  },
+  {
+   "automaton": 143,
+   "bayesian": 263,
+   "candidates": 61717,
+   "name": "feynman_I_12_4",
+   "size_order": 49656,
+   "tree": 160,
+   "unigram": 1114
+  },
+  {
+   "automaton": 6,
+   "bayesian": 2,
+   "candidates": 29593,
+   "name": "strogatz_vdp2",
+   "size_order": 1,
+   "tree": 2,
+   "unigram": 1
+  },
+  {
+   "automaton": 3,
+   "bayesian": 3,
+   "candidates": 29593,
+   "name": "feynman_III_12_43",
+   "size_order": 87,
+   "tree": 1,
+   "unigram": 7
+  },
+  {
+   "automaton": 518,
+   "bayesian": 1410,
+   "candidates": 61717,
+   "name": "feynman_II_15_4",
+   "size_order": 47623,
+   "tree": 3698,
+   "unigram": 2308
+  },
+  {
+   "automaton": 518,
+   "bayesian": 1410,
+   "candidates": 61717,
+   "name": "feynman_II_15_5",
+   "size_order": 47623,
+   "tree": 3698,
+   "unigram": 2308
+  },
+  {
+   "automaton": 698,
+   "bayesian": 722,
+   "candidates": 61717,
+   "name": "feynman_II_27_16",
+   "size_order": 47626,
+   "tree": 1013,
+   "unigram": 610
+  },
+  {
+   "automaton": 10,
+   "bayesian": 10,
+   "candidates": 29593,
+   "name": "feynman_II_3_24",
+   "size_order": 551,
+   "tree": 8,
+   "unigram": 39
+  },
+  {
+   "automaton": 6,
+   "bayesian": 6,
+   "candidates": 29593,
+   "name": "feynman_I_29_4",
+   "size_order": 88,
+   "tree": 12,
+   "unigram": 14
+  },
+  {
+   "automaton": 3,
+   "bayesian": 3,
+   "candidates": 29593,
+   "name": "feynman_I_39_1",
+   "size_order": 87,
+   "tree": 1,
+   "unigram": 7
+  },
+  {
+   "automaton": 103,
+   "bayesian": 127,
+   "candidates": 61717,
+   "name": "feynman_I_43_31",
+   "size_order": 6268,
+   "tree": 458,
+   "unigram": 133
+  },
+  {
+   "automaton": 729,
+   "bayesian": 4325,
+   "candidates": 29593,
+   "name": "strogatz_glider2",
+   "size_order": 23183,
+   "tree": 3878,
+   "unigram": 2811
+  },
+  {
+   "automaton": 6,
+   "bayesian": 8,
+   "candidates": 29593,
+   "name": "feynman_II_27_18",
+   "size_order": 529,
+   "tree": 4,
+   "unigram": 23
+  },
+  {
+   "automaton": 6,
+   "bayesian": 8,
+   "candidates": 29593,
+   "name": "feynman_I_14_4",
+   "size_order": 529,
+   "tree": 4,
+   "unigram": 23
+  },
+  {
+   "automaton": 6413,
+   "bayesian": 4124,
+   "candidates": 61717,
+   "name": "feynman_I_18_12",
+   "size_order": 47620,
+   "tree": 6547,
+   "unigram": 2234
+  },
+  {
+   "automaton": 2270,
+   "bayesian": 7156,
+   "candidates": 61717,
+   "name": "feynman_I_47_23",
+   "size_order": 10804,
+   "tree": 19659,
+   "unigram": 2776
+  },
+  {
+   "automaton": 167,
+   "bayesian": 212,
+   "candidates": 61717,
+   "name": "feynman_II_34_2a",
+   "size_order": 6269,
+   "tree": 1249,
+   "unigram": 254
+  },
+  {
+   "automaton": 25,
+   "bayesian": 34,
+   "candidates": 61717,
+   "name": "feynman_II_4_23",
+   "size_order": 6540,
+   "tree": 64,
+   "unigram": 257
+  },
+  {
+   "automaton": 2,
+   "bayesian": 6,
+   "candidates": 29593,
+   "name": "feynman_II_8_31",
+   "size_order": 529,
+   "tree": 4,
+   "unigram": 23
+  },
+  {
+   "automaton": 121,
+   "bayesian": 196,
+   "candidates": 61717,
+   "name": "feynman_I_14_3",
+   "size_order": 6268,
+   "tree": 307,
+   "unigram": 145
+  },
+  {
+   "automaton": 6,
+   "bayesian": 4,
+   "candidates": 29593,
+   "name": "feynman_I_25_13",
+   "size_order": 88,
+   "tree": 10,
+   "unigram": 14
+  }
+ ],
+ "status": "development study, not preregistered",
+ "summary": {
+  "equations": 133,
+  "laws_found_earlier_than_size_order": {
+   "automaton": 28,
+   "bayesian": 28,
+   "tree": 27,
+   "unigram": 28
+  },
+  "laws_found_later_than_size_order": {
+   "automaton": 2,
+   "bayesian": 2,
+   "tree": 3,
+   "unigram": 1
+  },
+  "mean_bits_per_held_out_equation": {
+   "automaton": 33.705030835870836,
+   "bayesian": 37.04970071556209,
+   "tensor_train": 375.6187787419029,
+   "tree": 33.83162679930158,
+   "uniform": 52.12893672374519,
+   "unigram": 40.76512626006899
+  },
+  "mean_log10_candidates_tried": {
+   "automaton": 1.7726410632719367,
+   "bayesian": 1.9002494581709142,
+   "size_order": 3.2932235461074697,
+   "tree": 1.9740646093788115,
+   "unigram": 2.094556598125304
+  },
+  "median_candidates_tried_before_the_law": {
+   "automaton": 112.0,
+   "bayesian": 158.5,
+   "size_order": 6268.0,
+   "tree": 233.5,
+   "unigram": 204.0
+  },
+  "reachable_by_the_search": 30
+ }
+}

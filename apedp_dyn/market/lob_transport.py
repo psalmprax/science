@@ -24,6 +24,7 @@ Scope & honesty ceiling:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -121,7 +122,7 @@ def _spectral_evolution(
     k = _TWO_PI * np.fft.fftfreq(n_x, d=dx)
     u0_hat = np.fft.fft(u0)
     decay = diffusion * k ** 2 + decay_rate
-    snapshots = np.empty((n_t, n_x), dtype=np.float64)
+    snapshots: np.ndarray = np.empty((n_t, n_x), dtype=np.float64)
     for i in range(n_t):
         t = i * dt
         snapshots[i] = np.real(np.fft.ifft(u0_hat * np.exp(-(decay + 1j * drift_velocity * k) * t)))
@@ -153,9 +154,10 @@ def _rk4_evolution(
     def rhs(u: np.ndarray) -> np.ndarray:
         u_x = (np.roll(u, -1) - np.roll(u, 1)) / (2.0 * dx)
         u_xx = (np.roll(u, -1) - 2.0 * u + np.roll(u, 1)) / (dx * dx)
-        return -drift_velocity * u_x + diffusion * u_xx - decay_rate * u
+        _out: np.ndarray = -drift_velocity * u_x + diffusion * u_xx - decay_rate * u
+        return _out
 
-    snapshots = np.empty((n_t, u0.size), dtype=np.float64)
+    snapshots: np.ndarray = np.empty((n_t, u0.size), dtype=np.float64)
     snapshots[0] = u0
     for i in range(n_t - 1):
         u = snapshots[i]
@@ -235,10 +237,12 @@ def spectral_transport_recovery(
     decay_rates = np.empty(len(mode_indices))
     phase_slopes = np.empty(len(mode_indices))
     for column, mode in enumerate(mode_indices):
-        log_fit = np.polyfit(times, log_amplitudes[:, column], 1)
+        valid = amplitudes[:, column] > 1e-12 * max(float(amplitudes[0, column]), 1e-300)
+        fit_mask = valid if int(np.sum(valid)) >= 3 else slice(None)
+        log_fit = np.polyfit(times[fit_mask], log_amplitudes[fit_mask, column], 1)
         decay_rates[column] = -log_fit[0]
         phases = np.unwrap(np.angle(spectrum[:, mode]))
-        phase_fit = np.polyfit(times, phases, 1)
+        phase_fit = np.polyfit(times[fit_mask], phases[fit_mask], 1)
         phase_slopes[column] = phase_fit[0]
 
     k_modes = k[mode_indices]
@@ -261,7 +265,8 @@ def spectral_transport_recovery(
 
 def snapshot_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
     """Total depth mass ``integral u dx`` per snapshot."""
-    return np.asarray(snapshots, dtype=np.float64).sum(axis=1) * dx
+    _out: np.ndarray = np.asarray(snapshots, dtype=np.float64).sum(axis=1) * dx
+    return _out
 
 
 def snapshot_centre_of_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
@@ -293,7 +298,8 @@ def snapshot_centre_of_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
     # honestly with NaN rather than atan2's silent 0/0 -> 0.
     mean_angle[np.abs(total_mass) < 1e-12] = np.nan
     unwrapped = np.unwrap(mean_angle)
-    return unwrapped * domain_length / _TWO_PI
+    _out: np.ndarray = unwrapped * domain_length / _TWO_PI
+    return _out
 
 
 def snapshot_variance(snapshots: np.ndarray, dx: float) -> np.ndarray:
@@ -324,18 +330,21 @@ def snapshot_variance(snapshots: np.ndarray, dx: float) -> np.ndarray:
     mean_angle = np.arctan2(sin_moment, cos_moment)
     deviation = theta[None, :] - mean_angle[:, None]
     deviation = (deviation + np.pi) % _TWO_PI - np.pi
-    var_theta = np.sum(snapshots * deviation ** 2, axis=1) * dx / total_mass
+    weighted_dev = np.sum(snapshots * deviation ** 2, axis=1) * dx
+    valid_mass = np.abs(total_mass) >= 1e-12
+    var_theta = np.full(snapshots.shape[0], np.nan, dtype=np.float64)
+    np.divide(weighted_dev, total_mass, out=var_theta, where=valid_mass)
     out = (domain_length / _TWO_PI) ** 2 * var_theta
-    out[np.abs(total_mass) < 1e-12] = np.nan
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def discover_transport_with_engine(
     snapshots: np.ndarray,
     dt: float,
     dx: float,
-    **kwargs,
-):
+    **kwargs: Any,
+) -> Any:
     """Run the repository 1D PDE discovery engine on LOB snapshots.
 
     The import is deliberately deferred so that importing

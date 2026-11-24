@@ -263,7 +263,7 @@ class TestComparativeValidation:
 
         # Promotion tracking (stage 1: mathematical consistency)
         from apedp_dyn.epistemic.promotion_lifecycle import PromotionTracker
-        tracker = PromotionTracker(candidate_id="test_rime_v013")
+        tracker = PromotionTracker(candidate_id="test_rime_v013", allow_reported_metrics=True)
         # For the pipeline test, we verify stage 1 with adjudicated results.
         # The adjudicator already assessed guards 1 & 2, so we can check
         # the promotion tracker's interface separately.

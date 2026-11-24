@@ -21,6 +21,8 @@ from apedp.visualization.realtime import (
 )
 
 __all__ = [
+    "ProcessMonitor",
+    "SearchProcessVisualizer",
     "plot_3d_surface",
     "plot_calibration_curve",
     "plot_dimensional_analysis",
@@ -30,9 +32,7 @@ __all__ = [
     "plot_pareto_front",
     "plot_regression_fitness",
     "plot_scenario_results",
+    "plot_search_trajectory",
     "plot_uncertainty_propagation",
     "plot_violin_distribution",
-    "SearchProcessVisualizer",
-    "ProcessMonitor",
-    "plot_search_trajectory",
 ]

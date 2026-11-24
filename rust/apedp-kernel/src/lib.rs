@@ -12,11 +12,12 @@
 //! "this expression is bad"; the bridge turns it into a per-candidate fallback
 //! and keeps going.
 
-pub mod data;
 pub mod dag;
+pub mod data;
+pub mod first_pass;
 pub mod flow_head;
-pub mod jetflow;
 pub mod genetic;
+pub mod jetflow;
 pub mod latent;
 pub mod ngts;
 pub mod numeric;
@@ -34,10 +35,10 @@ pub use data::DataCol;
 
 use ndarray::ArrayView1;
 
-use ndarray::{Array2, Array4};
+use ndarray::Array2;
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray4, PyReadonlyArray1, PyReadonlyArray2,
-    PyReadonlyArray3, PyReadonlyArray4, PyUntypedArrayMethods,
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3,
+    PyUntypedArrayMethods,
 };
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -947,6 +948,13 @@ fn rime_search_envs_json(
             }
         }
     }
+    let unique_th = cfg_raw
+        .get("unique_score_threshold")
+        .and_then(|v| v.as_f64());
+    let (referee_outcome, referee_reason) =
+        rime::referee::classify_envs_with_threshold(&outcome, unique_th);
+    packet["referee_outcome"] = serde_json::json!(referee_outcome.as_str());
+    packet["referee_reason"] = serde_json::json!(referee_reason);
     serde_json::to_string(&packet)
         .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e)))
 }
@@ -1094,8 +1102,31 @@ fn rime_search_json(
             }
         }
     }
+    let unique_th = raw.get("unique_score_threshold").and_then(|v| v.as_f64());
+    let (referee_outcome, referee_reason) = match unique_th {
+        Some(th) => rime::referee::classify_with_threshold_and_reason(&outcome, th),
+        None => rime::referee::classify_with_reason(&outcome),
+    };
+    packet["referee_outcome"] = serde_json::json!(referee_outcome.as_str());
+    packet["referee_reason"] = serde_json::json!(referee_reason);
     serde_json::to_string(&packet)
         .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e)))
+}
+
+#[pyfunction]
+#[pyo3(signature = (packet_json, unique_score_threshold=None))]
+fn rime_classify_outcome_json(
+    packet_json: &str,
+    unique_score_threshold: Option<f64>,
+) -> PyResult<String> {
+    let (outcome, reason) =
+        rime::referee::classify_packet_json(packet_json, unique_score_threshold)
+            .map_err(|e| PyValueError::new_err(format!("rime referee: {}", e)))?;
+    serde_json::to_string(&serde_json::json!({
+        "referee_outcome": outcome.as_str(),
+        "referee_reason": reason,
+    }))
+    .map_err(|e| PyValueError::new_err(format!("rime referee: serialize failed: {}", e)))
 }
 
 #[pyfunction]
@@ -2434,8 +2465,99 @@ fn flow_head_transport_step<'py>(
     ))
 }
 
+/// The first pass of the law search: every expression of a table fitted to `y`.
+///
+/// Returns `(rss, slope, intercept, structure, condition, eval_error, status)`, one entry per expression;
+/// see `first_pass.rs` for what they mean and what they do not promise. `x` is rows by
+/// columns, `nn` rows by neighbours; all arrays must be contiguous.
+#[pyfunction]
+#[pyo3(signature = (ops, left, right, x, y, nn, floor))]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+fn first_pass_singles<'py>(
+    py: Python<'py>,
+    ops: PyReadonlyArray1<'py, u8>,
+    left: PyReadonlyArray1<'py, i32>,
+    right: PyReadonlyArray1<'py, i32>,
+    x: PyReadonlyArray2<'py, f64>,
+    y: PyReadonlyArray1<'py, f64>,
+    nn: PyReadonlyArray2<'py, u32>,
+    floor: f64,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<u8>>,
+)> {
+    let contiguous =
+        |name: &str| PyValueError::new_err(format!("{name} must be a contiguous array"));
+    let (d, k) = (x.shape()[1], nn.shape()[1]);
+    let ops = ops.as_slice().map_err(|_| contiguous("ops"))?;
+    let left = left.as_slice().map_err(|_| contiguous("left"))?;
+    let right = right.as_slice().map_err(|_| contiguous("right"))?;
+    let x = x.as_slice().map_err(|_| contiguous("x"))?;
+    let y = y.as_slice().map_err(|_| contiguous("y"))?;
+    let nn = nn.as_slice().map_err(|_| contiguous("nn"))?;
+    let fits = py
+        .detach(|| first_pass::singles(ops, left, right, x, d, y, nn, k, floor))
+        .map_err(PyValueError::new_err)?;
+    Ok((
+        fits.rss.into_pyarray(py),
+        fits.slope.into_pyarray(py),
+        fits.intercept.into_pyarray(py),
+        fits.structure.into_pyarray(py),
+        fits.condition.into_pyarray(py),
+        fits.eval_error.into_pyarray(py),
+        fits.status.into_pyarray(py),
+    ))
+}
+
+/// Sums of two terms: `y ~ a * first + b * partner + c` for every pair.
+///
+/// `first` and `partners` are columns by rows (one column per array row). Returns
+/// `(rss, condition, status)`, each of shape `(len(first), len(partners))`.
+#[pyfunction]
+#[pyo3(signature = (first, partners, y, floor))]
+#[allow(clippy::type_complexity)]
+fn first_pass_pairs<'py>(
+    py: Python<'py>,
+    first: PyReadonlyArray2<'py, f64>,
+    partners: PyReadonlyArray2<'py, f64>,
+    y: PyReadonlyArray1<'py, f64>,
+    floor: f64,
+) -> PyResult<(
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<u8>>,
+)> {
+    let contiguous =
+        |name: &str| PyValueError::new_err(format!("{name} must be a contiguous array"));
+    let (firsts, others) = (first.shape()[0], partners.shape()[0]);
+    let first = first.as_slice().map_err(|_| contiguous("first"))?;
+    let partners = partners.as_slice().map_err(|_| contiguous("partners"))?;
+    let y = y.as_slice().map_err(|_| contiguous("y"))?;
+    let fits = py
+        .detach(|| first_pass::pairs(first, partners, y, floor))
+        .map_err(PyValueError::new_err)?;
+    let shaped = |values: Vec<f64>| {
+        Array2::from_shape_vec((firsts, others), values)
+            .map_err(|e| PyValueError::new_err(e.to_string()))
+    };
+    let status = Array2::from_shape_vec((firsts, others), fits.status)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    Ok((
+        shaped(fits.rss)?.into_pyarray(py),
+        shaped(fits.condition)?.into_pyarray(py),
+        status.into_pyarray(py),
+    ))
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(first_pass_singles, m)?)?;
+    m.add_function(wrap_pyfunction!(first_pass_pairs, m)?)?;
     m.add_function(wrap_pyfunction!(compile, m)?)?;
     m.add_function(wrap_pyfunction!(evaluate_batch, m)?)?;
     m.add_function(wrap_pyfunction!(video_psnr, m)?)?;
@@ -2462,6 +2584,7 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rime_rewrite_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_search_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_search_envs_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_classify_outcome_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_evaluate_series_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_total_variation_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_implicit_discover_json, m)?)?;

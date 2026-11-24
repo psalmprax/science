@@ -1,0 +1,104 @@
+# The refined path with a language model configuring PySR, on the SRBench protocol
+# (preregistration/PREREG-LLM-CONTROLLER-2026-11.md). Needs the repository secret NVIDIA_API_KEY;
+# the key is never echoed and GitHub masks it in logs.
+#   push to srbench-controlled-smoke-*  -> two development problems, short budget
+#   push to srbench-controlled-run-*    -> smoke, then the one preregistered run
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: SRBench controlled search
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['srbench-controlled-smoke-*', 'srbench-controlled-run-*']
+
+permissions:
+  contents: read
+
+env:
+  NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Two development problems
+        run: python scripts/run_srbench_controlled.py smoke --out smoke-out
+
+  shard:
+    needs: smoke
+    if: startsWith(github.ref_name, 'srbench-controlled-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Run shard ${{ matrix.k }} of 32
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_srbench_controlled.py run --shard "$SHARD/32" --out controlled-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: srbench-controlled-shard-${{ matrix.k }}
+          path: controlled-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: srbench-controlled-shard-*
+          path: controlled-out
+          merge-multiple: true
+      - name: Merge the shards
+        run: python scripts/run_srbench_controlled.py collect --out controlled-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: srbench-controlled-results
+          path: |
+            controlled-out/runs.jsonl
+            controlled-out/results.json
+            controlled-out/runs-shard-*.jsonl
+          if-no-files-found: error
+      # The artifact store is not reachable from every environment that has to commit the
+      # results, so they are also printed, with their checksums, for rebuilding from the log.
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd controlled-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

@@ -3,6 +3,7 @@ noise, and transfer. Prereg: docs/CPMD_PREREGISTRATION_v014.md.
 """
 import sys
 import warnings
+from collections.abc import Callable
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -17,7 +18,7 @@ T5 = 2.5706  # t_{.975,df=5}
 T8 = 2.3060  # t_{.975,df=8}
 
 
-def finwin_truth(lags, kind, a=1.2, t0=8.0, b=0.1):
+def finwin_truth(lags: np.ndarray, kind: str, a: float=1.2, t0: float=8.0, b: float=0.1) -> float:
     lx = np.log(lags)
     if kind == "power":
         ly = np.log(0.05 * (lags + t0) ** (-a))
@@ -29,13 +30,14 @@ def finwin_truth(lags, kind, a=1.2, t0=8.0, b=0.1):
     return float(-np.sum(xc * ly) / np.sum(xc ** 2))
 
 
-def ols_t_cell(lags, tcrit, truth, gen_fn, n=200):
+def ols_t_cell(lags: np.ndarray, tcrit: float, truth: float, gen_fn: Callable[[int], np.ndarray], n: int=200) -> tuple[str, bool]:
     lx = np.log(lags)
     xc = lx - lx.mean()
     den = float(np.sum(xc ** 2))
     df = len(lags) - 2
     cov = 0
-    w, e = [], []
+    w: list[float] = []
+    e: list[float] = []
     for k in range(n):
         y = gen_fn(k)
         ly = np.log(y)
@@ -46,27 +48,29 @@ def ols_t_cell(lags, tcrit, truth, gen_fn, n=200):
         cov += (lo <= truth <= hi)
         w.append(hi - lo)
         e.append(s - truth)
-    e = np.array(e)
-    ok = (cov >= 184 and np.median(w) <= 1.0 and abs(np.mean(e)) <= 0.1
-          and np.sqrt(np.mean(e ** 2)) <= 0.3)
-    return (f"cov={cov}/{n} w={np.median(w):.2f} bias={np.mean(e):+.4f} "
-            f"rmse={np.sqrt(np.mean(e**2)):.3f} [{'PASS' if ok else 'fail'}]", ok)
+    e_arr: np.ndarray = np.array(e)
+    ok = bool(cov >= 184 and np.median(w) <= 1.0 and abs(np.mean(e_arr)) <= 0.1
+              and np.sqrt(np.mean(e_arr ** 2)) <= 0.3)
+    return (f"cov={cov}/{n} w={np.median(w):.2f} bias={np.mean(e_arr):+.4f} "
+            f"rmse={np.sqrt(np.mean(e_arr**2)):.3f} [{'PASS' if ok else 'fail'}]", ok)
 
 
-def sl(lags, yfull):
+def sl(lags: np.ndarray, yfull: np.ndarray) -> np.ndarray:
     ar = np.arange(2, 2 + len(yfull))
-    return yfull[((ar >= lags[0]) & (ar <= lags[-1]))]
+    window: np.ndarray = yfull[((ar >= lags[0]) & (ar <= lags[-1]))]
+    return window
 
 
-def run():
+def run() -> None:
     print("== 1. independent eval (seeds 8000+, base design) ==")
     ok1 = 0
     tot1 = 0
     for i, nl in enumerate((0.05, 0.10, 0.15, 0.20)):
         truth = finwin_truth(LAGS, "power")
-        s, ok = ols_t_cell(LAGS, T7, truth,
-                           lambda k, nl=nl, off=8000 + i * 200:
-                           sl(LAGS, gen("power", nl, off + k)[1]))
+        def _gen(k: int, nl: float = nl, off: int = 8000 + i * 200) -> np.ndarray:
+            return sl(LAGS, gen("power", nl, off + k)[1])
+
+        s, ok = ols_t_cell(LAGS, T7, truth, _gen)
         print(f"nl={nl}: {s}")
         ok1 += ok
         tot1 += 1
@@ -78,9 +82,11 @@ def run():
                                   [("ar1", 0.3), ("ar1", 0.5), ("cs", 0.5),
                                    ("ma1", 0.0)], (0.1, 0.2))):
         truth = finwin_truth(LAGS, "power")
-        s, ok = ols_t_cell(LAGS, T7, truth,
-                           lambda k, st=struct, rh=rho, nl=nl, off=8400:
-                           sl(LAGS, gen_dep(st, rh, nl, off + k)[1]))
+        def _gen_dep(k: int, st: str = struct, rh: float = rho,
+                     nl: float = nl, off: int = 8400) -> np.ndarray:
+            return sl(LAGS, gen_dep(st, rh, nl, off + k)[1])
+
+        s, ok = ols_t_cell(LAGS, T7, truth, _gen_dep)
         print(f"{struct} rho={rho} nl={nl}: {s}")
         ok2 += ok
         tot2 += 1
@@ -88,9 +94,9 @@ def run():
     print("== 3. transfer ==")
     ok3 = 0
     tot3 = 0
-    L310 = np.arange(3, 11, dtype=float)
-    L615 = np.arange(6, 16, dtype=float)
-    cases = [("lags3-10/power", L310, T5, "power", False, None),
+    L310: np.ndarray = np.arange(3, 11, dtype=float)
+    L615: np.ndarray = np.arange(6, 16, dtype=float)
+    cases: list[tuple[str, np.ndarray, float, str, bool, str | None]] = [("lags3-10/power", L310, T5, "power", False, None),
              ("lags6-15/power", L615, T8, "power", True, None),
              ("lags4-12/expo", LAGS, T7, "expo", False, None),
              ("lags4-12/flat", LAGS, T7, "flat", False, "fp")]
@@ -105,19 +111,21 @@ def run():
                     xc = lx - lx.mean()
                     den = float(np.sum(xc ** 2))
                     ly = np.log(yf)
-                    s = -float(np.sum(xc * ly) / den)
-                    r = ly - ly.mean() + s * xc
+                    s_fp = -float(np.sum(xc * ly) / den)
+                    r = ly - ly.mean() + s_fp * xc
                     se = float(np.sqrt(float(np.sum(r ** 2))
                                        / (len(lags) - 2) / den))
-                    fpf.append(abs(s) > 0.5 * 2 * tc * se)
+                    fpf.append(abs(s_fp) > 0.5 * 2 * tc * se)
                 rate = float(np.mean(fpf))
                 ok = rate <= 0.05
                 print(f"{name} nl={nl}: FP-equiv rate={rate:.3f} "
                       f"[{'PASS' if ok else 'fail'}]")
             else:
-                s, ok = ols_t_cell(lags, tc, truth,
-                                   lambda k, kd=kind, nl=nl, wd=wide, lg=lags:
-                                   sl(lg, gen(kd, nl, 8800 + k, wide=wd)[1]))
+                def _gen_case(k: int, kd: str = kind, nl: float = nl,
+                              wd: bool = wide, lg: np.ndarray = lags) -> np.ndarray:
+                    return sl(lg, gen(kd, nl, 8800 + k, wide=wd)[1])
+
+                s, ok = ols_t_cell(lags, tc, truth, _gen_case)
                 print(f"{name} nl={nl}: {s}")
             ok3 += ok
             tot3 += 1

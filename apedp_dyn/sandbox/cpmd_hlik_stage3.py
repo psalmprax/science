@@ -5,6 +5,8 @@ evaluation). Candidate frozen (W=200, L=6, lam=1.0). Causal throughout.
 """
 import sys
 import warnings
+from collections.abc import Sequence
+from pathlib import Path
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -16,7 +18,7 @@ W, L, LAM, SW, EPS, NSW = 200, 6, 1.0, 20, 1e-8, 200
 FEE = 0.0005
 
 
-def load_panel(path, close_suffix, exclude=()):
+def load_panel(path: str | Path, close_suffix: str, exclude: Sequence[str]=()) -> tuple[np.ndarray, list[str]]:
     df = pd.read_csv(path)
     cols = [c for c in df.columns if c.endswith(close_suffix)
             and c.replace(close_suffix, "") not in exclude]
@@ -26,17 +28,17 @@ def load_panel(path, close_suffix, exclude=()):
     return R, names
 
 
-def trailing_std(R, w=SW):
+def trailing_std(R: np.ndarray, w: int=SW) -> np.ndarray:
     n, N = R.shape
-    return np.array([[float(np.std(R[max(0, t - w + 1):t + 1, i]) + EPS)
-                      for i in range(N)] for t in range(n)])
+    return np.asarray([[float(np.std(R[max(0, t - w + 1):t + 1, i]) + EPS)
+                        for i in range(N)] for t in range(n)], dtype=float)
 
 
-def hlik_forecast(R):
+def hlik_forecast(R: np.ndarray) -> np.ndarray:
     n, N = R.shape
     sig = trailing_std(R)
     Z = R / (sig + EPS)
-    fc = np.full((n, N), np.nan)
+    fc: np.ndarray = np.full((n, N), np.nan)
     for i in range(N):
         others = [j for j in range(N) if j != i]
         u = np.median(Z[:, others], axis=1)
@@ -52,7 +54,7 @@ def hlik_forecast(R):
     return fc
 
 
-def comparators(R):
+def comparators(R: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     n, N = R.shape
     sig = trailing_std(R)
     Z = R / (sig + EPS)
@@ -70,7 +72,7 @@ def comparators(R):
     return mom, com
 
 
-def panel_ic_null(F, R, seed):
+def panel_ic_null(F: np.ndarray, R: np.ndarray, seed: int) -> tuple[float, float, float]:
     f, r = F[:-1].ravel(), R[1:].ravel()
     ok = np.isfinite(f) & np.isfinite(r)
     f, r = f[ok], r[ok]
@@ -83,7 +85,7 @@ def panel_ic_null(F, R, seed):
     return obs, float(cnt / NSW), mse / base
 
 
-def evaluate(tag, R, names):
+def evaluate(tag: str, R: np.ndarray, names: Sequence[str]) -> tuple[bool, np.ndarray, np.ndarray]:
     print(f"== {tag} ({R.shape[0]} days x {len(names)} assets) ==")
     F = hlik_forecast(R)
     M, C = comparators(R)
@@ -107,7 +109,7 @@ def evaluate(tag, R, names):
     return (p < 0.05 and mser < 1 and pr < 0.05), F, M
 
 
-def trade(tag, R, F, M):
+def trade(tag: str, R: np.ndarray, F: np.ndarray, M: np.ndarray) -> bool:
     n, N = R.shape
     t0 = W
     strat = {"hlik": np.zeros((n, N)), "mom": np.zeros((n, N)),
@@ -132,7 +134,7 @@ def trade(tag, R, F, M):
         r = R[t0 + 1:]
         chg = np.sum(np.abs(np.diff(np.concatenate([np.zeros((1, N)), p]), axis=0)), axis=1)
         nr = np.sum(p * r, axis=1) - chg * FEE
-        nav = np.cumsum(nr)
+        nav: np.ndarray = np.cumsum(nr)
         dd = float(np.max(np.maximum.accumulate(nav) - nav))
         sh = float(np.mean(nr) / (np.std(nr) + 1e-12) * np.sqrt(252))
         # halves
@@ -144,23 +146,24 @@ def trade(tag, R, F, M):
         print(f"{k}: sharpe={sh:+.3f} net={np.sum(nr):+.4f} dd={dd:.4f} "
               f" halves=({sh1:+.2f},{sh2:+.2f})")
     # paired t on monthly nets hlik vs mom
-    def monthly(nr):
-        return np.array([np.sum(nr[i:i + 21]) for i in range(0, len(nr), 21)])
+    def monthly(nr: np.ndarray) -> np.ndarray:
+        return np.asarray([float(np.sum(nr[i:i + 21])) for i in range(0, len(nr), 21)],
+                          dtype=float)
     mh, mm = monthly(res["hlik"][5]), monthly(res["mom"][5])
     d = mh - mm
     se = float(np.std(d) / np.sqrt(len(d)))
-    t = float(np.mean(d) / (se + 1e-12))
+    tstat = float(np.mean(d) / (se + 1e-12))
     from math import erf
-    pval = float(2 * (1 - 0.5 * (1 + erf(abs(t) / np.sqrt(2)))))
+    pval = float(2 * (1 - 0.5 * (1 + erf(abs(tstat) / np.sqrt(2)))))
     g = (res["hlik"][0] > 0 and pval < 0.05
          and res["hlik"][2] < 2 * res["bh"][2])
-    print(f"hlik vs mom monthly t={t:+.2f} p~{pval:.4f} | "
+    print(f"hlik vs mom monthly t={tstat:+.2f} p~{pval:.4f} | "
           f"GATES sharpe>0:{res['hlik'][0] > 0} beats-mom:{pval < 0.05} dd-ok:{res['hlik'][2] < 2 * res['bh'][2]} "
           f"-> {'PASS' if g else 'FAIL'}")
     return g
 
 
-def run():
+def run() -> None:
     Re, ne = load_panel("data/market/equity_top15.csv", "_CLOSE", exclude=("SPY",))
     Rc, nc = load_panel("data/market/crypto_top15.csv", "",
                         exclude=("COMPOSITE_TOP15", "observation_date",

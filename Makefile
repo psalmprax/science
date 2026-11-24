@@ -1,4 +1,11 @@
-.PHONY: install test lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
+.PHONY: install test test-referee-core lint typecheck typecheck-core typecheck-baseline lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
+
+# Interpreter used by every gate. When the project virtualenv exists it is used
+# automatically, so `make lint` / `make typecheck` work without PATH tweaks and
+# without the caller remembering PYTHON=.venv/bin/python. Override explicitly
+# for another environment, e.g. `make lint PYTHON=/usr/bin/python3`.
+VENV_PYTHON := $(firstword $(wildcard .venv/bin/python))
+PYTHON ?= $(if $(VENV_PYTHON),$(VENV_PYTHON),python)
 
 install:
 	pip install -e .
@@ -18,7 +25,7 @@ vqc-native:
 # Re-measure the native core against the Python tier on identical frozen inputs
 # and rewrite benchmarks/quantum_compilation/vqc_native_parity.json.
 vqc-parity: vqc-native
-	python scripts/measure_vqc_rust_parity.py
+	$(PYTHON) scripts/measure_vqc_rust_parity.py
 
 # Build a distributable wheel (rust/apedp-kernel via maturin) into dist/.
 wheel:
@@ -28,7 +35,7 @@ wheel:
 # of the docs would quote: frontier claims integrity, Planck/Riccati claims,
 # canonical ledger, the frozen external round, trig recovery, PDE transfer.
 reproduce: kernel
-	pytest tests/test_dyn_frontier_claims_integrity.py \
+	$(PYTHON) -m pytest tests/test_dyn_frontier_claims_integrity.py \
 	       tests/test_dyn_planck_limitation.py \
 	       tests/test_dyn_canonical_ledger.py \
 	       tests/test_external_benchmarks.py \
@@ -36,21 +43,52 @@ reproduce: kernel
 	       tests/test_dyn_pde_transfer.py -q
 
 test:
-	pytest tests/ -v
+	$(PYTHON) -m pytest tests/ apedp_referee/tests/ -v
 
+# The full configured ruleset (pyproject [tool.ruff.lint]) on the three trees
+# that are held clean, then the pinned baseline for the trees that are not yet.
+# The old gate ran --select E9,F, which let the configured rule set accumulate
+# findings while reporting success.
 lint:
-	ruff check apedp/ apedp_dyn/ tests/ --select E9,F
-	ruff check apedp_dyn/conf/
+	$(PYTHON) -m ruff check apedp/ apedp_referee/ apedp_mmlm/ tests/
+	$(PYTHON) -m ruff check apedp_dyn/conf/ scripts/build_faros_candidate.py scripts/check_verifier_environment.py scripts/run_mutation_battery.py
+	$(PYTHON) scripts/check_quality_baseline.py --ruff-only
 
-typecheck:
-	mypy
+# Strict mypy on the conf/ integrity boundary (pyproject [tool.mypy] `files`),
+# then the pinned full-package baseline. Bare `mypy` alone checks two modules
+# and says nothing about the other ~1,200 files.
+typecheck: typecheck-core typecheck-baseline
 
+# CI runs the two halves in different jobs: the baseline's counts depend on
+# which libraries are installed, so it runs where the full stack is.
+typecheck-core:
+	$(PYTHON) -m mypy
+
+typecheck-baseline:
+	$(PYTHON) scripts/check_quality_baseline.py --mypy-only
+
+# The referee core's own tests plus its import boundary. Meant to be run with an
+# interpreter that has only numpy, scipy, pandas and pytest installed (CI's
+# `referee-core` job does exactly that): a pass there shows that a promotion
+# decision needs nothing else in this repository. The module and test lists
+# live in tests/referee_core_manifest.py.
+test-referee-core:
+	$(PYTHON) -m pytest $$($(PYTHON) -c "from tests.referee_core_manifest import CORE_TESTS; print(' '.join(CORE_TESTS))") \
+		tests/test_referee_core_boundary.py -q -o addopts="" -p no:cacheprovider
+
+# The format check covers the kernel crate only. rust/apedp-vqc's seven source
+# files are pinned byte-for-byte by the machine and timing record in
+# benchmarks/ (tests/test_vqc_native_parity_record.py): reformatting them
+# changes the bytes that record says it measured, so formatting that crate is
+# a re-measurement, to be done with the record, not a lint fix. It has 43
+# rustfmt differences as of 2026-11-16. Clippy and the tests below still cover
+# the whole workspace.
 lint-rust:
-	cargo fmt --all --check
+	cargo fmt -p apedp-kernel --check
 	cargo clippy --workspace --all-targets --locked -- -A clippy::all -W clippy::correctness -D warnings
 
 format:
-	ruff format apedp/ tests/
+	$(PYTHON) -m ruff format apedp/ tests/
 
 clean:
 	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true

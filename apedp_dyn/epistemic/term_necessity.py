@@ -19,7 +19,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -273,14 +273,14 @@ def _ablate_ast_candidate(
 
 
 def guard_selection(
-    ranked: Sequence,
+    ranked: Sequence[Any],
     X_tr: Mapping[str, np.ndarray],
     y_tr: np.ndarray,
     X_ho: Mapping[str, np.ndarray],
     y_ho: np.ndarray,
     tie_rel_tol: float = 1e-6,
     tie_abs_floor: float = 1e-12,
-) -> tuple[list, GuardReport]:
+) -> tuple[list[Any], GuardReport]:
     """Phase-1 wire-in: necessity/near-tie filter at the L2 selection boundary.
 
     Purely restrictive layer between ranking and adjudication (rules 1-8):

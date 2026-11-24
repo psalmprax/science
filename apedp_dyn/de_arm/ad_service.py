@@ -189,7 +189,8 @@ def _eval_pow(e: Pow, values: Mapping[str, float]) -> float:
     exponent = float(e.exponent)
     if (base < 0.0 and not exponent.is_integer()) or (base == 0.0 and exponent < 0.0):
         raise ValueError("power evaluated outside its declared real domain")
-    return base ** exponent
+    _out: float = base ** exponent
+    return _out
 
 
 def numerical_check(

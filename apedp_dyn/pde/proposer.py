@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from apedp_dyn.grammar.proposer_interface import CandidateProposal, ProposerBase, StrategyArchetype
+from apedp_dyn.pde import weak_form
 from apedp_dyn.pde.dispatch import discover_pde
 
 PROPOSER_ID = "pde_continuum_proposer"
@@ -29,7 +30,13 @@ class PdeProposer(ProposerBase):
         sparsity_threshold: float = 0.01,
         ridge_alpha: float = 1e-6,
         strategy_archetype: StrategyArchetype = StrategyArchetype.CONTINUOUS_FACTOR,
+        estimator: str = "kernel",
     ):
+        if estimator not in ("kernel", "weak_form"):
+            raise ValueError("estimator must be 'kernel' or 'weak_form'")
+        # "weak_form" (1-D grids only): apedp_dyn/pde/weak_form.py, which never
+        # differentiates the data. Its library is the divergence-form one, not the kernel's.
+        self._estimator = estimator
         self._dimension = dimension
         self._dt = dt
         self._dx = dx
@@ -63,6 +70,9 @@ class PdeProposer(ProposerBase):
         u_vals = df[target_col].to_numpy(dtype=np.float64)
         if len(u_vals) < 10:
             return ()
+
+        if self._estimator == "weak_form":
+            return self._propose_weak(df, target_col, u_vals, dim, spatial_cols)
 
         # Construct spatial grid or point cloud if columns match
         try:
@@ -117,7 +127,8 @@ class PdeProposer(ProposerBase):
                 return np.zeros(len(eval_df))
             eval_u = eval_df[target_col].to_numpy(dtype=np.float64)
             # Return normalized field prediction
-            return np.asarray(np.asarray(np.asarray(np.nan_to_num(eval_u, nan=0.0))))
+            _out: np.ndarray = np.asarray(np.asarray(np.asarray(np.nan_to_num(eval_u, nan=0.0))))
+            return _out
 
         proposal = CandidateProposal(
             proposer_id=self.proposer_id,
@@ -136,3 +147,36 @@ class PdeProposer(ProposerBase):
             },
         )
         return (proposal,)
+
+    def _propose_weak(self, df: pd.DataFrame, target_col: str, u_vals: np.ndarray, dim: int,
+                      spatial_cols: list[str]) -> Sequence[CandidateProposal]:
+        """Weak-form identification on a 1-D grid; nothing is proposed for other layouts."""
+        if dim != 1 or "x" not in df.columns:
+            return ()
+        n_x = len(df["x"].unique())
+        n_t = len(df) // n_x
+        u_grid = u_vals[: n_t * n_x].reshape(n_t, n_x)
+        try:
+            coefficients = weak_form.identify(u_grid, self._dt, self._dx)
+            quality = weak_form.weak_fit_quality(u_grid, self._dt, self._dx, coefficients)
+        except ValueError:
+            return ()
+        if not coefficients:
+            return ()
+        formula = "u_t = " + " + ".join(f"{c:.4f} * ({term})" for term, c in coefficients.items())
+        cid_hash = hashlib.sha256(formula.encode()).hexdigest()[:12]
+
+        def score_fn(eval_df: pd.DataFrame) -> np.ndarray:
+            if target_col not in eval_df.columns:
+                return np.zeros(len(eval_df))
+            _out: np.ndarray = np.nan_to_num(eval_df[target_col].to_numpy(dtype=np.float64), nan=0.0)
+            return _out
+
+        return (CandidateProposal(
+            proposer_id=self.proposer_id, candidate_id=f"pde_weak_{cid_hash}", formula=formula,
+            strategy_archetype=self._strategy_archetype, declared_scale_invariant=True,
+            declared_nominal_dependencies=tuple(spatial_cols), compute_score=score_fn, parameters=coefficients,
+            metadata={"residual_rmse": quality["residual_rmse"], "r2_dev": quality["r2"],
+                      "active_terms": list(coefficients), "dimension": dim, "estimator": "weak_form",
+                      "fit_measured_on": "weak-form rows (test-function integrals), not pointwise u_t"},
+        ),)

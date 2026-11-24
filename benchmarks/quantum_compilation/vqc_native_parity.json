@@ -5,30 +5,30 @@
       "case": "images_100q",
       "images_compared": 200,
       "python": {
-        "best_seconds": 0.0177349210716784,
-        "iqr_seconds": 0.0006709680892527103,
-        "median_seconds": 0.018434169935062528,
+        "best_seconds": 0.023090752016287297,
+        "iqr_seconds": 0.002457834023516625,
+        "median_seconds": 0.026405826036352664,
         "samples_seconds": [
-          0.018036549910902977,
-          0.0177349210716784,
-          0.018707518000155687,
-          0.020143242087215185,
-          0.018434169935062528
+          0.027786010992713273,
+          0.029356240993365645,
+          0.026405826036352664,
+          0.025328176969196647,
+          0.023090752016287297
         ]
       },
       "rust": {
-        "best_seconds": 0.0033517819829285145,
-        "iqr_seconds": 0.000230130972340703,
-        "median_seconds": 0.003544864011928439,
+        "best_seconds": 0.0053897310281172395,
+        "iqr_seconds": 0.000767266028560698,
+        "median_seconds": 0.006031083990819752,
         "samples_seconds": [
-          0.0043363189324736595,
-          0.003707305993884802,
-          0.003477175021544099,
-          0.0033517819829285145,
-          0.003544864011928439
+          0.006571161036845297,
+          0.0053897310281172395,
+          0.005803895008284599,
+          0.0069205850013531744,
+          0.006031083990819752
         ]
       },
-      "speedup_median": 5.2002474207844624,
+      "speedup_median": 4.37828855916224,
       "workload": {
         "circuit": "GHZ ladder (H, CX ladder), no measurement",
         "circuit_sha256": "e1eab8aeb57e041f562a1e25ab35cdd295fb7c139d431a41c20615d27a3bf10b",
@@ -42,30 +42,30 @@
       "case": "images_400q",
       "images_compared": 800,
       "python": {
-        "best_seconds": 0.37115396303124726,
-        "iqr_seconds": 0.019761806121096015,
-        "median_seconds": 0.38332210504449904,
+        "best_seconds": 0.6197824740083888,
+        "iqr_seconds": 0.14192510006250814,
+        "median_seconds": 0.6283259589690715,
         "samples_seconds": [
-          0.39125313400290906,
-          0.37115396303124726,
-          0.38332210504449904,
-          0.37149132788181305,
-          0.4091129971202463
+          0.7692447109729983,
+          0.6197824740083888,
+          0.620272166968789,
+          0.6283259589690715,
+          0.7621972670312971
         ]
       },
       "rust": {
-        "best_seconds": 0.04936387995257974,
-        "iqr_seconds": 0.0005320820491760969,
-        "median_seconds": 0.04968810314312577,
+        "best_seconds": 0.09727853600634262,
+        "iqr_seconds": 0.022571793000679463,
+        "median_seconds": 0.10554075799882412,
         "samples_seconds": [
-          0.05181770585477352,
-          0.0493666660040617,
-          0.049898748053237796,
-          0.04936387995257974,
-          0.04968810314312577
+          0.15030183200724423,
+          0.10006430797511712,
+          0.12263610097579658,
+          0.10554075799882412,
+          0.09727853600634262
         ]
       },
-      "speedup_median": 7.7145650728575,
+      "speedup_median": 5.953396307576946,
       "workload": {
         "circuit": "GHZ ladder (H, CX ladder), no measurement",
         "circuit_sha256": "c58d8f4e69b7f041d827d9ec7c208c5820554118a34f069364bac9efb20dce4c",
@@ -82,30 +82,30 @@
         "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
       ],
       "python": {
-        "best_seconds": 2.4413729088846594,
-        "iqr_seconds": 0.10960853402502835,
-        "median_seconds": 2.4650772500317544,
+        "best_seconds": 3.502449345018249,
+        "iqr_seconds": 0.7622968669747934,
+        "median_seconds": 4.602278543985449,
         "samples_seconds": [
-          2.6222946289926767,
-          2.5571084120310843,
-          2.4650772500317544,
-          2.4413729088846594,
-          2.447499878006056
+          4.602278543985449,
+          3.8715415250044316,
+          5.0101494080154225,
+          4.633838391979225,
+          3.502449345018249
         ]
       },
       "rust": {
-        "best_seconds": 0.5848941949661821,
-        "iqr_seconds": 0.005736461142078042,
-        "median_seconds": 0.5946930090431124,
+        "best_seconds": 0.7523453869507648,
+        "iqr_seconds": 0.16652613400947303,
+        "median_seconds": 0.8863806349691004,
         "samples_seconds": [
-          0.5946930090431124,
-          0.5913082628976554,
-          0.5848941949661821,
-          0.6001579309813678,
-          0.5970447240397334
+          1.0061481110169552,
+          0.8863806349691004,
+          0.7523453869507648,
+          0.7595070030074567,
+          0.9260331370169297
         ]
       },
-      "speedup_median": 4.145125657350796,
+      "speedup_median": 5.192214678906976,
       "workload": {
         "circuit": "GHZ ladder with a measurement on every qubit",
         "circuit_sha256": "fa55622634ced72698260c4cf9034db6e1fc003736ad99b097d2d49a72a5c7a6",
@@ -120,30 +120,30 @@
       "case": "distribution_10q",
       "outcomes_nonzero": 2,
       "python": {
-        "best_seconds": 0.04332053498364985,
-        "iqr_seconds": 0.0036894180811941624,
-        "median_seconds": 0.04692023899406195,
+        "best_seconds": 0.08305757702328265,
+        "iqr_seconds": 0.022361340990755707,
+        "median_seconds": 0.09726779197808355,
         "samples_seconds": [
-          0.04332053498364985,
-          0.04692023899406195,
-          0.04820059286430478,
-          0.04733986919745803,
-          0.043650451116263866
+          0.08305757702328265,
+          0.09726779197808355,
+          0.09519548900425434,
+          0.11818510299781337,
+          0.11755682999501005
         ]
       },
       "rust": {
-        "best_seconds": 0.002459865063428879,
-        "iqr_seconds": 9.825313463807106e-05,
-        "median_seconds": 0.002589232986792922,
+        "best_seconds": 0.003971398982685059,
+        "iqr_seconds": 0.0004871250130236149,
+        "median_seconds": 0.0048230880056507885,
         "samples_seconds": [
-          0.0026777880266308784,
-          0.002589232986792922,
-          0.002459865063428879,
-          0.0025795348919928074,
-          0.00292238499969244
+          0.005877065006643534,
+          0.0048230880056507885,
+          0.00476451899157837,
+          0.005251644004601985,
+          0.003971398982685059
         ]
       },
-      "speedup_median": 18.12128890423968,
+      "speedup_median": 20.167119460421087,
       "workload": {
         "circuit": "GHZ ladder, no measurement",
         "circuit_sha256": "11a4fad5f3120e790230d7fc20c936caf24ef901e08c1c3c033ddde90b40aa09",
@@ -158,31 +158,31 @@
       "image_engine": "rust",
       "image_verified_by": "suite",
       "python": {
-        "best_seconds": 0.03576113888993859,
-        "iqr_seconds": 0.001572069013491273,
-        "median_seconds": 0.03764690784737468,
+        "best_seconds": 0.0596530309994705,
+        "iqr_seconds": 0.007361271942500025,
+        "median_seconds": 0.08407672098837793,
         "samples_seconds": [
-          0.03576113888993859,
-          0.03764690784737468,
-          0.03846752201206982,
-          0.03932422702200711,
-          0.03689545299857855
+          0.09952467598486692,
+          0.07701746304519475,
+          0.08437873498769477,
+          0.08407672098837793,
+          0.0596530309994705
         ]
       },
       "python_image_engine": "python",
       "rust": {
-        "best_seconds": 0.010419213911518455,
-        "iqr_seconds": 0.0003905820194631815,
-        "median_seconds": 0.010785104939714074,
+        "best_seconds": 0.01989494398003444,
+        "iqr_seconds": 0.0014514259528368711,
+        "median_seconds": 0.022405085037462413,
         "samples_seconds": [
-          0.01125378580763936,
-          0.01048269891180098,
-          0.010873280931264162,
-          0.010419213911518455,
-          0.010785104939714074
+          0.01989494398003444,
+          0.022529876965563744,
+          0.022405085037462413,
+          0.021078451012726873,
+          0.022653559979517013
         ]
       },
-      "speedup_median": 3.49063899311236,
+      "speedup_median": 3.752573170233341,
       "verdict": "VALID",
       "workload": {
         "candidate": "the same ladder with a cancelling Z Z appended",
@@ -212,16 +212,16 @@
       "version": "0.1.0"
     }
   },
-  "generated_utc": "2026-10-31T03:02:52Z",
+  "generated_utc": "2026-11-10T10:42:21Z",
   "hardware": {
     "build": "maturin develop --release; the release profile (opt-level, lto) lives in the workspace root Cargo.toml, and its compilation time is excluded from every timing here",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
     "cpu_count": 8,
     "machine": "x86_64",
     "numpy": "2.5.3",
-    "peak_rss_kib": 177244,
+    "peak_rss_kib": 179644,
     "peak_rss_note": "process-wide peak resident set size at the end of the run, not per case: peak memory cannot be attributed to one case from inside the process that ran all of them",
-    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
     "processor": "x86_64",
     "python": "3.12.3",
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)"
@@ -320,8 +320,8 @@
   },
   "reproducibility": {
     "command": "python scripts/measure_vqc_rust_parity.py --shots 256 --seed 20261030",
-    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
-    "native_bridge_sha256": "dbc1e89ad3b4aff8e7dbb6c3fe716548f92e465f0c92e32c7b291c4e5f082212",
+    "equivalence_sha256": "cd9fd5b0e42bd412c82a7ca7c8eec13643a99157cbac935f059dd2bf11504b39",
+    "native_bridge_sha256": "16ddcd671070f085b75a2672ac049b9890250d0e101c9aa46e011b6910227911",
     "native_module": "rust/apedp-vqc (crate apedp-vqc, module apedp_vqc)",
     "native_source_sha256": {
       "bits.rs": "9e61ef518421847ecb0f6070f8d612082fc3899313d82b80322139ab912e0503",
@@ -332,10 +332,10 @@
       "runtime.rs": "50198bc8cb70b1f592ef31d39a3ab2a15945e6cf422b1e6515485b2076155d49",
       "stabilizer.rs": "8094c171f3611f9c3f41d60f1d3616a6524c59e0c843bec5a9fc9f8dc7d0e769"
     },
-    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
     "python": "3.12.3",
     "script_sha256": "b18f45daa31c2b9cb4706fe8ee02b5919a38a5bf8fe57ee108e4957c84730859",
-    "stabilizer_sha256": "ba5d7235c965d824d024ce302429de79aad6111ba9a092478e6554315085d78c"
+    "stabilizer_sha256": "0237e2bbcf8690f4753228b8a3b6e9121c1161c96eacdd3fae575685fd682b05"
   },
   "schema": "apedp.vqc.native_parity.v1",
   "verdict": {

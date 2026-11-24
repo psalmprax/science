@@ -18,9 +18,9 @@ import hashlib
 import importlib
 import json
 import math
-import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Any
+from typing import Any
 
 import numpy as np
 
@@ -82,7 +82,8 @@ def import_callable(spec: str) -> Callable[..., Any]:
     fn = getattr(module, function_name, None)
     if not callable(fn):
         raise TypeError(f"adapter {spec!r} is not a callable")
-    return fn
+    _out: Callable[..., Any] = fn
+    return _out
 
 
 def validate_batch_xor_words(words: np.ndarray) -> np.ndarray:
@@ -96,7 +97,8 @@ def validate_batch_xor_words(words: np.ndarray) -> np.ndarray:
     if np.any(arr < 0) or np.any(arr >= (1 << WORD_BITS)):
         raise ValueError("each ANGLE output word must be in [0, 4095]")
     # uint16 makes XOR behavior explicit and safe across signed input arrays.
-    return arr.astype(np.uint16, copy=False)
+    _out: np.ndarray = arr.astype(np.uint16, copy=False)
+    return _out
 
 
 def pair_adjacent_addresses(batch_xor_words: np.ndarray) -> np.ndarray:
@@ -119,7 +121,8 @@ def pair_adjacent_addresses(batch_xor_words: np.ndarray) -> np.ndarray:
     delta = np.bitwise_xor(even, odd)
     packed = np.concatenate((even, delta), axis=2)
     assert packed.shape == (ANGLE_BATCH_COUNT, ADDRESS_COUNT // 2, 2 * J)
-    return packed.astype(np.uint16, copy=False)
+    _out: np.ndarray = packed.astype(np.uint16, copy=False)
+    return _out
 
 
 def reconstruct_addresses(packed: np.ndarray) -> np.ndarray:
@@ -132,7 +135,7 @@ def reconstruct_addresses(packed: np.ndarray) -> np.ndarray:
         raise ValueError("packed table values must be integers in [0, 4095]")
     base = arr[:, :, :J].astype(np.uint16, copy=False)
     delta = arr[:, :, J:].astype(np.uint16, copy=False)
-    out = np.empty((ANGLE_BATCH_COUNT, ADDRESS_COUNT, J), dtype=np.uint16)
+    out: np.ndarray = np.empty((ANGLE_BATCH_COUNT, ADDRESS_COUNT, J), dtype=np.uint16)
     out[:, 0::2, :] = base
     out[:, 1::2, :] = np.bitwise_xor(base, delta)
     return out
@@ -140,12 +143,13 @@ def reconstruct_addresses(packed: np.ndarray) -> np.ndarray:
 
 def _popcount12(values: np.ndarray) -> np.ndarray:
     # Vectorized table-size is small enough that a short Python-free 12-bit loop is fine.
-    v = values.astype(np.uint16, copy=True)
+    v: np.ndarray = values.astype(np.uint16, copy=True)
     count = np.zeros(v.shape, dtype=np.uint8)
     for _ in range(WORD_BITS):
         count += (v & 1).astype(np.uint8)
         v >>= 1
-    return count
+    _out: np.ndarray = count
+    return _out
 
 
 def profile_actual_table(words: np.ndarray, packed: np.ndarray) -> dict[str, Any]:

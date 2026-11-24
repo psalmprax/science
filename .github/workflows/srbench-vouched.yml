@@ -1,0 +1,103 @@
+# What the table route's last checks cost on the physics benchmark, behind the four searches
+# (preregistration/PREREG-VOUCHED-SRBENCH-2026-11.md; scripts/run_srbench_vouched.py).
+#   push to srbench-vouched-smoke-*  -> the tests and two development problems, short budget
+#   push to srbench-vouched-run-*    -> smoke, then the one preregistered run
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: SRBench with the last checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['srbench-vouched-smoke-*', 'srbench-vouched-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The run's, the route's and the checks' tests
+        run: python -m pytest tests/test_srbench_vouched.py tests/test_vouched_route.py tests/test_vouching.py -q
+      - name: Two development problems, four searches each, both reports
+        run: python scripts/run_srbench_vouched.py smoke --out smoke-out
+
+  shard:
+    needs: smoke
+    if: startsWith(github.ref_name, 'srbench-vouched-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Run shard ${{ matrix.k }} of 32
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_srbench_vouched.py run --shard "$SHARD/32" --out vouched-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: srbench-vouched-shard-${{ matrix.k }}
+          path: vouched-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: srbench-vouched-shard-*
+          path: vouched-out
+          merge-multiple: true
+      - name: Merge the shards
+        run: python scripts/run_srbench_vouched.py collect --out vouched-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: srbench-vouched-results
+          path: |
+            vouched-out/runs.jsonl
+            vouched-out/results.json
+          if-no-files-found: error
+      # The artifact store is not reachable from every environment that has to commit the
+      # results, so they are also printed, with their checksums, for rebuilding from the log.
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd vouched-out
+          rm -f runs-shard-*.jsonl
+          gzip -9 runs.jsonl
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

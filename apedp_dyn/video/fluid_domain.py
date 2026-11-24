@@ -37,8 +37,10 @@ def _streamfunction_velocity(psi: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 def _vortex_streamfunction(
     h: int, w: int, centers: Sequence[tuple[float, float]], strengths: Sequence[float]
 ) -> np.ndarray:
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
-    psi = np.zeros((h, w), dtype=np.float64)
+    psi: np.ndarray = np.zeros((h, w), dtype=np.float64)
     for (cy, cx), s in zip(centers, strengths, strict=False):
         r2 = (yy - cy) ** 2 + (xx - cx) ** 2
         psi += s * np.exp(-r2 / (0.25 * min(h, w) ** 2))
@@ -82,10 +84,12 @@ def make_fluid_clip(
         centers.append((rng.uniform(0.2 * h, 0.8 * h), rng.uniform(0.2 * w, 0.8 * w)))
     base_strength = rng.uniform(3.0, 9.0, size=n_vortices) * rng.choice([-1.0, 1.0], size=n_vortices)
 
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
 
     # Initial dye: 3 independent smooth scalar blobs
-    dye = np.zeros((3, h, w), dtype=np.float64)
+    dye: np.ndarray = np.zeros((3, h, w), dtype=np.float64)
     for ci in range(3):
         n_blobs = 2
         for _ in range(n_blobs):
@@ -94,9 +98,9 @@ def make_fluid_clip(
             dye[ci] += np.exp(-((yy - cy) ** 2 + (xx - cx) ** 2) / (2 * rad ** 2))
     dye /= max(1e-9, dye.max())
 
-    frames = np.zeros((t, 3, h, w), dtype=np.float64)
-    flow_u = np.zeros((t, h, w), dtype=np.float64)
-    flow_v = np.zeros((t, h, w), dtype=np.float64)
+    frames: np.ndarray = np.zeros((t, 3, h, w), dtype=np.float64)
+    flow_u: np.ndarray = np.zeros((t, h, w), dtype=np.float64)
+    flow_v: np.ndarray = np.zeros((t, h, w), dtype=np.float64)
     for ti in range(t):
         phase = 2 * np.pi * ti / max(1, t - 1)
         strengths = base_strength * (0.8 + 0.2 * np.sin(phase + 1.7 * np.arange(n_vortices)))
@@ -123,13 +127,15 @@ def make_fluid_clip(
                 )
         dye = advected
         # Renormalize to keep the dye channel statistics stable
-        m = dye.max()
+        m: float = dye.max()
         if m > 1e-9:
             dye = dye / m
         frames[ti, 1:3] = dye[1:3]
 
     # Normalize each channel into [0, 1] with the joint per-clip range
     for ci in range(3):
+        lo: float
+        hi: float
         lo, hi = frames[:, ci].min(), frames[:, ci].max()
         frames[:, ci] = (frames[:, ci] - lo) / max(1e-9, hi - lo)
     if return_flow:
@@ -138,15 +144,18 @@ def make_fluid_clip(
 
 
 def _curl_from_velocity(u: np.ndarray, v: np.ndarray) -> np.ndarray:
-    return np.asarray(
+    _out: np.ndarray = np.asarray(
         (np.roll(u, -1, axis=1) - np.roll(u, 1, axis=1)) * 0.5
         - (np.roll(v, -1, axis=0) - np.roll(v, 1, axis=0)) * 0.5
     )
+    return _out
 
 
 def _advect(field: np.ndarray, u: np.ndarray, v: np.ndarray, dt: float) -> np.ndarray:
     """Semi-Lagrangian backtrace advection of a (3, H, W) dye field."""
     h, w = field.shape[1], field.shape[2]
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
     back_y = yy - dt * u
     back_x = xx - dt * v
@@ -163,16 +172,17 @@ def _advect(field: np.ndarray, u: np.ndarray, v: np.ndarray, dt: float) -> np.nd
             (1 - wy) * (1 - wx) * f[y0, x0] + (1 - wy) * wx * f[y0, x1]
             + wy * (1 - wx) * f[y1, x0] + wy * wx * f[y1, x1]
         )
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def make_domain_set(
     train_ids: tuple[str, ...], holdout_ids: tuple[str, ...], t: int = 16, h: int = 64,
     w: int = 64,
-) -> dict[str, np.ndarray]:
+) -> dict[str, np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """Deterministic domain clips keyed by the manifest ids: holdout ids stay
     exclusive resources (same burnable-holdout discipline as the RIME stack)."""
-    clips: dict[str, np.ndarray] = {}
+    clips: dict[str, np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
     for cid in tuple(train_ids) + tuple(holdout_ids):
         seed = int(cid.replace("fluid_clip_", ""), 10)
         clips[cid] = make_fluid_clip(seed, t=t, h=h, w=w)

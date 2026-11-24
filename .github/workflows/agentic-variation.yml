@@ -1,0 +1,105 @@
+# The agentic variation operator (apedp_dyn/proposers/agentic_variation.py) with a real model.
+# Needs the repository secret NVIDIA_API_KEY; the key is never echoed and GitHub masks it in logs.
+#   push to agentic-variation-smoke-*  -> its tests, then four invented laws with the model driving the loop
+#   push to agentic-variation-dev-*    -> smoke, then every arm on the twenty development laws
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+# Development only: it shows whether the model can drive the loop and what that costs in time.
+# No preregistered measurement is taken here, and no held-back law is read.
+name: Agentic variation operator
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['agentic-variation-smoke-*', 'agentic-variation-dev-*']
+
+permissions:
+  contents: read
+
+env:
+  NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The operator's own tests and the invented laws'
+        run: python -m pytest tests/test_agentic_variation.py tests/test_invented_laws.py -q
+      - name: The key is set
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "::error::The repository secret NVIDIA_API_KEY is not set (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+      - name: Four invented laws, the agent alone and with a search
+        run: python scripts/smoke_agentic_variation.py
+
+  develop:
+    needs: smoke
+    if: startsWith(github.ref_name, 'agentic-variation-dev-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        k: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Development laws, shard ${{ matrix.k }} of 6
+        env:
+          SHARD: ${{ matrix.k }}
+          LLM_INTERVAL_SECONDS: '9.0'
+        run: python scripts/run_invented_laws.py develop --shard "$SHARD/6" --out invented-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: invented-dev-shard-${{ matrix.k }}
+          path: invented-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: develop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: invented-dev-shard-*
+          path: invented-out
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/run_invented_laws.py collect --out invented-out
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd invented-out
+          rm -f runs-shard-*.jsonl
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

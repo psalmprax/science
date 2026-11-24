@@ -7,10 +7,12 @@ noise realizations in experiments/d2a_ab.py.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 
-def spline_coefficients(problem, candidate, t: np.ndarray, Y: np.ndarray,
+def spline_coefficients(problem: Any, candidate: Any, t: np.ndarray, Y: np.ndarray,
                         U: np.ndarray) -> dict[str, float]:
     """Spline-derivative LS estimate of a candidate's parameters."""
     import sympy as sp

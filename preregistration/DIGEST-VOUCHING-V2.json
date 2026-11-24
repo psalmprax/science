@@ -1,0 +1,28 @@
+{
+ "preregistration": "PREREG-VOUCHING-V2-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/memory_stage.py": "5ee26a49837d73a420645fb59d4d5b2eb68af95466a1164f698bbee6a4be3136",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/search_stage.py": "23025137bff9e99fd2199ffe438ad5e3369ff6fa4fb1674450be210e98b23678",
+  "apedp_dyn/discovery_l2/stage_in_force.py": "240b9f5e9f3e4739101014ad4e00c54b62233056e8959a487c53cef8696523b9",
+  "apedp_dyn/discovery_l2/vouching.py": "513763de3fa266ff3b18416f644919efaf1342ab98539a9a45e57f42c83e1292",
+  "apedp_dyn/discovery_l2/vouching_v2.py": "faaf76e4358e320a2691a277148f816f2379ea43aebf5d1849aaf16d3024e18b",
+  "apedp_dyn/proposers/fit_guard.py": "cd110cf48067b588824eda14d138aa010a6c90ae2f9949630dac7793b4ce7f8a",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/structure_memory.py": "32390d2e3decf7a917fd3ba2d20284ea44384ba6ae2e09316213263fb58c4c72",
+  "apedp_dyn/redteam/counterfeit.py": "d8669e30c19bb0b91f115287818fe716ab8b89a0a813872328752d8854ace1e5",
+  "apedp_dyn/redteam/plain_selection.py": "65f1063ac3d875db9ca4e1804640b4fe39074d6ecdab982d0ca7a2f2e9a84d04",
+  "apedp_dyn/redteam/worlds.py": "dd73d7696c0fcbdba367e5057d49e1560ff20d7a8ccb194cee1ba57ab740948c",
+  "benchmarks/structure_memory.json": "c7e6d4ca2f10b26ce3001259ce1c229a7b681450020086e61a6007587d0bc47b",
+  "benchmarks/vouching_v2_blind_laws.json": "b29a8b9f808534de0118b3679ccacddd581213f37100757075b23033e27913c4",
+  "preregistration/PREREG-VOUCHING-V2-2026-11.md": "365177c42dbd0d25144bd1c109c2f3d0fcaf643c6a735f401e6288e89f2db2b7",
+  "scripts/build_invented_laws.py": "fc803f32cc8c7ccce890841056cb0a6817cf646bb7bb9672fdf667f5c24cab0d",
+  "scripts/run_counterfeit_benchmark.py": "f53c594b727083a8029906b9b346204c6443195fa0c8e6459a528c371455e950",
+  "scripts/run_red_team.py": "772022615e991ff8b81d740a0b2ab07904cc176c03cd3e6009444a75b9322da2",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36",
+  "scripts/run_vouching_v2_blind.py": "8755e11257f5b3ed805e78ed13b00a543740ff12f4f318152062e24e27993dbc"
+ }
+}

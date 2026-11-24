@@ -1,0 +1,126 @@
+# The language-model proposer with a real model (NVIDIA's hosted API), through the main search path.
+#   push to llm-proposer-smoke-*  -> list the models the key can call, try each preferred one on a toy law
+#   push to llm-proposer-run-*    -> smoke, then the preregistered run (refuses unless frozen)
+# Needs the repository secret NVIDIA_API_KEY. The key is never echoed; GitHub masks it in logs.
+name: LLM proposer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['llm-proposer-smoke-*', 'llm-proposer-run-*', 'llm-controller-smoke-*']
+
+permissions:
+  contents: read
+
+env:
+  NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+
+jobs:
+  smoke:
+    if: ${{ !startsWith(github.ref_name, 'llm-controller-smoke-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Require the secret
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "::error::The repository secret NVIDIA_API_KEY is not set (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Models the key can call, each on one toy law
+        run: python scripts/run_llm_proposer_benchmark.py smoke
+
+  controller-smoke:
+    if: startsWith(github.ref_name, 'llm-controller-smoke-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Require the secret
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "::error::The repository secret NVIDIA_API_KEY is not set."
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The search controller on three toy laws
+        run: python scripts/smoke_llm_controller.py
+
+  shard:
+    needs: smoke
+    if: startsWith(github.ref_name, 'llm-proposer-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Run shard ${{ matrix.k }} of 6
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_llm_proposer_benchmark.py run --shard "$SHARD/6" --out llm-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: llm-proposer-shard-${{ matrix.k }}
+          path: llm-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: llm-proposer-shard-*
+          path: llm-out
+          merge-multiple: true
+      - name: Merge the shards
+        run: python scripts/run_llm_proposer_benchmark.py collect --out llm-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: llm-proposer-results
+          path: llm-out/
+          if-no-files-found: error
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd llm-out
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

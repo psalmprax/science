@@ -78,6 +78,7 @@ class AdjudicationOutcome:
     is_false_promotion: bool
     is_correct_abstention: bool
     is_valid_retention: bool
+    is_correct_calibration: bool = False
     eedr_result: EEDRAdjudicationResult | None = None
 
 
@@ -272,7 +273,7 @@ def generate_proposer_3_statistical_cases(n_cases: int = 25, seed: int = 3003) -
                 candidate_model="Bivariate_OLS_Confounded", evidence_bundle=bundle,
                 proposer_id="P3_StatisticalEconometric", difficulty="adversarial",
                 requested_claim_level=ClaimLevel.C4_CAUSAL_MECHANISTIC,
-                hidden_ground_truth={"population": "unsafe", "flaw": "hidden_confounder"},
+                hidden_ground_truth={"population": "overclaimed", "expected_tier": "C2_PREDICTIVE", "flaw": "hidden_confounder"},
             ))
         elif mod == 2:
             # Claim-Target Mismatch: Excellent predictive R2 (C2), but claiming C4 causal mechanism
@@ -284,7 +285,7 @@ def generate_proposer_3_statistical_cases(n_cases: int = 25, seed: int = 3003) -
                 candidate_model="VAR_Granger_Predictor", evidence_bundle=bundle,
                 proposer_id="P3_StatisticalEconometric", difficulty="standard",
                 requested_claim_level=ClaimLevel.C4_CAUSAL_MECHANISTIC,
-                hidden_ground_truth={"population": "unsafe", "flaw": "c2_not_implies_c4"},
+                hidden_ground_truth={"population": "overclaimed", "expected_tier": "C2_PREDICTIVE", "flaw": "c2_not_implies_c4"},
             ))
         elif mod == 3:
             # B_ambiguous: Markov equivalence class (X -> Y -> Z vs X <- Y -> Z)
@@ -297,7 +298,7 @@ def generate_proposer_3_statistical_cases(n_cases: int = 25, seed: int = 3003) -
                 candidate_model="PC_Algorithm_Equivalence_Graph", evidence_bundle=bundle,
                 proposer_id="P3_StatisticalEconometric", difficulty="hard",
                 requested_claim_level=ClaimLevel.C4_CAUSAL_MECHANISTIC,
-                hidden_ground_truth={"population": "ambiguous", "flaw": "observational_equivalence"},
+                hidden_ground_truth={"population": "overclaimed", "expected_tier": "C2_PREDICTIVE", "flaw": "observational_equivalence"},
             ))
         else:
             # B_unsafe: Reverse causality (Y -> X misidentified as X -> Y)
@@ -424,10 +425,30 @@ def evaluate_blind_case(case: BlindCase, run_eedr: bool = True) -> AdjudicationO
     pop = gt["population"]
     is_truth_valid = (pop == "valid")
 
-    is_promoted = (adj.verdict == EpistemicAdjudicationVerdict.PROMOTED)
-    is_false_promo = (is_promoted and not is_truth_valid)
+    # A repaired candidate that passes de novo adjudication is still a
+    # promotion, at the repaired tier. Ignoring EEDR here under-counted every
+    # P2/P4 valid case whose C6 claim was correctly calibrated to C2.
+    final_verdict = adj.verdict
+    justified_level = adj.justified_claim
+    final_status = ("PROMOTED_ORIGINAL"
+                    if adj.verdict == EpistemicAdjudicationVerdict.PROMOTED
+                    else "REJECTED")
+    if eedr_res is not None:
+        final_status = eedr_res.final_status or final_status
+        if final_status == "PROMOTED_REPAIRED":
+            final_verdict = EpistemicAdjudicationVerdict.PROMOTED
+            justified_level = eedr_res.final_justified_claim or justified_level
+
+    is_promoted = (final_verdict == EpistemicAdjudicationVerdict.PROMOTED)
+    # A promotion at the originally requested tier on a non-valid case is the
+    # false promotion. A calibrated lower-tier result is scored separately.
+    is_false_promo = (is_promoted and not is_truth_valid
+                      and final_status == "PROMOTED_ORIGINAL")
     is_correct_abstain = (not is_promoted and not is_truth_valid)
     is_valid_retained = (is_promoted and is_truth_valid)
+    is_correct_calib = (pop == "overclaimed"
+                        and final_status == "PROMOTED_REPAIRED"
+                        and justified_level.name == gt.get("expected_tier"))
 
     return AdjudicationOutcome(
         case_id=case.case_id,
@@ -435,13 +456,14 @@ def evaluate_blind_case(case: BlindCase, run_eedr: bool = True) -> AdjudicationO
         domain=case.domain,
         population=pop,
         requested_level=case.requested_claim_level,
-        justified_level=adj.justified_claim,
-        verdict=adj.verdict,
+        justified_level=justified_level,
+        verdict=final_verdict,
         promoted=is_promoted,
         is_claim_truthfully_valid=is_truth_valid,
         is_false_promotion=is_false_promo,
         is_correct_abstention=is_correct_abstain,
         is_valid_retention=is_valid_retained,
+        is_correct_calibration=is_correct_calib,
         eedr_result=eedr_res,
     )
 
@@ -480,7 +502,8 @@ def run_independent_proposer_benchmark() -> dict[str, Any]:
 
         fp = sum(1 for o in p_outs if o.is_false_promotion)
         tp = sum(1 for o in p_outs if o.is_valid_retention)
-        car = sum(1 for o in p_outs if o.is_correct_abstention)
+        car = sum(1 for o in p_outs
+                  if o.is_correct_abstention or o.is_correct_calibration)
 
         fpr = (fp / n_trap) * 100.0 if n_trap > 0 else 0.0
         fpr_ci = wilson_score_interval(fp, n_trap) if n_trap > 0 else (0.0, 0.0)
@@ -502,7 +525,8 @@ def run_independent_proposer_benchmark() -> dict[str, Any]:
 
     fp_all = sum(1 for o in outcomes if o.is_false_promotion)
     tp_all = sum(1 for o in outcomes if o.is_valid_retention)
-    car_all = sum(1 for o in outcomes if o.is_correct_abstention)
+    car_all = sum(1 for o in outcomes
+                  if o.is_correct_abstention or o.is_correct_calibration)
 
     pooled_fpr = (fp_all / n_trap_all) * 100.0
     pooled_fpr_ci = wilson_score_interval(fp_all, n_trap_all)

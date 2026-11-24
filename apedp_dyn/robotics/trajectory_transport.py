@@ -47,19 +47,25 @@ class NavigationResult:
 
 
 def exact_unicycle_step(pose: np.ndarray, linear_velocity: float, angular_velocity: float, dt: float) -> np.ndarray:
-    """Exact integration of constant ``(v, omega)`` over ``dt`` (arc or straight)."""
+    """Exact integration of constant ``(v, omega)`` over ``dt`` without small-omega cancellation."""
     x, y, theta = pose
-    if abs(angular_velocity) < 1e-12:
-        return np.array([x + dt * linear_velocity * np.cos(theta), y + dt * linear_velocity * np.sin(theta), theta])
-    theta_next = theta + angular_velocity * dt
-    radius = linear_velocity / angular_velocity
-    return np.array(
+    dtheta = float(angular_velocity) * float(dt)
+    half_dtheta = 0.5 * dtheta
+    if abs(half_dtheta) < 1e-4:
+        h2 = half_dtheta * half_dtheta
+        sinc_half = 1.0 - h2 / 6.0 + (h2 * h2) / 120.0
+    else:
+        sinc_half = float(np.sin(half_dtheta) / half_dtheta)
+    theta_mid = float(theta) + half_dtheta
+    arc_chord = float(linear_velocity) * float(dt) * sinc_half
+    _out: np.ndarray = np.array(
         [
-            x + radius * (np.sin(theta_next) - np.sin(theta)),
-            y - radius * (np.cos(theta_next) - np.cos(theta)),
-            theta_next,
+            float(x) + arc_chord * np.cos(theta_mid),
+            float(y) + arc_chord * np.sin(theta_mid),
+            float(theta) + dtheta,
         ]
     )
+    return _out
 
 
 def simulate_unicycle_exact(
@@ -71,7 +77,8 @@ def simulate_unicycle_exact(
     trajectory = [np.asarray(pose0, dtype=np.float64).copy()]
     for linear_velocity, angular_velocity in controls:
         trajectory.append(exact_unicycle_step(trajectory[-1], linear_velocity, angular_velocity, dt))
-    return np.stack(trajectory)
+    _out: np.ndarray = np.stack(trajectory)
+    return _out
 
 
 def unicycle_velocity_fn(linear_velocity: float, angular_velocity: float) -> Callable[[np.ndarray, float], np.ndarray]:
@@ -80,7 +87,8 @@ def unicycle_velocity_fn(linear_velocity: float, angular_velocity: float) -> Cal
     def velocity_fn(z: np.ndarray, _t: float) -> np.ndarray:
         x_component = linear_velocity * np.cos(z[2])
         y_component = linear_velocity * np.sin(z[2])
-        return np.array([x_component, y_component, angular_velocity])
+        _out: np.ndarray = np.array([x_component, y_component, angular_velocity])
+        return _out
 
     return velocity_fn
 
@@ -101,7 +109,8 @@ def propagate_with_stepper(
             unicycle_velocity_fn(linear_velocity, angular_velocity), poses[-1], 0.0, dt
         )
         poses.append(pose)
-    return np.stack(poses)
+    _out: np.ndarray = np.stack(poses)
+    return _out
 
 
 def goal_feedback_velocity_fn(
@@ -124,13 +133,14 @@ def goal_feedback_velocity_fn(
         linear_velocity = min(linear_gain * rho * np.cos(alpha), max_linear_velocity)
         linear_velocity = max(linear_velocity, 0.0)
         angular_velocity = angular_gain * alpha
-        return np.array(
+        _out: np.ndarray = np.array(
             [
                 linear_velocity * np.cos(z[2]),
                 linear_velocity * np.sin(z[2]),
                 angular_velocity,
             ]
         )
+        return _out
 
     return velocity_fn
 

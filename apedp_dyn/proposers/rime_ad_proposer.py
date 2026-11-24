@@ -1,5 +1,15 @@
 """RIME-AD Autonomous Multi-Representation Proposer.
 
+Status: deprecated
+
+Retired on 2026-11-19 as an engine for discovering laws from tabular data. On
+SRBench it recovered 11 of 532 runs (2.1 %) and timed out on 62 % of them
+(PREREG-SRBENCH-BASELINE-2026-11); PySR recovered 160 of 266
+(PREREG-SRBENCH-EXTERNAL-2026-11) and is the main search
+(``apedp_dyn.proposers.pysr_proposer``, ``apedp_dyn.discovery_l2.main_search``).
+The module is kept so recorded results replicate; the engine competition no
+longer runs it by default.
+
 Integrates the native Rust engines in `apedp_kernel`:
 - Pillar 1: Variational BV-ROF Total Variation filtering & step extraction (`total_variation.rs`)
 - Pillar 2: Sparse Implicit SVD null space for rational poles and algebraic constraints (`implicit.rs`)
@@ -32,7 +42,7 @@ import pandas as pd
 try:  # pragma: no cover - exercised only on kernel-less installs
     import apedp_kernel as ak
 except ImportError:  # kernel-only engine: fails at call time with an actionable error
-    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
+    from apedp_dyn.kernel_shim import missing_kernel as ak
 from apedp.rust_bridge import RustKernelBridge
 from apedp_dyn.epistemic.autonomous_profiler import profile_dataset
 from apedp_dyn.epistemic.shape_inference import staircase_prior
@@ -200,7 +210,7 @@ class RimeAdProposer(ProposerBase):
                     score = n_samples * np.log(max(sse / n_samples, 1e-18)) \
                         + k_params * np.log(n_samples)
                 else:
-                    fold_ids = np.arange(n_samples) % k_folds
+                    fold_ids: np.ndarray = np.arange(n_samples) % k_folds
                     fold_bics: list[float] = []
                     for f in range(k_folds):
                         fm = mask & (fold_ids == f)
@@ -315,7 +325,8 @@ class RimeAdProposer(ProposerBase):
                     def _scorer(df: pd.DataFrame) -> np.ndarray:
                         xv = df[feat_name].to_numpy(dtype=float)
                         Xb = np.column_stack([np.ones_like(xv), 1.0 / xv, 1.0 / (xv ** 2)])
-                        return np.asarray(np.asarray(np.asarray(Xb @ coef)))
+                        _out: np.ndarray = np.asarray(np.asarray(np.asarray(Xb @ coef)))
+                        return _out
 
                     formula = f"{coef[0]:.4f} + {coef[1]:.4f}*(1/{feat_name}) + {coef[2]:.4f}*(1/{feat_name}^2)"
                     cand = CandidateProposal(
@@ -373,20 +384,21 @@ class RimeAdProposer(ProposerBase):
                 else:
                     w = 1.0
                     off = 0.0
-                q0 = step
+                q0_step = float(step)
                 b = float(y[0])
-                y_jump = q0 * np.floor((x - off) / w) + b
+                y_jump = q0_step * np.floor((x - off) / w) + b
                 y_smooth = y - y_jump
                 var_smooth = float(np.var(y_smooth))
-                var_y = float(np.var(y))
-                if 1e-4 < var_smooth < var_y:
+                var_y_tv = float(np.var(y))
+                if 1e-4 < var_smooth < var_y_tv:
                     X_poly = np.column_stack([np.ones_like(x), x, x ** 2])
                     c_poly, _, _, _ = np.linalg.lstsq(X_poly, y_smooth, rcond=None)
                     y_pred = y_jump + (X_poly @ c_poly)
-                    r2_comp = 1.0 - (float(np.mean((y - y_pred) ** 2)) / var_y)
+                    r2_comp = 1.0 - (float(np.mean((y - y_pred) ** 2)) / var_y_tv)
                     if r2_comp > 0.95:
                         cand = self._make_tv_composite_candidate(
-                            q0, w, off, b + float(c_poly[0]), c_poly[1:], feat_name, r2_comp
+                            q0_step, w, off, b + float(c_poly[0]), c_poly[1:], feat_name,
+                            r2_comp
                         )
                         if cand is not None:
                             candidates.append(cand)
@@ -445,7 +457,8 @@ class RimeAdProposer(ProposerBase):
                     b = xn / (c ** hill_n + xn)
             if not np.all(np.isfinite(b)) or float(np.var(b)) <= 1e-15:
                 return None
-            return b
+            _out: np.ndarray | None = b
+            return _out
 
         def solve(c: float) -> tuple[float, float, float] | None:
             b = basis(c)
@@ -510,7 +523,8 @@ class RimeAdProposer(ProposerBase):
                 else:
                     xn = xv ** hill_n
                     out = q_max * xn / (c_best ** hill_n + xn) + offset
-            return np.asarray(out, dtype=float)
+            _out: np.ndarray = np.asarray(out, dtype=float)
+            return _out
 
         if hill_n == 1.0:
             formula = (f"{q_max:.6g} * ({feat_name} / ({c_best:.6g} + {feat_name})) "
@@ -555,8 +569,9 @@ class RimeAdProposer(ProposerBase):
             for i in range(len(feature_cols)):
                 for j in range(i, len(feature_cols)):
                     c1, c2 = feature_cols[i], feature_cols[j]
+                    from apedp_dyn.grammar.term_format import atom
                     X_mat.append(df[c1].to_numpy(dtype=float) * df[c2].to_numpy(dtype=float))
-                    col_names.append(f"{c1}*{c2}")
+                    col_names.append(f"{atom(c1)}*{atom(c2)}")
 
         X_arr = np.column_stack(X_mat)
         coef, *_ = np.linalg.lstsq(X_arr, y, rcond=None)
@@ -573,9 +588,11 @@ class RimeAdProposer(ProposerBase):
                     for j in range(i, len(feature_cols)):
                         c1, c2 = feature_cols[i], feature_cols[j]
                         tm.append(test_df[c1].to_numpy(dtype=float) * test_df[c2].to_numpy(dtype=float))
-            return np.asarray(np.asarray(np.asarray(np.column_stack(tm) @ coef)))
+            _out: np.ndarray = np.asarray(np.asarray(np.asarray(np.column_stack(tm) @ coef)))
+            return _out
 
-        formula = " + ".join(f"{c:.4f}*{name}" for c, name in zip(coef, col_names, strict=False) if abs(c) > 1e-4)
+        from apedp_dyn.grammar.term_format import atom
+        formula = " + ".join(f"{c:.4f}*{atom(name)}" for c, name in zip(coef, col_names, strict=False) if abs(c) > 1e-4)
         return [
             CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -611,7 +628,8 @@ class RimeAdProposer(ProposerBase):
             with np.errstate(divide="ignore", invalid="ignore"):
                 out = -num / den
                 out[np.abs(den) < 1e-12] = np.nan
-            return np.asarray(np.asarray(np.asarray(out)))
+            _out: np.ndarray = np.asarray(np.asarray(np.asarray(out)))
+            return _out
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -694,7 +712,8 @@ class RimeAdProposer(ProposerBase):
 
             out = np.zeros_like(ys_sorted)
             out[idx] = ys_sorted
-            return np.asarray(out)
+            _out: np.ndarray = np.asarray(out)
+            return _out
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -721,14 +740,16 @@ class RimeAdProposer(ProposerBase):
             xv = df[feat_name].to_numpy(dtype=float)
             try:
                 pred = bridge.evaluate_expression(formula, [feat_name], [xv])
-                return np.asarray(pred, dtype=float)
+                _out: np.ndarray = np.asarray(pred, dtype=float)
+                return _out
             except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 # The bridge already includes its own sympy reference evaluator,
                 # so reaching this point means BOTH engines could not evaluate
                 # the formula. Never fabricate a different function from
                 # substring matching: fail honest with NaN so downstream
                 # finite-masks drop the candidate instead of scoring garbage.
-                return np.full_like(xv, np.nan)
+                _out = np.full_like(xv, np.nan)
+                return _out
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -754,9 +775,11 @@ class RimeAdProposer(ProposerBase):
             xv = df[feat_name].to_numpy(dtype=float)
             try:
                 pred = bridge.evaluate_expression(formula, [feat_name], [xv])
-                return np.asarray(pred, dtype=float)
+                _out: np.ndarray = np.asarray(pred, dtype=float)
+                return _out
             except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
-                return np.full_like(xv, np.nan)
+                _out = np.full_like(xv, np.nan)
+                return _out
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -786,7 +809,8 @@ class RimeAdProposer(ProposerBase):
             xv = df[feat_name].to_numpy(dtype=float)
             y_jump = q0 * np.floor((xv - off) / w) + b
             y_smooth = c_poly[0] * xv + c_poly[1] * (xv ** 2)
-            return np.asarray(np.asarray(np.asarray(y_jump + y_smooth)))
+            _out: np.ndarray = np.asarray(np.asarray(np.asarray(y_jump + y_smooth)))
+            return _out
 
         return CandidateProposal(
             proposer_id=self.proposer_id,

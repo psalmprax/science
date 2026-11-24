@@ -308,7 +308,8 @@ def _rational_power(col: np.ndarray, p: float) -> np.ndarray:
     the domain-safe reading and is declared by the caller's exponent choice.
     """
     v = np.asarray(col, dtype=float)
-    return np.sign(v) * np.power(np.abs(v), p)
+    _out: np.ndarray = np.sign(v) * np.power(np.abs(v), p)
+    return _out
 
 
 def _candidate_terms(
@@ -344,9 +345,9 @@ def _candidate_terms(
     return terms
 
 
-def _rational_power_term_fn(src: str, p: float):
+def _rational_power_term_fn(src: str, p: float) -> Any:
     """Live-frame re-derivation for a rational-power term (causal by construction)."""
-    def fn(df: pd.DataFrame, _d=src, _p=float(p)):
+    def fn(df: pd.DataFrame, _d:Any=src, _p:Any=float(p)) -> Any:
         if _d not in df.columns:
             return np.full(len(df), np.nan)
         return _rational_power(df[_d], _p)
@@ -375,7 +376,8 @@ def _pair_lag_fn(src: str, label: str) -> Callable[[pd.DataFrame], np.ndarray]:
     k = int(m.group(1)) if m else 0
     def fn(df: pd.DataFrame, _a: str = a, _b: str = b, _k: int = k) -> np.ndarray:
         if _a in df.columns and _b in df.columns:
-            return np.asarray(_lagk(np.asarray(df[_a], dtype=float), _k) * _lagk(np.asarray(df[_b], dtype=float), _k))
+            _out: np.ndarray = np.asarray(_lagk(np.asarray(df[_a], dtype=float), _k) * _lagk(np.asarray(df[_b], dtype=float), _k))
+            return _out
         return np.full(len(df), np.nan)
     return fn
 
@@ -390,8 +392,10 @@ def _pade_scoring_fn(
     ) -> np.ndarray:
         base_d = np.asarray(_parent.compute_score(df), dtype=float)
         if _res:
-            return np.asarray(_a / (1.0 + _b * np.abs(base_d)))
-        return np.asarray(_a * base_d / (1.0 + _b * np.abs(base_d)))
+            _out: np.ndarray = np.asarray(_a / (1.0 + _b * np.abs(base_d)))
+            return _out
+        _out = np.asarray(_a * base_d / (1.0 + _b * np.abs(base_d)))
+        return _out
     return fn
 
 
@@ -421,15 +425,17 @@ def _wrap_repaired(
                    # overrides this from its own covariance analysis.
                    "identifiability_status": IDENT_UNRESOLVED})
 
-    def compute_score(df: pd.DataFrame, _p=parent, _fn=term_values_fn) -> np.ndarray:
+    def compute_score(df: pd.DataFrame, _p:Any=parent, _fn:Any=term_values_fn) -> np.ndarray:
         _c = np.asarray(coefs, dtype=float)
         base = np.asarray(_p.compute_score(df), dtype=float)
         if _fn is None:
-            return np.asarray(np.asarray(np.asarray(_c[0] * base + _c[1])))
+            _out: np.ndarray = np.asarray(np.asarray(np.asarray(_c[0] * base + _c[1])))
+            return _out
         t = np.asarray(_fn(df), dtype=float)
         out = _c[0] * base + _c[1] * t + _c[2]
         out[~(np.isfinite(base) & np.isfinite(t))] = np.nan
-        return np.asarray(np.asarray(np.asarray(out)))
+        _out = np.asarray(np.asarray(np.asarray(out)))
+        return _out
 
     # Structural identity for cross-slice comparison (invariance ranking).
     # A repaired candidate's identity is the parent mechanism PLUS the term
@@ -493,8 +499,9 @@ def _wrap_pade_repaired(
         "form": "resonance" if resonance else "saturation",
     }
 
-    def compute_score(df: pd.DataFrame, _fn=term_values_fn) -> np.ndarray:
-        return np.asarray(_fn(df), dtype=float)
+    def compute_score(df: pd.DataFrame, _fn:Any=term_values_fn) -> np.ndarray:
+        _out: np.ndarray = np.asarray(_fn(df), dtype=float)
+        return _out
 
     deps = tuple(parent.declared_nominal_dependencies)
     return CandidateProposal(
@@ -793,7 +800,7 @@ class _InvVerdict:
         self.wins = wins
 
 
-def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
+def _invariance_verdict(best: Any, partitions: Any, config: Any, cutoffs: Any) -> _InvVerdict:
     """Run the full pipeline on disjoint dev slices; require the winner repeats.
 
     Cost is K proposer+repair runs on 1/K-sized slices, so it is comparable to
@@ -824,7 +831,7 @@ def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
     # lag-family findings and repairs are about, and would fabricate slices from
     # unrelated regimes.
     order = np.arange(len(dev_x))
-    bounds = np.linspace(0, len(dev_x), k + 1).astype(int)
+    bounds: np.ndarray = np.linspace(0, len(dev_x), k + 1).astype(int)
     key_counts: dict[str, int] = {}
     winner_keys: set[str] = set()
     ran = 0
@@ -871,7 +878,7 @@ def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
                        f"no structure won >= {min_wins}/{ran} dev-side slices (best {wins}: {top_key[:12]})", ran, wins)
 
 
-def _slice_pair_key(sl_x, sl_y, config, cutoffs) -> str | None:
+def _slice_pair_key(sl_x: Any, sl_y: Any, config: Any, cutoffs: Any) -> str | None:
     """Two-way slice evaluation (pair mode).
 
     The full 4-role pipeline needs slices big enough to support the stability
@@ -907,7 +914,7 @@ def _slice_pair_key(sl_x, sl_y, config, cutoffs) -> str | None:
     return canonical_key(best)
 
 
-def _slice_original(partitions):
+def _slice_original(partitions: Any) -> Any:
     """The proposer's best candidate on a slice's discovery split."""
     from apedp_dyn.proposers.rime_proposer import RimeProposer
 
@@ -920,11 +927,15 @@ def _slice_original(partitions):
     # No proposer output on this slice: fall back to a mean-prediction fixture
     # so the slice contributes a real, honest candidate to the agreement count.
     mu = float(np.mean(partitions.discovery_y))
+
+    def mean_score(df: Any) -> Any:
+        return np.full(len(df), mu)
+
     return CandidateProposal(
         proposer_id="fixture_mean", candidate_id="mean", formula="mean",
         strategy_archetype=None,
         declared_scale_invariant=False, declared_nominal_dependencies=tuple(feats),
-        compute_score=lambda df, _m=mu: np.full(len(df), _m),
+        compute_score=mean_score,
         parameters={}, metadata={"equation": "mean"})
 
 

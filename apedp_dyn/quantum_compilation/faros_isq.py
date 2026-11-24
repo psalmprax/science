@@ -37,19 +37,16 @@ Multi-Fidelity Pareto Tournament:
 from __future__ import annotations
 
 import dataclasses
-from enum import Enum
 import json
 import math
-import os
-from pathlib import Path
 import shutil
-import subprocess
-from typing import Any, Callable
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 from apedp_dyn.quantum_compilation.candidates import (
-    CandidateStatus,
     CircuitCandidate,
     VerifierReceipt,
     candidate_id_for,
@@ -62,35 +59,34 @@ from apedp_dyn.quantum_compilation.experiment import (
     CandidateScreen,
     Proposer,
 )
+from apedp_dyn.quantum_compilation.faros_runtime import (
+    faros_python as _faros_python,
+)
+from apedp_dyn.quantum_compilation.faros_runtime import (
+    run_faros_script as _run_faros_script,
+)
 from apedp_dyn.quantum_compilation.invsqrt_signed_digit import (
     Cfg,
-    _PUBLISHED_COEFFICIENT_ROWS,
-    build_tables,
-    calibrate_segment,
-    fitc,
     integer_model,
-    layout as compute_signed_digit_layout,
     load_or_build_tables,
-    pipeline,
-    rd,
     regenerate_tables_exact,
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 from apedp_dyn.quantum_compilation.referee import run_invsqrt_verifier
 
 __all__ = [
+    "R1_NONUNIFORM_CONFIGS",
+    "R2_PREFIX_RESIDUAL_CONFIGS",
+    "REFERENCE_COST_90Q",
+    "REFERENCE_COST_90Q_AFFINE_OPT",
+    "SABLE_90_BASELINE",
     "ArithmeticForm",
     "ErrorBudgetEngine",
     "FarosCandidateConfig",
     "FarosIsqProposer",
     "FarosParetoTournament",
     "FidelityLevel",
-    "REFERENCE_COST_90Q",
-    "REFERENCE_COST_90Q_AFFINE_OPT",
-    "R1_NONUNIFORM_CONFIGS",
-    "R2_PREFIX_RESIDUAL_CONFIGS",
     "RepresentationType",
-    "SABLE_90_BASELINE",
     "Sable90Profiler",
     "SegmentationStrategy",
     "TournamentCandidate",
@@ -337,21 +333,24 @@ class ErrorBudgetEngine:
     def target_phase_turns(xs: np.ndarray) -> np.ndarray:
         """Target phase beta / sqrt(x) mod 1 in turns."""
         xs = np.asarray(xs, dtype=np.float64)
-        return (1.0 / np.sqrt(xs)) % 1.0
+        _out: np.ndarray = (1.0 / np.sqrt(xs)) % 1.0
+        return _out
 
     @staticmethod
     def target_phase_units(xs: np.ndarray) -> np.ndarray:
         """Target phase in official 64-bit uint64 units (units of 2^-64 turns)."""
         xs = np.asarray(xs, dtype=np.float64)
         turns = (1.0 / np.sqrt(xs)) % 1.0
-        return np.floor(turns * (2.0**64)).astype(np.uint64)
+        _out: np.ndarray = np.floor(turns * (2.0**64)).astype(np.uint64)
+        return _out
 
     @staticmethod
     def tolerance_phase_units(xs: np.ndarray) -> np.ndarray:
         """Allowed phase tolerance tol(x) = 2^-24 / sqrt(x) in 2^-64 turn units."""
         xs = np.asarray(xs, dtype=np.float64)
         tol_turns = (2.0**-TOLERANCE_EXPONENT) / np.sqrt(xs)
-        return np.floor(tol_turns * (2.0**64)).astype(np.uint64)
+        _out: np.ndarray = np.floor(tol_turns * (2.0**64)).astype(np.uint64)
+        return _out
 
     @classmethod
     def evaluate_margin(
@@ -423,9 +422,9 @@ def generate_evaluation_subset(
     max_x: int = MAX_X, *, prefix: int = 4096, stride: int = 67
 ) -> np.ndarray:
     """Deterministic, dense-low-x evaluation subset across the 3,133,452 domain."""
-    p_pts = np.arange(1, min(max_x, prefix) + 1, dtype=np.int64)
-    s_pts = np.arange(min(max_x, prefix) + 1, max_x + 1, stride, dtype=np.int64)
-    boundaries = np.asarray(
+    p_pts: np.ndarray = np.arange(1, min(max_x, prefix) + 1, dtype=np.int64)
+    s_pts: np.ndarray = np.arange(min(max_x, prefix) + 1, max_x + 1, stride, dtype=np.int64)
+    boundaries: np.ndarray = np.asarray(
         [1, 2, 3, 4, 5, 6, 7, 8, max_x - 1, max_x]
         + [2**k for k in range(1, 23) if 1 <= 2**k <= max_x]
         + [3 * (2**k) for k in range(1, 21) if 1 <= 3 * (2**k) <= max_x],
@@ -433,7 +432,8 @@ def generate_evaluation_subset(
     )
     all_pts = np.concatenate([p_pts, s_pts, boundaries])
     all_pts = all_pts[(all_pts >= 1) & (all_pts <= max_x)]
-    return np.unique(all_pts)
+    _out: np.ndarray = np.unique(all_pts)
+    return _out
 
 
 def compute_segment_boundaries(
@@ -450,14 +450,16 @@ def compute_segment_boundaries(
         # f'''(M) proportional to M^(-7/2). Optimal interval step h(M) ~ M^(7/6).
         # Integrate M^(-7/6) dM: integral of M^(-1/6) is proportional to M^(5/6)
         u = np.linspace(m_min ** (5.0 / 6.0), m_max ** (5.0 / 6.0), num_segments + 1)
-        return u ** (6.0 / 5.0)
+        _out: np.ndarray = u ** (6.0 / 5.0)
+        return _out
 
     if strategy == SegmentationStrategy.DYADIC_OCTAVE:
         # Finer dyadic split near m_min, coarser near m_max
         t = np.linspace(0, 1, num_segments + 1)
         # Quadratic bias toward m_min
         warped = t**1.5
-        return m_min + (m_max - m_min) * warped
+        _out: np.ndarray = m_min + (m_max - m_min) * warped
+        return _out
 
     # Default fallback: uniform
     return np.linspace(m_min, m_max, num_segments + 1)
@@ -486,7 +488,7 @@ def _evaluate_piecewise_chebyshev_minimax(
     )
     quant_step = 2.0 ** -coef_bits
 
-    cheb_j = np.arange(degree + 1, dtype=np.float64)
+    cheb_j: np.ndarray = np.arange(degree + 1, dtype=np.float64)
     nodes_ref = np.cos((2.0 * cheb_j + 1.0) * np.pi / (2.0 * (degree + 1)))
 
     approx = np.zeros_like(m)
@@ -510,7 +512,8 @@ def _evaluate_piecewise_chebyshev_minimax(
     poly_q = np.round(approx / quant_step) * quant_step
     y_val = e_factor * poly_q
     phase_turns = (scale_factor * y_val) % 1.0
-    return np.floor(phase_turns * (2.0**64)).astype(np.uint64)
+    _out: np.ndarray = np.floor(phase_turns * (2.0**64)).astype(np.uint64)
+    return _out
 
 
 # --- R1: Nonuniform Piecewise Minimax Polynomial ---
@@ -999,8 +1002,8 @@ class FarosParetoTournament:
         c1_vals = [float(c1.get(k, float("inf"))) for k in keys]
         c2_vals = [float(c2.get(k, float("inf"))) for k in keys]
 
-        weakly_better = all(v1 <= v2 for v1, v2 in zip(c1_vals, c2_vals))
-        strictly_better = any(v1 < v2 for v1, v2 in zip(c1_vals, c2_vals))
+        weakly_better = all(v1 <= v2 for v1, v2 in zip(c1_vals, c2_vals, strict=True))
+        strictly_better = any(v1 < v2 for v1, v2 in zip(c1_vals, c2_vals, strict=True))
         return weakly_better and strictly_better
 
     @classmethod
@@ -1359,7 +1362,7 @@ def exhaustive_integer_certificate(
 
     for start in range(1, MAX_X + 1, chunk_size):
         end = min(start + chunk_size, MAX_X + 1)
-        xs = np.arange(start, end, dtype=np.int64)
+        xs: np.ndarray = np.arange(start, end, dtype=np.int64)
         values = integer_model(xs, cfg, tables).astype(np.uint64)
         phase = values << np.uint64(64 - output_fraction)
         roots = [math.isqrt((1 << 130) // int(x)) for x in xs]
@@ -1372,7 +1375,7 @@ def exhaustive_integer_certificate(
             worst_ratio, worst_x = float(ratio[i]), int(xs[i])
         if (error > tolerance).any():
             bad_idx = int(np.flatnonzero(error > tolerance)[0])
-            result = {
+            result: dict[str, Any] = {
                 "pass": False,
                 "first_bad_x": int(xs[bad_idx]),
                 "ratio": float(ratio[bad_idx]),
@@ -1424,10 +1427,7 @@ def materialize_faros_circuit(
     out_file = Path(output_path) if output_path else default_out
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = _faros_python(python_executable)
 
     should_build = force_rebuild or not out_file.exists()
 
@@ -1439,7 +1439,7 @@ def materialize_faros_circuit(
             builder_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'src'))
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
@@ -1466,7 +1466,7 @@ dropped = set(fixed_deltas.get('droppedOriginalRotationIndices', [18]))
 rep_text = uf.rewrite(lines, rots, {{j: int(v) for j, v in enumerate(values) if j not in dropped}}, dropped)
 final_circuit = km.Circuit(rep_text)
 
-out_path = Path({repr(str(out_file))})
+out_path = Path({str(out_file)!r})
 final_circuit.to_file(str(out_path), format='kmb')
 stats = final_circuit.operation_statistics()
 res = {{
@@ -1479,29 +1479,17 @@ res = {{
 }}
 print(json.dumps(res))
 """
-            try:
-                subprocess.run(
-                    [py_bin, "-c", builder_script],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Circuit builder subprocess failed for {candidate_id}. "
-                    "Silent fallback copying of 90Q champion is permanently prohibited "
-                    "by MOSAIC-2 Evidence Integrity rules."
-                ) from exc
+            _run_faros_script(py_bin, builder_script, f"circuit build for {candidate_id}")
 
     # Query operational statistics directly from the verified circuit
     stats_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
 import kickmix as km
-circuit_file = Path({repr(str(out_file))})
+circuit_file = Path({str(out_file)!r})
 circuit = km.Circuit.from_file(str(circuit_file))
 stats = circuit.operation_statistics()
 res = {{
@@ -1512,23 +1500,12 @@ res = {{
 }}
 print(json.dumps(res))
 """
-    try:
-        proc = subprocess.run(
-            [py_bin, "-c", stats_script],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        circ_stats = json.loads(proc.stdout.strip().splitlines()[-1])
-        num_qubits = int(circ_stats["num_qubits"])
-        static_toffoli = int(circ_stats["static_toffoli"])
-        t_like = int(circ_stats["t_like"])
-        rotations = int(circ_stats["rotations"])
-    except Exception:
-        num_qubits = 90
-        static_toffoli = 1448
-        t_like = 1
-        rotations = 44
+    stdout = _run_faros_script(py_bin, stats_script, f"resource measurement for {candidate_id}")
+    circ_stats = json.loads(stdout.strip().splitlines()[-1])
+    num_qubits = int(circ_stats["num_qubits"])
+    static_toffoli = int(circ_stats["static_toffoli"])
+    t_like = int(circ_stats["t_like"])
+    rotations = int(circ_stats["rotations"])
 
     digest = sha256_file(out_file)
     margin_units = 73_326_605
@@ -1542,6 +1519,9 @@ print(json.dumps(res))
     )
 
     metadata = {
+        "resource_evidence": "subprocess circuit statistics",
+        "cost_evidence": "static estimate, not executed verifier score",
+        "margin_evidence": "historical assumed margin, not remeasured for this circuit",
         "candidate_id": candidate_id,
         "path": out_file,
         "sha256": digest,
@@ -1574,24 +1554,27 @@ def calibrate_faros_circuit(
         raise FileNotFoundError(f"Circuit artifact not found: {c_path}")
 
     out_file = Path(output_path) if output_path else c_path
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = _faros_python(python_executable)
 
     if fixed_deltas is None:
         cal_path = repo_root / "src/invsqrt_calibration.json"
-        if cal_path.exists():
-            fixed_deltas = json.loads(cal_path.read_text(encoding="utf-8"))
+        fixed_deltas = json.loads(cal_path.read_text(encoding="utf-8"))
 
-    margin_units = fixed_deltas.get("marginUnits", 73_326_605) if fixed_deltas else 73_326_605
-    dropped = fixed_deltas.get("droppedOriginalRotationIndices", [18]) if fixed_deltas else [18]
-    eps = (math.pi * float(margin_units) / (2.0**64)) / 44.0
+    margin_units = fixed_deltas["marginUnits"]
+    dropped = fixed_deltas["droppedOriginalRotationIndices"]
+    values = fixed_deltas["deltasPhaseUnits"]
+    if (
+        type(margin_units) is not int or margin_units <= 0
+        or not isinstance(dropped, list) or not all(type(v) is int and v >= 0 for v in dropped)
+        or not isinstance(values, list) or not values or not all(type(v) is int for v in values)
+    ):
+        raise ValueError("Calibration requires positive marginUnits and integer phase/index lists")
+    source_digest = sha256_file(c_path)
 
     cal_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'src'))
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
@@ -1600,14 +1583,13 @@ import kickmix as km
 import portable_calibration as cal
 import upstream_functions as uf
 
-circuit_in = Path({repr(str(c_path))})
-circuit_out = Path({repr(str(out_file))})
+circuit_in = Path({str(c_path)!r})
+circuit_out = Path({str(out_file)!r})
 circuit = km.Circuit.from_file(str(circuit_in))
 stats = circuit.operation_statistics()
 rot_count = int(stats.num_z_pow(min_clifford_hierarchy_level=4))
 
-cal_path = repo_root / 'src/invsqrt_calibration.json'
-fixed_deltas = json.loads(cal_path.read_text(encoding='utf-8')) if cal_path.exists() else {{}}
+fixed_deltas = json.loads({json.dumps(fixed_deltas)!r})
 values = fixed_deltas.get('deltasPhaseUnits', [])
 dropped = set(fixed_deltas.get('droppedOriginalRotationIndices', [18]))
 
@@ -1628,35 +1610,27 @@ print(json.dumps({{
     'sha256': hashlib.sha256(circuit_out.read_bytes()).hexdigest(),
 }}))
 """
-    try:
-        proc = subprocess.run(
-            [py_bin, "-c", cal_script],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        res_info = json.loads(proc.stdout.strip().splitlines()[-1])
-        cal_rotations = int(res_info["rotations"])
-        cal_sha256 = str(res_info["sha256"])
-    except Exception as exc:
-        raise RuntimeError(
-            f"Phase calibration subprocess failed for {c_path}. "
-            "Silent fallback copying of input circuit is permanently prohibited "
-            "by MOSAIC-2 Evidence Integrity rules."
-        ) from exc
+    stdout = _run_faros_script(py_bin, cal_script, f"phase calibration for {c_path}")
+    res_info = json.loads(stdout.strip().splitlines()[-1])
+    cal_rotations = int(res_info["rotations"])
+    cal_sha256 = str(res_info["sha256"])
+    if cal_rotations <= 0:
+        raise ValueError("Calibration produced no non-Clifford rotations")
+    eps = (math.pi * float(margin_units) / (2.0**64)) / cal_rotations
 
     report = {
         "source_circuit": str(c_path),
         "calibrated_circuit": str(out_file),
-        "source_circuit_sha256": sha256_file(c_path),
+        "source_circuit_sha256": source_digest,
         "calibrated_circuit_sha256": cal_sha256,
         "dropped_original_rotation_indices": dropped,
         "calibrated_rotation_count": cal_rotations,
         "margin_units": margin_units,
         "rotation_eps": eps,
         "t_gates_per_rotation": 0.56 * math.log2(1.0 / eps) + 5.3,
-        "calibration_method": "cutting-plane LP on Chebyshev minimax basis phase oracle",
-        "lp_converged": True,
+        "calibration_method": "replay fixed phase deltas; no LP solver executed",
+        "lp_converged": None,
+        "margin_verified": False,
     }
 
     cal_out = out_file.with_suffix(".calibration.json")
@@ -1679,10 +1653,7 @@ def verify_faros_candidate(
         contract = load_contract("invsqrt")
     contract.assert_locked()
 
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = _faros_python(python_executable)
     art_path = Path(artifact_path)
     if not art_path.exists():
         raise FileNotFoundError(f"Artifact not found: {art_path}")
@@ -1704,4 +1675,3 @@ def verify_faros_candidate(
             encoding="utf-8",
         )
     return receipt
-

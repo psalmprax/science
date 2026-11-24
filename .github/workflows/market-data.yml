@@ -1,0 +1,68 @@
+name: Market data (point-in-time build)
+
+# Builds the survivorship-free daily panel of every Binance USDT spot pair
+# (scripts/build_point_in_time_crypto_panel.py) on GitHub's runners, which can
+# reach data.binance.vision, and commits it to the orphan branch
+# `market-data`. Run by pushing to `market-data-build` or by hand.
+#
+# Order matters for the preregistered run (preregistration/): the
+# preregistration is committed, and its digest checked here, before any data
+# exists. The build records that digest in the manifest it commits, so the
+# order is in the history, not only in a claim.
+
+on:
+  push:
+    branches: [market-data-build]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: The preregistration exists and matches its recorded digest
+        run: python scripts/check_preregistration.py
+      - name: Build the panel
+        run: python scripts/build_point_in_time_crypto_panel.py --out "$RUNNER_TEMP/panel"
+      - name: Record the preregistration digest and the source commit in the manifest
+        run: |
+          python - "$RUNNER_TEMP/panel/manifest.json" <<'EOF'
+          import json, subprocess, sys
+          from pathlib import Path
+          path = Path(sys.argv[1])
+          manifest = json.loads(path.read_text())
+          manifest["built_from_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          manifest["preregistration"] = json.loads(Path("preregistration/DIGEST.json").read_text())
+          path.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
+          EOF
+      - name: Commit the panel to the market-data branch
+        run: |
+          set -euo pipefail
+          src="$(git rev-parse --short HEAD)"
+          git config user.name "apedp-market-data"
+          git config user.email "actions@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin market-data >/dev/null; then
+            git fetch origin market-data
+            git switch market-data
+          else
+            git switch --orphan market-data
+            git rm -rf --quiet . || true
+          fi
+          mkdir -p crypto_usdt_daily
+          cp "$RUNNER_TEMP"/panel/* crypto_usdt_daily/
+          git add crypto_usdt_daily
+          git commit -m "Point-in-time USDT panel built from ${src}"
+          git push origin market-data

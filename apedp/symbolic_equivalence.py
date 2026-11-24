@@ -133,7 +133,7 @@ class SymbolicEquivalenceEngine:
                 unique_variable_parts[var_core] = sp.Symbol("__C__")
 
             recombined = sp.Add(*[sp.Mul(sp.Symbol("__C__"), core) for core in unique_variable_parts])
-        except Exception:
+        except Exception:  # noqa: BLE001 - skeleton recombination is cosmetic: when sympy cannot expand the abstracted form it is returned unchanged and indices are still assigned
             logger.debug("Skeleton recombination fallback", exc_info=True)
             recombined = abstracted
 
@@ -193,7 +193,7 @@ class SymbolicEquivalenceEngine:
                 if deg == 3:
                     return "cubic"
                 return f"polynomial_deg_{deg}"
-            except Exception:
+            except Exception:  # noqa: BLE001 - sp.Poly raises on non-polynomial input by design; classification falls through to the power-law/rational branch below
                 logger.debug("Poly classification fallback", exc_info=True)
 
         # 5. Check for Power law / Rational

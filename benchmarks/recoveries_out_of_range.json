@@ -1,0 +1,77 @@
+{
+ "cap": 10.0,
+ "draws": 2000,
+ "min_rows": 200,
+ "result_sets": {
+  "RESULT-LLM-CONTROLLER-2026-11": {
+   "by_form": 171,
+   "do_not_hold": [
+    {
+     "by_form": false,
+     "engine": "refined_controlled",
+     "model": "-0.00145030942202027*x0**2*x1**2/(0.9749036986748*x2*x3 + 1627.8268458414*x2**3*x3**3/(x0**2*x1**2)) + 0.00211085508732114*x0**2*x1**2/(x2*x3) - 0.079577467365948*x0*x1 + 0.999999998869206*x2*x3",
+     "noise": 0.0,
+     "problem": "feynman_III_4_33",
+     "reason": "",
+     "rel_rmse_sampled_range": 1.3297903278375754e-09,
+     "rel_rmse_wide_range": 2.1021216642252986e-05
+    },
+    {
+     "by_form": false,
+     "engine": "refined_controlled",
+     "model": "0.999999985953746*x0*sqrt(exp(-sqrt(exp(-0.0561183651097949*x1**8/x2**8)*exp(-0.144929919553822*x1**6*exp(0.835859253759409*exp(1.25437563808323*x1**2/x2**2))/x2**6)))*exp(exp(x1**2/x2**2)))",
+     "noise": 0.0,
+     "problem": "feynman_I_10_7",
+     "reason": "",
+     "rel_rmse_sampled_range": 9.889376939453651e-09,
+     "rel_rmse_wide_range": 0.0750677178788904
+    }
+   ],
+   "hold": 171,
+   "hold_by_form": 171,
+   "not_testable": [],
+   "recovered": 173,
+   "testable": 173
+  },
+  "RESULT-MAIN-SEARCH-2026-11": {
+   "by_form": 215,
+   "do_not_hold": [
+    {
+     "by_form": true,
+     "engine": "gagp",
+     "model": "0.9993*Max(x0/Max(x1, tanh(x1)), sin(Max(atan(1.05252078364277*sqrt(x1))/Max(x1, (-x1 + tan(x1))/sin(x1*sin(sqrt(x0))), tan(x1)), sin(Max(atan(x0)/(1.772 + 1.9038/x0), tanh(sin(cos(x1)))))))) + 0.0008",
+     "noise": 0.01,
+     "problem": "feynman_I_25_13",
+     "reason": "",
+     "rel_rmse_sampled_range": 3.930027156614993e-17,
+     "rel_rmse_wide_range": 0.04026981252157264
+    }
+   ],
+   "hold": 214,
+   "hold_by_form": 214,
+   "not_testable": [],
+   "recovered": 215,
+   "testable": 215
+  },
+  "RESULT-PORTFOLIO-SEARCH-2026-11": {
+   "by_form": 189,
+   "do_not_hold": [],
+   "hold": 189,
+   "hold_by_form": 189,
+   "not_testable": [],
+   "recovered": 189,
+   "testable": 189
+  },
+  "RESULT-REFINED-SEARCH-2026-11": {
+   "by_form": 174,
+   "do_not_hold": [],
+   "hold": 174,
+   "hold_by_form": 174,
+   "not_testable": [],
+   "recovered": 174,
+   "testable": 174
+  }
+ },
+ "tolerance": 1e-08,
+ "widen": 0.5
+}

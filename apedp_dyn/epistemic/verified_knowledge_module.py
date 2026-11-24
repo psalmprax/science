@@ -35,7 +35,11 @@ from apedp_dyn.epistemic.experiment_ledger import (
     CandidateLifecycleState,
     FullLineageExperimentLedger,
 )
-from apedp_dyn.epistemic.promotion_lifecycle import PromotionStage, PromotionTracker
+from apedp_dyn.epistemic.promotion_lifecycle import (
+    PromotionStage,
+    PromotionTracker,
+    PromotionViolationError,
+)
 
 
 class ModuleIntegrityError(ValueError):
@@ -93,7 +97,13 @@ class VerifiedModuleLibrary:
     # trading-specific and NOT required — disclosed on every export.
     MIN_PROMOTION_STAGE = PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER
 
-    def __init__(self) -> None:
+    def __init__(self, require_evidence_backed_promotion: bool = True) -> None:
+        # A tracker can be advanced on numbers its caller typed in
+        # (``allow_reported_metrics=True``). Such a promotion says what the
+        # caller claimed, not what was measured, so by default it does not
+        # admit a module. Pass False only to register against reported metrics
+        # knowingly; the module's evidence then says so.
+        self._require_evidence_backed_promotion = require_evidence_backed_promotion
         self._modules: dict[str, RegisteredModule] = {}
         self._disclosure = (
             "Library entry gates: experiment-ledger CONFIRMED_VALID + promotion "
@@ -121,6 +131,20 @@ class VerifiedModuleLibrary:
                 "confirmed_valid; refusing to promote it to reusable knowledge"
             )
         # Gate 2: promotion lifecycle evidence (separate referee, not fungible).
+        # The tracker's flags are plain attributes; they count only if they are
+        # what its stage records imply, and only for the candidate in question.
+        if promotion.candidate_id != spec.candidate_id:
+            raise ModuleIntegrityError(
+                f"{spec.candidate_id}: promotion tracker belongs to candidate "
+                f"{promotion.candidate_id!r}"
+            )
+        try:
+            promotion.assert_consistent()
+        except PromotionViolationError as exc:
+            raise ModuleIntegrityError(
+                f"{spec.candidate_id}: promotion tracker state is inconsistent with "
+                f"its stage records ({exc})"
+            ) from exc
         if promotion.highest_stage_passed < self.MIN_PROMOTION_STAGE:
             stage_names = {
                 PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER: "stage 4 (out-of-sample transfer)",
@@ -129,6 +153,18 @@ class VerifiedModuleLibrary:
                 f"{spec.candidate_id}: promotion stage "
                 f"{promotion.highest_stage_passed.name} < "
                 f"{stage_names[PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER]}"
+            )
+        evidence_backed = promotion.is_evidence_backed(through=self.MIN_PROMOTION_STAGE)
+        if self._require_evidence_backed_promotion and not evidence_backed:
+            reported = [
+                stage.name
+                for stage, source in promotion.evidence_sources.items()
+                if stage <= self.MIN_PROMOTION_STAGE and source != "derived"
+            ]
+            raise ModuleIntegrityError(
+                f"{spec.candidate_id}: promotion through stage 4 rests on caller-reported "
+                f"metrics ({', '.join(reported)}); the library admits a module only on stages "
+                "whose metrics were derived from evidence"
             )
         if spec.dependencies:
             missing = [d for d in spec.dependencies if d not in self._modules]
@@ -141,6 +177,10 @@ class VerifiedModuleLibrary:
             evidence={
                 "experiment_node_state": node.state.value,
                 "promotion_stage_passed": promotion.highest_stage_passed.name,
+                "promotion_evidence_backed": evidence_backed,
+                "promotion_evidence_sources": {
+                    stage.name: source for stage, source in promotion.evidence_sources.items()
+                },
                 "disclosure": self._disclosure,
             },
         )

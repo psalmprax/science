@@ -175,6 +175,8 @@ def _mixed_energy_fraction(u: np.ndarray) -> float:
         return 0.0
     kx = np.fft.fftshift(np.fft.fftfreq(u.shape[1]))
     w = np.fft.fftshift(np.fft.fftfreq(u.shape[0]))
+    K: np.ndarray
+    W: np.ndarray
     K, W = np.meshgrid(kx, w)
     moving = spec[(np.abs(K) > 1e-12) & (np.abs(W) > 1e-12)]
     return float(moving.sum()) / total
@@ -271,7 +273,8 @@ def classify_modality(
             "no monotone time axis and no declared grid: static scalar manifold",
         )
 
-    t = vals if time_name else np.arange(len(frame), dtype=float)
+    t = (np.arange(len(frame), dtype=float)
+         if vals is None or not time_name else vals)
     vcols = value_cols or [c for c in frame.columns
                            if c not in (time_name, coord_col)
                            and np.isfinite(pd.to_numeric(frame[c], errors="coerce")).mean() > 0.9]

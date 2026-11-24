@@ -1,0 +1,26 @@
+{
+  "why": "The EPO OPS adapter tests replay recorded responses instead of synthetic XML. Only refusal responses could be recorded here: the claims endpoint answers 403 without OAuth and the token endpoint answers 401 without a client identifier, so no authenticated claims response exists yet. Run scripts/record_epo_ops_fixture.py with EPO_OPS_KEY and EPO_OPS_SECRET to add claims_<number>.xml, which turns the replay test from skip to run.",
+  "recorded_by": "scripts/record_epo_ops_fixture.py --probe",
+  "fixtures": {
+    "claims_EP4334731_403.xml": {
+      "url": "https://ops.epo.org/3.2/rest-services/published-data/publication/docdb/EP4334731/claims",
+      "method": "GET",
+      "http_status": 403,
+      "bytes": 208,
+      "sha256": "f612f5525f28323ab87368c6288198ef2fc44a66aa46fa07870e877b3ab3a7ab",
+      "authenticated": false,
+      "note": "refusal recorded from the live endpoint with no OAuth token; this is what an unauthenticated request returns",
+      "retrieved_utc": "2026-11-01T01:18:53+00:00"
+    },
+    "token_401.xml": {
+      "url": "https://ops.epo.org/3.2/auth/accesstoken",
+      "method": "POST",
+      "http_status": 401,
+      "bytes": 86,
+      "sha256": "8cbe680fe38b4351b00a4c52720b817e4c8447796bbf51051ec2cb5f656d9e38",
+      "authenticated": false,
+      "note": "refusal recorded from the live endpoint with no OAuth token; this is what an unauthenticated request returns",
+      "retrieved_utc": "2026-11-01T01:18:53+00:00"
+    }
+  }
+}

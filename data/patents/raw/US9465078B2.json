@@ -1,0 +1,211 @@
+{
+  "patent_id": "US9465078B2",
+  "source": "https://patents.google.com/patent/US9465078B2/en",
+  "retrieved_utc": "2026-11-01T01:35:06+00:00",
+  "http_status": 200,
+  "bytes": 533593,
+  "html_sha256": "05678a882d11e9b5c5d00c06a2bcc6450b0df9abc67e419827466c2e3eb82881",
+  "jurisdiction": "US",
+  "title": "Battery capacity and durability prediction method",
+  "abstract": "Abstract A method of determining battery performance information indicative of a performance of a battery in a device is disclosed, the method including: receiving environmental condition information indicative of environmental conditions of the device during a usage period; receiving operating parameter information indicative of one or more operating parameters of the battery during the usage period; and determining the battery performance information based at least in part on: the environmental condition information, the operating parameter information, and a performance model corresponding to the battery.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A method of controlling a seismic data acquisition unit based on battery performance information, comprising: receiving, by one or more processors of the seismic data acquisition unit, environmental condition information indicative of environmental conditions of the seismic data acquisition unit during a usage period; receiving, by the one or more processors, operating parameter information indicative of one or more operating parameters of a battery powering the seismic data acquisition unit during the usage period, the operating parameter information determined based on the battery performance information that corresponds to a battery performance model developed for the battery powering the seismic data acquisition unit; comparing, by the one or more processors, the environmental condition information to the operating parameter information to determine to disable acquisition of seismic data; and controlling, by the one or more processors, based on the comparing the environmental condition information to the operating parameter information, a component of the seismic data acquisition unit to disable acquisition of seismic data."
+    },
+    {
+      "num": "2",
+      "text": "2. The method of claim 1 , further comprising: receiving location information indicative of a spatial and temporal location of the battery during the usage period; generating the environmental condition information based at least in part on the location information and an environmental model indicative of the environmental conditions at the location during the usage period."
+    },
+    {
+      "num": "3",
+      "text": "3. The method of claim 2 , wherein the environmental model comprises a weather model."
+    },
+    {
+      "num": "4",
+      "text": "4. The method of claim 3 , wherein the weather model provides information indicative of the daily temperature at the location during the usage period."
+    },
+    {
+      "num": "5",
+      "text": "5. The method of claim 2 , comprising acquiring at least a portion of the location information using a global positioning unit."
+    },
+    {
+      "num": "6",
+      "text": "6. The method claim 2 , comprising acquiring at least a portion of the location information using a clock included in the seismic data acquisition unit."
+    },
+    {
+      "num": "7",
+      "text": "7. The method of claim 1 , further comprising: determining at least a portion of the environmental condition information using at least one sensor."
+    },
+    {
+      "num": "8",
+      "text": "8. The method of claim 7 , wherein the sensor is included in the seismic data acquisition unit."
+    },
+    {
+      "num": "9",
+      "text": "9. The method of claim 8 , wherein the sensor comprises a temperature sensor, and wherein determining at least a portion of the environmental condition information using a sensor comprises determining information indicative of the temperature of the battery during the usage period."
+    },
+    {
+      "num": "10",
+      "text": "10. The method of claim 1 , further comprising: determining at least a portion of the environmental condition by accessing a data source located remotely from the seismic data acquisition unit."
+    },
+    {
+      "num": "11",
+      "text": "11. The method of claim 10 , wherein the data source comprises a weather data source."
+    },
+    {
+      "num": "12",
+      "text": "12. The method of claim 1 , comprising controlling the operation of the seismic data acquisition unit based at least in part on the battery performance information."
+    },
+    {
+      "num": "13",
+      "text": "13. The method of claim 12 , wherein controlling the operation of the seismic data acquisition unit based at least in part on the battery performance information comprises controlling at least one operating parameter of the battery."
+    },
+    {
+      "num": "14",
+      "text": "14. The method of claim 1 further comprising outputting the battery performance information."
+    },
+    {
+      "num": "15",
+      "text": "15. The method of claim 1 , wherein the seismic data acquisition unit comprises: at least one seismic vibration sensor, a clock, a memory configured to store data from the at least one seismic vibration sensor; the battery; and battery control electronics, and the method further comprises programming the battery control electronics based at least in part on the battery performance information."
+    },
+    {
+      "num": "16",
+      "text": "16. The method of claim 1 , wherein the seismic data acquisition unit comprises a seismic node."
+    },
+    {
+      "num": "17",
+      "text": "17. The method of claim 1 , further comprising: determining that the seismic data acquisition unit satisfies a criterion for future usage based at least in part on the battery performance information."
+    },
+    {
+      "num": "18",
+      "text": "18. The method of claim 1 , wherein the battery performance model is based at least in part on experimental battery performance data for a battery type corresponding to the battery."
+    },
+    {
+      "num": "19",
+      "text": "19. The method of claim 1 , wherein the battery performance model is based at least in part on performance data for a plurality of sample devices corresponding to the seismic data acquisition unit."
+    },
+    {
+      "num": "20",
+      "text": "20. The method of claim 1 , wherein the battery performance information comprises at least one selected from the list consisting of: battery capacity, available battery usage lifetime, battery charge cycling information, battery thermal cycling information, battery rapid aging information, battery thermal performance information, battery charge rate, battery discharge rate, battery charge capacity, battery discharge capacity, battery state of charge monitor information, battery state of health monitor information, battery energy, battery internal impedance, battery AC impedance, and battery Rangone curve information."
+    },
+    {
+      "num": "21",
+      "text": "21. The method of claim 1 , wherein the one or more operating parameters comprises at least one from the list consisting of: a battery discharge rate, a battery charge rate, a battery discharge capacity, a battery charge capacity, a battery state of charge, a battery thermal protection threshold, a battery thermal recovery threshold, a battery thermal disable threshold, a battery over charge threshold, a battery over-discharge threshold, and a battery over-current protection threshold."
+    },
+    {
+      "num": "22",
+      "text": "22. The method of claim 21 , further comprising determining operating parameter information using a sensor included in the seismic data acquisition unit."
+    },
+    {
+      "num": "23",
+      "text": "23. The method of claim 1 , comprising: positioning the seismic data acquisition unit on one of terrain above ground or an ocean bottom."
+    },
+    {
+      "num": "24",
+      "text": "24. A system to control a seismic data acquisition unit based on battery performance information, comprising: the seismic data acquisition unit comprising one or more memory storage devices and one or more processors operatively connected to the one or more memory storage devices configured to: receive environmental condition information indicative of environmental conditions of the seismic data acquisition unit during a usage period; receive operating parameter information indicative of one or more operating parameters of a battery configured to power the seismic data acquisition unit during the usage period, the operating parameter information determined based on the battery performance information that corresponds to a battery performance model developed for the battery powering the seismic data acquisition unit; compare the environmental condition information to the operating parameter information to determine to disable acquisition of seismic data; and control, based on the environmental condition information compared with the operating parameter information, a component of the seismic data acquisition unit to disable acquisition of seismic data."
+    },
+    {
+      "num": "25",
+      "text": "25. The system of claim 24 , wherein the processor is configured to: receive location information indicative of a spatial and temporal location of the battery during the usage period; generate the environmental condition information based at least in part on the location information and an environmental model indicative of the environmental conditions at the location during the usage period."
+    },
+    {
+      "num": "26",
+      "text": "26. The system of claim 25 , wherein the environmental model comprises a weather model."
+    },
+    {
+      "num": "27",
+      "text": "27. The system of claim 26 , wherein the weather model provides information indicative of the daily temperature at the location during the usage period."
+    },
+    {
+      "num": "28",
+      "text": "28. The system of claim 25 , wherein the environmental model is stored on at least one of the one or more memory storage devices."
+    },
+    {
+      "num": "29",
+      "text": "29. The system of claim 25 , comprising a global positioning unit operatively connected to the processor and configured to acquire at least a portion of the location information."
+    },
+    {
+      "num": "30",
+      "text": "30. The system of claim 29 , wherein the global positioning unit is included in the seismic data acquisition unit."
+    },
+    {
+      "num": "31",
+      "text": "31. The system of claim 25 , further comprising a clock included in the seismic data acquisition unit, the clock configured to acquire at least a portion of the temporal location information."
+    },
+    {
+      "num": "32",
+      "text": "32. The system of claim 24 , further comprising a sensor configured to determine at least a portion of the environmental condition information using a sensor."
+    },
+    {
+      "num": "33",
+      "text": "33. The system of claim 32 , wherein the sensor is included in the seismic data acquisition unit."
+    },
+    {
+      "num": "34",
+      "text": "34. The system of claim 33 , wherein: the sensor comprises a temperature sensor configured to determining information indicative of the temperature of the battery during the usage period."
+    },
+    {
+      "num": "35",
+      "text": "35. The system of claim 24 , further comprising at least one communication unit operatively connected to the processor, and wherein the processor is configured to determine at least a portion of the environmental condition by accessing a data source located remotely from the seismic data acquisition unit."
+    },
+    {
+      "num": "36",
+      "text": "36. The system of claim 35 , wherein the data source comprises a weather data source."
+    },
+    {
+      "num": "37",
+      "text": "37. The system of claim 24 , comprising a control unit included in the unit and configured to: receive battery performance information; and control the operation of the seismic data acquisition unit based at least in part on the battery performance information."
+    },
+    {
+      "num": "38",
+      "text": "38. The system of claim 37 , wherein the control unit is configured to control an operating parameter of the battery based at least in part on the battery performance information."
+    },
+    {
+      "num": "39",
+      "text": "39. The system of claim 24 , further comprising an output unit configured to output the battery performance information."
+    },
+    {
+      "num": "40",
+      "text": "40. The system of claim 24 , wherein the seismic data acquisition unit is a seismic node."
+    },
+    {
+      "num": "41",
+      "text": "41. The system of claim 24 , wherein the seismic data acquisition unit comprises: at least one seismic vibration sensor, a clock, a memory configured to store data from the at least one seismic vibration sensor; the battery; and battery control electronics, and wherein the battery control electronics are programmed based at least in part on the battery performance information."
+    },
+    {
+      "num": "42",
+      "text": "42. The system of claim 24 , wherein the processor is configured to determine that the seismic data acquisition unit is fit for a future usage based at least in part on the battery performance information."
+    },
+    {
+      "num": "43",
+      "text": "43. The system of claim 24 , wherein the battery performance model is based at least in part on experimental battery performance data for a battery type corresponding to the battery."
+    },
+    {
+      "num": "44",
+      "text": "44. The system of claim 24 , wherein the battery performance model is based at least in part on performance data for a plurality of sample devices corresponding to the seismic data acquisition unit."
+    },
+    {
+      "num": "45",
+      "text": "45. The system of claim 24 , wherein the battery performance information comprises at least one selected from the list consisting of: battery capacity, available battery usage lifetime, battery charge cycling information, battery thermal cycling information, battery rapid aging information, battery thermal performance information, battery charge rate, battery discharge rate, battery charge capacity, battery discharge capacity, battery state of charge monitor information, battery state of health monitor information, battery energy, battery internal impedance, AC impedance, and battery Rangone curve information."
+    },
+    {
+      "num": "46",
+      "text": "46. The system of claim 24 , wherein the one or more operating parameters comprises at least one from the list consisting of: a battery discharge rate, a battery charge rate, a battery discharge capacity, a battery charge capacity, a battery state of charge, a battery thermal protection threshold, a battery thermal recovery threshold, a battery thermal disable threshold, a battery over charge threshold, a battery over-discharge threshold, and a battery over-current protection threshold."
+    },
+    {
+      "num": "47",
+      "text": "47. The system of claim 24 , further comprising at least one sensor included in the device configured to determine at least a portion of the operating parameter information."
+    },
+    {
+      "num": "48",
+      "text": "48. The system of claim 24 , wherein the seismic data acquisition unit is positioned on one of terrain above ground or an ocean bottom."
+    },
+    {
+      "num": "49",
+      "text": "49. A method of controlling a seismic data acquisition unit based on a usage lifetime, comprising: receiving, by one or more processors of the seismic data acquisition unit, an environmental model predictive of one or more environmental condition of the seismic data acquisition unit at a selected spatial and temporal location; receiving, by the one or more processors, a seismic data acquisition unit performance model predictive of one or more operating parameter of the data acquisition unit; receiving, by the one or more processors, a battery performance model predictive of the performance of a battery used to power the seismic data acquisition unit as a function of the environmental condition and operating parameter of the seismic unit; using the battery performance model to determine the usage lifetime of the seismic data acquisition unit at a selected spatial and temporal location based on the environmental model and the seismic data acquisition unit performance model; and controlling, by the one or more processors, operation of the seismic data acquisition unit based on the usage lifetime at the selected spatial and temporal location determined using the battery performance model."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "product lifetime accelerated aging model"
+}

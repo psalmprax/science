@@ -1,0 +1,226 @@
+name: Learning loop across families (development)
+
+# Development, not a result: scripts/run_learning_families.py on SRBench (cut into three chunks, the arms
+# that learn carrying their journal from one chunk to the next), on the ODE systems, and on LLM-SRBench
+# when the repository has an HF_TOKEN secret of an account granted access. Started by pushing a branch
+# learning-families-run-*. LLM-SRBench's rows carry no equation and its journal is never uploaded.
+
+on:
+  push:
+    branches: ['learning-families-run-*']
+
+permissions:
+  contents: read
+
+env:
+  SEARCHES: '90'
+  MEMORY_SECONDS: '30'
+  TRANSFER: benchmarks/learning_stream/transfer_journal_invented.json
+
+jobs:
+  srbench-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [frozen, learning, memory-only, model-only, all-inputs, transfer]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: SRBench laws 0 to 44, ${{ matrix.arm }}
+        env:
+          ARM: ${{ matrix.arm }}
+        run: >-
+          python scripts/run_learning_families.py run --family srbench --arms "$ARM" --empty-memory
+          --start 0 --stop 45 --searches "$SEARCHES" --memory-seconds "$MEMORY_SECONDS" --transfer-journal "$TRANSFER" --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: srbench-${{ matrix.arm }}-c1
+          path: out/*
+          if-no-files-found: error
+
+  srbench-2:
+    needs: srbench-1
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [frozen, learning, memory-only, model-only, all-inputs, transfer]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: srbench-${{ matrix.arm }}-c1
+          path: prev
+      - name: SRBench laws 45 to 89, ${{ matrix.arm }}
+        env:
+          ARM: ${{ matrix.arm }}
+        run: |
+          JOURNAL="prev/srbench-${ARM}-empty-journal.json"
+          EXTRA=""
+          if [ -f "$JOURNAL" ]; then EXTRA="--journal-in $JOURNAL"; fi
+          python scripts/run_learning_families.py run --family srbench --arms "$ARM" --empty-memory \
+            --start 45 --stop 90 --searches "$SEARCHES" --memory-seconds "$MEMORY_SECONDS" --transfer-journal "$TRANSFER" \
+            --out out $EXTRA
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: srbench-${{ matrix.arm }}-c2
+          path: out/*
+          if-no-files-found: error
+
+  srbench-3:
+    needs: srbench-2
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [frozen, learning, memory-only, model-only, all-inputs, transfer]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: srbench-${{ matrix.arm }}-c2
+          path: prev
+      - name: SRBench laws 90 to 132, ${{ matrix.arm }}
+        env:
+          ARM: ${{ matrix.arm }}
+        run: |
+          JOURNAL="prev/srbench-${ARM}-empty-journal.json"
+          EXTRA=""
+          if [ -f "$JOURNAL" ]; then EXTRA="--journal-in $JOURNAL"; fi
+          python scripts/run_learning_families.py run --family srbench --arms "$ARM" --empty-memory \
+            --start 90 --searches "$SEARCHES" --memory-seconds "$MEMORY_SECONDS" --transfer-journal "$TRANSFER" \
+            --out out $EXTRA
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: srbench-${{ matrix.arm }}-c3
+          path: out/*
+          if-no-files-found: error
+
+  ode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [frozen, learning]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: ODE components 0 to 59, ${{ matrix.arm }}
+        env:
+          ARM: ${{ matrix.arm }}
+        run: >-
+          python scripts/run_learning_families.py run --family ode --arms "$ARM" --empty-memory --count 60
+          --searches "$SEARCHES" --memory-seconds "$MEMORY_SECONDS" --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ode-${{ matrix.arm }}
+          path: out/*
+          if-no-files-found: error
+
+  llmsrbench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [frozen, learning]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2 h5py pyarrow huggingface_hub
+      - name: LLM-SRBench, ${{ matrix.arm }} (only with an HF_TOKEN of an account granted access)
+        env:
+          ARM: ${{ matrix.arm }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          mkdir -p out
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN is not set: LLM-SRBench is gated, so this arm did not run" | tee out/llmsrbench-not-run.txt
+            exit 0
+          fi
+          python scripts/run_learning_families.py run --family llmsrbench --arms "$ARM" --empty-memory --count 80 \
+            --searches "$SEARCHES" --memory-seconds "$MEMORY_SECONDS" --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: llmsrbench-${{ matrix.arm }}
+          path: out/*
+          if-no-files-found: error
+
+  collect:
+    needs: [srbench-3, ode, llmsrbench]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          path: all
+      - name: Collect
+        run: |
+          mkdir -p merged
+          find all -name '*.jsonl' -exec cp {} merged/ \;
+          for f in all/srbench-*-c3/*-journal.json all/ode-learning/*-journal.json; do [ -f "$f" ] && cp "$f" merged/; done
+          python scripts/run_learning_families.py collect --out merged
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd merged
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

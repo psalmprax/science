@@ -32,7 +32,7 @@ from scipy.sparse.linalg import spsolve
 try:  # pragma: no cover - exercised only on kernel-less installs
     import apedp_kernel as ak
 except ImportError:  # kernel-only engine: fails at call time with an actionable error
-    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
+    from apedp_dyn.kernel_shim import missing_kernel as ak
 
 
 class EpistemicPdeVerdict(str, Enum):
@@ -293,7 +293,8 @@ def tikhonov_smooth_trajectory(arr: np.ndarray, alpha: float = 0.5) -> np.ndarra
     D2 = sparse.diags_array([d0, d1, d2], offsets=[0, 1, 2], shape=(nt - 2, nt), format='csc')
     A = sparse.eye_array(nt, format='csc') + alpha * (D2.T @ D2)
     smoothed = spsolve(A, mat)
-    return np.asarray(smoothed).reshape(orig_shape)
+    _out: np.ndarray = np.asarray(smoothed).reshape(orig_shape)
+    return _out
 
 
 def discover_pde_point_cloud_hd(
@@ -1085,7 +1086,7 @@ class RustPdeNetwork:
         scale1 = 1.0 / np.sqrt(self.dim)
         scale2 = 1.0 / np.sqrt(self.hidden_dim)
         self.w1 = np.ascontiguousarray(rng.normal(0.0, scale1, size=(self.hidden_dim, self.dim)), dtype=np.float64)
-        self.b1 = np.zeros(self.hidden_dim, dtype=np.float64)
+        self.b1: np.ndarray = np.zeros(self.hidden_dim, dtype=np.float64)
         self.w2 = np.ascontiguousarray(rng.normal(0.0, scale2, size=(self.hidden_dim,)), dtype=np.float64)
 
         # Adam optimizer state
@@ -1198,12 +1199,13 @@ def step_vlasov_attention_pde_hd(
     McKean-Vlasov Self-Attention PDE using the Rust L1/L2 Block-Tiled Online Softmax CPU Engine.
     Compute complexity: O(N^2 * D) per step; extra scratch memory: O(N * D + threads * B_R * (B_C + D)).
     """
-    return np.asarray(ak.rime_vlasov_attention_pde_step(
+    _out: np.ndarray = np.asarray(ak.rime_vlasov_attention_pde_step(
         np.ascontiguousarray(x_init, dtype=np.float64),
         int(steps),
         float(dt),
         float(damping),
     ))
+    return _out
 
 
 def adjudicate_high_dim_pde_discovery(
@@ -1305,7 +1307,7 @@ def adjudicate_high_dim_pde_discovery(
     # 3. Sub-window stability: split development trajectory in halves
     half = n_int // 2
     if half >= 2 and active_terms:
-        def fit_half(t_slice):
+        def fit_half(t_slice: Any) -> Any:
             cols = []
             for t in active_terms:
                 cols.append(basis[t].reshape(n_int, m)[t_slice, :].ravel())

@@ -1,6 +1,6 @@
 """Blind adversarial benchmark protocol (Stage 4 of the validation ladder).
 
-Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_10.json). This runner
+Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_18.json). This runner
 refuses to score if any guard file changed — edit the referee and you must
 mint a new freeze record first.
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -31,7 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # v1_10 re-mint (2026-10-23, per freeze protocol): grammar-space expansion
 # (H-SQRTV + operator declarations in grammar_space.py, saturating-rational
 # term families in candidate_ir.py); thresholds/blind expectations unchanged.
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_10.json"
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_18.json"
 
 
 def verify_referee() -> dict[str, str]:
@@ -242,11 +242,11 @@ if __name__ == "__main__":
 # apedp_dyn/epistemic/caller_registry.py for the census and discipline.
 # --------------------------------------------------------------------------
 def publish_caller_compliance_record(
-    ledger=None,
+    ledger: Any=None,
     candidate_id: str = "",
     dataset_id: str | None = None,
     nominal_variants: int | None = None,
-):
+) -> Any:
     """Publish this caller's REG-F14b mode-(b) compliance record."""
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
 
@@ -274,11 +274,11 @@ def publish_caller_compliance_record(
 # until the sealed slice has actually been consumed exactly once.
 # --------------------------------------------------------------------------
 def open_sealed_confirmation_lead(
-    ledger=None,
+    ledger: Any=None,
     selection_case_ids: list[str] | None = None,
     confirmation_case_ids: list[str] | None = None,
-    protocol=None,
-):
+    protocol: Any=None,
+) -> Any:
     """Issue this suite's real SELECTION/CONFIRMATION lead (mode (a)).
 
     Case ids are the ``BlindCase.case_id`` axis of THIS suite; overlap and
@@ -296,7 +296,7 @@ def open_sealed_confirmation_lead(
     )
 
 
-def evaluate_confirmation_cases(candidate_id, confirmation_ids, cases):
+def evaluate_confirmation_cases(candidate_id: str, confirmation_ids: Sequence[str], cases: Any) -> Any:
     """Sealed-slice evaluation: run EXACTLY the confirmation blind ids, frozen-referee-checked.
 
     Referee runs BEFORE truth is consulted (this runner's method rule); unknown
@@ -333,13 +333,13 @@ def evaluate_confirmation_cases(candidate_id, confirmation_ids, cases):
 
 
 def publish_sealed_compliance_record(
-    ledger,
+    ledger: Any,
     candidate_id: str,
-    protocol,
-    sealed,
-    confirmation_verdict,
-    selection_verdict=None,
-):
+    protocol: Any,
+    sealed: Any,
+    confirmation_verdict: Any,
+    selection_verdict: Any | None=None,
+) -> Any:
     """Publish this caller's REG-F14b mode-(a) sealed record (validated;
     refused unless the sealed slice was spent exactly once)."""
     from apedp_dyn.epistemic.caller_registry import (

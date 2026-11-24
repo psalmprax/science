@@ -1,7 +1,7 @@
 {
   "record": "qed_001_recovery",
   "schema": "qed.recovery/1",
-  "generated_on": "2026-10-30",
+  "generated_on": "2026-11-10",
   "purpose": "Does a quantum-assisted proposer recover a governing equation from noisy observations as well as the classical proposers, when every arm is held to the same number of objective fits?",
   "thresholds": {
     "holdout_r2_floor": 0.98,
@@ -122,7 +122,7 @@
                 "reason": "",
                 "evaluations": 200,
                 "budget": 256,
-                "seconds": 0.016112,
+                "seconds": 0.033838,
                 "best": {
                   "support": [
                     "x",
@@ -337,7 +337,7 @@
                 "reason": "",
                 "evaluations": 156,
                 "budget": 256,
-                "seconds": 0.013357,
+                "seconds": 0.01957,
                 "best": {
                   "support": [
                     "x",
@@ -552,7 +552,7 @@
                 "reason": "",
                 "evaluations": 192,
                 "budget": 256,
-                "seconds": 0.0195,
+                "seconds": 0.026138,
                 "best": {
                   "support": [
                     "x",
@@ -800,7 +800,7 @@
                 "reason": "",
                 "evaluations": 142,
                 "budget": 256,
-                "seconds": 0.015371,
+                "seconds": 0.021326,
                 "best": {
                   "support": [
                     "x",
@@ -1016,7 +1016,7 @@
                 "reason": "",
                 "evaluations": 164,
                 "budget": 256,
-                "seconds": 0.015766,
+                "seconds": 0.023426,
                 "best": {
                   "support": [
                     "x",
@@ -1232,7 +1232,7 @@
                 "reason": "",
                 "evaluations": 165,
                 "budget": 256,
-                "seconds": 0.020368,
+                "seconds": 0.025208,
                 "best": {
                   "support": [
                     "x",
@@ -1481,7 +1481,7 @@
                 "reason": "",
                 "evaluations": 256,
                 "budget": 256,
-                "seconds": 0.053392,
+                "seconds": 0.080426,
                 "best": {
                   "support": [
                     "x",
@@ -1698,7 +1698,7 @@
                 "reason": "",
                 "evaluations": 238,
                 "budget": 256,
-                "seconds": 0.056249,
+                "seconds": 0.073952,
                 "best": {
                   "support": [
                     "x",
@@ -1915,7 +1915,7 @@
                 "reason": "",
                 "evaluations": 256,
                 "budget": 256,
-                "seconds": 0.054979,
+                "seconds": 0.071501,
                 "best": {
                   "support": [
                     "x",
@@ -2165,7 +2165,7 @@
                 "reason": "",
                 "evaluations": 122,
                 "budget": 256,
-                "seconds": 0.128482,
+                "seconds": 0.132288,
                 "best": {
                   "support": [
                     "x",
@@ -2383,7 +2383,7 @@
                 "reason": "",
                 "evaluations": 78,
                 "budget": 256,
-                "seconds": 0.138152,
+                "seconds": 0.361239,
                 "best": {
                   "support": [
                     "x",
@@ -2601,7 +2601,7 @@
                 "reason": "",
                 "evaluations": 50,
                 "budget": 256,
-                "seconds": 0.182547,
+                "seconds": 0.319784,
                 "best": {
                   "support": [
                     "x",
@@ -2852,7 +2852,7 @@
                 "reason": "",
                 "evaluations": 102,
                 "budget": 256,
-                "seconds": 0.023384,
+                "seconds": 0.03742,
                 "best": {
                   "support": [
                     "x",
@@ -3101,7 +3101,7 @@
                 "reason": "",
                 "evaluations": 104,
                 "budget": 256,
-                "seconds": 0.027482,
+                "seconds": 0.043847,
                 "best": {
                   "support": [
                     "x",
@@ -3350,7 +3350,7 @@
                 "reason": "",
                 "evaluations": 48,
                 "budget": 256,
-                "seconds": 0.023823,
+                "seconds": 0.036034,
                 "best": {
                   "support": [
                     "x",
@@ -3650,7 +3650,7 @@
                 "reason": "",
                 "evaluations": 256,
                 "budget": 256,
-                "seconds": 0.186823,
+                "seconds": 0.335748,
                 "best": {
                   "support": [
                     "x",
@@ -3919,7 +3919,7 @@
                 "reason": "",
                 "evaluations": 256,
                 "budget": 256,
-                "seconds": 0.200615,
+                "seconds": 0.307784,
                 "best": {
                   "support": [
                     "x",
@@ -4188,7 +4188,7 @@
                 "reason": "",
                 "evaluations": 256,
                 "budget": 256,
-                "seconds": 0.197512,
+                "seconds": 0.283432,
                 "best": {
                   "support": [
                     "x",
@@ -4829,7 +4829,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.004563,
+                "seconds": 0.012025,
                 "best": {
                   "support": [
                     "x",
@@ -5044,7 +5044,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.006341,
+                "seconds": 0.007661,
                 "best": {
                   "support": [
                     "v",
@@ -5280,7 +5280,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.005064,
+                "seconds": 0.007711,
                 "best": {
                   "support": [
                     "x",
@@ -5528,7 +5528,7 @@
                 "reason": "",
                 "evaluations": 53,
                 "budget": 64,
-                "seconds": 0.006453,
+                "seconds": 0.00817,
                 "best": {
                   "support": [
                     "x",
@@ -5744,7 +5744,7 @@
                 "reason": "",
                 "evaluations": 58,
                 "budget": 64,
-                "seconds": 0.005004,
+                "seconds": 0.009584,
                 "best": {
                   "support": [
                     "x",
@@ -5999,7 +5999,7 @@
                 "reason": "",
                 "evaluations": 58,
                 "budget": 64,
-                "seconds": 0.005526,
+                "seconds": 0.009557,
                 "best": {
                   "support": [
                     "x",
@@ -6248,7 +6248,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.009102,
+                "seconds": 0.012627,
                 "best": {
                   "support": [
                     "x",
@@ -6486,7 +6486,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.008858,
+                "seconds": 0.014815,
                 "best": {
                   "support": [
                     "x",
@@ -6703,7 +6703,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.008303,
+                "seconds": 0.012208,
                 "best": {
                   "support": [
                     "x",
@@ -6974,7 +6974,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.037895,
+                "seconds": 0.056973,
                 "best": {
                   "support": [
                     "x",
@@ -7192,7 +7192,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.021497,
+                "seconds": 0.045263,
                 "best": {
                   "support": [
                     "x",
@@ -7410,7 +7410,7 @@
                 "reason": "",
                 "evaluations": 50,
                 "budget": 64,
-                "seconds": 0.175916,
+                "seconds": 0.272082,
                 "best": {
                   "support": [
                     "x",
@@ -7661,7 +7661,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.012075,
+                "seconds": 0.018223,
                 "best": {
                   "support": [
                     "x",
@@ -7910,7 +7910,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.011268,
+                "seconds": 0.017827,
                 "best": {
                   "support": [
                     "x",
@@ -8177,7 +8177,7 @@
                 "reason": "",
                 "evaluations": 48,
                 "budget": 64,
-                "seconds": 0.016056,
+                "seconds": 0.03212,
                 "best": {
                   "support": [
                     "x",
@@ -8477,7 +8477,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.169081,
+                "seconds": 0.212197,
                 "best": {
                   "support": [
                     "v",
@@ -8764,7 +8764,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.163613,
+                "seconds": 0.308701,
                 "best": {
                   "support": [
                     "1",
@@ -9087,7 +9087,7 @@
                 "reason": "",
                 "evaluations": 64,
                 "budget": 64,
-                "seconds": 0.192228,
+                "seconds": 0.786412,
                 "best": {
                   "support": [
                     "x",
@@ -10069,17 +10069,17 @@
     "script_sha256": "f67c06a266fa25f2f68050471f1546d7766c25cb0291c240e044a1c586580d33",
     "modules": {
       "apedp_dyn/qed/__init__.py": "65f1f01b20696b70e1eaf9ebbf37f6bc8d2fcf1d8fb3e4c2bb9e049b477e7855",
-      "apedp_dyn/qed/library.py": "ac4161a98654c8dd17c3ba000bd5248aac1af8d4da93e7fea47f41c126a41ed8",
-      "apedp_dyn/qed/objective.py": "fdfdfc64af79b533f7ff93ad5a8a654bfc2835b1db342e0b292b9b1bc1aa2ad0",
-      "apedp_dyn/qed/tasks.py": "d24589e992d0715b6e172a68e55420647366e560dbfbbe58b8373e87abc13960",
-      "apedp_dyn/qed/arms.py": "5827e925f011ec68cdbdbdae854ee0f58ea03b6d4c706a341ca7518123d3b4ff",
-      "apedp_dyn/qed/qaoa.py": "6af8472870c36d1ab58d28070cf01e013be9cb04235145e66c078c13cc6dde58",
-      "apedp_dyn/qed/referee.py": "f74f049a87911d88dc7797936c30f8187240b7661ed44d888ae80cf13570874c",
-      "apedp_dyn/qed/records.py": "2b9e614a309a97b4b8161914ed39d44aefaa3fc4badb0d62599760a075db5cc4",
-      "apedp_dyn/qed/proposer.py": "c0e65bfed11be0ae45c7c69c665e0dd43c646b9341dd02b3523ba09a8aab6b0d"
+      "apedp_dyn/qed/library.py": "331b657a466a58217922de8484e087444c22af5774bb09a1ecd96396ab755a00",
+      "apedp_dyn/qed/objective.py": "90be1f51839833136ea8c0b3f027f23b2aba59996eb70d4dfc8eb9b01e614068",
+      "apedp_dyn/qed/tasks.py": "2885495ba44a05c788a79be26cda0b8602e55d147502d92c3d46e684d30642a7",
+      "apedp_dyn/qed/arms.py": "9aaef972c54dea8140a4a6064feeffea9e1a89764246fa947d65e575f9b45e41",
+      "apedp_dyn/qed/qaoa.py": "a75c4541fbe621adb25e306e83f87ddf3829ac6c3810db1c18de8b916051f38c",
+      "apedp_dyn/qed/referee.py": "8801a4540c506888b3c35e86caf2230e509e97841b204b7dfd71d4458ae03112",
+      "apedp_dyn/qed/records.py": "71723479f7b3812af727a72b02f74598743df81ea58f4ac4d5ad980b3ce05da1",
+      "apedp_dyn/qed/proposer.py": "81abe68db0083598ce0f5cada5b5af38a5caace54d45d4cc3a94016d59665a30"
     },
     "python": "3.12.3",
-    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
     "command": "python scripts/measure_qed_recovery.py --seed 11 --noise 0.01 --penalty 0.002 --budgets 256 64 --seeds 11 12 13"
   }
 }

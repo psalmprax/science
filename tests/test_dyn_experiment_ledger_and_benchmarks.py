@@ -88,7 +88,7 @@ def test_holdout_anti_snooping_guard_burns_failed_confirmation_slice():
 
 def test_promotion_tracker_full_successful_lifecycle():
     """Candidate cleanly passing each stage advances step by step to prospective promotion."""
-    tracker = PromotionTracker(candidate_id="alpha_star")
+    tracker = PromotionTracker(candidate_id="alpha_star", allow_reported_metrics=True)
 
     # Stage 1: Mathematical Consistency
     s1 = tracker.verify_stage_1(lean_status="P2_VERIFIED", dimensions_consistent=True, bounded=True)
@@ -124,7 +124,7 @@ def test_promotion_tracker_full_successful_lifecycle():
 
 def test_promotion_tracker_enforces_prerequisites_and_halts_on_failure():
     """Skipping a stage or failing an intermediate stage halts promotion immediately."""
-    tracker = PromotionTracker(candidate_id="alpha_flawed")
+    tracker = PromotionTracker(candidate_id="alpha_flawed", allow_reported_metrics=True)
 
     # Attempting Stage 3 without Stage 1 and 2 must raise
     with pytest.raises(PromotionPrerequisiteError, match="Cannot evaluate STAGE_3_UNIQUE_IDENTIFICATION"):

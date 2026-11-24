@@ -1,0 +1,141 @@
+{
+  "lean_version": "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release)",
+  "theorems": 39,
+  "standard_axioms_allowed": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "axiom_free": [
+    "ApedpChecked.Dim.div_def",
+    "ApedpChecked.Dim.force_is_not_energy",
+    "ApedpChecked.Dim.kinetic_energy_consistent",
+    "ApedpChecked.Dim.momentum_form_of_kinetic_energy",
+    "ApedpChecked.Dim.momentum_is_not_energy",
+    "ApedpChecked.Dim.mul_def",
+    "ApedpChecked.Dim.newtonian_gravity_consistent",
+    "ApedpChecked.Dim.pendulum_period_consistent",
+    "ApedpChecked.Dim.pow_def",
+    "ApedpChecked.Tracker.only_the_next_stage",
+    "ApedpChecked.Tracker.six_passes_reach_stage_six",
+    "ApedpChecked.Tracker.skipping_is_refused"
+  ],
+  "axioms_by_theorem": {
+    "ApedpChecked.Dim.div_def": [],
+    "ApedpChecked.Dim.div_self": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Dim.force_is_not_energy": [],
+    "ApedpChecked.Dim.kinetic_energy_consistent": [],
+    "ApedpChecked.Dim.momentum_form_of_kinetic_energy": [],
+    "ApedpChecked.Dim.momentum_is_not_energy": [],
+    "ApedpChecked.Dim.mul_assoc": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Dim.mul_comm": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Dim.mul_def": [],
+    "ApedpChecked.Dim.mul_div_cancel": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Dim.mul_one": [
+      "propext"
+    ],
+    "ApedpChecked.Dim.mul_pow": [
+      "propext"
+    ],
+    "ApedpChecked.Dim.newtonian_gravity_consistent": [],
+    "ApedpChecked.Dim.one_mul": [
+      "propext"
+    ],
+    "ApedpChecked.Dim.pendulum_period_consistent": [],
+    "ApedpChecked.Dim.pow_add": [
+      "propext"
+    ],
+    "ApedpChecked.Dim.pow_def": [],
+    "ApedpChecked.Dim.pow_one": [
+      "propext"
+    ],
+    "ApedpChecked.Dim.pow_zero": [
+      "propext"
+    ],
+    "ApedpChecked.Slice.budget_is_respected": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.burned_refuses_everyone": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.claim_preserves_burned": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.granted_claim_is_recorded": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.newcomer_refused_when_spent": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.nothing_after_a_burn": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.own_slice_again": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Slice.single_use": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Tracker.failure_halts": [
+      "propext"
+    ],
+    "ApedpChecked.Tracker.halted_is_terminal": [
+      "propext"
+    ],
+    "ApedpChecked.Tracker.no_shortcut": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Tracker.nothing_follows_a_failure": [
+      "propext"
+    ],
+    "ApedpChecked.Tracker.only_the_next_stage": [],
+    "ApedpChecked.Tracker.pass_advances_by_one": [
+      "propext"
+    ],
+    "ApedpChecked.Tracker.six_passes_reach_stage_six": [],
+    "ApedpChecked.Tracker.skipping_is_refused": [],
+    "ApedpChecked.Tracker.stage_needs_as_many_evaluations": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.Tracker.step_bounds": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.bivariate_monomial_scale": [
+      "Quot.sound",
+      "propext"
+    ],
+    "ApedpChecked.monomial_scale": [
+      "propext"
+    ]
+  }
+}

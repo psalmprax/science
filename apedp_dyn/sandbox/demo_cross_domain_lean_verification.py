@@ -45,7 +45,7 @@ ARTIFACT_DIR = artifact_dir()
 LEAN_OUT_DIR = lean_root()
 
 
-def run_cross_domain_lean_verification_suite() -> dict:
+def run_cross_domain_lean_verification_suite() -> dict[str, Any]:
     LEAN_OUT_DIR.mkdir(parents=True, exist_ok=True)
     bridge = LeanUniversalBridge(output_dir=LEAN_OUT_DIR, backend=VerificationBackend.CORE_AXIOMATIC)
 

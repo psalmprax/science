@@ -259,7 +259,7 @@ def run_prospective_tournament(target_asset: str = "COMPOSITE_TOP15") -> dict[st
     }
 
 
-def main():
+def main() -> None:
     """Run across Composite Basket and individual assets."""
     for asset in ("COMPOSITE_TOP15", "BTC", "ETH", "SOL"):
         run_prospective_tournament(asset)

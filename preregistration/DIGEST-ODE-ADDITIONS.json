@@ -1,0 +1,33 @@
+{
+ "preregistration": "PREREG-ODE-ADDITIONS-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/deciding_measurement.py": "3d5fc807a7c6f4daef77cca1fc89725a12fb9c5dddf8bd18ddd24eae352a5dd2",
+  "apedp_dyn/discovery_l2/evolved_stage.py": "c3c4d5d3c0a24609083d38ef6d1320bf933588b55954400644675a4ce4954c98",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/precision_pruning.py": "8dd2a18bc0d3fbff0cd02df6c13de622782193cc13a42a8d3ee82bba529d9235",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/ode/chosen_experiment.py": "55b22f71a55a42d105063c2fe31755950ace0751082baf36f79ef326a87ebe5d",
+  "apedp_dyn/ode/default_route.py": "bb2bbd36110e375319be2d979469b1573dc35d3504083b73f0cbc273312af495",
+  "apedp_dyn/ode/experiment_pruning.py": "563400b7a0aaabfa36d4c16607da1fd1288c8cf718bdfc4e99739bb2eb6dc84a",
+  "apedp_dyn/ode/extended_route.py": "2505d620532e84ee36e8d30e5c3ab96f7badfc24e2f5c3931738497f491bc766",
+  "apedp_dyn/ode/main_search_ode.py": "6a50e3ae89dd0bd43322c403515d21b4d43fba8344524585f46ecb4780f7aea6",
+  "apedp_dyn/ode/precision_adequacy.py": "b976e6d2f3636e3ab8ea6efd944774b558b17839e220345040ac24541724d86f",
+  "apedp_dyn/ode/refined_ode.py": "608b7a3da9ef85df3d3402f4b0420fb249d208f0b2ea6ac69a94c25f8c174202",
+  "apedp_dyn/ode/second_engine.py": "15e204116c15bd4df589815b91780a9575af5cbfc884382e57e73404e1e4a85d",
+  "apedp_dyn/ode/weak_form.py": "2796148bb6dceb28915df9f2401a7a8608456882bf732b755c3dc280647424ed",
+  "apedp_dyn/ode/window_rows.py": "ff6aef3959151218f30bf740dd70fcb9d13fc7106dc53012aa9d5ed45b0eba2e",
+  "apedp_dyn/proposers/fit_guard.py": "cd110cf48067b588824eda14d138aa010a6c90ae2f9949630dac7793b4ce7f8a",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "apedp_dyn/proposers/sparse_library.py": "503749e3643f841ec583eb6ea3f9c348249087229bf150bef36742d0f6617290",
+  "benchmarks/ode_second_blind_systems.json": "be3f3ca58b50a49680abcefab2a78e16e0a170149281884015e213195906aba2",
+  "preregistration/FORECAST-ODE-ADDITIONS-2026-11.json": "ae03693435be752faece41e1aa5cda080b11dc9d76ee921cc92b843b84e981e1",
+  "preregistration/PREREG-ODE-ADDITIONS-2026-11.md": "91f433206ac011b212768e90d6093b2098b25c902648fec3c6c179047cc8ab5b",
+  "scripts/build_dysts_polynomial_systems.py": "be4ab77ed981597ecd42d9c311dff96f0da08e7ab8ee499820043fa0da94a750",
+  "scripts/build_ode_second_blind_systems.py": "71c8fe5777ebd835262de4fd990fc5d140fe690431c56de7f027ccefa81a3646",
+  "scripts/odebench_worlds.py": "8e3282e86481d199e29a2459515d01cce41590cb2738468d0be86ca91e4fa79a",
+  "scripts/run_ode_additions.py": "01a8c940cee97b60166572c7adf8aa217b72a845f201915b8f2e6fc60edc2546",
+  "scripts/run_ode_blind.py": "24b1fec8c2cb7c880ba326f12497f1254bed4fa9fed4b659d7f1b88f4c661b31",
+  "scripts/run_odebench_main_search.py": "ab735145f02c4916f747cd6000239744b0ceb741ae66fa52faec95b03d4c1ce5"
+ }
+}

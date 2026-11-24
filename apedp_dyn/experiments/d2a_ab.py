@@ -16,13 +16,14 @@ import json
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from apedp_dyn import (  # noqa: E402, I001 - sys.path bootstrap precedes imports; block intentionally spans the bootstrap marker
+from apedp_dyn import (  # noqa: E402 - sys.path bootstrap precedes imports; block intentionally spans the bootstrap marker
     CandidateDynamics,
     Term,
     enumerate_candidates,
@@ -61,7 +62,7 @@ def _template(problem_id: str) -> CandidateDynamics:
         generation_seed=SEED)
 
 
-def _truth_candidate(problem, problem_id: str):
+def _truth_candidate(problem: Any, problem_id: str) -> Any:
     names = sorted(TRUTH[problem_id][1])
     pool = enumerate_candidates(required=(), optional=tuple(names),
                                 max_terms=len(names), id_prefix="d2a")
@@ -72,7 +73,7 @@ def _truth_candidate(problem, problem_id: str):
     return kept[0].candidate
 
 
-def _observe(Y: np.ndarray, pct: float):
+def _observe(Y: np.ndarray, pct: float) -> Any:
     if pct == 0.0:
         return Y
     rng = np.random.default_rng(SEED)
@@ -84,7 +85,7 @@ def _max_rel_error(est: dict[str, float], true: dict[str, float]) -> float:
                for k, v in true.items() if k in est)
 
 
-def _term_columns(problem, candidate, t: np.ndarray, Y: np.ndarray,
+def _term_columns(problem: Any, candidate: Any, t: np.ndarray, Y: np.ndarray,
                   U: np.ndarray) -> tuple[list[str], np.ndarray]:
     """Materialized term columns for normalized (variance-aware) thresholding."""
     import sympy as sp
@@ -108,8 +109,8 @@ def _term_columns(problem, candidate, t: np.ndarray, Y: np.ndarray,
     return labels, np.column_stack(cols)
 
 
-def _normalized_support(full: dict, labels: list[str], cols: np.ndarray,
-                        template_names: tuple) -> list[str]:
+def _normalized_support(full: dict[str, Any], labels: list[str], cols: np.ndarray,
+                        template_names: tuple[Any, ...]) -> list[str]:
     """Threshold |coef|*||column|| (explained-variance scale), not raw magnitude."""
     pnames = [f"b{i}" for i in range(len(template_names))]
     strength = {n: abs(full[p]) * float(np.linalg.norm(cols[:, i]))
@@ -118,8 +119,8 @@ def _normalized_support(full: dict, labels: list[str], cols: np.ndarray,
     return sorted(n for n, s in strength.items() if s >= SUPPORT_THRESHOLD * m)
 
 
-def run() -> dict:
-    report: dict = {"noise_levels": list(NOISE_LEVELS), "seed": SEED,
+def run() -> dict[str, Any]:
+    report: dict[str, Any] = {"noise_levels": list(NOISE_LEVELS), "seed": SEED,
                     "support_threshold": SUPPORT_THRESHOLD, "problems": {}}
     for prob in (mass_spring_damper.load(), pendulum.load()):
         pid = prob.problem_id
@@ -134,10 +135,10 @@ def run() -> dict:
         t = np.asarray(reg["truth_t"])
         Y = np.asarray(reg["truth_y"])
         U = np.array([reg["u_of_t"](ti) for ti in t]).reshape(-1, 1)
-        pres: dict = {"levels": {}}
+        pres: dict[str, Any] = {"levels": {}}
         for pct in NOISE_LEVELS:
             Yn = _observe(Y, pct)
-            row: dict = {}
+            row: dict[str, Any] = {}
             ests = {}
             for arm, fn in (("spline", spline_coefficients), ("weak", weak_coefficients)):
                 t0 = time.time()
@@ -182,7 +183,7 @@ def run() -> dict:
                 f"{a}:err={row[a]['param_max_rel_error']:.4f} "
                 f"sup={row[a]['support']} norm={row[a]['support_norm']}" for a in ("spline", "weak")), flush=True)
         # Window-scale sensitivity (estimator-only, truth structure).
-        sens: dict = {}
+        sens: dict[str, Any] = {}
         truth_cand = _truth_candidate(prob, pid)
         true_by_pname = _true_by_pname(prob, pid, truth_cand)
         for radius in SENSITIVITY_RADII[pid]:
@@ -197,7 +198,7 @@ def run() -> dict:
     return report
 
 
-def _true_by_pname(prob, problem_id: str, truth_cand) -> dict:
+def _true_by_pname(prob: Any, problem_id: str, truth_cand: Any) -> dict[str, Any]:
     _, true_vals = TRUTH[problem_id]
     mapping = {t.name: t.parameter for t in truth_cand.terms}
     return {mapping[t]: v for t, v in true_vals.items() if t in mapping}

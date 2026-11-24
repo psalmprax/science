@@ -1,0 +1,122 @@
+{
+ "source": "srbench",
+ "summary": {
+  "cells": {
+   "all": {
+    "before": {
+     "accurate, not the law": 36,
+     "the law": 193
+    },
+    "first": {
+     "accurate, not the law": 32,
+     "nothing": 47,
+     "the law": 150
+    },
+    "first_kept": [
+     150,
+     193
+    ],
+    "first_wrong_share": 0.0,
+    "first_wrong_stopped": [
+     0,
+     0
+    ],
+    "n": 229,
+    "second": {
+     "accurate, not the law": 34,
+     "nothing": 3,
+     "the law": 192
+    },
+    "second_kept": [
+     192,
+     193
+    ],
+    "second_wrong_share": 0.0,
+    "second_wrong_stopped": [
+     0,
+     0
+    ]
+   },
+   "noise 0": {
+    "before": {
+     "accurate, not the law": 12,
+     "the law": 103
+    },
+    "first": {
+     "accurate, not the law": 12,
+     "the law": 103
+    },
+    "first_kept": [
+     103,
+     103
+    ],
+    "first_wrong_share": 0.0,
+    "first_wrong_stopped": [
+     0,
+     0
+    ],
+    "n": 115,
+    "second": {
+     "accurate, not the law": 10,
+     "nothing": 2,
+     "the law": 103
+    },
+    "second_kept": [
+     103,
+     103
+    ],
+    "second_wrong_share": 0.0,
+    "second_wrong_stopped": [
+     0,
+     0
+    ]
+   },
+   "noise 0.01": {
+    "before": {
+     "accurate, not the law": 24,
+     "the law": 90
+    },
+    "first": {
+     "accurate, not the law": 20,
+     "nothing": 47,
+     "the law": 47
+    },
+    "first_kept": [
+     47,
+     90
+    ],
+    "first_wrong_share": 0.0,
+    "first_wrong_stopped": [
+     0,
+     0
+    ],
+    "n": 114,
+    "second": {
+     "accurate, not the law": 24,
+     "nothing": 1,
+     "the law": 89
+    },
+    "second_kept": [
+     89,
+     90
+    ],
+    "second_wrong_share": 0.0,
+    "second_wrong_stopped": [
+     0,
+     0
+    ]
+   }
+  },
+  "errors": 0,
+  "records": 229,
+  "second_passed_wrong": [],
+  "second_withheld_right_laws_by_reason": {
+   "2 candidates passed every test and differ by more than the a": 1
+  },
+  "seconds": {
+   "first": 0.441,
+   "second": 0.486
+  }
+ },
+ "what": "Development replay of both versions of the last checks."
+}

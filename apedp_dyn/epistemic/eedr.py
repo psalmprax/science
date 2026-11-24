@@ -437,9 +437,10 @@ def execute_eedr_loop(
         elif repair.operator_applied == RepairOperatorType.COLLISION_PROJECTED_SHRINK:
             repaired_bundle.add(EvidenceRequirement.GEOMETRIC_FEASIBILITY)
             repaired_bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
-        elif repair.operator_applied == RepairOperatorType.REPARAMETERIZATION_GROUPING:
-            repaired_bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
-        elif repair.operator_applied == RepairOperatorType.TVD_FLUX_LIMITING:
+        # Reparameterization grouping only re-expresses collinear parameters;
+        # it does not supply new rival-rejection evidence, so it must not add
+        # EQUIVALENCE_RIVALS_REJECTED to the repaired bundle.
+        if repair.operator_applied == RepairOperatorType.TVD_FLUX_LIMITING:
             repaired_bundle.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
             repaired_bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
 

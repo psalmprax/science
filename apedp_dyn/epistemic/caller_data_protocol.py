@@ -398,13 +398,14 @@ class SealedConfirmationSlice:
         # never swallowed — an evaluation that hasn't been recorded is not a
         # recorded evaluation.
         if self._ledger is not None:
+            passed_ok = _is_passed_verdict(verdict)
             for sid in self._split.confirmation_ids:
                 self._ledger.record_data_exposure(
                     candidate_id=candidate_id,
                     dataset_id=self._split.dataset_id,
                     slice_identifier=sid,
                     role=DatasetRole.CONFIRMATION_HOLDOUT,
-                    outcome_status="PASSED" if getattr(verdict, "verdict", None) else "FAILED",
+                    outcome_status="PASSED" if passed_ok else "FAILED",
                 )
         self._provenance = ConfirmationProvenance(
             consumed_at=timestamps,
@@ -419,6 +420,41 @@ class SealedConfirmationSlice:
         if getattr(verdict, "provenance", None) is None:
             verdict.provenance = self._provenance
         return verdict
+
+
+def _is_passed_verdict(verdict: Any) -> bool:
+    """Strictly evaluate whether a confirmation verdict represents a PASS.
+
+    Avoids Python truthiness pitfalls where non-empty strings like ``"FAILED"``,
+    ``"REFUSE"``, or non-promoted enums evaluate as truthy and fail to burn
+    rejected confirmation holdout slices.
+    """
+    _PASS_TOKENS = {"PASSED", "PASS", "UNIQUE_SUPPORT", "CERTIFIED", "PROMOTED", "ACCEPT", "ACCEPTED", "TRUE"}
+    if isinstance(verdict, bool):
+        return verdict
+    if isinstance(verdict, str):
+        return verdict.strip().upper() in _PASS_TOKENS
+    if isinstance(verdict, dict):
+        for k in ("passed", "promoted", "verdict", "status"):
+            if k in verdict:
+                return _is_passed_verdict(verdict[k])
+        return False
+    passed_attr = getattr(verdict, "passed", None)
+    if isinstance(passed_attr, bool):
+        return passed_attr
+    raw_v = getattr(verdict, "verdict", None)
+    if raw_v is not None and raw_v is not verdict:
+        return _is_passed_verdict(raw_v)
+    raw_status = getattr(verdict, "status", None)
+    if raw_status is not None and raw_status is not verdict:
+        return _is_passed_verdict(raw_status)
+    val = getattr(verdict, "value", None)
+    if isinstance(val, str):
+        return val.strip().upper() in _PASS_TOKENS
+    name = getattr(verdict, "name", None)
+    if isinstance(name, str):
+        return name.strip().upper() in _PASS_TOKENS
+    return False
 
 
 class _RustProtectionStub:  # pragma: no cover - defensive import shim

@@ -22,6 +22,7 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -42,7 +43,7 @@ from apedp_dyn.grammar.candidate_ir import (
 NTR, NVAL, NFWD, STEP = 120, 30, 20, 20
 
 
-def load_spx(path=None):
+def load_spx(path: str | None=None) -> tuple[list[str], np.ndarray]:
     import tempfile
     path = path or f"{tempfile.gettempdir()}/sp500.csv"
     dates, px = [], []
@@ -58,7 +59,7 @@ def load_spx(path=None):
     return dates, np.array(px)
 
 
-def _mk(cid, terms, rmse, resid, obs_rms, ns, n):
+def _mk(cid: str, terms: tuple[str, ...], rmse: float, resid: np.ndarray, obs_rms: float, ns: float, n: int) -> ScoredCandidate:
     g4 = {"passed": True, "holdout_obs_rms": obs_rms,
           "holdout_noise_sigma": ns, "holdout_n_samples": n,
           "holdout_residuals": [float(v) for v in resid]}
@@ -69,10 +70,10 @@ def _mk(cid, terms, rmse, resid, obs_rms, ns, n):
                            train_loss=rmse, holdout_rmse=rmse)
 
 
-def fit_predict_structures(r_tr, r_va):
+def fit_predict_structures(r_tr: np.ndarray, r_va: np.ndarray) -> dict[str, tuple[np.ndarray, tuple[str, ...]]]:
     """Fit 3 fixed structures on train; return dict cid -> (w, val_rmse, val_resid, val_pred_fn)."""
     y_tr = r_tr[1:]
-    out = {}
+    out: dict[str, tuple[np.ndarray, tuple[str, ...]]] = {}
     # momentum interaction: r = a + b*(r_prev/vol), vol = trailing-10 std
     v_tr = np.array([max(float(np.std(r_tr[max(0, i - 10):i + 1])) if i > 1 else 0.015, 0.005)
                      for i in range(len(r_tr))])
@@ -89,7 +90,7 @@ def fit_predict_structures(r_tr, r_va):
     return out
 
 
-def predict_with(struct, w, r_hist):
+def predict_with(struct: str, w: np.ndarray, r_hist: np.ndarray) -> float:
     if struct == "momentum":
         v = max(float(np.std(r_hist[-10:])) if len(r_hist) >= 2 else 0.015, 0.005)
         f = r_hist[-1] / v
@@ -99,10 +100,10 @@ def predict_with(struct, w, r_hist):
     return float(w[0])
 
 
-def run_tournament():
+def run_tournament() -> list[dict[str, Any]]:
     dates, px = load_spx()
     rets = np.diff(np.log(px))
-    rows = []
+    rows: list[dict[str, Any]] = []
     prev_winner = None
     i = 0
     while i + NTR + NVAL + NFWD <= len(rets):
@@ -128,7 +129,7 @@ def run_tournament():
             resid = yy - pred
             cands.append(_mk(cid, terms, rm, resid, float(np.sqrt(np.mean(yy ** 2))),
                              float(np.std(resid)), len(yy)))
-        ranked = sorted([s for s in cands if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
+        ranked = sorted([s for s in cands if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse if s.holdout_rmse is not None else float("inf"))
         adj = adjudicate(
             cands, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
             resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -150,7 +151,7 @@ def run_tournament():
                 p0 = np.full_like(r_va, w0[0])
                 yy0 = r_va
             rm0 = float(np.sqrt(np.mean((yy0 - p0) ** 2)))
-            cur_best = min(float(s.holdout_rmse) for s in cands)
+            cur_best = min(s.holdout_rmse if s.holdout_rmse is not None else float("inf") for s in cands)
             transfer = "PASS" if rm0 <= 1.5 * cur_best else "FAIL"
         # blind forward scoring with FROZEN structures
         fw = {}
@@ -159,9 +160,13 @@ def run_tournament():
                               for k in range(len(r_fw))])
             fw[cid] = (float(np.sqrt(np.mean((r_fw - preds) ** 2))),
                        float(np.mean(np.sign(r_fw) == np.sign(preds))))
-        best_cid = min(structs, key=lambda c: next(
-            s.holdout_rmse for s in cands
-            if s.candidate.candidate_id == c))
+        rmse_by_cid: dict[str, float] = {}
+        for s in cands:
+            if s.holdout_rmse is not None:
+                cid = s.candidate.candidate_id
+                rmse_by_cid[cid] = min(rmse_by_cid.get(cid, float("inf")),
+                                       float(s.holdout_rmse))
+        best_cid = min(structs, key=lambda c: rmse_by_cid.get(c, float("inf")))
         prev_winner = best_cid
         # agreement among the three frozen forward predictions
         signs = []
@@ -177,11 +182,11 @@ def run_tournament():
     return rows
 
 
-def report(rows):
+def report(rows: list[dict[str, Any]]) -> None:
     from collections import Counter
     print(f"windows: {len(rows)}")
     # Strategy comparison on blind-forward RMSE
-    strat = {"A_always_best": [], "B_unique": [], "C_unique_transfer": [],
+    strat: dict[str, list[float]] = {"A_always_best": [], "B_unique": [], "C_unique_transfer": [],
              "D_agree": [], "E_all": []}
     for r in rows:
         errs = {c: v[0] for c, v in r["fw"].items()}
@@ -202,13 +207,14 @@ def report(rows):
         print(f"  {k:16s} n={cov:9s} mean RMSE={a.mean():.5f}" if len(a) else f"  {k:16s} n=0")
     # Reliability table: future error by epistemic bucket
     print("\n  future RMSE by epistemic bucket:")
-    buckets: dict = {}
+    buckets: dict[tuple[str, str], list[float]] = {}
     for r in rows:
-        key = (r["status"], r["transfer"])
-        buckets.setdefault(key, []).append(r["fw"][r["best"]][0])
-    for k in sorted(buckets):
-        a = np.array(buckets[k])
-        print(f"    {k[0]:22s} transfer={k[1]:12s} n={len(a):3d} mean RMSE={a.mean():.5f}")
+        bucket_key = (r["status"], r["transfer"])
+        buckets.setdefault(bucket_key, []).append(r["fw"][r["best"]][0])
+    for bucket in sorted(buckets):
+        a = np.array(buckets[bucket])
+        print(f"    {bucket[0]:22s} transfer={bucket[1]:12s} n={len(a):3d} "
+              f"mean RMSE={a.mean():.5f}")
     print("\n  coverage:", dict(Counter(r["status"] for r in rows)))
 
 

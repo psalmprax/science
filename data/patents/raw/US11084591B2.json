@@ -1,0 +1,103 @@
+{
+  "patent_id": "US11084591B2",
+  "source": "https://patents.google.com/patent/US11084591B2/en",
+  "retrieved_utc": "2026-11-01T01:35:31+00:00",
+  "http_status": 200,
+  "bytes": 355321,
+  "html_sha256": "b6c89e32659bd5774e9979658117a760ce6359c6023e027afcc9cd054893481e",
+  "jurisdiction": "US",
+  "title": "Aircraft cabin blower system having a transmission receiving mechanical power from a first and seccond input wherein the first input is configured to receive mechanical power from a turbine engine and a first electrical machine to configured to receive mechanical power from the turbine engine independent of the transmission",
+  "abstract": "Abstract An aircraft cabin blower system includes a transmission configured to receive mechanical power from a gas turbine engine in the form of a first transmission input; and an electrical circuit including a first electrical machine, a second electrical machine, and power management system, wherein, when operating in a blower mode, the first electrical receives mechanical power from the gas turbine engine and act as a generator to provide electrical power to the power management system, and the second electrical machine acts as a motor providing mechanical power to the transmission in the form of a second transmission input, the second electrical machine being driven by electrical power from the power management system. The transmission's output drives a cabin blower compressor when operating in the blower mode, a speed of the output of the transmission being determined by a function of a speed of the first and second transmission inputs.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. An aircraft cabin blower system comprising: a cabin blower compressor configured to blow air; a transmission configured to: in a blower mode of operation, receive mechanical power in the form of a first transmission input and a second transmission input; and in the blower mode of operation, transmit an output that drives the cabin blower compressor, in which a speed of the output of the transmission is based on a function of a speed of the first transmission input and a speed of the second transmission input; and an electrical circuit including: a first electrical machine, a second electrical machine, and a power management system, wherein, when operating in the blower mod: the transmission is configured to receive mechanical power from a gas turbine engine in the form of the first transmission input, the first electrical machine is configured to: (i) receive mechanical power from the gas turbine engine independently of the transmission, and (ii) operate as a generator to provide electrical power to the power management system, and the second electrical machine is configured to receive electrical power from the power management system and to operate as a motor providing mechanical power to the transmission in the form of the second transmission input."
+    },
+    {
+      "num": "2",
+      "text": "2. The aircraft cabin blower system according to claim 1 , wherein, when the aircraft cabin blower system operates in a starter mode, the first electrical machine is configured to operate as a motor to provide mechanical power to the gas turbine engine to facilitate starting of the gas turbine engine, the first electrical machine being driven by electrical power from the power management system."
+    },
+    {
+      "num": "3",
+      "text": "3. The aircraft cabin blower system according to claim 2 , wherein, when the aircraft cabin blower system operates in the starter mode, the second electrical machine is configured to receive mechanical power from the transmission and operate as a generator to provide electrical power to the power management system."
+    },
+    {
+      "num": "4",
+      "text": "4. The aircraft cabin blower according to claim 3 , wherein, when the aircraft cabin blower system operates in the starter mode, the transmission is configured to receive mechanical power from the cabin blower compressor operating as an expander, at least part of this mechanical power being provided to the second electrical machine."
+    },
+    {
+      "num": "5",
+      "text": "5. The aircraft cabin blower system according to claim 2 , wherein, when the aircraft cabin blower system operates in the starter mode, the second electrical machine is configured to operate as a motor to provide mechanical power to the gas turbine engine, the second electrical machine being driven by electrical power from the power management system."
+    },
+    {
+      "num": "6",
+      "text": "6. The aircraft cabin blower system according to claim 2 , wherein, in the starter mode, a gearbox-mounted electric generator of the gas turbine engine is configured to operate as a motor to provide additional mechanical power to the gas turbine engine to facilitate engine starting."
+    },
+    {
+      "num": "7",
+      "text": "7. The aircraft cabin blower system according to claim 6 , wherein the gearbox-mounted electric generator is configured to receive electrical power from the power management system."
+    },
+    {
+      "num": "8",
+      "text": "8. The aircraft cabin blower system according to claim 1 , the power management system including a storage device configured to store electrical power."
+    },
+    {
+      "num": "9",
+      "text": "9. The aircraft cabin blower system according to claim 1 , wherein the power management system is configured to provide input power to one of the first electrical machine or the second electrical machine, the input power being provided at a different rate from an output power received by the power management system from the other of the first electrical machine and the second electrical machine."
+    },
+    {
+      "num": "10",
+      "text": "10. The aircraft cabin blower system according to claim 9 , wherein the ratio of the input power to the output power is variable."
+    },
+    {
+      "num": "11",
+      "text": "11. The aircraft cabin blower system according to claim 10 , wherein the ratio of the input power to the output power is continuously variable."
+    },
+    {
+      "num": "12",
+      "text": "12. The aircraft cabin blower system according to claim 1 , wherein the power management system is configured to receive power from an external power source."
+    },
+    {
+      "num": "13",
+      "text": "13. The aircraft cabin blower system according to claim 12 , wherein the external power source is at least one of a ground cart and an aircraft auxiliary power unit."
+    },
+    {
+      "num": "14",
+      "text": "14. The aircraft cabin blower system according to claim 1 , wherein the transmission includes an epicyclic gearbox."
+    },
+    {
+      "num": "15",
+      "text": "15. The aircraft cabin blower system according to claim 1 , further comprising: a second transmission configured to provide any one of a plurality of discrete gear ratios, the aircraft cabin blower system being arranged for at least one of: (a) transmission of mechanical power from the gas turbine engine to the first transmission input and the first electrical machine via the second transmission in the blower mode of the system; and (b) transmission of mechanical power from the first transmission input and the first electrical machine to the gas turbine engine via the second transmission in a starter mode of the system."
+    },
+    {
+      "num": "16",
+      "text": "16. The aircraft cabin blower system according to claim 1 , further comprising: an auxiliary gearbox or a dedicated radial drive arranged to transmit mechanical power from the gas turbine engine to the first transmission input and the first electrical machine or to the second transmission input and the second electrical machine, in the blower mode of the system, and from the first transmission input and the first electrical machine or to the second transmission input and the second electrical machine, to the gas turbine engine in a starter mode of the system."
+    },
+    {
+      "num": "17",
+      "text": "17. An aircraft comprising an aircraft cabin blower system according to claim 1 ."
+    },
+    {
+      "num": "18",
+      "text": "18. A method of operating an aircraft cabin blower system including: (a) a transmission configured to receive mechanical power in the form of a first transmission input and a second transmission input, and (b) an electrical circuit including a first electrical machine, a second electrical machine, and a power management system, the method comprising: when the aircraft cabin blower system operates in a blower mode: providing mechanical power from a gas turbine engine to the transmission via the first transmission input; providing mechanical power from the gas turbine engine to the first electrical machine independently of the transmission such that the first electrical machine operates as a generator, the first electrical machine providing electrical power to the power management system; and providing electrical power from the power management system to the second electrical machine such that the second electrical machine operates as a motor, the second electrical machine providing mechanical power to the transmission via the second transmission input, wherein: a speed of the output of the transmission is determined by a function of the speeds of the first and second transmission inputs."
+    },
+    {
+      "num": "19",
+      "text": "19. The method according to claim 18 , further comprising: when the aircraft cabin blower system operates in a starter mode: providing electrical power from the power management system to the first electrical machine such that the first electrical machine operates as a motor, the first electrical machine providing mechanical power to the gas turbine engine in order to facilitate starting of the gas turbine engine."
+    },
+    {
+      "num": "20",
+      "text": "20. The method according to claim 19 , further comprising the steps of: when the aircraft cabin blower system operates in the starter mode: providing mechanical power from the transmission to the second electrical machine such that the second electrical machine operates as a generator, the second electrical machine providing electrical power to the power management system."
+    },
+    {
+      "num": "21",
+      "text": "21. The method according to claim 19 , further comprising the steps of: when the aircraft cabin blower system operates in the starter mode: providing electrical power from the power management system to the second electrical machine such that the second electrical machine operates as a motor, the second electrical machine providing mechanical power to the gas turbine engine to facilitate starting of the gas turbine engine."
+    },
+    {
+      "num": "22",
+      "text": "22. The method according to claim 18 , wherein mechanical power is transmitted from the gas turbine engine to the first transmission input and the first electrical machine via a second transmission in the blower mode, mechanical power is transmitted from the first transmission input and the first electrical machine to the gas turbine engine via the second transmission in a starter mode, and the second transmission is configured to provide any one of a plurality of discrete gear ratios."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "system efficiency output input power ratio"
+}

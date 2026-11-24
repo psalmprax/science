@@ -16,17 +16,27 @@ Full confirmation behavior is the harness's own registered run, not these pins.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 HARNESS = REPO_ROOT / "benchmarks" / "run_lorenz_public_benchmark.py"
-RESULTS = REPO_ROOT / "benchmarks" / "lorenz_public_benchmark_results.json"
+# A smoke run is a wiring check. It writes to a scratch directory, seeded with
+# the registered ledger so the harness meets the same history it would in
+# place; before, every test run overwrote the registered results file with a
+# smoke payload and appended smoke entries to the registered ledger.
+SCRATCH = Path(tempfile.mkdtemp(prefix="lorenz_smoke_"))
+RESULTS = SCRATCH / "lorenz_public_benchmark_results.json"
+_REGISTERED_LEDGER = REPO_ROOT / "benchmarks" / "lorenz_public_benchmark_ledger.jsonl"
+if _REGISTERED_LEDGER.is_file():
+    shutil.copy(_REGISTERED_LEDGER, SCRATCH / _REGISTERED_LEDGER.name)
 
 
 def _run_smoke() -> dict:
-    proc = subprocess.run([sys.executable, str(HARNESS), "--smoke"],
+    proc = subprocess.run([sys.executable, str(HARNESS), "--smoke", "--out-dir", str(SCRATCH)],
                           capture_output=True, text=True, timeout=600)
     assert proc.returncode == 0, proc.stderr[-500:]
     return json.loads(RESULTS.read_text())

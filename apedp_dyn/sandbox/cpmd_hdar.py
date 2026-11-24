@@ -5,6 +5,7 @@ Multi-asset panels only. Prediction first; trading gated behind it.
 """
 import sys
 import warnings
+from collections.abc import Iterable
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -18,7 +19,7 @@ LAMW = np.array([LAM ** lag_i for lag_i in range(L)])
 LAMW /= LAMW.sum()
 
 
-def gen_panel(seed, delay=True):
+def gen_panel(seed: int, delay: bool=True) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.RandomState(int(seed))
     n = 3000
     beta = rng.uniform(0.5, 1.5, N)
@@ -34,19 +35,20 @@ def gen_panel(seed, delay=True):
     return R, beta, delta
 
 
-def trailing_std(R, w=SW):
+def trailing_std(R: np.ndarray, w: int=SW) -> np.ndarray:
     n = len(R)
-    return np.array([[float(np.std(R[max(0, t - w + 1):t + 1, i]) + EPS)
-                      for i in range(N)] for t in range(n)])
+    out: np.ndarray = np.array([[float(np.std(R[max(0, t - w + 1):t + 1, i]) + EPS)
+                                for i in range(N)] for t in range(n)])
+    return out
 
 
-def hdar_forecast(R):
+def hdar_forecast(R: np.ndarray) -> np.ndarray:
     n = len(R)
     sig = trailing_std(R)
     Z = R / (sig + EPS)
     m = np.median(Z, axis=1)
     G = np.abs(np.mean(np.tanh(Z / C0), axis=1))
-    fc = np.full((n, N), np.nan)
+    fc: np.ndarray = np.full((n, N), np.nan)
     Ball = np.full((n, N), np.nan)
     for t in range(BW, n - 1):
         Zw, mw = Z[t - BW + 1:t + 1], m[t - BW + 1:t + 1]
@@ -63,7 +65,7 @@ def hdar_forecast(R):
     return fc
 
 
-def panel_ic_null(F, R, seed, nshift=200):
+def panel_ic_null(F: np.ndarray, R: np.ndarray, seed: int, nshift: int=200) -> tuple[float, float]:
     f, r = F[:-1].ravel(), R[1:].ravel()
     ok = np.isfinite(f) & np.isfinite(r)
     f, r = f[ok], r[ok]
@@ -76,7 +78,7 @@ def panel_ic_null(F, R, seed, nshift=200):
     return obs, float(cnt / nshift)
 
 
-def stage12(tag, seeds, delay):
+def stage12(tag: str, seeds: Iterable[int], delay: bool) -> tuple[list[float], list[float]]:
     print(f"--- {tag} ---")
     p1, p2 = [], []
     for sd in seeds:
@@ -114,7 +116,7 @@ def stage12(tag, seeds, delay):
     return p1, p2
 
 
-def run():
+def run() -> None:
     p1d, p2d = stage12("gen-D discovery (100000+)", range(100000, 100010), True)
     p1e, _p2e = stage12("gen-E discovery (110000+)", range(110000, 110010), False)
     d_pass = all(p < 0.05 for p in p1d) and all(p < 0.05 for p in p2d)

@@ -1,12 +1,28 @@
-"""APEDP-X Agnostic Domain Adapter & 3-Arm Ablation Benchmark Suite.
+"""APEDP-X Agnostic Domain Adapter and a three-arm comparison on eight synthetic cases.
 
-Executes the decisive comparative ablation experiment:
-  Arm A: Full APEDP (Core + Domain-Specific Validation Rules)
-  Arm B: Core Only (Naive Empirical Holdout Fit, Zero Invariant Checkers)
-  Arm C: Agnostic Adapter (Core + Generic Declared-Invariant Interface)
+Status: experimental.
 
-Evaluates 8 heterogeneous scientific cases across physics, geometry,
-population biology, causal inference, and nonlinear dynamics.
+What it compares, and what each arm's numbers are:
+
+  Arm A: Core + domain-specific rules. **Declared evidence.** The sandbox
+         writes the evidence bundle itself: for a trap it appends the
+         failure it knows the case contains, for a valid case it adds every
+         requirement the claim tier names. Nothing is computed from the data.
+  Arm B: Core only, the "naive" reference. **Declared evidence.** The bundle
+         credits every requirement of the requested tier, by construction;
+         that it promotes every trap is how it was written, not a finding.
+  Arm C: Agnostic adapter. **Computed.** ``AgnosticAdapter.adjudicate`` runs
+         on the case's data and declared invariants; this is the only arm
+         whose verdicts the code derives.
+
+So arms A and B are fixed reference points of the decision table, and the
+comparison is arm C against them. Its "FPR" and "VRR" are counts out of four
+traps and four valid cases, all synthetic, chosen by the author of the
+corpus: they show the adapter refuses these traps and keeps these valid
+cases, and say nothing about a false-promotion rate on any population. Until
+2026-11-19 this docstring called the run "the decisive comparative ablation
+experiment"; ``evidence_basis`` in the returned report now says which arm is
+which.
 """
 from __future__ import annotations
 
@@ -29,6 +45,7 @@ from apedp_dyn.epistemic.agnostic_adapter import (
     InvariantKind,
 )
 from apedp_dyn.epistemic.claim_ladder import (
+    CLAIM_EVIDENCE_MAP,
     ClaimLevel,
     EpistemicAdjudicationVerdict,
     EvidenceBundle,
@@ -61,7 +78,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_holdout = np.sin(t_holdout)
 
     def osc_valid(t: np.ndarray) -> np.ndarray:
-        return np.sin(t)
+        _out: np.ndarray = np.sin(t)
+        return _out
 
     def energy_eval_valid(cand: Any, ds: Any) -> tuple[bool, float, str]:
         # d/dt energy = 0
@@ -109,7 +127,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
 
     # Case 2: Physics Energy Leak Trap (High R2 fit, but leaks energy by 18%)
     def osc_leak(t: np.ndarray) -> np.ndarray:
-        return np.sin(t) * np.exp(-0.02 * t)
+        _out: np.ndarray = np.sin(t) * np.exp(-0.02 * t)
+        return _out
 
     def energy_eval_leak(cand: Any, ds: Any) -> tuple[bool, float, str]:
         y = cand.model_callable(ds.X_train)
@@ -243,7 +262,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_pop = 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t_pop))
 
     def pop_valid(t: np.ndarray) -> np.ndarray:
-        return 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t))
+        _out: np.ndarray = 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t))
+        return _out
 
     inv_pos_valid = DeclaredInvariant(
         name="population_positivity",
@@ -262,7 +282,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
         declared_invariants=[inv_pos_valid],
     )
     def pop_rival(t: np.ndarray) -> np.ndarray:
-        return 10.0 * np.exp(0.3 * t)
+        _out: np.ndarray = 10.0 * np.exp(0.3 * t)
+        return _out
 
     rival_exp = AgnosticCandidateSpecification(
         candidate_id="BIO-05-RIVAL-EXP",
@@ -285,7 +306,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
         # Polynomial fit that dips negative for t near 0
         res = 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t))
         res[0:3] = -4.5  # Unphysical negative population
-        return res
+        _out: np.ndarray = res
+        return _out
 
     inv_pos_trap = DeclaredInvariant(
         name="population_positivity",
@@ -317,7 +339,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_causal = 2.5 * x_causal + 0.1
 
     def causal_model(x: np.ndarray) -> np.ndarray:
-        return 2.5 * x + 0.1
+        _out: np.ndarray = 2.5 * x + 0.1
+        return _out
 
     def do_x_eval_trap(cand: Any, ds: Any) -> tuple[bool, float, str]:
         # Under intervention do(X = 5), response is decoupled due to hidden confounder U
@@ -356,10 +379,12 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_extrap_test = np.tanh(0.8 * x_extrap_test)
 
     def extrap_valid(x: np.ndarray) -> np.ndarray:
-        return np.tanh(0.8 * x)
+        _out: np.ndarray = np.tanh(0.8 * x)
+        return _out
 
     def extrap_rival(x: np.ndarray) -> np.ndarray:
-        return 0.8 * x
+        _out: np.ndarray = 0.8 * x
+        return _out
 
     inv_extrap_valid = DeclaredInvariant(
         name="asymptotic_saturation_bound",
@@ -422,8 +447,11 @@ def run_arm_a_specialized(case: AblationTestCase) -> dict[str, Any]:
         bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
         bundle.add(EvidenceRequirement.REGIME_TRANSFER_EXTRAPOLATION)
         bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
+        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         if case.candidate.metadata.get("dual_bound_certified", False):
             bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+        if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
+            bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
 
     adj = adjudicate_scientific_claim(
         candidate_id=case.candidate.candidate_id,
@@ -449,22 +477,11 @@ def run_arm_b_core_only(case: AblationTestCase) -> dict[str, Any]:
     bundle = EvidenceBundle(metrics=metrics)
     bundle.add(EvidenceRequirement.IN_SAMPLE_CONVERGENCE)
     bundle.add(EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT)
-    # Lacks domain invariant checkers, but naive proposer claims full tier!
-    # Without domain invariant checkers, naive empirical systems falsely promote high-R2 models:
-    if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
-        # Naive empirical system pretends R2 = 0.98 means formally verified!
-        bundle.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
-        bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
-        bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
-    elif case.candidate.proposed_claim == ClaimLevel.C4_CAUSAL_MECHANISTIC:
-        # Naive system assumes correlation == causation!
-        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
-        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
-    elif case.candidate.proposed_claim == ClaimLevel.C3_STRUCTURAL:
-        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
-    elif case.candidate.proposed_claim == ClaimLevel.C5_EXTRAPOLATIVE:
-        bundle.add(EvidenceRequirement.REGIME_TRANSFER_EXTRAPOLATION)
-        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+    # This arm assumes empirical fit is sufficient for the requested tier and
+    # therefore credits every requirement that tier names. That is its intended
+    # failure mode: it has no independent check that any of them actually hold.
+    bundle.verified_evidence.update(
+        CLAIM_EVIDENCE_MAP[case.candidate.proposed_claim])
 
     adj = adjudicate_scientific_claim(
         candidate_id=case.candidate.candidate_id,
@@ -508,7 +525,8 @@ def run_arm_c_agnostic_adapter(case: AblationTestCase) -> dict[str, Any]:
 def run_ablation_experiment() -> dict[str, Any]:
     """Execute the full 3-Arm Ablation Experiment across the 8-case corpus."""
     print("\n" + "=" * 122)
-    print("APEDP-X ABLATION EXPERIMENT: EVALUATING DOMAIN-INDEPENDENCE VS DOMAIN-AGNOSTICISM")
+    print("APEDP-X THREE-ARM COMPARISON ON 8 SYNTHETIC CASES")
+    print("Arms A and B: evidence declared by the sandbox (reference points). Arm C: computed by the adapter.")
     print(format_frozen_spec_banner())
     print("=" * 122)
 
@@ -576,6 +594,14 @@ def run_ablation_experiment() -> dict[str, Any]:
         "total_cases": len(corpus),
         "valid_count": valid_count,
         "trap_count": trap_count,
+        #: Which arms' verdicts are derived from the data and which are written
+        #: by the sandbox. Only a "computed" arm's rates measure anything.
+        "evidence_basis": {
+            "arm_a_specialized": "declared",
+            "arm_b_core_naive": "declared",
+            "arm_c_agnostic": "computed",
+        },
+        "corpus": "8 synthetic cases (4 valid, 4 traps) built by generate_ablation_corpus",
         "arm_a_specialized": sum_a,
         "arm_b_core_naive": sum_b,
         "arm_c_agnostic": sum_c,
@@ -593,7 +619,7 @@ def run_ablation_experiment() -> dict[str, Any]:
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="APEDP-X Agnostic Domain Adapter Ablation Runner")
     parser.add_argument("--json", action="store_true", help="Emit JSON report to stdout")
     args = parser.parse_args()

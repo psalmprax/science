@@ -1,0 +1,131 @@
+{
+  "patent_id": "US20220156653A1",
+  "source": "https://patents.google.com/patent/US20220156653A1/en",
+  "retrieved_utc": "2026-11-01T01:35:02+00:00",
+  "http_status": 200,
+  "bytes": 9709684,
+  "html_sha256": "81a85a9634769ae4c54e95b4245109810ac1f39450504a8b58462ac5ee482eb9",
+  "jurisdiction": "US",
+  "title": "Goals Assembly Layers",
+  "abstract": "Abstract Just as fiction has conceived Alternate Realities since Jules Verne and H.G. Wells, this creates an Alternate Reality from an engineering viewpoint: This reconceptualizes current and new technology to provide an Alternate “human success” Reality—the “Expandaverse”—in which individual personal success and economic prosperity are accelerated and expanded, with the potential to scale to a plurality of individuals and groups worldwide. This “Alternate Reality” includes reconceptualized machines, devices, systems, personal identities, networks, infrastructure, utility(ies), identities, digital presence, governances, etc. that comprise an Alternate Reality Teleportal Machine (ARTPM). In some examples the traditional glass window is reinvented as a digital “Teleportal” (herein TP) that turns the world and near-space outside the Earth into one room (the Teleportal Machine or TPM), with direct “always on” access to a plurality of people, places, tools, entertainment, resources, etc.—an evolution of “presence” from local physical reality to “digital presence” in “Shared Planetary Life Spaces” (herein SPLS). Said Teleportal may be provided by means of TP Devices such as Local Teleportal (LTP), Mobile Teleportal (MTP), Remote Teleportal (RTP), Virtual Teleportal (VTP) on Alternate Input Devices (AIDs) and Alternate Output Devices (AODs) [herein together AIDs/AODs, typically commonly known networked electronic devices], and Remote Control Teleportaling (RCTP) that may run various Subsidiary Devices (typically commonly known networked electronic devices), providing wide access from and to said TPM through a plurality of new and known means. Some components of the ARTPM include a Teleportal Utility (herein TPU); an Alternate Realities Machine (herein ARM) for setting SPLS Boundaries that include priorities, filters that exclude what is not wanted, paywalls for access, and both digital and physical protections; an Active Knowledge Machine (herein AKM) for delivering knowledge and information interactively at the time and place needed to raise the level of personal and group success; Multiple Identities that provide that provide the equivalent of “life extension” by providing for living “multiple lives” within one life span instead of gaining additional “life spans” by extending lives; Governances that provide collective means to achieve shared goals; Optimizations to make a plurality of dynamic and continuous improvements; and RealWorld Entertainment to provide ways to bring parts of this ARTPM into the real world. As an integrated component throughout, the ARTPM utilizes various means of reporting, dashboards, alerts, etc. to increase the growth, success and satisfaction of a plurality of individuals and groups in said Alternate Reality, such as with visible reporting that provides continuous access to the best results and most effective choices—along with means to retrieve, copy, buy, install and try those products, services, configurations, etc. so as to spread their benefits rapidly. Another integrated component is “Governances” that do not replace nation states or governments but provide new collective means for accelerating success, and deliver that as a normal, contextually appropriate part of personal, group and commercial activities. The combined result of said ARTPM constitutes a new type of Alternate Reality that enables presence, devices, systems, methods, processes, tools, resources, content, entertainment, etc. that a plurality of individuals and groups may employ to succeed with greater productivity and increased speed in new as well as current activities—and thereby receive new opportunities to achieve expanding personal economic prosperity and quality of life goals (whether as a person or as multiple identities), along with collective Governances delivery of said capabilities to a plurality of collective groups, so that both individual and group economic and societal success and satisfaction may be advanced. Exceeding the many new fiction concepts that required later inventing to became real, it is an object of this Alternate Reality Teleportal Machine (ARTPM) to enable the new engineering concept that human digital reality is created and chosen and not mandated, to initiate an Expandaverse of collective and personal aspirations: “If you want a better reality, choose it and enjoy it.”These and other aspects, features, and implementations, and combinations of them, can be expressed as methods, systems, compositions, devices means or steps for performing functions, program products, media that store instructions or databases or other data structures, business methods, apparatus, components, and in other ways.These and other aspects, features, advantages, and implementations will be apparent from the discussion above, and from the claims.",
+  "claims": [
+    {
+      "num": "1-518",
+      "text": "1 .- 518 . (canceled)"
+    },
+    {
+      "num": "519",
+      "text": "519 . A computer-implemented method comprising: receiving and presenting, by device of a user of multiple devices, browser tabs and apps, digital items of content that are selected by senders; specifying, by the device of the user of the multiple devices, browser tabs and apps, a persistent and self-improving assembly layer that includes one or more user-set goals regarding delivery of digital items of content in a user-controlled digital environment across the user's multiple devices, browser tabs and apps; determining in real-time, by the device of the user of multiple devices, browser tabs and apps, that the user is present at the device; in real-time for a present user, obtaining, by the device of the user of the multiple devices, browser tabs and apps, one or more replacement digital items of content that are determined to fit the user-set goals, to associate with one or more of the received digital items of content that do not fit one or more of the user-set goals; receiving, by the device of the user of the multiple devices, browser tabs and apps, feedback of the user with respect to the one or more replacement digital items of content that are determined to fit the user-set goals; and using, by the device of the user of the multiple devices, browser tabs and apps, the received feedback to identify potential improved digital items of content that fit the user-set goals to improve the assembly layer across the multiple devices, wherein changes by the user to one or more of the user-set goals change the user-controlled, self-improving goal-based digital environment across the user's multiple devices at multiple places and times."
+    },
+    {
+      "num": "520",
+      "text": "520 . The method of claim 519 , comprising providing, by a device of a user of multiple devices, a persistent assembly layer, wherein a presence indication of the user's presence at the device is determined by at least one of: rules, user activity, biometrics, or presence-aware services or applications."
+    },
+    {
+      "num": "521",
+      "text": "521 . The method of claim 519 , comprising maintaining, by a device of a user of multiple devices, the persistent assembly layer that is on when the user is present at a device, and that is off when the user is not present at a device, across the user's multiple devices, and across different places and times."
+    },
+    {
+      "num": "522",
+      "text": "522 . The method of claim 519 , wherein the persistent assembly layer retrieves a particular replacement digital item that has resulted in achievement of a metric associated with the user-set goal to a threshold extent, and wherein the persistent assembly layer utilizes the user's feedback to determine if the particular replacement digital item improves the metric that is associated with the user-set goal, across the user's multiple devices, and across different places and times."
+    },
+    {
+      "num": "523",
+      "text": "523 . The method of claim 519 , wherein the persistent assembly layer calculates whether a replacement digital item increases or does not increase the tracked metric for the user-set goal to a threshold extent, across the user's multiple devices, and across different places and times."
+    },
+    {
+      "num": "524",
+      "text": "524 . The method of claim 519 , wherein the persistent assembly layer presents digital items for which there is a defined compensation package that has either: a defined monetary value, or a defined non-monetary value, across the user's multiple devices, and across different places and times."
+    },
+    {
+      "num": "525",
+      "text": "525 . The method of claim 519 , comprising elevating, by a device of a user of multiple devices, user determinations, wherein the persistent assembly layer replaces one or more senders' digital items conforming to user-set goals producing a user-controlled digital environment as the user changes from device to device, place to place and time to time."
+    },
+    {
+      "num": "526",
+      "text": "526 . The method of claim 519 , wherein the persistent assembly layer alters the senders-controlled digital presentations into a user-set digital environment that tracks and reports a metric for one or more user-set goals, and wherein the user can see the results of one or more user-set goals across the user's multiple digital devices, and across different places and times."
+    },
+    {
+      "num": "527",
+      "text": "527 . The method of claim 519 , wherein the persistent assembly layer replaces one or more digital items from senders across the user's devices, and at the instruction of the user, the persistent assembly layer either: informs the senders of the replacements, or does not inform the senders of the replacements."
+    },
+    {
+      "num": "528",
+      "text": "528 . A computer-implemented method comprising: specifying, by a device of the user of multiple devices, a persistent assembly layer that includes one or more user-set goals regarding delivery of digital items; obtaining, by the device of the user, two or more replacement digital items that are determined to fit a user-set goal; receiving, by the device of the user, feedback of the user with respect to one or more replacement digital items; selecting, by the device of the user, from among the replacement digital items, a particular replacement digital item based on the particular digital item resulting in achievement of a metric associated with the user-set goal to a threshold extent; and including, by the device of the user, the particular replacement digital item, the inclusion of the particular replacement digital item improving the metric that is associated with the user-set goal, wherein changes by the user to a different user-set goal changes the user-controlled digital environment across the user's multiple digital devices to a different persistent assembly layer."
+    },
+    {
+      "num": "529",
+      "text": "529 . The method of claim 528 , wherein the persistent assembly layer replaces two or more tracked digital items with an objective of producing a tracked metric that either: (1) raises a rate of user success from below the current average threshold to the average threshold, or (2) raises the rate of user success from an average threshold to an above average threshold, or (3) raises the rate of user success from an above average threshold to a high threshold."
+    },
+    {
+      "num": "530",
+      "text": "530 . The method of claim 528 , wherein the persistent assembly layer presents goal options to the user with at least one of: (1) the user's current progress toward the goals presented, or (2) a current metric and threshold achieved by the goals presented, or (3) goals set by others with results of their tracked metric, or (4) “best goals” achieved by others with results of their tracked metric."
+    },
+    {
+      "num": "531",
+      "text": "531 . The method of claim 528 , wherein the persistent assembly layer tests two or more replacement digital items to identify at least one of: (1) digital items resulting in achievement of a metric associated with the user-set goal to a threshold extent, or (2) new interface designs resulting in achievement of a metric associated with the user-set goal to a threshold extent, or (3) which types of user tests result in the greatest achievement of a metric associated with the user-set goal to a threshold extent, or (4) which automated optimization methods evaluate results of user tests so as to increase achievement of a metric associated with the user-set goal to a threshold extent."
+    },
+    {
+      "num": "532",
+      "text": "532 . The method of claim 528 , wherein the persistent assembly layer records feedback from multiple replacements of digital items across the user's multiple devices for a user-set goal, to calculate and rank either: (1) replacement items with the largest positive and negative impact on user success, or (2) gaps in user performance to determine and list improvement opportunities."
+    },
+    {
+      "num": "533",
+      "text": "533 . The method of claim 528 , wherein the persistent assembly layer analyzes data from multiple user tests of replacement digital items by employing one or both of: (1) predictive analytics of a metric associated with a user-set goal, or (2) economic value added of a value metric associated with a user-set goal."
+    },
+    {
+      "num": "534",
+      "text": "534 . The method of claim 528 , wherein the persistent assembly layer utilizes optimizations to select which replacements are automated, and wherein the method comprises: determining if automations are available and can be added, applying the automations and tracking their achievement of a metric associated with one or more user-set goals to a threshold extent, and applying the automations to: (1) perform replacements automatically, and (2) track the metric that is associated with the user-set goal to confirm its improvement."
+    },
+    {
+      "num": "535",
+      "text": "535 . The method of claim 528 , wherein the persistent assembly layer has one or more goals set by a third-party that may be either: (1) an employer, or (2) a vendor, or (3) an event, or (4) a nonprofit NGO, or (5) a government agency, law or regulation."
+    },
+    {
+      "num": "536",
+      "text": "536 . The method of claim 528 , wherein the persistent assembly layer assembles one or more digital environments that employs filtered data retrieval, and that may be saved and re-used by (1) the user, or (2) by other users, or (3) by broadcasting the digital environment, or (4) by recording parts of the digital environment for later use."
+    },
+    {
+      "num": "537",
+      "text": "537 . A computer-implemented method comprising: specifying, by a device of the user of multiple devices, a persistent assembly layer that includes one or more user-set goals regarding delivery of digital items; identifying, by a device of the user of multiple devices, one or more digital items-that are delivered by senders to a device of the user and that are determined to not fit one or more of the user-set goals, and one or more of the digital items that are determined to fit the user-set goals; retrieving, by the device of the user of the multiple devices, one or more replacement digital items-that are determined to fit the user-set goals; and including in an appropriate association, by the device of the user, the one or more replacement digital items along with the identified one or more digital items-that are determined to fit the user-set goals; and wherein changes by the user to a different user-set goal changes the user-controlled digital environment across the user's multiple digital devices to a persistent assembly layer that includes digital items-associated with the different user-set goal, and that excludes digital items that are not associated with the different user-set goal."
+    },
+    {
+      "num": "537-1",
+      "text": "537 . The method of claim 537 , wherein the persistent assembly layer retrieves replacement digital items from (1) a centralized source, or (2) a decentralized source, or (3) a hybrid source."
+    },
+    {
+      "num": "538",
+      "text": "538 . The method of claim 537 , wherein the persistent assembly layer determines one or more digital items from senders to replace, and retrieves associated replacement digital items, wherein the persistent assembly layer determines which digital items are filtered out, filtered in, prioritized, de-emphasized, or not present."
+    },
+    {
+      "num": "539",
+      "text": "539 . The method of claim 537 , wherein the persistent assembly layer determines whether a digital item either exceeds a threshold or fails to achieve a threshold."
+    },
+    {
+      "num": "540",
+      "text": "540 . The method of claim 537 , wherein the persistent assembly layer employs a repetitive and efficient process to identify, retrieve and include digital items of at least one of: content, instruction, next step, best option, advertising or marketing."
+    },
+    {
+      "num": "541",
+      "text": "541 . The method of claim 537 , comprising replacing, by a device of a user of multiple devices, digital items in a repetitive and efficient process, wherein the persistent assembly layer either: (1) auto-extracts, auto overlays and graphically auto-adjusts digital items, or (2) changes a blended dynamic construction in response to manually entered instructions of the user."
+    },
+    {
+      "num": "542",
+      "text": "542 . The method of claim 537 , comprising constructing a digital environment, by a device of a user of multiple devices, wherein the persistent assembly layer exhibits a larger user-set goal that can be expressed as a metric, such as mitigating climate change, improving health or living sustainability, wherein sender digital items and replacement digital items, in the digital environment across the user's multiple devices, are determined to fit the user-set goal."
+    },
+    {
+      "num": "543",
+      "text": "543 . The method of claim 537 , wherein one or more goals of the persistent assembly layer are either: (1) set by the user, or (2) set by a third party with the permission of the user."
+    },
+    {
+      "num": "544",
+      "text": "544 . The method of claim 537 , the persistent assembly layer produces a unique digital environment based on one or more user-set goals, across the user's multiple devices, with digital items only the user receives and other users do not receive or perceive."
+    },
+    {
+      "num": "545",
+      "text": "545 . The method of claim 537 , wherein the persistent assembly layer utilizes best available sources to provide the user with a digital environment that dynamically includes at least one or more of: a best user-set goals, a best replacement digital items for said goals, a best user success opportunities based on said replacement digital items, a best current optimizations, and a best reporting of the user's achievement of a metric comparing the user to the one or more of best goals adopted, best replacement digital items, best user success opportunities, best optimizations or best reporting."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "product lifetime accelerated aging model"
+}

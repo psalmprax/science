@@ -27,7 +27,7 @@ class BasisRegressionProposer(ProposerBase):
     def proposer_id(self) -> str:
         return f"basis_{self.basis}"
 
-    def build_basis(self, X: np.ndarray) -> tuple[np.ndarray, dict]:
+    def build_basis(self, X: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
         n_samples, n_vars = X.shape
         Phi = [np.ones(n_samples)]
         meta = {"type": self.basis}
@@ -67,13 +67,13 @@ class BasisRegressionProposer(ProposerBase):
         # ridge regression
         try:
             coef = np.linalg.pinv(Phi.T @ Phi + 1e-6 * np.eye(Phi.shape[1])) @ Phi.T @ y
-        except Exception:
+        except Exception:  # noqa: BLE001 - pinv of a singular Gram matrix raises LinAlgError, and degenerate X adds shape/dtype errors; lstsq solves the same normal equations and is the documented fallback
             coef = np.linalg.lstsq(Phi, y, rcond=None)[0]
         formula = f"BasisRegression({self.basis}, n_basis={self.n_basis}, degree={self.degree})"
         _basis_builder = self.build_basis
         _coef = coef.ravel()
-        def make_score(basis_builder=_basis_builder, coef=_coef):
-            def score(df):
+        def make_score(basis_builder:Any=_basis_builder, coef:Any=_coef) -> Any:
+            def score(df: Any) -> Any:
                 Phi_eval, _meta = basis_builder(np.asarray(df.to_numpy(dtype=float)))
                 return (Phi_eval @ coef).ravel()
             return score

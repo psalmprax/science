@@ -78,7 +78,7 @@ def test_no_score_ratio_is_quoted_for_a_candidate_with_phase_errors(record):
     # The ratios are recorded — they are what the Toffoli count and Q are worth — but
     # the record says which of them the phase invalidates, and the finding names the
     # 0.952 row as unattainable.
-    for name, ratio in record["score_ratios"].items():
+    for ratio in record["score_ratios"].values():
         assert ratio > 0
     assert record["score_ratios"]["hmr_candidate"] == pytest.approx(0.952064, abs=1e-5)
     assert "0.952 score ratio D recorded is not" in record["finding"]

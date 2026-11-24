@@ -10,7 +10,8 @@
   with tau parameters; fast/slow variable labeling consistent with metadata.
   Note: multi-timescale kept count depends on gate configuration; current pruning
   yields 0 survivors until dimensional scaling is resolved (see known issue).
-- Pure ODE mode (dae_mode="none") → behaves as D2b: 676 kept after pruning.
+- Pure ODE mode (dae_mode="none") → behaves as D2b: 225 constraint-free
+  candidates kept after pruning.
 - Dao gate (dao_validity) → passes for all applicable modes.
 """
 
@@ -30,8 +31,8 @@ from apedp_dyn.problems import coupled, duffing, mass_spring_damper
 
 def _count_kept(dae_mode):
     # Call enumerate_coupled with dae_mode only; it uses the default optional
-    # which is ("x", "v", "xr", "dxr", "c1", "c2") — giving 1764 raw / 676 kept
-    # for dae_mode="none" (verified earlier).
+    # which is ("x", "v", "xr", "dxr", "c1", "c2") — giving 1764 raw / 225
+    # constraint-free kept for dae_mode="none" (verified 2026-11-07).
     allc = enumerate_coupled(dae_mode=dae_mode, max_terms=4)
     kept = prune_admissible(coupled.load(), allc)
     return len(kept)
@@ -39,8 +40,8 @@ def _count_kept(dae_mode):
 
 class TestD3KeptCounts:
     def test_ode_mode_kept(self):
-        """Pure ODE mode: 676 systems survive pruning (D2b behavior)."""
-        assert _count_kept(dae_mode="none") == 676
+        """Pure ODE mode: 225 constraint-free systems survive pruning."""
+        assert _count_kept(dae_mode="none") == 225
 
     def test_constrained_mode_is_refused(self):
         """Constrained DAE mode is not implemented, and says so.

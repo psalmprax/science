@@ -1,0 +1,22 @@
+{
+ "preregistration": "PREREG-VOUCHED-SRBENCH-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/default_route.py": "7a984f9fe659c0857088ef8b7bf9f6f090a755189ae4eb6338153db4c07c5033",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/vouched_route.py": "d15d43d868a99681c32d71b8146416c762fb68ef3ade021d49f1267e78c4d22b",
+  "apedp_dyn/discovery_l2/vouching.py": "513763de3fa266ff3b18416f644919efaf1342ab98539a9a45e57f42c83e1292",
+  "apedp_dyn/proposers/composed.py": "eca6edc35ea1155039acb4c4745231bc4e84e8d1b9333540828ac89d9751e6e3",
+  "apedp_dyn/proposers/deep_pass.py": "2a7018dd93053ba81354c5ed9fad64467a86104d546e44e49a83c945c1ffa430",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "preregistration/PREREG-VOUCHED-SRBENCH-2026-11.md": "172427a7fd1b3b82ed40be66bab086417f1c7052b6e9f78d4459fb62418cb434",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36",
+  "scripts/run_srbench_portfolio.py": "1a6c5ead7433ac5967d4a93e8e75e5ee12fff54d9180658c0c1835d23bddd458",
+  "scripts/run_srbench_refined.py": "807ccdcae77b6d09bf83a36e07108da8b407ed86d2912ae1a262cd39c173ec9a",
+  "scripts/run_srbench_vouched.py": "4bff07d3436038d1cf7b4bd186ed686b03a8d5c0872bd4a7aba94779aa48ccea"
+ }
+}

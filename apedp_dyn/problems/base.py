@@ -19,8 +19,9 @@ from apedp_dyn.model import DynamicalEquation, InputVariable, Parameter, StateVa
 def _vector_signal(components: list[Callable[[float], np.ndarray]]) -> Callable[[float], np.ndarray]:
     """Concatenate per-input callables into one length-n_inputs vector."""
     def u(t: float) -> np.ndarray:
-        return np.concatenate([np.atleast_1d(np.asarray(c(t), dtype=float)).ravel()
+        _out: np.ndarray = np.concatenate([np.atleast_1d(np.asarray(c(t), dtype=float)).ravel()
                                for c in components])
+        return _out
     return u
 
 
@@ -63,8 +64,8 @@ def make_signal(spec: Any) -> Callable[[float], np.ndarray]:
                  for c in spec["components"]]
         return lambda t: np.array([sum(a * np.sin(w * t + ph) for a, w, ph in comps)])
     if kind == "interpolated":
-        t_pts = np.asarray(spec["t"], dtype=float)
-        u_pts = np.asarray(spec["u"], dtype=float)
+        t_pts: np.ndarray = np.asarray(spec["t"], dtype=float)
+        u_pts: np.ndarray = np.asarray(spec["u"], dtype=float)
         if u_pts.ndim == 1:
             return lambda t: np.array([float(np.interp(t, t_pts, u_pts))])
         return lambda t: np.array([float(np.interp(t, t_pts, u_pts[:, i])) for i in range(u_pts.shape[1])])
@@ -84,7 +85,7 @@ class DynProblem:
 
 
 def _truth_rhs(truth: tuple[DynamicalEquation, ...], order: list[str],
-               inames: list[str], params: dict[str, float]):
+               inames: list[str], params: dict[str, float]) -> Any:
     import sympy as sp
 
     compiled = [(e.state, sp.lambdify(
@@ -114,7 +115,7 @@ def generate_truth(problem: DynProblem, regime: str,
     x0 = np.asarray(reg["x0"], dtype=float)
     t_eval = np.linspace(reg["t_span"][0], reg["t_span"][1], n_eval)
 
-    def f(t, x):
+    def f(t: Any, x: Any) -> Any:
         # A problem with no inputs has no meaningful u(t), and splatting
         # whatever the spec happened to return injected a spurious argument:
         # make_signal's "zero" defaults to n=1, so every autonomous problem

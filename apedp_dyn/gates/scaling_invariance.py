@@ -130,7 +130,7 @@ class ScalingInvarianceGate:
         # Index by name for fast lookup
         self._regime_by_name = {r.name: r for r in regimes}
 
-    def add_regime(self, regime: ScalingRegime):
+    def add_regime(self, regime: ScalingRegime) -> None:
         """Add a scaling regime to the gate's registry."""
         object.__setattr__(self, '_regimes', (*self._regimes, regime))
         object.__setattr__(self, '_regime_by_name', {
@@ -263,10 +263,23 @@ class ScalingInvarianceGate:
         -------
         ScalingInvarianceGateResult
         """
-        # Build the A matrix from the Π groups' exponent structure
-        # and the regime's target scaling.
-        # For now, delegate to the standard check but with regime routing.
-        return self.check(candidate_id=candidate_id, alpha=alpha, regime=regime)
+        for grp in pi_groups:
+            if len(grp.exponents) != len(alpha):
+                raise ValueError(
+                    f"DimensionlessGroup '{grp.name}' exponent length ({len(grp.exponents)}) "
+                    f"does not match alpha length ({len(alpha)})"
+                )
+        base_res = self.check(candidate_id=candidate_id, alpha=alpha, regime=regime)
+        pi_names = ", ".join(g.name for g in pi_groups) if pi_groups else "none"
+        detail = f"{base_res.detail} [pi_groups={pi_names}]" if base_res.detail else f"[pi_groups={pi_names}]"
+        return ScalingInvarianceGateResult(
+            candidate_id=base_res.candidate_id,
+            regimes_checked=base_res.regimes_checked,
+            passed_regimes=base_res.passed_regimes,
+            failed_regimes=base_res.failed_regimes,
+            overall_passed=base_res.overall_passed,
+            detail=detail,
+        )
 
 
 # Pre-configured regimes following Connor-Taylor / fusion scaling conventions
@@ -296,5 +309,3 @@ collisionless_low_beta = ScalingRegime(
     target_scaling=(-2.0,),  # ωτ_E ∝ ρ*^{-2}
     source="nstx-experimental",
 )
-
-# Wait, I made a typo. Let me fix it.

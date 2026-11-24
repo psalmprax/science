@@ -27,8 +27,15 @@ class PlasmaPhysicsAnalyzer:
         m^-3 keV s. The ignition reference (~3e21 m^-3 keV s) is the commonly
         quoted D-T value for ignition-level triple product.
         """
-        if n_i <= 0 or tau_e <= 0 or temperature_keV <= 0:
-            raise ValueError("n_i, tau_e and temperature must be positive")
+        if (
+            not math.isfinite(n_i)
+            or not math.isfinite(tau_e)
+            or not math.isfinite(temperature_keV)
+            or n_i <= 0
+            or tau_e <= 0
+            or temperature_keV <= 0
+        ):
+            raise ValueError("n_i, tau_e and temperature must be finite and positive")
         triple_product = n_i * temperature_keV * tau_e
         threshold = 3e21
         return {
@@ -36,23 +43,56 @@ class PlasmaPhysicsAnalyzer:
             "ignition_reference_m3_keV_s": threshold,
             "meets_ignition_reference": triple_product >= threshold,
             "margin": triple_product / threshold,
+            "basis": "closed_form",
         }
 
     @staticmethod
-    def beta_limit(B_field_T: float, pressure_Pa: float) -> dict[str, Any]:
-        """Plasma beta = 2 mu0 p / B^2 (ratio of plasma to magnetic pressure)."""
-        if B_field_T <= 0:
-            raise ValueError("B_field_T must be positive")
+    def beta_limit(
+        B_field_T: float,
+        pressure_Pa: float,
+        minor_radius_m: float | None = None,
+        plasma_current_MA: float | None = None,
+    ) -> dict[str, Any]:
+        """Plasma beta = 2 mu0 p / B^2 (ratio of plasma to magnetic pressure).
+
+        When both ``minor_radius_m`` and ``plasma_current_MA`` are provided,
+        also computes the Troyon normalized beta ``beta_N = beta[%] * a * B / I_p``.
+        """
+        if (
+            not math.isfinite(B_field_T)
+            or B_field_T <= 0
+            or not math.isfinite(pressure_Pa)
+            or pressure_Pa < 0
+        ):
+            raise ValueError("B_field_T must be finite positive and pressure_Pa finite non-negative")
+        if (minor_radius_m is None) != (plasma_current_MA is None):
+            raise ValueError("minor_radius_m and plasma_current_MA must either both be provided or both omitted")
         b_pressure = (B_field_T ** 2) / (2 * MU0)
         beta = pressure_Pa / b_pressure
-        # Rough reference only: the Troyon limit is beta_N = beta[%] * a * B / I, not a fixed beta.
         troyon_limit = 0.04
+        extra: dict[str, Any] = {}
+        if minor_radius_m is not None and plasma_current_MA is not None:
+            if (
+                not math.isfinite(minor_radius_m)
+                or minor_radius_m <= 0
+                or not math.isfinite(plasma_current_MA)
+                or plasma_current_MA <= 0
+            ):
+                raise ValueError("minor_radius_m and plasma_current_MA must be finite and positive")
+            beta_n = (beta * 100.0) * minor_radius_m * B_field_T / plasma_current_MA
+            extra = {
+                "beta_N": beta_n,
+                "troyon_beta_N_limit_reference": 3.5,
+                "within_troyon_beta_N_limit": beta_n < 3.5,
+            }
         return {
             "beta": beta,
             "beta_percent": beta * 100,
             "troyon_limit_reference": troyon_limit,
             "within_reference_limit": beta < troyon_limit,
             "margin_to_reference": (troyon_limit - beta) / troyon_limit,
+            **extra,
+            "basis": "closed_form",
         }
 
     @staticmethod
@@ -61,8 +101,13 @@ class PlasmaPhysicsAnalyzer:
 
         Temperature is converted from eV to K with 1 eV = 11604.5 K.
         """
-        if n_e <= 0 or temperature_eV <= 0:
-            raise ValueError("n_e and temperature must be positive")
+        if (
+            not math.isfinite(n_e)
+            or not math.isfinite(temperature_eV)
+            or n_e <= 0
+            or temperature_eV <= 0
+        ):
+            raise ValueError("n_e and temperature must be finite and positive")
         T_K = temperature_eV * 11604.5
         return math.sqrt(EPS0 * K_B * T_K / (n_e * E_CHARGE ** 2))
 
@@ -89,21 +134,28 @@ class FusionReactorDesigner:
         """
         if concept not in cls.REACTOR_CONCEPTS:
             raise ValueError(f"unknown concept: {concept}")
-        if heating_power_MW <= 0:
-            raise ValueError("heating_power_MW must be positive")
+        if not math.isfinite(heating_power_MW) or heating_power_MW <= 0:
+            raise ValueError("heating_power_MW must be finite and positive")
+        if not math.isfinite(power_output_MW) or power_output_MW < 0:
+            raise ValueError("power_output_MW must be finite and non-negative")
         config = cls.REACTOR_CONCEPTS[concept]
         p_fus = power_output_MW if fusion_power_MW is None else fusion_power_MW
+        if not math.isfinite(p_fus) or p_fus < 0:
+            raise ValueError("fusion_power_MW must be finite and non-negative")
         q = p_fus / heating_power_MW
+        alpha_heating = p_fus * (3.52 / 17.59)
         return {
             'concept': concept,
             'type': config['type'],
             'target_power_MW': power_output_MW,
             'fusion_power_MW': p_fus,
             'heating_power_MW': heating_power_MW,
+            'alpha_heating_MW': round(alpha_heating, 3),
             'fusion_gain_Q': round(q, 3),
             'fuel': 'D-T',
             'tritium_breeding_required': True,
             'note': 'Power-balance ratio only; no plasma transport or engineering model.',
+            'basis': 'closed_form',
         }
 
     @classmethod
@@ -128,6 +180,7 @@ class FusionFuelCycle:
             'self_sufficient_reference': tbr > 1.0,
             'margin': tbr - 1.0,
             'source': 'literature-typical value, not computed',
+            'basis': 'literature_lookup',
         }
 
     @staticmethod
@@ -137,6 +190,7 @@ class FusionFuelCycle:
         return {
             'source': 'Seawater (heavy water)',
             'd_to_h_atom_ratio': ratio,
+            'basis': 'literature_lookup',
         }
 
 
@@ -154,4 +208,5 @@ class FusionMaterials:
     def evaluate_pfm(cls, material: str = 'tungsten') -> dict[str, Any]:
         if material not in cls.MATERIALS_DB:
             raise ValueError(f"no reference data for material: {material}")
-        return {'material': material, **cls.MATERIALS_DB[material], 'source': 'literature-typical values'}
+        return {'material': material, **cls.MATERIALS_DB[material],
+                'source': 'literature-typical values', 'basis': 'literature_lookup'}

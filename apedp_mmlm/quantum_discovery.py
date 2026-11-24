@@ -920,7 +920,7 @@ def place_with_dag_lookahead(
 # rather than typed in, and every heuristic estimate says so in its `cost_basis`. Three
 # kinds of claim are kept apart on purpose:
 #
-#   measured  -- an official verifier's own output, quoted from a committed file
+#   measured  -- a recorded measurement, quoted with its scope from a committed file
 #   sourced   -- a competition rule, quoted from a committed artifact
 #   heuristic -- template arithmetic over a design that has not been built
 #
@@ -992,9 +992,10 @@ INVSQRT_MEASURED_TOFFOLIS: int | None = _artifact_value(
     "invsqrt_kernel_receipt.json", "receipt", "max_toffoli_count"
 )
 
-#: `verified.num_qubits` is the verifier's count on the official 4,095-position instance.
+#: Width of the pinned-build reference on the 4,095-position instance, recorded
+#: in the 64-shot compatibility experiment. This is not a full verifier receipt.
 DQI_MEASURED_REFERENCE_PEAK_QUBITS: int | None = _artifact_value(
-    "dqi_full_instance_reverify.json", "verified", "num_qubits"
+    "dqi_official_compatibility.json", "builds", "pinned", "reference", "qubits"
 )
 #: One register, per the measurement -- not the two the documentation claimed.
 DQI_RECYCLING_GAIN_QUBITS: int | None = _dqi_recycling_gain()
@@ -1002,7 +1003,7 @@ DQI_RECYCLING_GAIN_QUBITS: int | None = _dqi_recycling_gain()
 #: 64-shot equivalence (52/64) while costing 1.1133x the Toffolis. A proposer filtered on a peak
 #: whose circuit decodes wrongly scores designs against a width no working build has.
 DQI_RECYCLING_USABLE_QUBITS: int = 0
-#: The cap: the verifier's measured peak, because that is the peak a verified circuit has. The
+#: The cap: the pinned reference's measured peak. The
 #: 1,885 row is withdrawn (`dqi_design_projection.json` -> `projection.replaces`).
 DQI_SOURCED_PEAK_QUBITS: int | None = DQI_MEASURED_REFERENCE_PEAK_QUBITS
 
@@ -1123,7 +1124,7 @@ class MMLMDQIScheduleOptimizer:
     def qubit_cap(self) -> int:
         """The cap to filter on, resolved when used so a missing artifact fails loudly."""
         return _resolve_cap(
-            self._qubit_cap, DQI_SOURCED_PEAK_QUBITS, "dqi_full_instance_reverify.json"
+            self._qubit_cap, DQI_SOURCED_PEAK_QUBITS, "dqi_official_compatibility.json"
         )
 
     def optimize_eea_schedule(

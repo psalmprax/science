@@ -1,0 +1,1732 @@
+{
+ "level": 0.01,
+ "rows": 2400,
+ "seed": 177000,
+ "stretch": {
+  "asymmetry": 1.2,
+  "cascade": 1.3,
+  "conditional": 1.8,
+  "flow": 1.3,
+  "gaussianity": 1.5,
+  "momentum": 1.5,
+  "still_heavy": 1.6
+ },
+ "summary": {
+  "all_hold": {
+   "claims_that_hold": [
+    "asymmetry",
+    "gaussianity",
+    "conditional",
+    "still_heavy",
+    "cascade",
+    "momentum",
+    "flow"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.06340637494694991,
+     "mean_half_width": 0.05948750598108158,
+     "no_interval": 0,
+     "not_rejected": 72,
+     "sd": 0.015631230446334066,
+     "survives": 78
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.02890556523793542,
+     "mean_half_width": 0.02692563782709076,
+     "no_interval": 0,
+     "not_rejected": 70,
+     "sd": 0.00901972456984187,
+     "survives": 80
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.012184041062863958,
+     "mean_half_width": 0.008038238839286104,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0022801924474019682,
+     "survives": 150
+    },
+    "flow": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03422361809863773,
+     "mean_half_width": 0.015318030126878887,
+     "no_interval": 0,
+     "not_rejected": 8,
+     "sd": 0.00824710369235375,
+     "survives": 142
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03426775692007195,
+     "mean_half_width": 0.010716833422278305,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.002772582324476686,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.020225368425529022,
+     "mean_half_width": 0.018690482935937804,
+     "no_interval": 0,
+     "not_rejected": 63,
+     "sd": 0.01073678975796838,
+     "survives": 87
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.0877776579445172,
+     "mean_half_width": 0.009996102847443572,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0027561550733420375,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "all_hold_tail_2.2": {
+   "claims_that_hold": [
+    "asymmetry",
+    "gaussianity",
+    "conditional",
+    "still_heavy",
+    "cascade",
+    "momentum",
+    "flow"
+   ],
+   "panels_failing_a_claim_that_holds": 1,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 1,
+     "holds": true,
+     "mean": 0.05776943867408252,
+     "mean_half_width": 0.06429642949580426,
+     "no_interval": 0,
+     "not_rejected": 93,
+     "sd": 0.021446985683538092,
+     "survives": 56
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.019249986653802467,
+     "mean_half_width": 0.026726046142579788,
+     "no_interval": 0,
+     "not_rejected": 110,
+     "sd": 0.01117250389917346,
+     "survives": 40
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.00986170671094791,
+     "mean_half_width": 0.00688301533826687,
+     "no_interval": 0,
+     "not_rejected": 1,
+     "sd": 0.002228987384055376,
+     "survives": 149
+    },
+    "flow": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.060393082592160044,
+     "mean_half_width": 0.012118178093202493,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.010932296564143794,
+     "survives": 150
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.036948247296960404,
+     "mean_half_width": 0.01301446182210403,
+     "no_interval": 0,
+     "not_rejected": 2,
+     "sd": 0.00380628969327247,
+     "survives": 148
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.058409181334720894,
+     "mean_half_width": 0.024103260701926105,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.01821206474603856,
+     "survives": 150
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.09434668903554197,
+     "mean_half_width": 0.010957755577647325,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.004895653928619039,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "all_hold_tail_4": {
+   "claims_that_hold": [
+    "asymmetry",
+    "gaussianity",
+    "conditional",
+    "still_heavy",
+    "cascade",
+    "momentum",
+    "flow"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.06768299492952713,
+     "mean_half_width": 0.05516569973064172,
+     "no_interval": 0,
+     "not_rejected": 46,
+     "sd": 0.01340555400156596,
+     "survives": 104
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.029577780853128555,
+     "mean_half_width": 0.027175356841226326,
+     "no_interval": 0,
+     "not_rejected": 63,
+     "sd": 0.008314515666568097,
+     "survives": 87
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.01336022163446861,
+     "mean_half_width": 0.00906136178061997,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0025691316541380013,
+     "survives": 150
+    },
+    "flow": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.029980548572379025,
+     "mean_half_width": 0.015629583776252988,
+     "no_interval": 0,
+     "not_rejected": 10,
+     "sd": 0.007727298604840987,
+     "survives": 140
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.032086454447226624,
+     "mean_half_width": 0.009844786361707497,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.002516297182478156,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.01714910738571052,
+     "mean_half_width": 0.01828187677206867,
+     "no_interval": 0,
+     "not_rejected": 84,
+     "sd": 0.010384010528108898,
+     "survives": 66
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.08040505924613467,
+     "mean_half_width": 0.00937514868810861,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0026368560906673134,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "all_hold_weak": {
+   "claims_that_hold": [
+    "asymmetry",
+    "gaussianity",
+    "conditional",
+    "still_heavy",
+    "cascade",
+    "momentum",
+    "flow"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03181576537336103,
+     "mean_half_width": 0.061763302550186625,
+     "no_interval": 0,
+     "not_rejected": 142,
+     "sd": 0.016664982340322206,
+     "survives": 8
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.01559436091096001,
+     "mean_half_width": 0.02678000073918458,
+     "no_interval": 0,
+     "not_rejected": 123,
+     "sd": 0.008867256915737741,
+     "survives": 27
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.009611163894809222,
+     "mean_half_width": 0.006937841672227858,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0020900573787018964,
+     "survives": 150
+    },
+    "flow": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.016657279859659903,
+     "mean_half_width": 0.01408866548317235,
+     "no_interval": 0,
+     "not_rejected": 49,
+     "sd": 0.005575480416219356,
+     "survives": 101
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.034834887458020374,
+     "mean_half_width": 0.010807169390773816,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0028641513741455423,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.003769494439141098,
+     "mean_half_width": 0.013606366022505912,
+     "no_interval": 0,
+     "not_rejected": 146,
+     "sd": 0.004997452994531321,
+     "survives": 4
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.0867576714685566,
+     "mean_half_width": 0.008742732181169329,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.002113728086741254,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "all_inverse": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 125,
+     "holds": false,
+     "mean": -0.07624181911590609,
+     "mean_half_width": 0.06122214251099273,
+     "no_interval": 0,
+     "not_rejected": 25,
+     "sd": 0.013635571503638663,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 150,
+     "holds": false,
+     "mean": -0.05477555564299301,
+     "mean_half_width": 0.02103157244076228,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.007175344054538662,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.002274172793855406,
+     "mean_half_width": 0.0031454008911607576,
+     "no_interval": 0,
+     "not_rejected": 126,
+     "sd": 0.0011029902103036591,
+     "survives": 24
+    },
+    "flow": {
+     "fails": 148,
+     "holds": false,
+     "mean": -0.03081730248003005,
+     "mean_half_width": 0.01246682968067338,
+     "no_interval": 0,
+     "not_rejected": 2,
+     "sd": 0.005230461928138899,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.02125023606278161,
+     "mean_half_width": 0.0091609138194857,
+     "no_interval": 0,
+     "not_rejected": 4,
+     "sd": 0.005500868127899464,
+     "survives": 146
+    },
+    "momentum": {
+     "fails": 149,
+     "holds": false,
+     "mean": -0.04475548972405212,
+     "mean_half_width": 0.017214344758929686,
+     "no_interval": 0,
+     "not_rejected": 1,
+     "sd": 0.013833468501359913,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.049777081603597284,
+     "mean_half_width": 0.008762265489116612,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.006296218510436802,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "all_inverse_weak": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 17,
+     "holds": false,
+     "mean": -0.036848488909736646,
+     "mean_half_width": 0.06407865560880734,
+     "no_interval": 0,
+     "not_rejected": 133,
+     "sd": 0.015702227422279492,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 71,
+     "holds": false,
+     "mean": -0.02286649801947987,
+     "mean_half_width": 0.023479717282891627,
+     "no_interval": 0,
+     "not_rejected": 79,
+     "sd": 0.008011941084489183,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.005955085352666433,
+     "mean_half_width": 0.005288473718841356,
+     "no_interval": 0,
+     "not_rejected": 6,
+     "sd": 0.0016825341488945946,
+     "survives": 144
+    },
+    "flow": {
+     "fails": 101,
+     "holds": false,
+     "mean": -0.016729490139203138,
+     "mean_half_width": 0.013476522785245481,
+     "no_interval": 0,
+     "not_rejected": 49,
+     "sd": 0.005082536989261852,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.02942384159677026,
+     "mean_half_width": 0.010323428531434496,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.004731481315077447,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 59,
+     "holds": false,
+     "mean": -0.0117346694061058,
+     "mean_half_width": 0.012774812684648156,
+     "no_interval": 0,
+     "not_rejected": 91,
+     "sd": 0.006160304539969417,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.0695522287559881,
+     "mean_half_width": 0.008132032019746853,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.004400675540322995,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "constant_volatility": {
+   "claims_that_hold": [
+    "gaussianity",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 1,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0013991824700127346,
+     "mean_half_width": 0.07520741883727025,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.016355711108714848,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 1,
+     "holds": false,
+     "mean": -0.0002887267383003499,
+     "mean_half_width": 0.02923589887133631,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.009495418055212397,
+     "survives": 1
+    },
+    "conditional": {
+     "fails": 150,
+     "holds": false,
+     "mean": -0.003190064110794409,
+     "mean_half_width": 0.0012320928866764074,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0002541399831679084,
+     "survives": 0
+    },
+    "flow": {
+     "fails": 2,
+     "holds": false,
+     "mean": -0.00042894074224163924,
+     "mean_half_width": 0.011659298512124676,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.004108862703448188,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.020818411567929986,
+     "mean_half_width": 0.010180897992392853,
+     "no_interval": 0,
+     "not_rejected": 11,
+     "sd": 0.003064019440281573,
+     "survives": 139
+    },
+    "momentum": {
+     "fails": 1,
+     "holds": false,
+     "mean": 0.0003016960218000761,
+     "mean_half_width": 0.010337872641663406,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.0027014819315156575,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03634821262985503,
+     "mean_half_width": 0.0075724525719633624,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0019220206895088213,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "momentum_as_published": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy",
+    "momentum"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 5,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.00025196006164980263,
+     "mean_half_width": 0.06336293529081032,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.01633620384019083,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.001206639455250762,
+     "mean_half_width": 0.024306460615366125,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.007832818591530703,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.008503493710180405,
+     "mean_half_width": 0.0071692017760609785,
+     "no_interval": 0,
+     "not_rejected": 3,
+     "sd": 0.0021260328175293336,
+     "survives": 147
+    },
+    "flow": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.004043671527886425,
+     "mean_half_width": 0.013816314949344571,
+     "no_interval": 0,
+     "not_rejected": 145,
+     "sd": 0.004344732634797873,
+     "survives": 5
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.039563478513861355,
+     "mean_half_width": 0.009922583315244817,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0026422365929553043,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.07141696918517022,
+     "mean_half_width": 0.025192662732346667,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.020695033911847776,
+     "survives": 150
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.08241517659713483,
+     "mean_half_width": 0.008278757205322259,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0023433195590789402,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "normal": {
+   "claims_that_hold": [],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0007252786526391031,
+     "mean_half_width": 0.05632631254049311,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.008288853343492652,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 1,
+     "holds": false,
+     "mean": 8.555185835975818e-06,
+     "mean_half_width": 0.023200962245490255,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.0077259815743390406,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 150,
+     "holds": false,
+     "mean": -0.003356324200326973,
+     "mean_half_width": 0.0006842074658709827,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.00013635830150156273,
+     "survives": 0
+    },
+    "flow": {
+     "fails": 2,
+     "holds": false,
+     "mean": -0.0007621098033981998,
+     "mean_half_width": 0.01247028820729232,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.003954480526798804,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": false,
+     "mean": -3.415089020465843e-05,
+     "mean_half_width": 0.0023667749509319936,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.0006312683520273795,
+     "survives": 0
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.00025412826250194537,
+     "mean_half_width": 0.010081086124489443,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.002781966254585732,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.00014426783304373586,
+     "mean_half_width": 0.001468053893419702,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.0003548218206230716,
+     "survives": 0
+    }
+   },
+   "replicates": 150
+  },
+  "normal_shocks": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 1,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0030165963054792364,
+     "mean_half_width": 0.05508315603963672,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.012438976256582085,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 2,
+     "holds": false,
+     "mean": -0.0022812281566626166,
+     "mean_half_width": 0.02489319510410574,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.007767244663537825,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.009887624933307086,
+     "mean_half_width": 0.007142193659758431,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.002246636221446226,
+     "survives": 150
+    },
+    "flow": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.00021437945604842532,
+     "mean_half_width": 0.0149757374528792,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.004731271563215402,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.02763001638210076,
+     "mean_half_width": 0.007036306802723302,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.001777044035649323,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.000306290708917186,
+     "mean_half_width": 0.011982612967634703,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.003114607080408203,
+     "survives": 1
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.061189887214076415,
+     "mean_half_width": 0.006810134734980103,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.001797395134409831,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "quiet": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 0,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0017963322834997416,
+     "mean_half_width": 0.06312136541221527,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.015187390333551366,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0018242189360398694,
+     "mean_half_width": 0.024736350341101027,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.008279622897039755,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.008104232111319392,
+     "mean_half_width": 0.00646623738513473,
+     "no_interval": 0,
+     "not_rejected": 3,
+     "sd": 0.002169197805000626,
+     "survives": 147
+    },
+    "flow": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.00020561741785464423,
+     "mean_half_width": 0.013775555194535827,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.004321208226322831,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03652489619730472,
+     "mean_half_width": 0.01035384192821106,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0028226209720772647,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 1,
+     "holds": false,
+     "mean": 0.00012296985122193396,
+     "mean_half_width": 0.012145599293686207,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.0032750713972992743,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.08496573054064772,
+     "mean_half_width": 0.008171878989773843,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0020848308679059326,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "quiet_exponential_memory": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 3,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0012888382586164519,
+     "mean_half_width": 0.06389560385459059,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.01584216992323435,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0017888348966355412,
+     "mean_half_width": 0.029572755751603737,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.009948845914038303,
+     "survives": 1
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.007175102072259457,
+     "mean_half_width": 0.0056255045129359835,
+     "no_interval": 0,
+     "not_rejected": 9,
+     "sd": 0.0012733313233203813,
+     "survives": 141
+    },
+    "flow": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0002049792066428736,
+     "mean_half_width": 0.014779969231329258,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.00476380078489809,
+     "survives": 2
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.028103080614273614,
+     "mean_half_width": 0.010492084974989215,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0027530346362885563,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.00019631789129774633,
+     "mean_half_width": 0.011289305585083674,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.003305010824983434,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.0928543769098426,
+     "mean_half_width": 0.00985903775334797,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.002549854207751633,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "quiet_no_leverage": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 2,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.00017020706292300198,
+     "mean_half_width": 0.06443218199064332,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.016848029181891478,
+     "survives": 1
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.0006681021080269774,
+     "mean_half_width": 0.02491324985013352,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.00722744075521872,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.007927072901420024,
+     "mean_half_width": 0.006637586284098604,
+     "no_interval": 0,
+     "not_rejected": 2,
+     "sd": 0.0018452644077844975,
+     "survives": 148
+    },
+    "flow": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0005217768776644714,
+     "mean_half_width": 0.013665644593520501,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.004841490256676285,
+     "survives": 1
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03689044195311587,
+     "mean_half_width": 0.010483708392875503,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0027482568523906287,
+     "survives": 150
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": 3.5200977441905445e-05,
+     "mean_half_width": 0.012149362625658402,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.003348185045885855,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.08519800163772122,
+     "mean_half_width": 0.008148997974056394,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.001974412587162708,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "quiet_tail_1.7": {
+   "claims_that_hold": [
+    "gaussianity",
+    "conditional",
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 2,
+   "readings": {
+    "asymmetry": {
+     "fails": 1,
+     "holds": false,
+     "mean": -9.058405331890987e-05,
+     "mean_half_width": 0.07703052447725418,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.02148023364620072,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 1,
+     "holds": false,
+     "mean": -0.0010861925489334008,
+     "mean_half_width": 0.026665411251247415,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.009511265094750747,
+     "survives": 1
+    },
+    "conditional": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.006248506569489682,
+     "mean_half_width": 0.005525761501005302,
+     "no_interval": 0,
+     "not_rejected": 10,
+     "sd": 0.0015969343459236191,
+     "survives": 140
+    },
+    "flow": {
+     "fails": 1,
+     "holds": false,
+     "mean": 9.894496695500623e-05,
+     "mean_half_width": 0.022159048865513578,
+     "no_interval": 0,
+     "not_rejected": 148,
+     "sd": 0.007287525980261383,
+     "survives": 1
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.03375469391906069,
+     "mean_half_width": 0.01902229393001875,
+     "no_interval": 0,
+     "not_rejected": 11,
+     "sd": 0.005033396422877527,
+     "survives": 139
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.0006459623997859052,
+     "mean_half_width": 0.012868113876628735,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.0034412373356717913,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.11255314950672733,
+     "mean_half_width": 0.010327751240972564,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.003238450653626594,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "stable_1.7": {
+   "claims_that_hold": [
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 2,
+   "readings": {
+    "asymmetry": {
+     "fails": 1,
+     "holds": false,
+     "mean": 0.00038240746945431226,
+     "mean_half_width": 0.0781074128654298,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.025970102405396333,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.0005563522498542972,
+     "mean_half_width": 0.02824378372643205,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.00912165428247504,
+     "survives": 1
+    },
+    "conditional": {
+     "fails": 149,
+     "holds": false,
+     "mean": -0.0027441360164571008,
+     "mean_half_width": 0.0010062430709091858,
+     "no_interval": 0,
+     "not_rejected": 1,
+     "sd": 0.00027217768605304436,
+     "survives": 0
+    },
+    "flow": {
+     "fails": 3,
+     "holds": false,
+     "mean": -0.0009831284874768705,
+     "mean_half_width": 0.011116921520760428,
+     "no_interval": 0,
+     "not_rejected": 147,
+     "sd": 0.00367284157806099,
+     "survives": 0
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": false,
+     "mean": 0.0004456561251641361,
+     "mean_half_width": 0.015685889796408847,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.0043771794054670915,
+     "survives": 1
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0002712648892381567,
+     "mean_half_width": 0.010193889749038473,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.002693991964453178,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.030667705221591676,
+     "mean_half_width": 0.007796521684206429,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0020699504902739196,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  },
+  "stable_1.9": {
+   "claims_that_hold": [
+    "still_heavy"
+   ],
+   "panels_failing_a_claim_that_holds": 0,
+   "panels_passing_a_claim_that_does_not_hold": 4,
+   "readings": {
+    "asymmetry": {
+     "fails": 0,
+     "holds": false,
+     "mean": 3.149500770622556e-05,
+     "mean_half_width": 0.0654675559500064,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.013584485153619902,
+     "survives": 0
+    },
+    "cascade": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0007743353951392671,
+     "mean_half_width": 0.02531093413175568,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.007563353426786328,
+     "survives": 0
+    },
+    "conditional": {
+     "fails": 150,
+     "holds": false,
+     "mean": -0.0031561341790137727,
+     "mean_half_width": 0.0007906332759777098,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0001721189332565497,
+     "survives": 0
+    },
+    "flow": {
+     "fails": 0,
+     "holds": false,
+     "mean": -0.0004885755553842568,
+     "mean_half_width": 0.010240723148814796,
+     "no_interval": 0,
+     "not_rejected": 149,
+     "sd": 0.0031322102879479336,
+     "survives": 1
+    },
+    "gaussianity": {
+     "fails": 0,
+     "holds": false,
+     "mean": 4.094174198478013e-05,
+     "mean_half_width": 0.008262617172301256,
+     "no_interval": 0,
+     "not_rejected": 147,
+     "sd": 0.002575046378583808,
+     "survives": 3
+    },
+    "momentum": {
+     "fails": 0,
+     "holds": false,
+     "mean": -2.1064085503201487e-05,
+     "mean_half_width": 0.010343599537506588,
+     "no_interval": 0,
+     "not_rejected": 150,
+     "sd": 0.002807539500643928,
+     "survives": 0
+    },
+    "still_heavy": {
+     "fails": 0,
+     "holds": true,
+     "mean": 0.009758787059149126,
+     "mean_half_width": 0.0045866049665381796,
+     "no_interval": 0,
+     "not_rejected": 0,
+     "sd": 0.0011197743386816372,
+     "survives": 150
+    }
+   },
+   "replicates": 150
+  }
+ },
+ "totals": {
+  "asymmetry": {
+   "failed_where_not_true": 144,
+   "failed_where_true": 1,
+   "panels_where_not_true": 1800,
+   "panels_where_true": 600,
+   "survived_where_not_true": 1,
+   "survived_where_true": 246
+  },
+  "cascade": {
+   "failed_where_not_true": 226,
+   "failed_where_true": 0,
+   "panels_where_not_true": 1800,
+   "panels_where_true": 600,
+   "survived_where_not_true": 4,
+   "survived_where_true": 234
+  },
+  "conditional": {
+   "failed_where_not_true": 599,
+   "failed_where_true": 0,
+   "panels_where_not_true": 600,
+   "panels_where_true": 1800,
+   "survived_where_not_true": 0,
+   "survived_where_true": 1640
+  },
+  "flow": {
+   "failed_where_not_true": 257,
+   "failed_where_true": 0,
+   "panels_where_not_true": 1800,
+   "panels_where_true": 600,
+   "survived_where_not_true": 10,
+   "survived_where_true": 533
+  },
+  "gaussianity": {
+   "failed_where_not_true": 0,
+   "failed_where_true": 0,
+   "panels_where_not_true": 450,
+   "panels_where_true": 1950,
+   "survived_where_not_true": 4,
+   "survived_where_true": 1922
+  },
+  "momentum": {
+   "failed_where_not_true": 210,
+   "failed_where_true": 0,
+   "panels_where_not_true": 1650,
+   "panels_where_true": 750,
+   "survived_where_not_true": 1,
+   "survived_where_true": 457
+  },
+  "still_heavy": {
+   "failed_where_not_true": 0,
+   "failed_where_true": 0,
+   "panels_where_not_true": 150,
+   "panels_where_true": 2250,
+   "survived_where_not_true": 0,
+   "survived_where_true": 2250
+  }
+ },
+ "worlds": {
+  "all_hold": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.2,
+   "drift": 0.06,
+   "flow": 0.03,
+   "name": "all_hold",
+   "skew": 0.1,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "all_hold_tail_2.2": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "tail_2.2",
+    "tail": 2.2,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.2,
+   "drift": 0.06,
+   "flow": 0.03,
+   "name": "all_hold_tail_2.2",
+   "skew": 0.1,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "all_hold_tail_4": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "tail_4",
+    "tail": 4.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.2,
+   "drift": 0.06,
+   "flow": 0.03,
+   "name": "all_hold_tail_4",
+   "skew": 0.1,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "all_hold_weak": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.1,
+   "drift": 0.03,
+   "flow": 0.015,
+   "name": "all_hold_weak",
+   "skew": 0.05,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "all_inverse": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": -0.2,
+   "drift": 0.0,
+   "flow": -0.03,
+   "name": "all_inverse",
+   "skew": -0.1,
+   "stable": 0.0,
+   "transitory": 1.0
+  },
+  "all_inverse_weak": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": -0.1,
+   "drift": 0.0,
+   "flow": -0.015,
+   "name": "all_inverse_weak",
+   "skew": -0.05,
+   "stable": 0.0,
+   "transitory": 0.5
+  },
+  "constant_volatility": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.0,
+    "memory": "none",
+    "name": "constant_volatility",
+    "tail": 3.0,
+    "vol_scale": 0.0,
+    "volume_link": 0.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "constant_volatility",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "momentum_as_published": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.1,
+   "flow": 0.0,
+   "name": "momentum_as_published",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "normal": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.0,
+    "memory": "none",
+    "name": "normal",
+    "tail": Infinity,
+    "vol_scale": 0.0,
+    "volume_link": 0.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "normal",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "normal_shocks": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "normal_shocks",
+    "tail": Infinity,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "normal_shocks",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "quiet": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "quiet",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "quiet_exponential_memory": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "exponential",
+    "name": "memory_exponential",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "quiet_exponential_memory",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "quiet_no_leverage": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.0,
+    "memory": "power",
+    "name": "no_leverage",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "quiet_no_leverage",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "quiet_tail_1.7": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "tail_1.7",
+    "tail": 1.7,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "quiet_tail_1.7",
+   "skew": 0.0,
+   "stable": 0.0,
+   "transitory": 0.0
+  },
+  "stable_1.7": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "stable_1.7",
+   "skew": 0.0,
+   "stable": 1.7,
+   "transitory": 0.0
+  },
+  "stable_1.9": {
+   "base": {
+    "autocorrelation": 0.0,
+    "beta": 0.3,
+    "common": 0.4,
+    "halflife": 5.0,
+    "leverage": 0.5,
+    "memory": "power",
+    "name": "all_hold",
+    "tail": 3.0,
+    "vol_scale": 0.7,
+    "volume_link": 1.0
+   },
+   "cascade": 0.0,
+   "drift": 0.0,
+   "flow": 0.0,
+   "name": "stable_1.9",
+   "skew": 0.0,
+   "stable": 1.9,
+   "transitory": 0.0
+  }
+ }
+}

@@ -1,0 +1,26 @@
+{
+  "experiment": "the full 4,095-position official instance, re-measured in this checkout",
+  "circuit": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/sample_submission/dqi.kmb",
+  "circuit_sha256": "959471d05a26373b4f14ca0cae2d8639ea25f18170d9f6532139aa51ccc04995",
+  "num_shots": 102400,
+  "verifier_sha256": "f14274bc0943fb9769ddb01131be6063191a15009fe1caf1d4bdd9fd25194e65",
+  "patched_sha256": "649549c046d4150ee16a2266c4c5e82ae0d2a099417456a6851e56afc3dc4c0e",
+  "patch": {
+    "replaced": "'reaction_depth': circuit.reaction_depth(),",
+    "with": "'reaction_depth': None,  # diagnostic only; 13.9 GB peak on 86M ops",
+    "why": "reaction_depth is a reported diagnostic, not a scoring term; it peaks at 13.9 GB on the 86M-instruction circuit. Every scoring line is the shipped one."
+  },
+  "verified": {
+    "status": "PASS",
+    "score": 24439463583672.93,
+    "toffoli_count": 5725108.382109375,
+    "num_qubits": 1893,
+    "verified_shots": 102400,
+    "value_errors": 0,
+    "phase_errors": 0,
+    "effective_error_rate": 0.0008660587301657926,
+    "repetition_factor": 1.1912604648115832,
+    "circuit_sha256": "959471d05a26373b4f14ca0cae2d8639ea25f18170d9f6532139aa51ccc04995"
+  },
+  "score_components": {}
+}

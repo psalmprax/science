@@ -767,44 +767,6 @@ def _pareto_front(records: list[tuple[str, float, float]]) -> list[tuple[str, fl
     return sorted(front, key=lambda item: item[1])
 
 
-def _separable_seed(
-    group: list[str],
-    arrays: dict[str, np.ndarray],
-    target: np.ndarray,
-    max_degree: int,
-) -> sp.Expr | None:
-    """Least-squares additive block for one separable group of variables.
-
-    Fits ``1 + sum_d sum_{s in group} c * s**d`` over the observed rows and
-    returns it as an explicit numeric expression. Numeric coefficients keep the
-    result directly evaluable, so a separable seed enters the population as a
-    scored candidate rather than as an unevaluated skeleton.
-    """
-    columns = [np.ones(len(target))]
-    powers: list[tuple[sp.Symbol, int]] = []
-    for name in group:
-        values = np.asarray(arrays[name], dtype=float).reshape(-1)
-        if values.size != target.shape[0]:
-            return None
-        for degree in range(1, max_degree + 1):
-            columns.append(values ** degree)
-            powers.append((sp.Symbol(name), degree))
-    if len(columns) == 1:
-        return None
-    design = np.column_stack(columns)
-    try:
-        coefficients, *_ = np.linalg.lstsq(design, target, rcond=None)
-    except np.linalg.LinAlgError:
-        return None
-    if not np.all(np.isfinite(coefficients)):
-        return None
-    expression = sp.Float(float(coefficients[0]))
-    for (symbol, degree), coefficient in zip(powers, coefficients[1:],
-                                             strict=False):
-        expression = expression + sp.Float(float(coefficient)) * symbol ** degree
-    return sp.expand(expression)
-
-
 def evolve(
     x_train: dict[str, np.ndarray],
     y_train: np.ndarray,
@@ -984,7 +946,7 @@ def evolve(
         # squares and offered to the search as a starting structure, so the
         # islands start from the additive geometry the data supports instead of
         # rediscovering it by chance.
-        from apedp.separability import SeparabilityAnalyzer
+        from apedp.separability import SeparabilityAnalyzer, separable_seed
 
         try:
             decomposition = SeparabilityAnalyzer().decompose(
@@ -1002,7 +964,7 @@ def evolve(
                 [name] for name in x_train
             ]
             blocks = [
-                _separable_seed(group, x_train, y_train, max(1, cfg.max_depth))
+                separable_seed(group, x_train, y_train, max(1, cfg.max_depth))
                 for group in groups
             ]
             blocks = [b for b in blocks if b is not None]

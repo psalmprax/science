@@ -1,0 +1,165 @@
+{
+  "engine": "kickmix",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+  "kickmix_role": "local rebuild with MR (scripts/build_kickmix_mr.py); not the pinned competition binary and not eligible for a receipt",
+  "degree": 12,
+  "measure": "static Toffolis of one GF(2^12) product call in six shapes, plus a 64-shot value-and-phase equivalence of the direct accumulate against the built-in call on the local MR simulator",
+  "calls": [
+    {
+      "call": "built-in, classically controlled",
+      "shape": "builtin_classical",
+      "toffolis": 63,
+      "and_gates": 0,
+      "ops": {
+        "CX": 481,
+        "SWAP": 21,
+        "CCX": 63,
+        "INFO_TAG": 14,
+        "POP_CONDITION": 1,
+        "PUSH_CONDITION": 1
+      },
+      "gates_total": 581,
+      "qubits": 36
+    },
+    {
+      "call": "built-in, quantum-controlled",
+      "shape": "builtin_quantum",
+      "toffolis": 75,
+      "and_gates": 0,
+      "ops": {
+        "BIT_INVERT": 104,
+        "BIT_STORE0": 10,
+        "R": 12,
+        "HMR": 12,
+        "CX": 481,
+        "CZ": 144,
+        "SWAP": 21,
+        "CCX": 75,
+        "INFO_TAG": 22
+      },
+      "gates_total": 881,
+      "qubits": 49
+    },
+    {
+      "call": "54-AND window, classically controlled",
+      "shape": "bilinear_window_classical",
+      "toffolis": 54,
+      "and_gates": 0,
+      "ops": {
+        "HMR": 54,
+        "MR": 101,
+        "CX": 578,
+        "CZ": 54,
+        "CCX": 54
+      },
+      "gates_total": 841,
+      "qubits": 79,
+      "toffolis_above_the_ands": 0
+    },
+    {
+      "call": "54-AND window, quantum-controlled",
+      "shape": "bilinear_window_quantum",
+      "toffolis": 66,
+      "and_gates": 0,
+      "ops": {
+        "HMR": 54,
+        "MR": 101,
+        "CX": 566,
+        "CZ": 54,
+        "CCX": 66
+      },
+      "gates_total": 841,
+      "qubits": 79,
+      "toffolis_above_the_ands": 12
+    },
+    {
+      "call": "54-AND direct accumulate (in place)",
+      "shape": "bilinear_direct_classical",
+      "toffolis": 54,
+      "and_gates": 0,
+      "ops": {
+        "HMR": 54,
+        "MR": 78,
+        "CX": 600,
+        "CZ": 54,
+        "CCX": 54
+      },
+      "gates_total": 840,
+      "qubits": 56,
+      "toffolis_above_the_ands": 0
+    },
+    {
+      "call": "54-AND direct accumulate, control folded (in place, quantum-controlled)",
+      "shape": "bilinear_folded_quantum",
+      "toffolis": 66,
+      "and_gates": 0,
+      "ops": {
+        "HMR": 54,
+        "MR": 90,
+        "CX": 600,
+        "CZ": 54,
+        "CCX": 66
+      },
+      "gates_total": 864,
+      "qubits": 68,
+      "toffolis_above_the_ands": 12
+    }
+  ],
+  "functional_check": {
+    "degree": 4,
+    "shots": 64,
+    "field": "GF(2^4)",
+    "dirty_target": true,
+    "reference_matches_arithmetic": 64,
+    "direct_matches_arithmetic": 64,
+    "windowed_matches_arithmetic": 64,
+    "direct_equals_reference": true,
+    "windowed_equals_reference": true,
+    "phase_unchanged": {
+      "reference": true,
+      "direct": true,
+      "windowed": true
+    }
+  },
+  "pricing": {
+    "width_rows": {
+      "builtin_call_qubits": 36,
+      "bilinear_direct_call_qubits": 56,
+      "bilinear_window_call_qubits": 79,
+      "window_the_direct_accumulate_saves": 23,
+      "workspace_over_the_builtin_call": 20,
+      "in_place_at_the_arm_peak": 1.0113041313734434,
+      "in_place_at_the_verifier_peak": 0.9902687388230783,
+      "in_place_at_the_peak_plus_the_workspace": 1.0113041313734434,
+      "basis": "per-call widths, measured; the peak-plus-workspace row assumes the substitute's workspace lands on the decoder's peak, which no arm build decides"
+    },
+    "ands_at_bound": 23,
+    "arm_calls_are_classical": {
+      "post_window_toffolis_per_call": 62.992007611798286,
+      "why": "the measured stream averages 63.0 per call, the in-place shape; a call carrying c_gf_iadd measures 75"
+    },
+    "quote_rows_from_the_model": {
+      "in_place": {
+        "t_mean_toffolis": 440896.3603174603,
+        "vs_target": 0.9902687388230783,
+        "vs_denominator_at_1913": 1.0113041313734432,
+        "vs_denominator_at_verifier_peak": 0.9902687388230782,
+        "reachable_shape": "classical control, direct accumulate"
+      },
+      "materialised": {
+        "t_mean_toffolis": 503948.3603174603,
+        "vs_target": 1.131885749395166,
+        "vs_denominator_at_1913": 1.155929385357045,
+        "reachable_shape": "quantum control, window + c_gf_iadd"
+      }
+    },
+    "measured_shapes_at_the_built_and_count": {
+      "bilinear_in_place_classical": 54,
+      "bilinear_window_quantum": 66,
+      "fold_the_control_instead": 66
+    },
+    "fold_identity": "66 = 66 = 54 ANDs + 12 for the control"
+  },
+  "verdict": "the 12-Toffoli add is the price of a quantum control, not of the accumulator: a bilinear product accumulates in place at any AND count when the call is classical (measured 54 Toffolis for 54 ANDs, 0 non-AND, into a dirty target), and a quantum-controlled one costs 12 more however it is arranged -- folding the control into an operand measures 66, the same as the window plus c_gf_iadd (66). The campaign arm's post-window stream already averages 63.0 Toffolis per call, the in-place shape, so the add is not on the arm and the 23-AND row needs no accumulator work: T 440,896.4 at 1,893 (0.9903x) at the peak and 1.011x at the arm's own 1,913. The materialising row is a quantum-controlled variant of the same arm, and no AND count buys it back"
+}

@@ -1,4 +1,4 @@
-"""Tests for public PDE and ODE subpackages (apedp.pde, apedp.ode, apedp_dyn.pde, apedp_dyn.ode, apedp_continuum).
+"""Tests for public PDE and ODE subpackages (apedp.pde, apedp.ode, apedp_dyn.pde, apedp_dyn.ode).
 
 Verifies:
 1. Public package import ergonomics across all namespaces.
@@ -10,18 +10,8 @@ Verifies:
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
-
-_pkg_dir = Path(__file__).resolve().parent.parent / "packages" / "apedp-continuum"
-if str(_pkg_dir) not in sys.path:
-    sys.path.insert(0, str(_pkg_dir))
-
-# Test public namespaces
-import apedp_continuum as ac
 
 import apedp.ode as apedp_ode
 import apedp.pde as apedp_pde
@@ -34,11 +24,14 @@ from apedp_dyn.epistemic.coupled_discovery import (
 
 
 def test_public_package_import_parity():
-    """Verify that apedp, apedp_dyn, and apedp_continuum export the unified API."""
+    """Verify that apedp and apedp_dyn expose the same PDE/ODE entry points.
+
+    The `packages/apedp-continuum` wheel was deleted on 2026-11-06 as a
+    re-export-only shim; `tests/test_scaffold_refusals.py` pins its absence.
+    The behaviour it forwarded is asserted here against the modules that own it.
+    """
     assert apedp_pde.discover_pde is apedp_dyn_pde.discover_pde
     assert apedp_ode.discover_coupled_ode is apedp_dyn_ode.discover_coupled_ode
-    assert ac.discover_pde is apedp_dyn_pde.discover_pde
-    assert ac.discover_coupled_ode is apedp_dyn_ode.discover_coupled_ode
 
     assert hasattr(apedp_pde, "PdeGridData")
     assert hasattr(apedp_pde, "PdePointCloudData")

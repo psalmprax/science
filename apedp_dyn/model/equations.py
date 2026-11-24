@@ -51,7 +51,7 @@ class DynamicalEquation:
 
     state: str
     expression: str
-    sympy_expr: sp.Basic = None  # type: ignore[assignment]
+    sympy_expr: sp.Basic = None
 
     def __init__(self, state: str, expression: str) -> None:
         object.__setattr__(self, "state", state)

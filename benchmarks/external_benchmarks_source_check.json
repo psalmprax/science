@@ -1,0 +1,360 @@
+{
+  "checked": "2026-11-01",
+  "script": "scripts/verify_external_benchmark_sources.py",
+  "sources": {
+    "harris_tm81927": {
+      "citation": "Harris, C.D., NASA TM-81927, 1981 (NACA 0012, Langley 8-foot TPT)",
+      "url": "https://ntrs.nasa.gov/api/citations/19810014503/downloads/19810014503.pdf",
+      "status": "cached",
+      "bytes": 5054434,
+      "sha256": "9ace5d185c155f9f762b1633b6cbf35a459f95ab50d70ef9d50eeb13b833b76d"
+    },
+    "ladson_cp": {
+      "citation": "Ladson, Hill & Johnson, NASA TM 100526, 1987 (digitized by NASA TMR)",
+      "url": "https://tmbwg.github.io/turbmodels/NACA0012_validation/CP_Ladson.dat",
+      "status": "cached",
+      "bytes": 6331,
+      "sha256": "547e022634a360cd7697813543348cd447ee0038cdbc8f00a5296c7822ec7af8"
+    },
+    "gregory_cp": {
+      "citation": "Gregory & O'Reilly, R&M 3726, 1970 (digitized by NASA TMR)",
+      "url": "https://tmbwg.github.io/turbmodels/NACA0012_validation/CP_Gregory_expdata.dat",
+      "status": "cached",
+      "bytes": 1608,
+      "sha256": "38d8474bc67661c3cef5e4cd9eeddb95d4a436d06abc1f58a8518066f510647c"
+    },
+    "meyers_review": {
+      "citation": "Meyers, Mishra & Benson, Prog. Mater. Sci. 51 (2006) 427-556",
+      "url": "https://meyersgroup.ucsd.edu/papers/journals/Meyers%20263.pdf",
+      "status": "cached",
+      "bytes": 5911838,
+      "sha256": "af1c77b2681d0b5585cd62655228c6aec22ab5e2629517d8c835ddf59a5f6043"
+    }
+  },
+  "naca0012_transonic": {
+    "repo_dataset_sha256": "6c704e8311ea6e6bdfe354903b273f61b10b5adbd72286740b4de085f87d5e4e",
+    "repo_table": [
+      {
+        "mach": 0.5,
+        "cp": -0.577,
+        "uncertainty": 0.012
+      },
+      {
+        "mach": 0.6,
+        "cp": -0.625,
+        "uncertainty": 0.014
+      },
+      {
+        "mach": 0.7,
+        "cp": -0.7,
+        "uncertainty": 0.015
+      },
+      {
+        "mach": 0.75,
+        "cp": -0.756,
+        "uncertainty": 0.018
+      },
+      {
+        "mach": 0.8,
+        "cp": -0.833,
+        "uncertainty": 0.02
+      },
+      {
+        "mach": 0.82,
+        "cp": -0.885,
+        "uncertainty": 0.022
+      },
+      {
+        "mach": 0.85,
+        "cp": -0.98,
+        "uncertainty": 0.025
+      },
+      {
+        "mach": 0.88,
+        "cp": -1.15,
+        "uncertainty": 0.03
+      },
+      {
+        "mach": 0.9,
+        "cp": -1.28,
+        "uncertainty": 0.035
+      },
+      {
+        "mach": 0.92,
+        "cp": -1.34,
+        "uncertainty": 0.04
+      },
+      {
+        "mach": 0.95,
+        "cp": -1.38,
+        "uncertainty": 0.045
+      }
+    ],
+    "harris_report": {
+      "text_chars": 41367,
+      "table_titles": [
+        "TABLE I. THE",
+        "TABLE I.- SECTION COORDINATES OF NACA 0012 SYMMETRICAL AIRFOIL.- CONTINUED.",
+        "TABLE I\u2022- SECTION COORDINATES OF NACA 0012 SYMMETRICAL AIRFOIL"
+      ],
+      "section_coordinates_table_present": true,
+      "cp_vs_mach_table_present": false
+    },
+    "measured_sources": [
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=6 million, alpha=.0169, free transition\"",
+        "cp_at_x_over_c_025": -0.3551
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=6 million, alpha=10.0254, free transition\"",
+        "cp_at_x_over_c_025": -0.9964
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=6 million, alpha=15.0299, free transition\"",
+        "cp_at_x_over_c_025": -1.2218
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=3 million, alpha=.0083, fixed transition\"",
+        "cp_at_x_over_c_025": -0.3347
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=3 million, alpha=10.0130, fixed transition\"",
+        "cp_at_x_over_c_025": -0.9723
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=3 million, alpha=14.9994, fixed transition\"",
+        "cp_at_x_over_c_025": -1.1809
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=9 million, alpha=.0210, fixed transition\"",
+        "cp_at_x_over_c_025": -0.3762
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=9 million, alpha=10.0228, fixed transition\"",
+        "cp_at_x_over_c_025": -1.0611
+      },
+      {
+        "file": "ladson_cp.dat",
+        "zone": "zone, t=\"Re=9 million, alpha=14.9911, fixed transition\"",
+        "cp_at_x_over_c_025": -1.2578
+      },
+      {
+        "file": "gregory_cp.dat",
+        "zone": "zone, t=\"alpha=0\"",
+        "cp_at_x_over_c_025": -0.3796
+      },
+      {
+        "file": "gregory_cp.dat",
+        "zone": "zone, t=\"alpha=10\"",
+        "cp_at_x_over_c_025": -1.1293
+      },
+      {
+        "file": "gregory_cp.dat",
+        "zone": "zone, t=\"alpha=15\"",
+        "cp_at_x_over_c_025": -1.4335
+      }
+    ],
+    "pg_reference": {
+      "source": "ladson_cp.dat, M=0.30, alpha=0.0169, Re=6e6",
+      "incompressible_cp0": -0.3387
+    },
+    "comparison": [
+      {
+        "mach": 0.5,
+        "table_cp": -0.577,
+        "pg_from_measured_m0.30": -0.3911,
+        "ratio_table_over_measurement": 1.475
+      },
+      {
+        "mach": 0.6,
+        "table_cp": -0.625,
+        "pg_from_measured_m0.30": -0.4234,
+        "ratio_table_over_measurement": 1.476
+      },
+      {
+        "mach": 0.7,
+        "table_cp": -0.7,
+        "pg_from_measured_m0.30": -0.4743,
+        "ratio_table_over_measurement": 1.476
+      },
+      {
+        "mach": 0.75,
+        "table_cp": -0.756,
+        "pg_from_measured_m0.30": -0.5121,
+        "ratio_table_over_measurement": 1.476
+      },
+      {
+        "mach": 0.8,
+        "table_cp": -0.833,
+        "pg_from_measured_m0.30": -0.5645,
+        "ratio_table_over_measurement": 1.476
+      },
+      {
+        "mach": 0.82,
+        "table_cp": -0.885,
+        "pg_from_measured_m0.30": -0.5918,
+        "ratio_table_over_measurement": 1.496
+      },
+      {
+        "mach": 0.85,
+        "table_cp": -0.98,
+        "pg_from_measured_m0.30": -0.643,
+        "ratio_table_over_measurement": 1.524
+      },
+      {
+        "mach": 0.88,
+        "table_cp": -1.15,
+        "pg_from_measured_m0.30": -0.7131,
+        "ratio_table_over_measurement": 1.613
+      },
+      {
+        "mach": 0.9,
+        "table_cp": -1.28,
+        "pg_from_measured_m0.30": -0.777,
+        "ratio_table_over_measurement": 1.647
+      },
+      {
+        "mach": 0.92,
+        "table_cp": -1.34,
+        "pg_from_measured_m0.30": -0.8642,
+        "ratio_table_over_measurement": 1.551
+      },
+      {
+        "mach": 0.95,
+        "table_cp": -1.38,
+        "pg_from_measured_m0.30": -1.0847,
+        "ratio_table_over_measurement": 1.272
+      }
+    ],
+    "ratio_band_m0.50_to_m0.80": [
+      1.475,
+      1.476
+    ],
+    "verdict": "unverified",
+    "reasons": [
+      "the cited Langley report (TM-81927) has a text layer with no table of Cp at x/c=0.25 across Mach; its pressure distributions are figures, and the only table is the airfoil section coordinates",
+      "the table states neither angle of attack nor Reynolds number, and Cp(0.25) moves by a factor of 2.8 between alpha~0 and alpha=10 in the same source",
+      "against the alpha~0 measurement scaled by Prandtl-Glauert, every value from M=0.50 to M=0.80 is a constant 1.475x too negative, which is the signature of a constructed series rather than a measured one"
+    ]
+  },
+  "nanocrystalline_copper": {
+    "repo_dataset_sha256": "894fdc4b4149c7165e336c2653aa1e4e97f26e0be4f64b71cb8e7c35999f32c5",
+    "repo_table": [
+      {
+        "grain_size_nm": 50000.0,
+        "sigma_y_mpa": 120.0,
+        "uncertainty_mpa": 8.0
+      },
+      {
+        "grain_size_nm": 20000.0,
+        "sigma_y_mpa": 145.0,
+        "uncertainty_mpa": 10.0
+      },
+      {
+        "grain_size_nm": 5000.0,
+        "sigma_y_mpa": 210.0,
+        "uncertainty_mpa": 15.0
+      },
+      {
+        "grain_size_nm": 1000.0,
+        "sigma_y_mpa": 380.0,
+        "uncertainty_mpa": 20.0
+      },
+      {
+        "grain_size_nm": 200.0,
+        "sigma_y_mpa": 650.0,
+        "uncertainty_mpa": 30.0
+      },
+      {
+        "grain_size_nm": 50.0,
+        "sigma_y_mpa": 820.0,
+        "uncertainty_mpa": 40.0
+      },
+      {
+        "grain_size_nm": 20.0,
+        "sigma_y_mpa": 910.0,
+        "uncertainty_mpa": 45.0
+      },
+      {
+        "grain_size_nm": 12.0,
+        "sigma_y_mpa": 980.0,
+        "uncertainty_mpa": 50.0
+      },
+      {
+        "grain_size_nm": 8.0,
+        "sigma_y_mpa": 920.0,
+        "uncertainty_mpa": 50.0
+      },
+      {
+        "grain_size_nm": 5.0,
+        "sigma_y_mpa": 780.0,
+        "uncertainty_mpa": 60.0
+      },
+      {
+        "grain_size_nm": 3.0,
+        "sigma_y_mpa": 620.0,
+        "uncertainty_mpa": 60.0
+      }
+    ],
+    "repo_peak": {
+      "grain_size_nm": 12.0,
+      "sigma_y_mpa": 980.0,
+      "uncertainty_mpa": 50.0
+    },
+    "published_points": [
+      {
+        "sample": "Cu1",
+        "compaction_c": 106.0,
+        "density_pct": 92.5,
+        "grain_size_nm": 19.0,
+        "sigma_y_mpa": 650.0,
+        "hardness_over_three_mpa": 770.0
+      },
+      {
+        "sample": "Cu2",
+        "compaction_c": 106.0,
+        "density_pct": 98.4,
+        "grain_size_nm": 20.0,
+        "sigma_y_mpa": 850.0,
+        "hardness_over_three_mpa": 870.0
+      }
+    ],
+    "published_envelope": {
+      "sigma_mpa": [
+        100,
+        900
+      ],
+      "grain_sizes": [
+        "100 um",
+        "26 nm"
+      ]
+    },
+    "at_20_nm": {
+      "repo_mpa": 910.0,
+      "published_mpa": [
+        650.0,
+        850.0
+      ],
+      "above_best_published_pct": 7.1,
+      "above_lowest_published_pct": 40.0
+    },
+    "text_chars": 279762,
+    "verdict": "unverified",
+    "reasons": [
+      "the cited provenance is a literature family ('Greer et al., Uchic et al.'), not a table; no accessible record carries these eleven points",
+      "the accessible data at the one comparable grain size are inert-gas-condensed compacts with compressive yield of 0.65-0.85 GPa at 19-20 nm, not electrodeposited micropillars; the repository's 20 nm value 910 MPa is above that range",
+      "the review states the compiled Cu range as 100-900 MPa for 100 um to 26 nm, and the repository's 980 MPa peak at 12 nm exceeds it",
+      "the review records the sub-25 nm trend as ambiguous (plateau in some datasets, decrease in others), so a single turnover at 12 nm is not supported by it"
+    ]
+  },
+  "unreachable_sources": [],
+  "note": "A table that cannot be traced keeps its numbers and is marked unverified; nothing here edits the datasets."
+}

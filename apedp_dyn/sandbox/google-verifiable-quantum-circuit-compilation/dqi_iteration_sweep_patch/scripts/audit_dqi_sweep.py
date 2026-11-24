@@ -6,6 +6,7 @@ import argparse
 import json
 import math
 from pathlib import Path
+from typing import Any
 
 
 def close_enough(a: float, b: float) -> bool:
@@ -27,7 +28,7 @@ def main() -> int:
     if not isinstance(rows, list):
         raise SystemExit("results.json must contain a list of sweep rows")
 
-    clean: dict[int, dict] = {}
+    clean: dict[int, dict[str, Any]] = {}
     print("n_iters,status,Q,T_mean,epsilon_plus,R,score,score_formula_check,sha256")
     for row in rows:
         n = int(row["n_iters"])
@@ -40,6 +41,8 @@ def main() -> int:
         score = report.get("score", row.get("measured_cost"))
         formula_status = "MISSING_FIELDS"
         if all(isinstance(x, (int, float)) for x in (q, t_mean, rep, score)):
+            assert isinstance(q, (int, float)) and isinstance(t_mean, (int, float))
+            assert isinstance(rep, (int, float)) and isinstance(score, (int, float))
             recomputed = float(rep) * (int(q) ** 2) * float(t_mean)
             formula_status = "PASS" if close_enough(float(score), recomputed) else f"MISMATCH({recomputed:.12g})"
         sha = row.get("artifact_sha256", "")

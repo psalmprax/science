@@ -21,6 +21,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import apedp_dyn.env as env
+import apedp_dyn.notebook_adapter as notebook_adapter
 from apedp_dyn.epistemic.experiment_ledger import (
     CandidateLifecycleState,
     DatasetRole,
@@ -47,6 +48,70 @@ from apedp_dyn.notebook_adapter import (
 )
 
 # ── 1. Platform Detection Tests ──────────────────────────────────────────────
+
+
+@pytest.fixture(autouse=True)
+def _platform_filesystem_is_a_temporary_directory(tmp_path, monkeypatch):
+    """No test here may read or create a platform directory on the real machine.
+
+    ``configure_storage()`` creates the directories it resolves, so the tests
+    that simulate Kaggle, Colab or Databricks used to create ``/kaggle``,
+    ``/content``, ``/local_disk0`` and ``/databricks/driver`` wherever the
+    suite ran with permission to (as root, in a container). ``/kaggle/working``
+    is also how ``detect_platform()`` recognises Kaggle, so after one such run
+    the machine *was* Kaggle to every later run, and the six tests that expect
+    another platform failed for good. On a runner without that permission the
+    same tests passed, which is why it went unseen.
+
+    The adapter's platform locations are module constants; here they all point
+    under ``tmp_path``, where none exists until a test creates it. The global
+    ``tempfile.tempdir`` that ``configure_storage()`` redirects is put back, so
+    a later test in the same worker does not write its temp files into a
+    directory this one made up.
+    """
+    for name, where in {
+        "COLAB_ROOT": "content",
+        "KAGGLE_ROOT": "kaggle",
+        "DATABRICKS_SCRATCH_ROOT": "local_disk0",
+        "DATABRICKS_DBFS_FILESTORE": "dbfs/FileStore",
+        "DATABRICKS_DRIVER_ROOT": "databricks/driver",
+    }.items():
+        monkeypatch.setattr(notebook_adapter, name, tmp_path / "platform_fs" / where)
+    monkeypatch.setattr(tempfile, "tempdir", tempfile.tempdir)
+    # The environment is part of the platform too. On a GitHub runner
+    # GITHUB_ACTIONS=true is set, detect_platform() checks CI before a cluster,
+    # and the Slurm test, which cleared CI but not GITHUB_ACTIONS, failed there
+    # on 2026-11-16 (test (3.10), after 2,155 passes) while passing everywhere
+    # else. Every variable the adapter reads starts unset; a test sets the ones
+    # it simulates.
+    for variable in PLATFORM_VARIABLES:
+        monkeypatch.delenv(variable, raising=False)
+
+
+#: Every environment variable apedp_dyn/notebook_adapter.py reads.
+PLATFORM_VARIABLES = (
+    "APEDP_LEDGER_PATH", "APEDP_STORAGE_DIR", "APEDP_TEMP_STORAGE", "CI", "COLAB_GPU",
+    "DATABRICKS_CLUSTER_ID", "DATABRICKS_RUNTIME_VERSION", "GCS_READ_CACHE", "GITHUB_ACTIONS",
+    "KAGGLE_KERNEL_RUN_TYPE", "PBS_JOBID", "SLURM_JOB_ID",
+)
+
+
+def test_the_isolation_list_names_every_variable_the_adapter_reads():
+    """A variable added to the adapter and not here would leak the host back in."""
+    import re
+
+    source = Path(notebook_adapter.__file__).read_text(encoding="utf-8")
+    read = set(re.findall(r"""(?:environ\.get|getenv)\(\s*["']([A-Z_][A-Z0-9_]*)["']""", source))
+    read |= set(re.findall(r"""environ\[\s*["']([A-Z_][A-Z0-9_]*)["']\s*\]""", source))
+    assert read <= set(PLATFORM_VARIABLES), sorted(read - set(PLATFORM_VARIABLES))
+
+
+def test_a_ci_runner_is_not_mistaken_for_a_cluster(monkeypatch):
+    """The CI run's own environment, reproduced: GITHUB_ACTIONS wins over Slurm."""
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("SLURM_JOB_ID", "123456")
+    assert detect_platform() == PlatformType.CI
+
 
 def test_detect_platform_colab_sys_module():
     """Detect Colab when google.colab module is present."""
@@ -395,9 +460,53 @@ def test_configure_storage_kaggle():
     with patch.dict(os.environ, {"KAGGLE_KERNEL_RUN_TYPE": "Interactive"}, clear=True):
         with patch.dict(sys.modules, {}):
             sys.modules.pop("google.colab", None)
-            _t_dir, _p_dir, tier, warnings = configure_storage()
+            t_dir, p_dir, tier, warnings = configure_storage()
             assert tier == StorageTier.EPHEMERAL
             assert any("Kaggle" in w for w in warnings)
+            # Resolved under the redirected platform root, not under the real /kaggle.
+            kaggle = notebook_adapter.KAGGLE_ROOT
+            assert p_dir == kaggle / "working" / "apedp_storage" and p_dir.is_dir()
+            assert t_dir == kaggle / "temp"
+            assert Path("/kaggle") not in p_dir.parents
+
+
+def test_platform_directories_are_recognised_where_the_constants_point():
+    """The directory signals still work; they are just no longer hard-coded."""
+    with patch.dict(os.environ, {}, clear=True):
+        with patch.dict(sys.modules, {}):
+            sys.modules.pop("google.colab", None)
+            assert detect_platform() == PlatformType.WORKSTATION
+            (notebook_adapter.KAGGLE_ROOT / "working").mkdir(parents=True)
+            assert detect_platform() == PlatformType.KAGGLE
+            # Colab is checked first, and needs its sample_data directory.
+            notebook_adapter.COLAB_ROOT.mkdir(parents=True)
+            assert detect_platform() == PlatformType.KAGGLE
+            (notebook_adapter.COLAB_ROOT / "sample_data").mkdir()
+            assert detect_platform() == PlatformType.COLAB
+
+
+def test_the_adapter_names_the_real_platform_paths_by_default():
+    """Outside the tests the constants are the documented locations.
+
+    Read from a second, private copy of the module: the one the rest of this
+    file imported has its constants redirected by the fixture above, and
+    reloading it in place would give its classes new identities.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_notebook_adapter_defaults", notebook_adapter.__file__
+    )
+    fresh = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = fresh  # dataclasses resolve their module through sys.modules
+    try:
+        spec.loader.exec_module(fresh)
+    finally:
+        sys.modules.pop(spec.name, None)
+    assert (fresh.COLAB_ROOT, fresh.KAGGLE_ROOT) == (Path("/content"), Path("/kaggle"))
+    assert fresh.DATABRICKS_SCRATCH_ROOT == Path("/local_disk0")
+    assert fresh.DATABRICKS_DBFS_FILESTORE == Path("/dbfs/FileStore")
+    assert fresh.DATABRICKS_DRIVER_ROOT == Path("/databricks/driver")
 
 
 def test_configure_storage_databricks_ephemeral_warning():
@@ -418,14 +527,15 @@ def test_configure_storage_databricks_dbfs_mount_is_persistent():
         with patch.dict(os.environ, {"DATABRICKS_RUNTIME_VERSION": "15.4.x-scala2.12"}, clear=True):
             with patch.dict(sys.modules, {}):
                 sys.modules.pop("google.colab", None)
-                with patch.object(Path, "is_dir", lambda self: str(self) == "/dbfs/FileStore"):
+                dbfs = notebook_adapter.DATABRICKS_DBFS_FILESTORE
+                with patch.object(Path, "is_dir", lambda self: self == dbfs):
                     with patch(
                         "apedp_dyn.notebook_adapter._safe_mkdir_or_fallback",
                         side_effect=lambda target, fallback: target,
                     ):
                         _t_dir, p_dir, tier, warnings = configure_storage()
                         assert tier == StorageTier.PERSISTENT
-                        assert p_dir == Path("/dbfs/FileStore/apedp_storage")
+                        assert p_dir == dbfs / "apedp_storage"
                         assert not any("EPISTEMIC RISK" in w for w in warnings)
     finally:
         # configure_storage redirects the stdlib tempdir globally; the mocked

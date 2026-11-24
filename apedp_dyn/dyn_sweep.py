@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import dataclasses
 import time
+from typing import Any, cast
 
 import numpy as np
 
@@ -37,6 +38,7 @@ from apedp_dyn import (
     prune_admissible,
 )
 from apedp_dyn.epistemic.adjudicate import EpistemicStatus
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate
 from apedp_dyn.problems import coupled, duffing
 from apedp_dyn.problems.base import finalize
 
@@ -53,19 +55,19 @@ def cell_seed(problem_name: str, rep: int, pct: float) -> int:
     return 1_000_000 + int(zlib.crc32(f"{problem_name}|{rep}|{pct}".encode())) % 900_000
 
 
-def _with_noise(prob, pct: float, seed: int):
+def _with_noise(prob: Any, pct: float, seed: int) -> Any:
     rng = np.random.default_rng(seed)
     train = dict(prob.train)
     holdout = dict(prob.holdout)
     for reg in (train, holdout):
-        Y = np.asarray(reg["truth_y"], dtype=float)
+        Y: np.ndarray = np.asarray(reg["truth_y"], dtype=float)
         scale = np.std(Y, axis=0)
         train_noisy = Y + rng.normal(0.0, pct / 100.0 * scale, Y.shape)
         reg["truth_y"] = train_noisy
     return dataclasses.replace(prob, train=train, holdout=holdout)
 
 
-def _duff_stab_base(stab: bool):
+def _duff_stab_base(stab: bool) -> Any:
     if not stab:
         return duffing.load()
     base = duffing.spec()
@@ -74,18 +76,18 @@ def _duff_stab_base(stab: bool):
     return finalize(dataclasses.replace(base, holdout=holdout))
 
 
-def _duff_slate(prob):
+def _duff_slate(prob: Any) -> Any:
     cands = enumerate_candidates(required=("u",), optional=("x", "x3", "v"), max_terms=4)
-    kept = {tuple(sorted(s.candidate.term_set())): s for s in prune_admissible(prob, cands)}
+    kept = {tuple(sorted(cast(CandidateDynamics, s.candidate).term_set())): s for s in prune_admissible(prob, cands)}
     return kept[("u", "v", "x", "x3")].candidate, kept[("u", "v", "x")].candidate
 
 
-def _coup_slate(prob):
+def _coup_slate(prob: Any) -> Any:
     kept = prune_admissible(prob, enumerate_coupled(
         required=("u",), optional=("x", "v", "xr"), max_terms=4))
 
-    def get(sets):
-        return next(s for s in kept if [set(e) for e in s.candidate.term_sets()] == sets)
+    def get(sets: Any) -> Any:
+        return next(s for s in kept if [set(e) for e in cast(SystemCandidate, s.candidate).term_sets()] == sets)
 
     truth = get([{"u", "x", "v", "xr"}, {"u", "x", "v", "xr"}]).candidate
     rival = get([{"u", "x", "v"}, {"u", "x", "v"}]).candidate
@@ -93,13 +95,13 @@ def _coup_slate(prob):
 
 
 def run_cell(problem_name: str, pct: float, rep: int,
-             slate: dict[str, dict]) -> dict:
+             slate: dict[str, dict[str, Any]]) -> dict[str, Any]:
     t0 = time.perf_counter()
     prob = _with_noise(slate[problem_name]["prob_clean"], pct,
                        seed=cell_seed(problem_name, rep, pct))
     from apedp_dyn.epistemic.bootstrap import holdout_se_series
 
-    def _series(sc, ir):
+    def _series(sc: Any, ir: Any) -> Any:
         try:
             if sc.fit is None:
                 return None
@@ -115,7 +117,7 @@ def run_cell(problem_name: str, pct: float, rep: int,
     ranked = [s for s in (rt, rr)
               if s.train_loss is not None and np.isfinite(s.train_loss)]
 
-    def _train_key(s) -> float:
+    def _train_key(s: Any) -> float:
         assert s.train_loss is not None
         return float(s.train_loss)
 
@@ -134,7 +136,7 @@ def run_cell(problem_name: str, pct: float, rep: int,
         adj = adjudicate([rt, rr])
     from apedp_dyn.epistemic.bootstrap import lag1_autocorrelation
 
-    def _gate4(sc):
+    def _gate4(sc: Any) -> Any:
         return bool(sc.provenance.get("gate4_status", {}).get("passed", False))
 
     winner_se = None
@@ -167,7 +169,7 @@ def run_cell(problem_name: str, pct: float, rep: int,
     }
 
 
-def build_slates() -> dict[str, dict]:
+def build_slates() -> dict[str, dict[str, Any]]:
     duff = _duff_stab_base(False)
     stab = _duff_stab_base(True)
     coup = coupled.load()
@@ -186,10 +188,10 @@ def build_slates() -> dict[str, dict]:
 
 def run_sweep(problems: tuple[str, ...] = ("DUFF", "COUP", "STAB"),
               pcts: tuple[float, ...] = SIGMA_PCTS,
-              reps: tuple[int, ...] = REPS) -> dict:
+              reps: tuple[int, ...] = REPS) -> dict[str, Any]:
     slate = build_slates()
     cells = [run_cell(p, pct, rep, slate) for p in problems for pct in pcts for rep in reps]
-    curves: dict[str, dict] = {}
+    curves: dict[str, dict[str, Any]] = {}
     for p in problems:
         curves[p] = {}
         for pct in pcts:
@@ -232,11 +234,11 @@ def run_sweep(problems: tuple[str, ...] = ("DUFF", "COUP", "STAB"),
 # apedp_dyn/epistemic/caller_registry.py for the census and discipline.
 # --------------------------------------------------------------------------
 def publish_caller_compliance_record(
-    ledger=None,
+    ledger: Any=None,
     candidate_id: str = "",
     dataset_id: str | None = None,
     nominal_variants: int | None = None,
-):
+) -> Any:
     "Publish this caller's REG-F14b mode-(b) compliance record."
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
 

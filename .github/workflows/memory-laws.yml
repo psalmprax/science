@@ -1,0 +1,97 @@
+# The default route with and without a memory of confirmed laws (scripts/run_memory_laws.py).
+#   push to memory-laws-smoke-*  -> the tests, the files against their generators, two laws with a short real search.
+#   push to memory-laws-run-*    -> smoke, then PREREG-MEMORY-2026-11 on forty laws no route has run on, once.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Memory of confirmed laws
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['memory-laws-smoke-*', 'memory-laws-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The memory's own tests
+        run: python -m pytest tests/test_structure_memory.py -q
+      - name: The memory and the laws are what their generators give
+        run: |
+          python scripts/build_structure_memory.py --check
+          python scripts/run_memory_laws.py laws --check
+      - name: Two laws, a short real search, both arms
+        run: python scripts/run_memory_laws.py smoke --out memory-out
+
+  run:
+    needs: smoke
+    if: startsWith(github.ref_name, 'memory-laws-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Forty unseen laws, shard ${{ matrix.k }} of 20
+        env:
+          SHARD: ${{ matrix.k }}
+        run: python scripts/run_memory_laws.py run --shard "$SHARD/20" --out memory-out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: memory-laws-shard-${{ matrix.k }}
+          path: memory-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: memory-laws-shard-*
+          path: memory-out
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/run_memory_laws.py collect --out memory-out
+      - name: Print the results for rebuilding from the log
+        run: |
+          cd memory-out
+          rm -f runs-shard-*.jsonl
+          gzip -9 runs.jsonl
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN-TAR====="
+          tar -cf - . | gzip -9 | base64 -w 120
+          echo "=====END-TAR====="

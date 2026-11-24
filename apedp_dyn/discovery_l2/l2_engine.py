@@ -85,8 +85,14 @@ class L2DiscoveryEngine:
         X_holdout: Mapping[str, np.ndarray] | None = None,
         Y_holdout: np.ndarray | None = None,
         coefficient_synthesis: bool = False,
+        structure_rule: bool = False,
     ) -> L2DiscoveryResult:
         """Execute unconstrained L2 discovery pipeline from raw data and dimensions.
+
+        ``structure_rule`` turns on the referee's Guard 3: a promoted law must
+        leave no structure in its holdout residuals over the input space
+        (``epistemic/structure_guard.py``; audit M-10). Off by default until
+        PREREG-REFEREE-STRUCTURE-2026-11 has been run.
 
         ``coefficient_synthesis`` relaxes Gate B to the repository's
         dimensional-constant-synthesis convention (every additive term carries
@@ -235,6 +241,10 @@ class L2DiscoveryEngine:
             data_origin=data_origin,
             benchmark_level=BenchmarkLevel.L2_OPEN_DISCOVERY,
         )
+        if structure_rule:
+            from apedp_dyn.epistemic.structure_guard import guard_promotion
+
+            adj = guard_promotion(adj, np.column_stack([X_ho[k] for k in sorted(X_ho)]) if X_ho else None)
 
         return L2DiscoveryResult(
             adjudication=adj,

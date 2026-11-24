@@ -1,6 +1,11 @@
 """4D Spatio-Temporal Tensor-Train (TT-MPS) Video Compression Engine.
 
-Slashes VRAM consumption by 75x to 186x (98%+ memory savings) on 4D video latents (T, C, H, W).
+Stores a 4D video latent (T, C, H, W) as four tensor-train cores. The storage
+ratio is arithmetic on the shape and the bond ranks (``compression_ratio``); the
+reconstruction is lossy below full rank, and how much survives depends on the
+content. On the repository's 64x64 vortex clips, rank 16 stores 5.5x less and
+leaves 64 % of the variance unexplained. Network weights and activations, not
+the latent, set a model's VRAM, so this is not a VRAM figure.
 Enables continuous temporal frame evaluation at arbitrary normalized timestamps tau in [0, 1]
 via spline-projected core contraction in O(R^2 C + R^2 H + RW) without 4D expansion.
 Supports both PyTorch tensors (GPU/CPU) and NumPy arrays.

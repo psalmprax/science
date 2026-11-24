@@ -1,0 +1,10 @@
+{
+ "preregistration": "PREREG-PDE-2D-2026-11",
+ "sha256": {
+  "apedp_dyn/pde/weak_form.py": "0b5faa25fb260236c2632fdca23bf7bc61d15ba0f903b49898272924b3786067",
+  "apedp_dyn/pde/weak_form_2d.py": "478961db26a177c2fc54e0b0a72f14170a28560181479dd76b0b43b2ca59d12b",
+  "preregistration/PREREG-PDE-2D-2026-11.md": "9608cccf852b52b6b369b6f7edb0f874be5f4ad68537cb735e48340c7e43f9c3",
+  "scripts/pde_2d_worlds.py": "71b25664190275d8a09136099a16ea265bd99a3bd80afeccd7a98f0fd29d3c49",
+  "scripts/run_prereg_pde_2d.py": "6cc21c501db6274a7fef02183590c1f47a6cc1f8ef2d7b52298455ff47a5a6cc"
+ }
+}

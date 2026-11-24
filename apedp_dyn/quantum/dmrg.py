@@ -29,7 +29,7 @@ _BOND_DIM_MPO = 5
 _SZ = np.array([[0.5, 0.0], [0.0, -0.5]], dtype=np.float64)
 _SP = np.array([[0.0, 1.0], [0.0, 0.0]], dtype=np.float64)
 _SM = np.array([[0.0, 0.0], [1.0, 0.0]], dtype=np.float64)
-_ID = np.eye(2, dtype=np.float64)
+_ID: np.ndarray = np.eye(2, dtype=np.float64)
 
 
 @dataclass
@@ -79,7 +79,8 @@ class MatrixProductState:
         for tensor in self.tensors[1:]:
             psi = np.tensordot(psi, tensor, axes=([1], [0]))
             psi = psi.reshape(-1, tensor.shape[2])
-        return psi.reshape(-1)
+        _out: np.ndarray = psi.reshape(-1)
+        return _out
 
     def norm(self) -> float:
         """``sqrt(<psi|psi>)`` via transfer-matrix contraction, never a statevector.
@@ -92,7 +93,7 @@ class MatrixProductState:
         """
         if not self.tensors:
             raise ValueError("cannot take the norm of an empty MPS")
-        left = np.ones((1, 1), dtype=np.float64)
+        left: np.ndarray = np.ones((1, 1), dtype=np.float64)
         for tensor in self.tensors:
             # E(l, r) = sum_{a, b, p} E[a, b] * conj(A[a, p, l]) * A[b, p, r]
             left = np.einsum(
@@ -119,7 +120,7 @@ def heisenberg_mpo(n_sites: int, j_coupling: float = 1.0, field: float = 0.0) ->
     if n_sites < 2:
         raise ValueError("Heisenberg MPO requires n_sites >= 2")
     m = _BOND_DIM_MPO
-    w = np.zeros((m, m, _SITE_DIM, _SITE_DIM), dtype=np.float64)
+    w: np.ndarray = np.zeros((m, m, _SITE_DIM, _SITE_DIM), dtype=np.float64)
 
     w[0, 0] = _ID
     w[0, 1] = _SP
@@ -136,13 +137,13 @@ def heisenberg_mpo(n_sites: int, j_coupling: float = 1.0, field: float = 0.0) ->
 
 
 def _left_boundary() -> np.ndarray:
-    l0 = np.zeros((1, _BOND_DIM_MPO, 1), dtype=np.float64)
+    l0: np.ndarray = np.zeros((1, _BOND_DIM_MPO, 1), dtype=np.float64)
     l0[0, 0, 0] = 1.0
     return l0
 
 
 def _right_boundary() -> np.ndarray:
-    rn = np.zeros((1, _BOND_DIM_MPO, 1), dtype=np.float64)
+    rn: np.ndarray = np.zeros((1, _BOND_DIM_MPO, 1), dtype=np.float64)
     rn[0, _CH_DONE, 0] = 1.0
     return rn
 
@@ -150,13 +151,15 @@ def _right_boundary() -> np.ndarray:
 def _extend_left_env(env: np.ndarray, a: np.ndarray, w: np.ndarray) -> np.ndarray:
     t1 = np.einsum("abc,asd->bcsd", env, a)
     t2 = np.einsum("bcsd,bets->cetd", t1, w)
-    return np.einsum("cetd,ctf->def", t2, a)
+    _out: np.ndarray = np.einsum("cetd,ctf->def", t2, a)
+    return _out
 
 
 def _extend_right_env(env: np.ndarray, a: np.ndarray, w: np.ndarray) -> np.ndarray:
     t1 = np.einsum("def,asd->aesf", env, a)
     t2 = np.einsum("aesf,bets->abtf", t1, w)
-    return np.einsum("abtf,ctf->abc", t2, a)
+    _out: np.ndarray = np.einsum("abtf,ctf->abc", t2, a)
+    return _out
 
 
 def _effective_matvec(
@@ -174,7 +177,8 @@ def _effective_matvec(
     v1 = np.einsum("cijg,abc->baijg", theta, l_env)
     v2 = np.einsum("baijg,bcis->acsjg", v1, w1)
     v3 = np.einsum("acsjg,cdjr->adsrg", v2, w2)
-    return np.einsum("adsrg,fdg->asrf", v3, r_env)
+    _out: np.ndarray = np.einsum("adsrg,fdg->asrf", v3, r_env)
+    return _out
 
 
 def _solve_two_site(

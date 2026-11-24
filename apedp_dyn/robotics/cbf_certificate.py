@@ -104,7 +104,7 @@ class PairBarriers:
         n = self.positions.shape[0]
         if n < 2:
             return math.inf
-        off = ~np.eye(n, dtype=bool)
+        off: np.ndarray = ~np.eye(n, dtype=bool)
         return float(np.min(self.h[off]))
 
 
@@ -141,7 +141,8 @@ def solve_cbf_qp(
     if n > assumptions.max_agents:
         raise CertificateViolation(f"assumption scope: {n} agents > max_agents {assumptions.max_agents}")
     if n < 2:
-        return v
+        _out: np.ndarray = v
+        return _out
     bar = _pair_barriers(p, assumptions.r_safe)
 
     idx_i, idx_j = np.triu_indices(n, k=1)
@@ -193,7 +194,8 @@ def solve_cbf_qp(
         v *= scale
 
         def _budget(v_dot_d: np.ndarray, nrm: np.ndarray) -> np.ndarray:
-            return -v_dot_d + np.sqrt(np.maximum(v_dot_d ** 2 - (nrm ** 2 - box ** 2), 0.0))
+            _out: np.ndarray = -v_dot_d + np.sqrt(np.maximum(v_dot_d ** 2 - (nrm ** 2 - box ** 2), 0.0))
+            return _out
 
         for _pass in range(4):
             lhs = np.einsum("pk,pk->p", a_ij, v[idx_i] - v[idx_j])
@@ -234,7 +236,8 @@ def solve_cbf_qp(
         )
     if float(np.max(np.abs(v))) > box + assumptions.tol:
         raise CertificateViolation("CBF-QP failed the box constraint (A1)")
-    return v
+    _out = v
+    return _out
 
 
 def discrete_invariance_bound(h0: float, assumptions: CBFQPCertificateAssumptions) -> float:
@@ -271,6 +274,8 @@ def unicycle_commands_from_certified(
     v_cert: np.ndarray,
     omega_max: float,
     gain: float = 3.0,
+    positions: np.ndarray | None = None,
+    assumptions: CBFQPCertificateAssumptions | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Project certified velocities onto realizable (v, omega) for the arc stepper.
 
@@ -279,6 +284,9 @@ def unicycle_commands_from_certified(
     direction, |omega| <= omega_max. While misaligned beyond 90 degrees the
     agent BRAKES to zero speed and turns — the realized displacement is then
     bounded by v_max * cos(misalign) * dt <= v_max * dt (A5 holds).
+    When ``positions`` and ``assumptions`` are provided, also brakes any agent
+    whose current heading vector ``[cos(theta_i), sin(theta_i)]`` would violate
+    a pairwise barrier constraint with a neighbor if driven forward before turning.
 
     This is the model-checked realization boundary: the velocity-layer
     certificate is exact; this projection is verified empirically by
@@ -291,6 +299,23 @@ def unicycle_commands_from_certified(
     v_cmd = np.maximum(0.0, np.cos(misalign)) * np.linalg.norm(v_cert, axis=1)
     # agents facing the wrong way brake to zero and turn (conservative)
     omega_cmd = np.clip(gain * misalign, -omega_max, omega_max)
+    if positions is not None and assumptions is not None and len(positions) >= 2:
+        bar = _pair_barriers(np.asarray(positions, dtype=float), assumptions.r_safe)
+        heading_vecs = np.column_stack([np.cos(headings), np.sin(headings)])
+        v_realized = heading_vecs * v_cmd[:, None]
+        n = len(positions)
+        for i in range(n):
+            for j in range(i + 1, n):
+                a_ij = bar.unit[i, j]
+                rhs = -assumptions.gamma * bar.h[i, j]
+                lhs = float(np.dot(a_ij, v_realized[i] - v_realized[j]))
+                if lhs < rhs - assumptions.tol:
+                    if float(np.dot(a_ij, heading_vecs[i])) < 0.0:
+                        v_cmd[i] = 0.0
+                        v_realized[i] = 0.0
+                    if float(np.dot(a_ij, -heading_vecs[j])) < 0.0:
+                        v_cmd[j] = 0.0
+                        v_realized[j] = 0.0
     return v_cmd, omega_cmd
 
 
@@ -300,8 +325,9 @@ def model_check_unicycle_horizon(
     assumptions: CBFQPCertificateAssumptions,
     steps: int = 200,
     omega_max: float = 2.0,
-    arc_step_fn=None,
+    arc_step_fn: Any=None,
     seed: int = 0,
+    nominal_velocities: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Model-check the UNICYCLE realization through the production batch arc
     stepper: repeatedly certify (re-certified every step) and realize exactly
@@ -309,14 +335,17 @@ def model_check_unicycle_horizon(
     barrier over the horizon (evidence artifact; NOT a formal claim)."""
     p = np.array(positions0, dtype=float)
     th = np.array(headings0, dtype=float)
+    v_nom_base = np.zeros_like(p) if nominal_velocities is None else np.asarray(nominal_velocities, dtype=float)
     if arc_step_fn is None:
         from apedp_dyn.cuda.batch_physics_steppers import batch_unicycle_arc_step as arc_step_fn
 
     min_h_observed = math.inf
     h_traj: list[float] = []
     for _ in range(int(steps)):
-        v_cert, _diag = certified_cbf_guard(p, th, np.zeros_like(p), assumptions)
-        v_cmd, omega_cmd = unicycle_commands_from_certified(th, v_cert, omega_max)
+        v_cert, _diag = certified_cbf_guard(p, th, v_nom_base, assumptions)
+        v_cmd, omega_cmd = unicycle_commands_from_certified(
+            th, v_cert, omega_max, positions=p, assumptions=assumptions
+        )
         poses = np.column_stack([p, th])                     # arc stepper wants [N, 3]
         outs = arc_step_fn(poses, v_cmd, omega_cmd, assumptions.dt)
         outs = outs.numpy() if hasattr(outs, "numpy") else np.asarray(outs)

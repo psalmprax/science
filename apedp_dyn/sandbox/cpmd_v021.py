@@ -5,6 +5,7 @@ bands, code-enforced pre-qualification). Referee scoring /6.
 """
 import sys
 import warnings
+from collections.abc import Iterable
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -17,7 +18,7 @@ ALPHA = 0.05 / 12
 BAND_MED = (0.10, 0.20)
 
 
-def drivers(seed, rho, n=3000):
+def drivers(seed: int, rho: float, n: int=3000) -> tuple[np.ndarray, np.ndarray]:
     rng = np.random.RandomState(int(seed))
     e1 = rng.normal(0, 1, n)
     e2 = rng.normal(0, 1, n)
@@ -31,13 +32,13 @@ def drivers(seed, rho, n=3000):
     return f1 / s1, f2 / s2
 
 
-def gen_ret(seed, rho, beta, n=3000):
+def gen_ret(seed: int, rho: float, beta: float, n: int=3000) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.RandomState(int(seed) + 555000)
     f1, f2 = drivers(seed, rho, n)
     return beta * f1[:-1] + rng.normal(0, SIG, n - 1), f1, f2
 
 
-def grammar_fc(name, f1, f2, sig):
+def grammar_fc(name: str, f1: np.ndarray, f2: np.ndarray, sig: np.ndarray) -> np.ndarray:
     len(f1)
     if name == "f1":
         v = f1
@@ -70,7 +71,7 @@ FORMS = ["f1", "f2", "f1+f2", "f1-f2", "tanhf1", "tanhf2", "signf1",
          "signf2", "f1f2", "f1sq-f2sq", "sigf1", "sigf2"]
 
 
-def oracle_check(rho, beta):
+def oracle_check(rho: float, beta: float) -> float:
     ics = []
     for i in range(10):
         r, f1, _f2 = gen_ret(96000 + i, rho, beta)
@@ -79,8 +80,8 @@ def oracle_check(rho, beta):
     return float(np.mean(ics))
 
 
-def discovery(rho, beta, seeds):
-    agg = {nm: [] for nm in FORMS}
+def discovery(rho: float, beta: float, seeds: Iterable[int]) -> tuple[list[tuple[str, float, float]], list[tuple[np.ndarray, np.ndarray, np.ndarray]]]:
+    agg: dict[str, list[tuple[float, float]]] = {nm: [] for nm in FORMS}
     paths = []
     for sd in seeds:
         r, f1, f2 = gen_ret(sd, rho, beta)
@@ -96,17 +97,17 @@ def discovery(rho, beta, seeds):
     return rows, paths
 
 
-def mse_form(nm, paths):
+def mse_form(nm: str, paths: list[tuple[np.ndarray, np.ndarray, np.ndarray]]) -> np.ndarray:
     ms = []
     for r, f1, f2 in paths:
         sig = rolling_std(np.concatenate([r[:1], r]))
         fc = grammar_fc(nm, f1[:-1], f2[:-1], sig[:len(f1) - 1])
         ok = np.isfinite(fc) & np.isfinite(r)
         ms.append(float(np.mean((fc[ok] - r[ok]) ** 2)))
-    return np.array(ms)
+    return np.asarray(ms, dtype=float)
 
 
-def referee(rows, paths):
+def referee(rows: list[tuple[str, float, float]], paths: list[tuple[np.ndarray, np.ndarray, np.ndarray]]) -> tuple[str, list[tuple[str, float, float]]]:
     passed = [x for x in rows if x[2] < ALPHA]
     if not passed:
         return "NO_RECOVERY", passed
@@ -121,7 +122,7 @@ def referee(rows, paths):
     return "MULTI_HYPOTHESIS", passed
 
 
-def run():
+def run() -> None:
     beta = 0.0015
     print("== Gate A: pre-qualification (MED band [0.10,0.20)) ==")
     qual = {}

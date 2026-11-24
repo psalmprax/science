@@ -35,6 +35,7 @@ import dataclasses
 import itertools
 import math
 from functools import lru_cache
+from typing import Any
 
 import numpy as np
 
@@ -99,7 +100,8 @@ def syndrome_of(pauli: str) -> tuple[bool, bool, bool, bool]:
     """The measured syndrome of a Pauli error: bit `i` set iff it anticommutes with `g_i`."""
     if len(pauli) != DATA:
         raise ValueError(f"expected a {DATA}-qubit Pauli string, got {pauli!r}")
-    return tuple(_anticommutes(pauli, stabilizer) for stabilizer in FIVE_QUBIT_STABILIZERS)
+    bits = [_anticommutes(pauli, stabilizer) for stabilizer in FIVE_QUBIT_STABILIZERS]
+    return (bits[0], bits[1], bits[2], bits[3])
 
 
 def _single_qubit_classes() -> dict[tuple[bool, bool, bool, bool], str]:
@@ -134,9 +136,10 @@ def _frame_correction(signature: tuple[bool, ...]) -> str:
     that returns it to the `+1` eigenspace without changing the logical value (it
     must commute with `Z_L`, or a logical flip would be introduced silently).
     """
-    signature = tuple(bool(bit) for bit in signature)
-    if len(signature) != len(FIVE_QUBIT_STABILIZERS):
-        raise ValueError(f"expected {len(FIVE_QUBIT_STABILIZERS)} signs, got {len(signature)}")
+    bits = [bool(bit) for bit in signature]
+    if len(bits) != len(FIVE_QUBIT_STABILIZERS):
+        raise ValueError(f"expected {len(FIVE_QUBIT_STABILIZERS)} signs, got {len(bits)}")
+    signature = (bits[0], bits[1], bits[2], bits[3])
     best: str | None = None
     for candidate in map("".join, itertools.product("IXYZ", repeat=DATA)):
         if syndrome_of(candidate) != signature:
@@ -153,7 +156,7 @@ def _frame_correction(signature: tuple[bool, ...]) -> str:
     return best
 
 
-def _apply_pauli(ops: list, pauli: str, condition=()) -> None:
+def _apply_pauli(ops: list[Any], pauli: str, condition: Any=()) -> None:
     for qubit, letter in enumerate(pauli):
         if letter == "X":
             ops.append(Gate("x", (qubit,), condition=condition))
@@ -164,7 +167,7 @@ def _apply_pauli(ops: list, pauli: str, condition=()) -> None:
             ops.append(Gate("z", (qubit,), condition=condition))
 
 
-def _measure_stabilizer(ops: list, stabilizer: str, ancilla: int, bit: int) -> None:
+def _measure_stabilizer(ops: list[Any], stabilizer: str, ancilla: int, bit: int) -> None:
     """Measure one code stabilizer into `bit` with one ancilla.
 
     Rotate each `X`/`Y` factor to `Z`, CNOT the support into the ancilla, measure
@@ -192,7 +195,7 @@ def _measure_stabilizer(ops: list, stabilizer: str, ancilla: int, bit: int) -> N
 
 def _encoded_amplitudes(prepare_logical_one: bool) -> np.ndarray:
     """`|0_L>` (or `|1_L>`), built by projecting `|00000>` with the stabilizers."""
-    state = np.zeros(1 << DATA, dtype=np.complex128)
+    state: np.ndarray = np.zeros(1 << DATA, dtype=np.complex128)
     state[0] = 1.0
     for stabilizer in FIVE_QUBIT_STABILIZERS:
         projected = state.copy()
@@ -229,11 +232,12 @@ def encoded_state(prepare_logical_one: bool = False) -> np.ndarray:
 def five_qubit_encoder_circuit(*, prepare_logical_one: bool = False,
                                metadata: dict[str, str] | None = None) -> Circuit:
     """The encoder alone: stabilizer projection plus the conditional Pauli frame."""
-    ops: list = []
+    ops: list[Any] = []
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], index)
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
-        signature = tuple(bool(bit) for bit in pattern)
+        bits = [bool(bit) for bit in pattern]
+        signature = (bits[0], bits[1], bits[2], bits[3])
         if not any(signature):
             continue
         condition = tuple((bit, bool(value)) for bit, value in enumerate(signature))
@@ -252,12 +256,13 @@ def five_qubit_code_circuit(*, prepare_logical_one: bool = False,
                             injected_errors: tuple[tuple[int, str], ...] = (),
                             metadata: dict[str, str] | None = None) -> Circuit:
     """Encode, corrupt, extract the syndrome, correct, and read the logical `Z`."""
-    ops: list = []
+    ops: list[Any] = []
     # 1. Encode by projection: measure the four stabilizers, then fix the signs.
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], index)
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
-        signature = tuple(bool(bit) for bit in pattern)
+        bits = [bool(bit) for bit in pattern]
+        signature = (bits[0], bits[1], bits[2], bits[3])
         if not any(signature):
             continue
         condition = tuple((bit, bool(value)) for bit, value in enumerate(signature))
@@ -275,7 +280,8 @@ def five_qubit_code_circuit(*, prepare_logical_one: bool = False,
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], SYNDROME_BITS[index])
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
-        signature = tuple(bool(bit) for bit in pattern)
+        bits = [bool(bit) for bit in pattern]
+        signature = (bits[0], bits[1], bits[2], bits[3])
         correction = DECODER[signature]
         if correction == "I" * DATA:
             continue
@@ -342,7 +348,7 @@ class FiveQubitRun:
     def exact(self) -> float:
         return exact_failure_probability(self.probability)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "code": "five-qubit-perfect",
             "distance": 3,
@@ -364,7 +370,7 @@ class FiveQubitRun:
 def five_qubit_logical_error_rate(probability: float, *, shots: int = 2000,
                                   seed: int | None = 0,
                                   prepare_logical_one: bool = False,
-                                  backend=None) -> FiveQubitRun:
+                                  backend: Any=None) -> FiveQubitRun:
     """Run the code under depolarising noise and count logical `Z` failures."""
     if shots < 1:
         raise ValueError(f"shots must be positive, got {shots}")

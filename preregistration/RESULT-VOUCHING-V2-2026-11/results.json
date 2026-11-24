@@ -1,0 +1,414 @@
+{
+ "frozen": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/memory_stage.py": "5ee26a49837d73a420645fb59d4d5b2eb68af95466a1164f698bbee6a4be3136",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/search_stage.py": "23025137bff9e99fd2199ffe438ad5e3369ff6fa4fb1674450be210e98b23678",
+  "apedp_dyn/discovery_l2/stage_in_force.py": "240b9f5e9f3e4739101014ad4e00c54b62233056e8959a487c53cef8696523b9",
+  "apedp_dyn/discovery_l2/vouching.py": "513763de3fa266ff3b18416f644919efaf1342ab98539a9a45e57f42c83e1292",
+  "apedp_dyn/discovery_l2/vouching_v2.py": "faaf76e4358e320a2691a277148f816f2379ea43aebf5d1849aaf16d3024e18b",
+  "apedp_dyn/proposers/fit_guard.py": "cd110cf48067b588824eda14d138aa010a6c90ae2f9949630dac7793b4ce7f8a",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/structure_memory.py": "32390d2e3decf7a917fd3ba2d20284ea44384ba6ae2e09316213263fb58c4c72",
+  "apedp_dyn/redteam/counterfeit.py": "d8669e30c19bb0b91f115287818fe716ab8b89a0a813872328752d8854ace1e5",
+  "apedp_dyn/redteam/plain_selection.py": "65f1063ac3d875db9ca4e1804640b4fe39074d6ecdab982d0ca7a2f2e9a84d04",
+  "apedp_dyn/redteam/worlds.py": "dd73d7696c0fcbdba367e5057d49e1560ff20d7a8ccb194cee1ba57ab740948c",
+  "benchmarks/structure_memory.json": "c7e6d4ca2f10b26ce3001259ce1c229a7b681450020086e61a6007587d0bc47b",
+  "benchmarks/vouching_v2_blind_laws.json": "b29a8b9f808534de0118b3679ccacddd581213f37100757075b23033e27913c4",
+  "preregistration/PREREG-VOUCHING-V2-2026-11.md": "365177c42dbd0d25144bd1c109c2f3d0fcaf643c6a735f401e6288e89f2db2b7",
+  "scripts/build_invented_laws.py": "fc803f32cc8c7ccce890841056cb0a6817cf646bb7bb9672fdf667f5c24cab0d",
+  "scripts/run_counterfeit_benchmark.py": "f53c594b727083a8029906b9b346204c6443195fa0c8e6459a528c371455e950",
+  "scripts/run_red_team.py": "772022615e991ff8b81d740a0b2ab07904cc176c03cd3e6009444a75b9322da2",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36",
+  "scripts/run_vouching_v2_blind.py": "8755e11257f5b3ed805e78ed13b00a543740ff12f4f318152062e24e27993dbc"
+ },
+ "preregistration": "PREREG-VOUCHING-V2-2026-11",
+ "summary": {
+  "expectations": {
+   "1_holds": true,
+   "1_limit": 0.05,
+   "1_wrong_share_of_second_by_noise": {
+    "0": 0.0,
+    "0.01": 0.0,
+    "0.05": 0.0
+   },
+   "2_holds": true,
+   "2_scores": {
+    "best_fit": -17.705555555555552,
+    "first": 0.6833333333333333,
+    "route": -1.2277777777777774,
+    "second": 0.8166666666666667,
+    "validated": -16.666666666666664
+   },
+   "3_holds": true,
+   "3_limits": {
+    "at_5_percent": 0.75,
+    "up_to_1_percent": 0.95
+   },
+   "3_right_laws_of_the_route_kept_handed": {
+    "at_5_percent": [
+     29,
+     30
+    ],
+    "up_to_1_percent": [
+     109,
+     110
+    ]
+   },
+   "4_holds": true,
+   "4_limits": {
+    "at_5_percent": 0.75,
+    "up_to_1_percent": 0.95
+   },
+   "4_recovered_laws_of_the_route_kept_searched": {
+    "at_5_percent": [
+     3,
+     4
+    ],
+    "up_to_1_percent": [
+     26,
+     27
+    ]
+   },
+   "5_holds": true,
+   "5_limit": 0.05,
+   "5_not_accurate_share_of_second_searched": 0.0,
+   "first_version_for_comparison": {
+    "kept_handed": {
+     "at_5_percent": [
+      27,
+      30
+     ],
+     "up_to_1_percent": [
+      109,
+      110
+     ]
+    },
+    "kept_searched": {
+     "at_5_percent": [
+      1,
+      4
+     ],
+     "up_to_1_percent": [
+      26,
+      27
+     ]
+    }
+   }
+  },
+  "handed": {
+   "best_fit|0": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 120,
+    "right": 60,
+    "score": -17.68333333333333,
+    "timeouts": 0,
+    "wrong": 59,
+    "wrong_share": 0.49166666666666664
+   },
+   "best_fit|0.01": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 120,
+    "right": 60,
+    "score": -17.68333333333333,
+    "timeouts": 0,
+    "wrong": 59,
+    "wrong_share": 0.49166666666666664
+   },
+   "best_fit|0.05": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 120,
+    "right": 56,
+    "score": -17.749999999999996,
+    "timeouts": 0,
+    "wrong": 59,
+    "wrong_share": 0.49166666666666664
+   },
+   "best_fit|all": {
+    "cases": 360,
+    "errors": 0,
+    "reported": 360,
+    "right": 176,
+    "score": -17.705555555555552,
+    "timeouts": 0,
+    "wrong": 177,
+    "wrong_share": 0.49166666666666664
+   },
+   "first|0": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 62,
+    "right": 62,
+    "score": 1.0333333333333334,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "first|0.01": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 67,
+    "right": 49,
+    "score": 0.8166666666666667,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "first|0.05": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 59,
+    "right": 31,
+    "score": 0.20000000000000007,
+    "timeouts": 0,
+    "wrong": 1,
+    "wrong_share": 0.01694915254237288
+   },
+   "first|all": {
+    "cases": 360,
+    "errors": 0,
+    "reported": 188,
+    "right": 142,
+    "score": 0.6833333333333333,
+    "timeouts": 0,
+    "wrong": 1,
+    "wrong_share": 0.005319148936170213
+   },
+   "route|0": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 62,
+    "right": 62,
+    "score": 1.0333333333333334,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "route|0.01": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 77,
+    "right": 48,
+    "score": 0.4833333333333334,
+    "timeouts": 0,
+    "wrong": 1,
+    "wrong_share": 0.012987012987012988
+   },
+   "route|0.05": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 92,
+    "right": 30,
+    "score": -5.199999999999999,
+    "timeouts": 0,
+    "wrong": 18,
+    "wrong_share": 0.1956521739130435
+   },
+   "route|all": {
+    "cases": 360,
+    "errors": 0,
+    "reported": 231,
+    "right": 140,
+    "score": -1.2277777777777774,
+    "timeouts": 0,
+    "wrong": 19,
+    "wrong_share": 0.08225108225108226
+   },
+   "second|0": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 62,
+    "right": 62,
+    "score": 1.0333333333333334,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "second|0.01": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 67,
+    "right": 49,
+    "score": 0.8166666666666667,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "second|0.05": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 60,
+    "right": 36,
+    "score": 0.6,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "second|all": {
+    "cases": 360,
+    "errors": 0,
+    "reported": 189,
+    "right": 147,
+    "score": 0.8166666666666667,
+    "timeouts": 0,
+    "wrong": 0,
+    "wrong_share": 0.0
+   },
+   "validated|0": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 117,
+    "right": 60,
+    "score": -16.73333333333333,
+    "timeouts": 0,
+    "wrong": 56,
+    "wrong_share": 0.47863247863247865
+   },
+   "validated|0.01": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 113,
+    "right": 57,
+    "score": -16.46666666666666,
+    "timeouts": 0,
+    "wrong": 55,
+    "wrong_share": 0.48672566371681414
+   },
+   "validated|0.05": {
+    "cases": 120,
+    "errors": 0,
+    "reported": 117,
+    "right": 56,
+    "score": -16.799999999999997,
+    "timeouts": 0,
+    "wrong": 56,
+    "wrong_share": 0.47863247863247865
+   },
+   "validated|all": {
+    "cases": 360,
+    "errors": 0,
+    "reported": 347,
+    "right": 173,
+    "score": -16.666666666666664,
+    "timeouts": 0,
+    "wrong": 167,
+    "wrong_share": 0.4812680115273775
+   }
+  },
+  "searched": {
+   "first|0": {
+    "errors": 0,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 19,
+    "reported": 20,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "first|0.01": {
+    "errors": 0,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 7,
+    "reported": 22,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "first|0.05": {
+    "errors": 1,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 1,
+    "reported": 10,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "first|all": {
+    "errors": 1,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 27,
+    "reported": 52,
+    "runs": 120,
+    "timeouts": 0
+   },
+   "route|0": {
+    "errors": 0,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 19,
+    "reported": 20,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "route|0.01": {
+    "errors": 0,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 8,
+    "reported": 24,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "route|0.05": {
+    "errors": 1,
+    "not_accurate": 11,
+    "not_accurate_share": 0.3548387096774194,
+    "recovered": 4,
+    "reported": 31,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "route|all": {
+    "errors": 1,
+    "not_accurate": 11,
+    "not_accurate_share": 0.14666666666666667,
+    "recovered": 31,
+    "reported": 75,
+    "runs": 120,
+    "timeouts": 0
+   },
+   "second|0": {
+    "errors": 0,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 19,
+    "reported": 20,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "second|0.01": {
+    "errors": 0,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 8,
+    "reported": 24,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "second|0.05": {
+    "errors": 1,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 3,
+    "reported": 17,
+    "runs": 40,
+    "timeouts": 0
+   },
+   "second|all": {
+    "errors": 1,
+    "not_accurate": 0,
+    "not_accurate_share": 0.0,
+    "recovered": 30,
+    "reported": 61,
+    "runs": 120,
+    "timeouts": 0
+   }
+  }
+ }
+}

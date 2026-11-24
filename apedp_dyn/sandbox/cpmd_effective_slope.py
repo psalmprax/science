@@ -15,10 +15,10 @@ import numpy as np
 from cpmd_calibration import gen
 from scipy.optimize import curve_fit
 
-LAGS = np.arange(4, 13, dtype=float)  # frozen interval
+LAGS: np.ndarray = np.arange(4, 13, dtype=float)  # frozen interval
 
 
-def slope_ols(lags, y):
+def slope_ols(lags: np.ndarray, y: np.ndarray) -> tuple[float, float]:
     lx, ly = np.log(lags), np.log(y)
     A = np.vstack([lx, np.ones_like(lx)]).T
     coef, _, _, _ = np.linalg.lstsq(A, ly, rcond=None)
@@ -30,7 +30,7 @@ def slope_ols(lags, y):
     return -float(slope), se
 
 
-def slope_model(lags, y):
+def slope_model(lags: np.ndarray, y: np.ndarray) -> float:
     pp, _ = curve_fit(lambda t, lA, a, tt: lA - a * np.log(t + tt),
                       lags, np.log(y), p0=(np.log(0.05), 1.0, 8.0),
                       maxfev=50000)
@@ -39,7 +39,7 @@ def slope_model(lags, y):
     return float(a * tm / (tm + t0))
 
 
-def true_slope(kind, a=1.2, t0=8.0, b=0.1):
+def true_slope(kind: str, a: float=1.2, t0: float=8.0, b: float=0.1) -> float:
     tm = float(np.mean(LAGS))
     if kind == "power":
         return float(a * tm / (tm + t0))
@@ -50,7 +50,7 @@ def true_slope(kind, a=1.2, t0=8.0, b=0.1):
     return float("nan")  # regime: no single truth
 
 
-def run():
+def run() -> None:
     print("v0.10 diagnostic: lags 4-12, seeds 3000+")
     for kind, nl in itertools.product(("power", "expo", "flat", "regime"),
                                       (0.1, 0.3)):

@@ -1,0 +1,320 @@
+{
+ "per_cell": 600,
+ "sample_seed": 20261129,
+ "settings": {
+  "accuracy": 0.999,
+  "flips": 2047,
+  "level": 0.01,
+  "power": 0.8,
+  "scales": [
+   8,
+   32,
+   128
+  ],
+  "trials": 32
+ },
+ "source": "benchmarks/red_team_worlds.jsonl.gz",
+ "summary": {
+  "few_rows|climb": {
+   "after": {
+    "accurate, not the law": 21,
+    "nothing": 513,
+    "the law": 65,
+    "wrong": 1
+   },
+   "before": {
+    "accurate, not the law": 34,
+    "the law": 113,
+    "wrong": 453
+   },
+   "laws_kept": [
+    65,
+    113
+   ],
+   "laws_lost_by_reason": {
+    "2 candidates passed every check and differ by more than the ": 22,
+    "3 candidates passed every check and differ by more than the ": 6,
+    "an error large enough to make it wrong would have been seen ": 19,
+    "at this noise and with these rows its constants cannot be fi": 1
+   },
+   "switched": 0,
+   "switched_into_the_law": 0,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    452,
+    453
+   ],
+   "wrong_share_after": 0.0115,
+   "wrong_share_before": 0.755
+  },
+  "few_rows|survey": {
+   "after": {
+    "accurate, not the law": 162,
+    "nothing": 50,
+    "the law": 387,
+    "wrong": 1
+   },
+   "before": {
+    "accurate, not the law": 185,
+    "the law": 397,
+    "wrong": 18
+   },
+   "laws_kept": [
+    387,
+    397
+   ],
+   "laws_lost_by_reason": {
+    "an error large enough to make it wrong would have been seen ": 12
+   },
+   "switched": 3,
+   "switched_into_the_law": 2,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    17,
+    18
+   ],
+   "wrong_share_after": 0.0018,
+   "wrong_share_before": 0.03
+  },
+  "measured|climb": {
+   "after": {
+    "accurate, not the law": 301,
+    "nothing": 119,
+    "the law": 180,
+    "wrong": 0
+   },
+   "before": {
+    "accurate, not the law": 398,
+    "the law": 73,
+    "wrong": 129
+   },
+   "laws_kept": [
+    180,
+    73
+   ],
+   "laws_lost_by_reason": {},
+   "switched": 324,
+   "switched_into_the_law": 107,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    129,
+    129
+   ],
+   "wrong_share_after": 0.0,
+   "wrong_share_before": 0.215
+  },
+  "measured|survey": {
+   "after": {
+    "accurate, not the law": 103,
+    "nothing": 40,
+    "the law": 457,
+    "wrong": 0
+   },
+   "before": {
+    "accurate, not the law": 149,
+    "the law": 451,
+    "wrong": 0
+   },
+   "laws_kept": [
+    457,
+    451
+   ],
+   "laws_lost_by_reason": {
+    "every candidate left structure in its residuals": 1
+   },
+   "switched": 23,
+   "switched_into_the_law": 7,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    0,
+    0
+   ],
+   "wrong_share_after": 0.0,
+   "wrong_share_before": 0.0
+  },
+  "noise_level|climb": {
+   "after": {
+    "accurate, not the law": 0,
+    "nothing": 600,
+    "the law": 0,
+    "wrong": 0
+   },
+   "before": {
+    "accurate, not the law": 4,
+    "the law": 59,
+    "wrong": 537
+   },
+   "laws_kept": [
+    0,
+    59
+   ],
+   "laws_lost_by_reason": {
+    "2 candidates passed every check and differ by more than the ": 24,
+    "3 candidates passed every check and differ by more than the ": 23,
+    "4 candidates passed every check and differ by more than the ": 10,
+    "at this noise and with these rows its constants cannot be fi": 2
+   },
+   "switched": 0,
+   "switched_into_the_law": 0,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    537,
+    537
+   ],
+   "wrong_share_after": null,
+   "wrong_share_before": 0.895
+  },
+  "noise_level|survey": {
+   "after": {
+    "accurate, not the law": 167,
+    "nothing": 187,
+    "the law": 244,
+    "wrong": 2
+   },
+   "before": {
+    "accurate, not the law": 243,
+    "the law": 267,
+    "wrong": 90
+   },
+   "laws_kept": [
+    244,
+    267
+   ],
+   "laws_lost_by_reason": {
+    "2 candidates passed every check and differ by more than the ": 10,
+    "3 candidates passed every check and differ by more than the ": 3,
+    "an error large enough to make it wrong would have been seen ": 23,
+    "every candidate left structure in its residuals": 1
+   },
+   "switched": 53,
+   "switched_into_the_law": 14,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    88,
+    90
+   ],
+   "wrong_share_after": 0.0048,
+   "wrong_share_before": 0.15
+  },
+  "noise_shape|climb": {
+   "after": {
+    "accurate, not the law": 278,
+    "nothing": 142,
+    "the law": 179,
+    "wrong": 1
+   },
+   "before": {
+    "accurate, not the law": 381,
+    "the law": 48,
+    "wrong": 171
+   },
+   "laws_kept": [
+    179,
+    48
+   ],
+   "laws_lost_by_reason": {
+    "2 candidates passed every check and differ by more than the ": 1,
+    "an error large enough to make it wrong would have been seen ": 10,
+    "every candidate left structure in its residuals": 2
+   },
+   "switched": 332,
+   "switched_into_the_law": 144,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    170,
+    171
+   ],
+   "wrong_share_after": 0.0022,
+   "wrong_share_before": 0.285
+  },
+  "noise_shape|survey": {
+   "after": {
+    "accurate, not the law": 156,
+    "nothing": 49,
+    "the law": 395,
+    "wrong": 0
+   },
+   "before": {
+    "accurate, not the law": 228,
+    "the law": 370,
+    "wrong": 2
+   },
+   "laws_kept": [
+    395,
+    370
+   ],
+   "laws_lost_by_reason": {
+    "an error large enough to make it wrong would have been seen ": 1
+   },
+   "switched": 48,
+   "switched_into_the_law": 26,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    2,
+    2
+   ],
+   "wrong_share_after": 0.0,
+   "wrong_share_before": 0.0033
+  },
+  "sampling|climb": {
+   "after": {
+    "accurate, not the law": 69,
+    "nothing": 474,
+    "the law": 57,
+    "wrong": 0
+   },
+   "before": {
+    "accurate, not the law": 143,
+    "the law": 37,
+    "wrong": 420
+   },
+   "laws_kept": [
+    57,
+    37
+   ],
+   "laws_lost_by_reason": {
+    "an error large enough to make it wrong would have been seen ": 9
+   },
+   "switched": 55,
+   "switched_into_the_law": 29,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    420,
+    420
+   ],
+   "wrong_share_after": 0.0,
+   "wrong_share_before": 0.7
+  },
+  "sampling|survey": {
+   "after": {
+    "accurate, not the law": 199,
+    "nothing": 43,
+    "the law": 358,
+    "wrong": 0
+   },
+   "before": {
+    "accurate, not the law": 252,
+    "the law": 340,
+    "wrong": 8
+   },
+   "laws_kept": [
+    358,
+    340
+   ],
+   "laws_lost_by_reason": {
+    "an error large enough to make it wrong would have been seen ": 1
+   },
+   "switched": 51,
+   "switched_into_the_law": 19,
+   "worlds_with_a_reported_law": 600,
+   "wrong_laws_stopped": [
+    8,
+    8
+   ],
+   "wrong_share_after": 0.0,
+   "wrong_share_before": 0.0133
+  }
+ },
+ "what": "Development. The red-team campaign's recorded worlds, the route's reported law and unseparated candidates read from the record, and vouching.vouch applied to them. Chosen to defeat the route; answers known; the checks were written after looking at them.",
+ "worlds": 6000
+}

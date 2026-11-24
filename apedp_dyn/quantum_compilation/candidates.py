@@ -26,9 +26,9 @@ __all__ = [
     "EvidenceIncompleteError",
     "VerifierReceipt",
     "candidate_id_for",
+    "compute_provenance_fingerprint",
     "compute_spec_fingerprint",
     "compute_structural_fingerprint",
-    "compute_provenance_fingerprint",
     "evidence_from_receipt",
     "missing_correctness_checks",
     "normalise_correctness_evidence",
@@ -46,6 +46,9 @@ class CandidateStatus(str, Enum):
     PROPOSED = "PROPOSED"
     SCREEN_REJECTED = "SCREEN_REJECTED"
     VERIFIER_REJECTED = "VERIFIER_REJECTED"
+    #: The verifier produced no measured verdict (timeout, crash, unparseable
+    #: summary). A capability gap, not evidence against the circuit.
+    UNVERIFIABLE = "UNVERIFIABLE"
     VERIFIED_NONIMPROVING = "VERIFIED_NONIMPROVING"
     VERIFIED_IMPROVEMENT = "VERIFIED_IMPROVEMENT"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
@@ -58,7 +61,7 @@ class CandidateStatus(str, Enum):
 CORRECTNESS_CHECKS: tuple[str, ...] = ("value", "junk", "phase")
 
 #: Statuses that assert the circuit is *correct*, not merely built or priced.
-CORRECTNESS_CLAIMING_STATUSES: frozenset = frozenset({
+CORRECTNESS_CLAIMING_STATUSES: frozenset[Any] = frozenset({
     CandidateStatus.VERIFIED_NONIMPROVING,
     CandidateStatus.VERIFIED_IMPROVEMENT,
 })
@@ -71,11 +74,33 @@ class EvidenceIncompleteError(RuntimeError):
 #: What each benchmark's verifier can actually establish about correctness. A verifier
 #: that simulates the circuit per shot can supply value/phase evidence; one that only
 #: prices it cannot, and says so rather than leaving the checks silently absent.
-BENCHMARK_EVIDENCE_MODEL: dict[str, str] = {
+#:
+#: The Benchmark I verifier (``verify_submission_invsqrt.verify``) simulates every shot and
+#: raises on the first one whose x register is not restored, whose scratch qubits are not all
+#: back at |0>, or whose tracked phase is outside the tolerance. Its PASS summary therefore
+#: carries no error counts (there were none) and does establish all three checks over
+#: ``verified_shots`` shots. Until 2026-11-22 it was listed here as ``cost-model-only`` with the
+#: reason that it "does not simulate it on shots", which it does (audit M-30).
+BENCHMARK_EVIDENCE_MODEL: dict[str, str | None] = {
     "dqi": "per-shot",
-    "invsqrt": "cost-model-only",
+    "invsqrt": "every-shot-or-fail",
     "dfthcsos": "cost-model-only",
 }
+
+_EVERY_SHOT_SOURCES: dict[str, str] = {
+    "value": "verify_submission_invsqrt.verify raises on the first shot whose x register is not restored; "
+             "status PASS over receipt.metrics['verified_shots'] shots",
+    "junk": "verify_submission_invsqrt.verify raises on the first shot with a scratch qubit that did not return "
+            "to |0>; status PASS over receipt.metrics['verified_shots'] shots",
+    "phase": "verify_submission_invsqrt.verify raises on the first shot whose tracked phase is outside the "
+             "tolerance; status PASS over receipt.metrics['verified_shots'] shots "
+             "(receipt.metrics['worst_error_over_tolerance'])",
+}
+
+_NO_SHOT_COUNT_REASON = (
+    "the {benchmark} receipt is not a PASS that says how many shots were verified, so what "
+    "its verifier checked cannot be read from it"
+)
 
 _COST_MODEL_REASON = (
     "the {benchmark} verifier reports `status` and `score` only: it builds the circuit "
@@ -94,7 +119,7 @@ def _benchmark_family(benchmark: str) -> str:
 
 
 def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
-                                   benchmark: str = "") -> dict[str, dict]:
+                                   benchmark: str = "") -> dict[str, dict[str, Any]]:
     """Validate a declared evidence mapping against what the verifier can establish.
 
     Each of :data:`CORRECTNESS_CHECKS` must be accounted for exactly once, as one of:
@@ -119,7 +144,7 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
         raise EvidenceIncompleteError(
             f"unknown correctness check(s) {unknown}; expected {list(CORRECTNESS_CHECKS)}"
         )
-    normalised: dict[str, dict] = {}
+    normalised: dict[str, dict[str, Any]] = {}
     for check in CORRECTNESS_CHECKS:
         entry = evidence.get(check)
         if not isinstance(entry, dict):
@@ -155,14 +180,14 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
                 f"{check!r} evidence must be measured, covered_by or not_applicable"
             )
     for check, entry in normalised.items():
-        covering = entry.get("covered_by")
-        if covering is None:
+        covered_by_id = str(entry.get("covered_by") or "") or None
+        if covered_by_id is None:
             continue
-        target = normalised[covering]
+        target = normalised[covered_by_id]
         if not target.get("measured") or not target.get("passed"):
             raise EvidenceIncompleteError(
-                f"{check!r} is covered by {covering!r}, which is not a passed measurement "
-                f"({target})"
+                f"{check!r} is covered by {covered_by_id!r}, which is not a passed "
+                f"measurement ({target})"
             )
         if not entry["reason"]:
             raise EvidenceIncompleteError(f"{check!r}: covering needs a reason")
@@ -192,18 +217,21 @@ def missing_correctness_checks(evidence: dict[str, Any] | None, *,
     return []
 
 
-def evidence_from_receipt(receipt: "VerifierReceipt", benchmark: str = "") -> dict[str, dict]:
+def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict[str, dict[str, Any]]:
     """The correctness evidence a verifier receipt actually carries.
 
     For a per-shot verifier (DQI) the receipt's own error counts are the evidence, and
     the ancilla read is folded into ``value_errors`` by the verifier's own rule
     (``val_err = reg_diff.any(axis=0) | junk.any(axis=0)``), so junk is `covered_by`
-    value with that reason. A cost-model verifier supplies no per-shot evidence, and the
-    three checks come back `not_applicable` with that stated as the reason.
+    value with that reason. The Benchmark I verifier stops at the first failing shot, so
+    its PASS over a stated number of shots is a passed measurement of all three checks;
+    a receipt of it that is not such a PASS says nothing about them. A cost-model
+    verifier supplies no per-shot evidence, and the three checks come back
+    `not_applicable` with that stated as the reason.
     """
     metrics = dict(receipt.metrics or {})
     family = _benchmark_family(benchmark)
-    evidence: dict[str, dict] = {}
+    evidence: dict[str, dict[str, Any]] = {}
     if "value_errors" in metrics:
         evidence["value"] = {"measured": True,
                              "passed": metrics["value_errors"] == 0,
@@ -223,6 +251,15 @@ def evidence_from_receipt(receipt: "VerifierReceipt", benchmark: str = "") -> di
                       "(`val_err = reg_diff.any(axis=0) | junk.any(axis=0)`), so a zero "
                       "value count is also a clean workspace",
         }
+    if not evidence and BENCHMARK_EVIDENCE_MODEL.get(family) == "every-shot-or-fail":
+        shots = metrics.get("verified_shots")
+        counted = isinstance(shots, int) and not isinstance(shots, bool) and shots > 0
+        if counted and str(receipt.status).upper() == "PASS":
+            evidence = {check: {"measured": True, "passed": True, "source": _EVERY_SHOT_SOURCES[check]}
+                        for check in CORRECTNESS_CHECKS}
+        else:
+            reason = _NO_SHOT_COUNT_REASON.format(benchmark=family)
+            evidence = {check: {"not_applicable": reason} for check in CORRECTNESS_CHECKS}
     if not evidence and BENCHMARK_EVIDENCE_MODEL.get(family) == "cost-model-only":
         reason = _COST_MODEL_REASON.format(benchmark=family)
         evidence = {check: {"not_applicable": reason} for check in CORRECTNESS_CHECKS}
@@ -270,6 +307,7 @@ def compute_structural_fingerprint(
 
     Encodes normalized gate distributions, qubit layout, rotation count, and uncomputation schedule.
     """
+    payload: dict[str, Any]
     if isinstance(metrics_or_dag, str):
         payload = {"circuit_raw_repr": metrics_or_dag}
     else:

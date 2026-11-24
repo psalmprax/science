@@ -1,0 +1,44 @@
+name: Workflow files are valid
+
+# A workflow file cannot report its own invalidity: when GitHub cannot parse
+# one, no job in it starts, nothing goes red in the place people look, and the
+# only trace is a 0-second "workflow file issue" run. That is how
+# .github/workflows/test.yml ran zero jobs on `stage` for four weeks
+# (2026-10-20 to 2026-11-15, 268 consecutive instant failures) while the
+# repository's documents described its gates as enforced: one job-level `env`
+# entry used the `runner` context, which does not exist there
+# (docs/SYSTEM_FLAWS_AUDIT.md, E-07).
+#
+# So the validity check lives in its own file. If test.yml breaks again, this
+# workflow still starts, and fails with the line and the reason.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [master, main, develop, stage]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: actionlint over every workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install actionlint 1.7.7 (checksum-pinned)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz
+          echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  $RUNNER_TEMP/actionlint.tar.gz" \
+            | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+      # Expression, context-availability, `needs` and schema checks. The
+      # embedded shellcheck/pyflakes passes are switched off: they lint the
+      # scripts inside `run:` blocks, which is a different question from
+      # "will GitHub accept this file", and their findings would bury it.
+      - name: Fail if GitHub would reject any workflow file
+        run: '"$RUNNER_TEMP/actionlint" -shellcheck= -pyflakes= -color'

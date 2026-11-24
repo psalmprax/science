@@ -1,0 +1,25 @@
+{
+ "preregistration": "PREREG-COUNTERFEIT-2026-11",
+ "sha256": {
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/vouching.py": "513763de3fa266ff3b18416f644919efaf1342ab98539a9a45e57f42c83e1292",
+  "apedp_dyn/proposers/fit_guard.py": "cd110cf48067b588824eda14d138aa010a6c90ae2f9949630dac7793b4ce7f8a",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/redteam/counterfeit.py": "d8669e30c19bb0b91f115287818fe716ab8b89a0a813872328752d8854ace1e5",
+  "apedp_dyn/redteam/plain_selection.py": "65f1063ac3d875db9ca4e1804640b4fe39074d6ecdab982d0ca7a2f2e9a84d04",
+  "apedp_dyn/redteam/worlds.py": "dd73d7696c0fcbdba367e5057d49e1560ff20d7a8ccb194cee1ba57ab740948c",
+  "benchmarks/counterfeit_laws.json": "235a9da1f4b2c324c7f835d71a866fb0dd27b374084588a638fda62c2ed22902",
+  "benchmarks/red_team_worlds.jsonl.gz": "9bf5c7c02afe317ee55eb86d1511ee535219ddb45522a6ed92136a8ffa255424",
+  "benchmarks/vouching_dev_replay_rows.jsonl.gz": "f9807acc023ec3a699afd9a3e90bf804e99939ee1314f2a12147235d62de9041",
+  "preregistration/FORECAST-COUNTERFEIT-2026-11.json": "ee7233d8255383dc90e3d2b9ff063217c56f0a3a0266aede0a00e03eeb4f7170",
+  "preregistration/PREREG-COUNTERFEIT-2026-11.md": "51591eafab93aa9a92d462d2512ef6697e3a129868da6e2dc441a59cb79c2a50",
+  "scripts/build_invented_laws.py": "fc803f32cc8c7ccce890841056cb0a6817cf646bb7bb9672fdf667f5c24cab0d",
+  "scripts/run_counterfeit_benchmark.py": "f53c594b727083a8029906b9b346204c6443195fa0c8e6459a528c371455e950",
+  "scripts/run_red_team.py": "772022615e991ff8b81d740a0b2ab07904cc176c03cd3e6009444a75b9322da2",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36"
+ }
+}

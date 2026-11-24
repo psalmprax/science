@@ -83,7 +83,8 @@ class VariableNode(ASTNode):
     def evaluate(self, env: Mapping[str, np.ndarray]) -> np.ndarray:
         if self.name not in env:
             raise KeyError(f"Variable '{self.name}' not found in data environment")
-        return np.asarray(env[self.name], dtype=float)
+        _out: np.ndarray = np.asarray(env[self.name], dtype=float)
+        return _out
 
     def to_str(self) -> str:
         return self.name
@@ -103,8 +104,10 @@ class ConstantNode(ASTNode):
     def evaluate(self, env: Mapping[str, np.ndarray]) -> np.ndarray:
         if env:
             first = next(iter(env.values()))
-            return np.full_like(first, self.value, dtype=float)
-        return np.array(self.value, dtype=float)
+            _out: np.ndarray = np.full_like(first, self.value, dtype=float)
+            return _out
+        _out = np.array(self.value, dtype=float)
+        return _out
 
     def to_str(self) -> str:
         return f"{self.value:g}"
@@ -145,15 +148,19 @@ class BinaryOpNode(ASTNode):
         rv = self.right.evaluate(env)
         with np.errstate(all="ignore"):
             if self.op == "+":
-                return np.asarray(lv + rv)
+                _out: np.ndarray = np.asarray(lv + rv)
+                return _out
             if self.op == "-":
-                return np.asarray(lv - rv)
+                _out = np.asarray(lv - rv)
+                return _out
             if self.op == "*":
-                return np.asarray(lv * rv)
+                _out = np.asarray(lv * rv)
+                return _out
             if self.op == "/":
                 safe_rv = np.where(np.abs(rv) < 1e-15, 1.0, rv)
                 res = lv / safe_rv
-                return np.where(np.abs(rv) < 1e-15, np.nan, res)
+                _out = np.where(np.abs(rv) < 1e-15, np.nan, res)
+                return _out
         raise ValueError(f"Unknown binary operator '{self.op}'")
 
     def to_str(self) -> str:
@@ -203,28 +210,35 @@ class UnaryOpNode(ASTNode):
     def evaluate(self, env: Mapping[str, np.ndarray]) -> np.ndarray:
         cv = self.child.evaluate(env)
         if self.op == "abs":
-            return np.abs(cv)
+            _out: np.ndarray = np.abs(cv)
+            return _out
         if self.op == "sat":
             with np.errstate(all="ignore"):
-                return cv / (1.0 + np.abs(cv))
+                _out = cv / (1.0 + np.abs(cv))
+                return _out
         if self.op == "inv_quad":
             with np.errstate(all="ignore"):
-                return 1.0 / (1.0 + cv**2)
+                _out = 1.0 / (1.0 + cv**2)
+                return _out
         if self.op == "exp":
             with np.errstate(over="ignore", under="ignore"):
                 clipped = np.clip(cv, -100.0, 100.0)
-                return np.asarray(np.exp(clipped))
+                _out = np.asarray(np.exp(clipped))
+                return _out
         if self.op == "log":
             with np.errstate(divide="ignore", invalid="ignore"):
                 safe_cv = np.where(cv > 1e-15, cv, 1.0)
                 res = np.log(safe_cv)
-                return np.where(cv > 1e-15, res, np.nan)
+                _out = np.where(cv > 1e-15, res, np.nan)
+                return _out
         if self.op == "sin":
             with np.errstate(all="ignore"):
-                return np.sin(cv)
+                _out = np.sin(cv)
+                return _out
         if self.op == "cos":
             with np.errstate(all="ignore"):
-                return np.cos(cv)
+                _out = np.cos(cv)
+                return _out
         raise ValueError(f"Unknown unary operator '{self.op}'")
 
     def to_str(self) -> str:
@@ -332,7 +346,7 @@ class RollingOpNode(ASTNode):
                 # grammar_space H-A construction, so generated forms stay
                 # comparable with the established panel.
                 fin = np.isfinite(cv)
-                cnt_e = np.cumsum(fin.astype(float))
+                cnt_e: np.ndarray = np.cumsum(fin.astype(float))
                 # [1:] aligns element i to the inclusive sum through cv[i];
                 # the prepended 0.0 otherwise shifts the window by one.
                 cs = np.concatenate([[0.0], np.nancumsum(np.where(fin, cv, 0.0))])[1:]
@@ -352,7 +366,8 @@ class RollingOpNode(ASTNode):
                 with np.errstate(invalid="ignore", divide="ignore"):
                     var = tot2 / np.where(cnt > 0, cnt, np.nan) - mean * mean
                 out[w - 1:] = np.sqrt(np.where(var > 0, var, np.nan))
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def to_str(self) -> str:
         if self.op == "expanding_zscore":
@@ -389,15 +404,19 @@ class PowNode(ASTNode):
                 if p_int < 0:
                     safe_bv = np.where(np.abs(bv) < 1e-15, 1.0, bv)
                     res = np.power(safe_bv, p_int)
-                    return np.where(np.abs(bv) < 1e-15, np.nan, res)
-                return np.asarray(np.power(bv, p_int))
+                    _out: np.ndarray = np.where(np.abs(bv) < 1e-15, np.nan, res)
+                    return _out
+                _out = np.asarray(np.power(bv, p_int))
+                return _out
             if p_flt < 0:
                 safe_bv = np.where(bv > 1e-15, bv, 1.0)
                 res = np.power(safe_bv, p_flt)
-                return np.where(bv > 1e-15, res, np.nan)
+                _out = np.where(bv > 1e-15, res, np.nan)
+                return _out
             safe_bv = np.where(bv >= 0, bv, 0.0)
             res = np.power(safe_bv, p_flt)
-            return np.where(bv >= 0, res, np.nan)
+            _out = np.where(bv >= 0, res, np.nan)
+            return _out
 
     def to_str(self) -> str:
         if self.exponent.denominator == 1:

@@ -99,7 +99,8 @@ def causal_zscore(v: np.ndarray, min_history: int = MIN_HISTORY) -> np.ndarray:
     mu = s.expanding(min_history).mean().to_numpy()
     sd = s.expanding(min_history).std().to_numpy()
     with np.errstate(all="ignore"):
-        return np.where(sd > 0, (v - mu) / sd, np.nan)
+        _out: np.ndarray = np.where(sd > 0, (v - mu) / sd, np.nan)
+        return _out
 
 
 def trailing_rank(v: np.ndarray, window: int = RANK_WINDOW) -> np.ndarray:
@@ -123,7 +124,8 @@ class HypothesisSpec:
 
 
 def _feat_logV(p: pd.DataFrame) -> np.ndarray:
-    return np.asarray(np.log(np.maximum(p["V"].to_numpy(float), 1e-18)))
+    _out: np.ndarray = np.asarray(np.log(np.maximum(p["V"].to_numpy(float), 1e-18)))
+    return _out
 
 
 def _feat_rankV(p: pd.DataFrame) -> np.ndarray:
@@ -140,16 +142,19 @@ def _feat_HA(p: pd.DataFrame) -> np.ndarray:
     with np.errstate(all="ignore"):
         inner = (np.log(np.maximum(rm, 1e-12)) + causal_zscore(np.abs(r))
                  + causal_zscore(np.abs(r) / np.maximum(V, 1e-12)))
-        return np.asarray(causal_zscore(inner))
+        _out: np.ndarray = np.asarray(causal_zscore(inner))
+        return _out
 
 
 def _feat_sig(p: pd.DataFrame) -> np.ndarray:
-    return np.asarray(np.abs(p["r"].to_numpy(float)))
+    _out: np.ndarray = np.asarray(np.abs(p["r"].to_numpy(float)))
+    return _out
 
 
 def _feat_sqrtV(p: pd.DataFrame) -> np.ndarray:
     """Concave level-volume response: diminishing marginal activity."""
-    return np.asarray(np.sqrt(np.maximum(p["V"].to_numpy(float), 0.0)))
+    _out: np.ndarray = np.asarray(np.sqrt(np.maximum(p["V"].to_numpy(float), 0.0)))
+    return _out
 
 
 def _feat_asym(p: pd.DataFrame) -> np.ndarray:
@@ -157,7 +162,8 @@ def _feat_asym(p: pd.DataFrame) -> np.ndarray:
     r = p["r"].to_numpy(float)
     sig = np.abs(r)
     sig_neg = np.where(r < 0, sig, 0.0)
-    return np.column_stack([sig, sig_neg])
+    _out: np.ndarray = np.column_stack([sig, sig_neg])
+    return _out
 
 
 def _feat_ofi(p: pd.DataFrame) -> np.ndarray:
@@ -174,7 +180,7 @@ def _feat_hurst(p: pd.DataFrame) -> np.ndarray:
     window = 30
     for t in range(window, len(r)):
         sub = r[t - window:t]
-        cum_dev = np.cumsum(sub - np.mean(sub))
+        cum_dev: np.ndarray = np.cumsum(sub - np.mean(sub))
         r_range = np.max(cum_dev) - np.min(cum_dev)
         s_std = np.std(sub)
         if s_std > 1e-9 and r_range > 1e-9:
@@ -208,7 +214,7 @@ def _feat_frac_diff(p: pd.DataFrame) -> np.ndarray:
     price = pd.Series(p["price"].to_numpy(float) if "price" in p.columns else np.exp(np.cumsum(p["r"].to_numpy(float)))).values
     d = 0.4
     k = np.arange(1, 21)
-    w = np.cumprod(-(d - k + 1) / k)
+    w: np.ndarray = np.cumprod(-(d - k + 1) / k)
     w = np.concatenate([[1.0], w])
     out = np.full(len(price), np.nan)
     for t in range(len(w)-1, len(price)):
@@ -308,9 +314,10 @@ def build_features(panel: pd.DataFrame) -> dict[str, np.ndarray]:
 
 def build_target(panel: pd.DataFrame) -> np.ndarray:
     """d5mean target, strictly after predictor time t (spec §4)."""
-    return np.asarray(
+    _out: np.ndarray = np.asarray(
         pd.Series(np.abs(panel["r"].to_numpy(float))).rolling(5).mean().shift(-5).to_numpy()
     )
+    return _out
 
 
 @dataclass
@@ -364,8 +371,8 @@ def decision_summary() -> dict[str, PromotionVerdict]:
 
 @dataclass
 class BatterySummary:
-    combos: tuple = field(default_factory=lambda: tuple(COMBOS))
-    incremental_eqs: tuple = field(default_factory=lambda: (
+    combos: tuple[Any, ...] = field(default_factory=lambda: tuple(COMBOS))
+    incremental_eqs: tuple[Any, ...] = field(default_factory=lambda: (
         "d_RV|P=L(M_P)-L(M_P+RV)", "d_A|P=L(M_P)-L(M_P+A)",
         "d_A|P,RV=L(M_P+RV)-L(M_P+RV+A)", "d_RV|P,A=L(M_P+A)-L(M_P+RV+A)"))
 
@@ -587,12 +594,13 @@ def evaluate_equation_a_score(
             + w_taker * X^*_{NL-TAKER_MOM,i,t} + w_snr * X^*_{NL-MASTER_SNR,i,t}
     """
     w = EQUATION_A_AUTHORITATIVE_WEIGHTS if use_authoritative else EQUATION_A_ROUNDED_WEIGHTS
-    return (
+    _out: np.ndarray = (
         w["H_BB"] * feat_bb
         + w["H_OBV_MOM"] * feat_obv
         + w["NL_TAKER_MOM"] * feat_taker
         + w["NL_MASTER_SNR"] * feat_snr
     )
+    return _out
 
 
 def evaluate_equation_b_score(
@@ -603,17 +611,19 @@ def evaluate_equation_b_score(
 ) -> np.ndarray:
     """Compute second frozen predictor score S_{i,t}^{(B)} using Equation B."""
     w = EQUATION_B_AUTHORITATIVE_WEIGHTS
-    return (
+    _out: np.ndarray = (
         w["H_BB"] * feat_bb
         + w["H_MOM"] * feat_mom
         + w["H_OBV_MOM"] * feat_obv
         + w["NL_TAKER_MOM"] * feat_taker
     )
+    return _out
 
 
 def op_product_interaction(feat_1: np.ndarray, feat_2: np.ndarray) -> np.ndarray:
     """Candidate interaction operator: PRODUCT(H_BB, NL_TAKER_MOM)."""
-    return np.asarray(np.asarray(np.asarray(np.asarray(feat_1, dtype=float) * np.asarray(feat_2, dtype=float))))
+    _out: np.ndarray = np.asarray(np.asarray(np.asarray(np.asarray(feat_1, dtype=float) * np.asarray(feat_2, dtype=float))))
+    return _out
 
 
 def evaluate_equation_e_score(
@@ -629,7 +639,8 @@ def evaluate_equation_e_score(
         feat_bb, feat_obv, feat_taker, feat_snr, use_authoritative=use_authoritative
     )
     interaction = op_product_interaction(feat_bb, feat_taker)
-    return score_a + beta_5 * interaction
+    _out: np.ndarray = score_a + beta_5 * interaction
+    return _out
 
 
 def op_deadband(score: np.ndarray, tau: float = 0.1979) -> np.ndarray:
@@ -639,7 +650,8 @@ def op_deadband(score: np.ndarray, tau: float = 0.1979) -> np.ndarray:
     Has zero memory of prior position; tests pure signal-strength filtering.
     """
     score = np.asarray(score, dtype=float)
-    return np.where(score >= tau, 1.0, np.where(score <= -tau, -1.0, 0.0))
+    _out: np.ndarray = np.where(score >= tau, 1.0, np.where(score <= -tau, -1.0, 0.0))
+    return _out
 
 
 def op_turnover_penalty_step(score: float, prev_pos: float, lambda_pen: float = 0.20) -> float:
@@ -669,17 +681,20 @@ def op_turnover_penalty(
     cur = np.zeros(N, dtype=float) if init_pos is None else np.array(init_pos, dtype=float).copy()
     for t in range(T):
         for i in range(N):
-            cur[i] = op_turnover_penalty_step(sc_2d[t, i], cur[i], lambda_pen)
+            cur[i] = op_turnover_penalty_step(float(sc_2d[t, i]), cur[i], lambda_pen)
         pos[t] = cur.copy()
-    return pos[:, 0] if is_1d else pos
+    _out: np.ndarray = pos[:, 0] if is_1d else pos
+    return _out
 
 
 def op_sign(score: np.ndarray, threshold: float = 0.0) -> np.ndarray:
     """Stateless baseline decision operator: SIGN(S; threshold)."""
     score = np.asarray(score, dtype=float)
     if threshold <= 0.0:
-        return np.where(score > 0.0, 1.0, np.where(score < 0.0, -1.0, 0.0))
-    return np.where(score > threshold, 1.0, np.where(score < -threshold, -1.0, 0.0))
+        _out: np.ndarray = np.where(score > 0.0, 1.0, np.where(score < 0.0, -1.0, 0.0))
+        return _out
+    _out_neg: np.ndarray = np.where(score > threshold, 1.0, np.where(score < -threshold, -1.0, 0.0))
+    return _out_neg
 
 
 def op_hysteresis_step(
@@ -727,9 +742,10 @@ def op_hysteresis(
     cur = np.zeros(N, dtype=float) if init_pos is None else np.array(init_pos, dtype=float).copy()
     for t in range(T):
         for i in range(N):
-            cur[i] = op_hysteresis_step(sc_2d[t, i], cur[i], theta_in, theta_out)
+            cur[i] = op_hysteresis_step(float(sc_2d[t, i]), cur[i], theta_in, theta_out)
         pos[t] = cur.copy()
-    return pos[:, 0] if is_1d else pos
+    _out: np.ndarray = pos[:, 0] if is_1d else pos
+    return _out
 
 
 def op_exposure_scale(
@@ -738,7 +754,8 @@ def op_exposure_scale(
 ) -> np.ndarray:
     """Equation 3: Exposure-matched control operator: p^{(E)} = alpha * p^{(B)}."""
     scaled = np.asarray(alpha, dtype=float) * np.asarray(pos_base, dtype=float)
-    return np.asarray(scaled)
+    _out: np.ndarray = np.asarray(scaled)
+    return _out
 
 
 def op_turnover_cost(

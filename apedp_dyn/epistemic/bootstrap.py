@@ -27,6 +27,8 @@ hardening (sole-survivor absolute-fit rule) is the next target.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 N_BOOT_DEFAULT = 2000
@@ -83,7 +85,7 @@ def block_bootstrap_ci(
     return lo, hi, mean
 
 
-def rmse_bootstrap_ci(se_series, n_boot: int = 1000, seed: int = 0,
+def rmse_bootstrap_ci(se_series: Any, n_boot: int = 1000, seed: int = 0,
                       ci: float = CI_DEFAULT) -> tuple[float, float, float]:
     """Block-bootstrap CI on the holdout RMSE itself (evaluation uncertainty).
 
@@ -112,7 +114,7 @@ def rmse_bootstrap_ci(se_series, n_boot: int = 1000, seed: int = 0,
             float(_np.quantile(boots, 1.0 - alpha / 2.0)), rmse)
 
 
-def holdout_se_series(problem, candidate_ir, param_values: dict[str, float]):
+def holdout_se_series(problem: Any, candidate_ir: Any, param_values: dict[str, float]) -> Any:
     """Per-timepoint holdout squared-error series for a FITTED candidate.
 
     Materializes the IR, binds fitted values, simulates the holdout regime,
@@ -143,7 +145,7 @@ def holdout_se_series(problem, candidate_ir, param_values: dict[str, float]):
     return np.mean((res.y.T - obs) ** 2, axis=1)
 
 
-def holdout_residual_series(problem, candidate_ir, param_values: dict[str, float]):
+def holdout_residual_series(problem: Any, candidate_ir: Any, param_values: dict[str, float]) -> Any:
     """Per-timepoint SIGNED holdout residual (model - truth), primary channel.
 
     This is what ``adjudicate(resid_best=..., resid_rival=..., resid_sole=...)``
@@ -177,7 +179,7 @@ def holdout_residual_series(problem, candidate_ir, param_values: dict[str, float
     return (res.y.T - obs)[:, 0]
 
 
-def param_bootstrap_ci(problem, candidate_ir, fitted_values: dict[str, float],
+def param_bootstrap_ci(problem: Any, candidate_ir: Any, fitted_values: dict[str, float],
                        n_boot: int = 30, seed: int = 0) -> dict[str, tuple[float, float, float]]:
     """Residual-bootstrap parameter bands (experimental UQ, v1).
 
@@ -193,7 +195,13 @@ def param_bootstrap_ci(problem, candidate_ir, fitted_values: dict[str, float],
 
     import numpy as _np
 
-    from apedp_dyn.fitting.parameter_fit import _train_arrays, _with_values, fit_candidate
+    from apedp_dyn.fitting.parameter_fit import (
+        FIT_ATOL,
+        FIT_RTOL,
+        _train_arrays,
+        _with_values,
+        fit_candidate,
+    )
     from apedp_dyn.grammar import materialize
     from apedp_dyn.grammar.candidate_ir import SystemCandidate
 
@@ -208,8 +216,15 @@ def param_bootstrap_ci(problem, candidate_ir, fitted_values: dict[str, float],
     reg, t, Y, _U = _train_arrays(problem)
     from apedp_dyn.simulation import simulate
 
+    # The resampled problems are centred on this trajectory and refitted by
+    # fit_candidate, so it is integrated with the fitter's own tolerances. At
+    # simulate()'s default rtol=1e-3 the centre carried integration error the
+    # refits then fitted: on clean Duffing every refit of the damping term
+    # landed in [-0.1995, -0.1987] around a fit of -0.2000, and the band did not
+    # contain the estimate it was built around.
     res = simulate(fitted, reg["t_span"], reg["u_of_t"],
-                   np.asarray(reg["x0"], dtype=float), n_eval=len(t))
+                   np.asarray(reg["x0"], dtype=float), n_eval=len(t),
+                   rtol=FIT_RTOL, atol=FIT_ATOL)
     if not res.success:
         raise RuntimeError(f"fitted-model train simulation invalid: {res.detail}")
     resid = Y - res.y.T  # (n, states)
@@ -250,7 +265,7 @@ def tiebreak(
     resid_rival: np.ndarray,
     n_boot: int = N_BOOT_DEFAULT,
     seed: int = 0,
-) -> dict:
+) -> dict[str, Any]:
     """Bootstrap tiebreak for a would-be UNIQUE_SUPPORT decision.
 
     resid_top / resid_rival: per-timepoint squared errors (mean over channels)

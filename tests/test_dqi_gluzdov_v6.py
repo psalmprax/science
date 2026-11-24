@@ -66,6 +66,7 @@ from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
     model_single_polynomial_array,
     product_axis_decision,
 )
+from tests.kickmix_availability import require_kickmix
 
 
 def test_gluzdov_v6_constants_and_target_metrics():
@@ -297,10 +298,7 @@ def test_scratch_wire_pooling_qubit_count_guarantee():
 
 def test_circuit_builder_candidate_when_kickmix_available():
     """Test build_candidate() when kickmix is available."""
-    try:
-        import kickmix as km  # noqa: F401
-    except ImportError:
-        pytest.skip("kickmix not available in test environment")
+    require_kickmix()
 
     # If kickmix is available, compile a candidate with small iters
     circuit = build_candidate(n_iters=10)
@@ -673,10 +671,7 @@ def test_derived_flag_predicate_matches_the_carried_register():
 
 def test_one_body_substitution_does_not_move_the_built_peak():
     """Only `_update_flag` stops reading `n_a`, so the register is still allocated."""
-    try:
-        import kickmix  # noqa: F401
-    except ImportError:
-        pytest.skip("kickmix not available in test environment")
+    require_kickmix()
 
     report = build_candidate_with_recycled_flag_body(n_iters=4)
     assert report["read_sites_substituted"] == 1
@@ -691,10 +686,7 @@ def test_one_body_substitution_does_not_move_the_built_peak():
 
 def test_all_sites_build_removes_the_register():
     """With the driver changed the register is gone, so the peak drops by its width."""
-    try:
-        import kickmix  # noqa: F401
-    except ImportError:
-        pytest.skip("kickmix not available in test environment")
+    require_kickmix()
 
     report = build_candidate_with_recycled_degrees(n_iters=4)
     assert report["read_sites_substituted"] == 3

@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any
 
 import numpy as np
@@ -37,18 +36,10 @@ from apedp_dyn.epistemic.eedr import (
     execute_eedr_loop,
 )
 
-
-class InvariantKind(str, Enum):
-    """Generic taxonomy of scientific invariants that any domain can declare."""
-    CONSERVATION_LAW = "conservation_law"         # Delta Q <= epsilon (mass, energy, momentum, flux)
-    SYMMETRY_TRANSFORMATION = "symmetry_transform" # f(T(x)) == rho(T) f(x) (parity, rotation, translation)
-    BOUND_POSITIVITY = "bound_positivity"         # y >= y_min, L <= y <= U (non-negativity, probability)
-    MONOTONICITY = "monotonicity"                 # dy/dx >= 0 or order-preserving (entropy, priority)
-    LIPSCHITZ_SMOOTHNESS = "lipschitz_smoothness" # ||f(x1) - f(x2)|| <= L ||x1 - x2||
-    SCALE_HOMOGENEITY = "scale_homogeneity"       # f(lambda * x) == lambda^k * f(x)
-    ASYMPTOTIC_LIMIT = "asymptotic_limit"         # lim_{x -> inf} f(x) == C (saturation, bounded tail)
-    INTERVENTIONAL_INVARIANCE = "interventional_inv" # Invariance under targeted do(X) perturbation
-    CUSTOM_PREDICATE = "custom_predicate"         # Arbitrary user/problem-supplied verification callable
+# Defined in proof_evidence so the referee can name the evidence it consumes
+# without importing this module's dependencies; re-exported here unchanged
+# (`X as X` is the explicit re-export form type checkers recognise).
+from apedp_dyn.epistemic.proof_evidence import InvariantKind as InvariantKind
 
 
 @dataclass

@@ -29,6 +29,9 @@ from tools.coverage_audit import (
     module_name_for,
 )
 
+#: The real tree, for the checks that pin the detector against this repository.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 def _write(root: Path, rel: str, body: str) -> None:
     path = root / rel
@@ -365,6 +368,79 @@ def test_a_reexport_facade_with_logic_is_not_a_facade(tmp_path: Path) -> None:
     _write(tmp_path, "pkg/bare.py", "import os\n")
     assert not is_reexport_facade("pkg/bare.py", tmp_path), (
         "bare imports with no __all__ may still run work at import time")
+
+
+_LAZY_FACADE = """
+    \"\"\"A package that re-exports lazily.\"\"\"
+    from __future__ import annotations
+
+    from typing import TYPE_CHECKING
+
+    from apedp_dyn._lazy import lazy_exports
+
+    if TYPE_CHECKING:
+        from pkg.impl import thing
+
+    _EXPORTS = {
+        "thing": "pkg.impl",
+    }
+
+    __all__ = ["thing"]
+
+    __getattr__, __dir__ = lazy_exports(__name__, _EXPORTS)
+"""
+
+
+def test_a_lazy_reexport_facade_is_a_facade(tmp_path: Path) -> None:
+    """``apedp_dyn/__init__.py`` re-exports through ``apedp_dyn/_lazy.py``: the
+    same names as an eager façade, resolved on first access. Its body cannot
+    be imports alone, and it is the façade where the contract test matters
+    most -- a wrong entry in the table fails only when someone asks for that
+    name -- so the detector has to recognise the shape, exactly."""
+    _write(tmp_path, "pkg/lazy.py", _LAZY_FACADE)
+    assert is_reexport_facade("pkg/lazy.py", tmp_path)
+    with_submodules = _LAZY_FACADE.replace(
+        "lazy_exports(__name__, _EXPORTS)",
+        "lazy_exports(__name__, _EXPORTS, _SUBMODULES)",
+    ).replace('__all__ = ["thing"]', '__all__ = ["thing"]\n\n    _SUBMODULES = ("sub",)')
+    _write(tmp_path, "pkg/lazy_sub.py", with_submodules)
+    assert is_reexport_facade("pkg/lazy_sub.py", tmp_path)
+    for real in ("apedp_dyn/__init__.py", "apedp_dyn/epistemic/__init__.py", "apedp_dyn/market/__init__.py"):
+        assert is_reexport_facade(real, REPO_ROOT), real
+    assert not is_reexport_facade("apedp_dyn/_lazy.py", REPO_ROOT), "the helper is logic"
+
+
+@pytest.mark.parametrize(
+    ("label", "old", "new"),
+    [
+        ("a table computed instead of written out",
+         '_EXPORTS = {\n        "thing": "pkg.impl",\n    }',
+         '_EXPORTS = {name: "pkg.impl" for name in ("thing",)}'),
+        ("a table holding something other than strings",
+         '"thing": "pkg.impl",', '"thing": 3,'),
+        ("an assignment inside the TYPE_CHECKING block",
+         "        from pkg.impl import thing", "        from pkg.impl import thing\n        flag = 1"),
+        ("an else branch on the TYPE_CHECKING block",
+         "        from pkg.impl import thing",
+         "        from pkg.impl import thing\n    else:\n        import os"),
+        ("some other condition", "if TYPE_CHECKING:", "if TYPE_CHECKING or True:"),
+        ("hooks from another function",
+         "lazy_exports(__name__, _EXPORTS)", "something_else(__name__, _EXPORTS)"),
+        ("a computed argument to the helper",
+         "lazy_exports(__name__, _EXPORTS)", "lazy_exports(__name__, dict(_EXPORTS))"),
+        ("a table with no hooks installed",
+         "    __getattr__, __dir__ = lazy_exports(__name__, _EXPORTS)\n", ""),
+        ("no __all__", '    __all__ = ["thing"]\n', ""),
+        ("one function", '__all__ = ["thing"]', '__all__ = ["thing"]\n\n    def helper():\n        return 1'),
+    ],
+)
+def test_a_lazy_shaped_module_with_logic_is_not_a_facade(
+    tmp_path: Path, label: str, old: str, new: str
+) -> None:
+    """The lazy shapes are matched exactly; anything computed is logic."""
+    assert old in _LAZY_FACADE, label
+    _write(tmp_path, "pkg/variant.py", _LAZY_FACADE.replace(old, new))
+    assert not is_reexport_facade("pkg/variant.py", tmp_path), label
 
 
 def test_a_coverage_report_measuring_nothing_is_declared(tmp_path: Path) -> None:

@@ -1,0 +1,39 @@
+# The referee core as its own distribution. Build or install it from this
+# directory:  pip install ./apedp_referee
+#
+# The same modules are also part of the full `apedp` distribution built from
+# the repository root, which imports them as `apedp_referee` and under their
+# old `apedp_dyn` names. Install one or the other into an environment, not
+# both: they own the same files.
+
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apedp-referee"
+version = "0.1.0"
+description = "Preregistered promotion referee: thresholds, a six-stage state machine, holdout and trial ledgers, universe audit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[tool.setuptools]
+# This directory is the package: its modules sit next to this file.
+packages = ["apedp_referee"]
+package-dir = { "apedp_referee" = "." }
+
+[tool.setuptools.package-data]
+apedp_referee = ["canonical_preregistered_spec_v1.json", "py.typed"]
+
+[tool.pytest.ini_options]
+# `cd apedp_referee && pytest` runs the package's own tests.
+testpaths = ["tests"]

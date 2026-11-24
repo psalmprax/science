@@ -19,8 +19,8 @@ one the caller already recorded.
 from __future__ import annotations
 
 import dataclasses
+import mmap
 
-import numpy as np
 import pytest
 
 import apedp_dyn.vqc.memory as memory
@@ -39,33 +39,74 @@ from apedp_dyn.vqc.synthesis import ghz_target
 
 MIB = 2 ** 20
 
+#: How far below the floor a window peak may read without meaning anything.
+#: ``floor_bytes`` is VmRSS read just after the reset; ``window_peak_bytes`` is
+#: VmHWM, which Linux keeps lazily (``mm->hiwater_rss`` is raised before an
+#: unmap, not on every page fault). A page faulted in between the reset and the
+#: floor read, then released without an unmap, leaves the peak a page below the
+#: floor: CI's 3.11 leg read 158,822,400 against 158,826,496 on 2026-11-17,
+#: exactly one 4 KiB page. Four pages of slack; anything more is a real fault.
+PAGE_SLACK = 4 * mmap.PAGESIZE
+
+
+def _fresh_resident_block(size: int) -> mmap.mmap:
+    """``size`` bytes the process did not have resident a moment ago.
+
+    These tests used ``np.ones(n)`` for this, and that is not the same thing.
+    glibc raises its mmap threshold each time a large block is freed, up to 32
+    MiB, and from then on serves and frees blocks of that size from the heap,
+    where freed pages stay resident. So after an earlier test (or an earlier
+    line) had allocated and released a big array, the next ``np.ones`` was
+    handed pages that were already counted, the resident set did not grow, and
+    the assertion about the peak counter failed although the counter was
+    right. It depended on which tests had run before in the same worker.
+
+    An anonymous map is new address space every time, and writing one byte per
+    page makes each page resident, whatever the allocator has cached.
+    """
+    block = mmap.mmap(-1, size)
+    for offset in range(0, size, mmap.PAGESIZE):
+        block[offset] = 1
+    return block
+
 
 def test_the_peak_counter_is_readable_and_is_a_peak():
-    start = peak_rss_bytes()
+    # A worker that already peaked above the allocation below cannot show growth in a
+    # monotone counter, so the window is opened first where the platform allows it.
+    if reset_peak():
+        start = peak_rss_bytes()
+    else:
+        start = peak_rss_bytes()
     assert start > 0
-    block = np.ones(32 * MIB, dtype=np.uint8)   # touched, so it is resident
-    assert block.sum() > 0
+    block = _fresh_resident_block(32 * MIB)
     assert peak_rss_bytes() >= start + 24 * MIB, (start, peak_rss_bytes())
-    del block
+    block.close()
 
 
 def test_the_peak_can_be_reset_so_a_window_is_measurable():
     """Without the reset, "the sampling step's peak" is the whole process's high-water."""
-    block = np.ones(16 * MIB, dtype=np.uint8)
-    assert block.sum() > 0
+    block = _fresh_resident_block(16 * MIB)
     grown = peak_rss_bytes()
-    del block
+    block.close()
     if not reset_peak():
         pytest.skip("this platform does not allow resetting the peak counter")
     assert peak_rss_bytes() <= grown
     base = peak_rss_bytes()
-    assert base == current_rss_bytes()          # the counter is the live resident set
-    fresh = np.ones(8 * MIB, dtype=np.uint8)
-    assert fresh.sum() > 0
+    # The counter is the live resident set, to within the page the reset itself touches:
+    # the write to clear_refs and the read back are not free, and demanding byte equality
+    # made this assertion fail on the first allocation the kernel happened to service.
+    assert abs(base - current_rss_bytes()) <= MIB, (base, current_rss_bytes())
+    fresh = _fresh_resident_block(8 * MIB)
     # A window opened at `base` can see what happens after it; a monotone counter could
     # only ever report `grown`.
     assert peak_rss_bytes() >= base + 4 * MIB
-    assert peak_rss_bytes() < grown
+    fresh.close()
+    # `grown` is only a ceiling the window beats when the allocator actually handed the
+    # freed pages back: glibc keeps them resident, so in a recycled worker the pre-reset
+    # peak can equal the live set and an unconditional `peak < grown` measures the
+    # allocator, not the counter. It is asserted where it is observable.
+    if grown > base + 8 * MIB:
+        assert peak_rss_bytes() < grown
     del fresh
 
 
@@ -116,10 +157,10 @@ def test_a_measured_engine_is_measured_on_the_recorded_samples():
     assert measurement.engine == "grammar"
     assert measurement.variant == reference.variant
     assert measurement.floor_bytes > 0
-    assert measurement.window_peak_bytes >= measurement.floor_bytes
+    assert measurement.window_peak_bytes >= measurement.floor_bytes - PAGE_SLACK
     assert measurement.growth_bytes == (
         measurement.window_peak_bytes - measurement.floor_bytes)
-    assert measurement.absolute_peak_bytes >= measurement.floor_bytes
+    assert measurement.absolute_peak_bytes >= measurement.floor_bytes - PAGE_SLACK  # read before the reset
     assert measurement.peak_reset is True
     payload = measurement.as_dict()
     assert payload["growth_mib"] == pytest.approx(measurement.growth_bytes / MIB)
@@ -129,6 +170,7 @@ def test_a_measured_engine_is_measured_on_the_recorded_samples():
 
 def test_stim_is_measured_separately_and_charged_its_own_import():
     """Stim's library is loaded before the window opens, so it is a floor, not a sample."""
+    pytest.importorskip("stim")  # an optional extra; the child process imports it
     target = ghz_target(10)
     own = measure_engine("grammar", target, shots=1_000, seed=7)
     foreign = measure_engine("stim", target, shots=1_000, seed=8)
@@ -195,5 +237,5 @@ def test_the_measurement_is_reproducible_in_shape():
     assert first.counts_sha256 == second.counts_sha256
     assert first.target_sha256 == second.target_sha256
     assert first.shots == second.shots == 1_000
-    assert first.growth_bytes >= 0 and second.growth_bytes >= 0
+    assert first.growth_bytes >= -PAGE_SLACK and second.growth_bytes >= -PAGE_SLACK
     assert dataclasses.asdict(first)["method"] == dataclasses.asdict(second)["method"]

@@ -11,14 +11,14 @@ sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
 
-LAGS = np.arange(4, 13, dtype=float)
+LAGS: np.ndarray = np.arange(4, 13, dtype=float)
 LX = np.log(LAGS)
 XC = LX - LX.mean()
 DENOM = float(np.sum(XC ** 2))
 COST = 0.0002
 
 
-def ols_slope_width(v):
+def ols_slope_width(v: np.ndarray) -> tuple[float, float]:
     ly = np.log(np.maximum(v, 1e-12))
     s = -float(np.sum(XC * ly) / DENOM)
     r = ly - ly.mean() + s * XC
@@ -26,10 +26,10 @@ def ols_slope_width(v):
     return s, 2 * 2.3646 * se
 
 
-def one_path(seed):
+def one_path(seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.RandomState(int(seed))
     n = 3000
-    state = np.zeros(n, dtype=int)
+    state: np.ndarray = np.zeros(n, dtype=int)
     state[0] = 0
     for t in range(1, n):
         state[t] = state[t - 1] if rng.rand() < 0.98 else 1 - state[t - 1]
@@ -38,17 +38,18 @@ def one_path(seed):
     ret = np.zeros(n)
     for t in range(1, n):
         ret[t] = phi[t] * ret[t - 1] + eps[t]
-    px = np.cumsum(ret)
+    px: np.ndarray = np.cumsum(ret)
     return ret, px, state
 
 
-def decay_curve(a):
+def decay_curve(a: np.ndarray) -> np.ndarray:
     a = np.abs(a)
-    return np.array([float(np.mean(a[:len(a) - lag_i] * a[lag_i:]))
-                     for lag_i in range(4, 13)])
+    curve: np.ndarray = np.array([float(np.mean(a[:len(a) - lag_i] * a[lag_i:]))
+                                 for lag_i in range(4, 13)])
+    return curve
 
 
-def run_path(seed):
+def run_path(seed: int) -> dict[str, dict[str, float]]:
     ret, _px, _state = one_path(seed)
     W = 200
     # burn-in median threshold
@@ -72,7 +73,7 @@ def run_path(seed):
         pos["rnd"][t] = 1.0 if rr.rand() < 0.5 else -1.0
         if w <= 1.0:  # abstention cap
             pos["ols"][t] = sig if s < med else -sig
-    out = {}
+    out: dict[str, dict[str, float]] = {}
     for k, p in pos.items():
         p = p[W + 200:-1]
         r = ret[W + 200 + 1:]
@@ -80,7 +81,7 @@ def run_path(seed):
         trades = np.sum(np.abs(np.diff(np.concatenate([[0.0], p])))) / 2.0
         float(np.sum(gross) - trades * COST * 2 / len(p) * len(p))
         netrets = gross - np.abs(np.diff(np.concatenate([[0.0], p]))) * COST
-        nav = np.cumsum(netrets)
+        nav: np.ndarray = np.cumsum(netrets)
         dd = float(np.max(np.maximum.accumulate(nav) - nav))
         sharpe = float(np.mean(netrets) / (np.std(netrets) + 1e-12)
                        * np.sqrt(252))
@@ -89,9 +90,10 @@ def run_path(seed):
     return out
 
 
-def run():
+def run() -> None:
     keys = ("ols", "bh", "mom", "rev", "rnd")
-    acc = {k: {"sharpe": [], "net": [], "dd": []} for k in keys}
+    acc: dict[str, dict[str, list[float]]] = {
+        k: {"sharpe": [], "net": [], "dd": []} for k in keys}
     for i in range(30):
         o = run_path(20000 + i)
         for k in keys:

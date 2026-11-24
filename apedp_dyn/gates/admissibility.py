@@ -1,14 +1,19 @@
 """Gate 2 — physical admissibility: structure, symbols, functions, bounds."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import sympy as sp
 
 from apedp_dyn.gates.dimensional import ALLOWED_FUNCTIONS, GateResult
 from apedp_dyn.model.variables import TIME_SYMBOL
 
+if TYPE_CHECKING:
+    from apedp_dyn.model.physical_model import PhysicalModel
 
-def equation_admissibility_structure(model,
+
+def equation_admissibility_structure(model: PhysicalModel,
                                      allowed: frozenset[str] = ALLOWED_FUNCTIONS
                                      ) -> GateResult:
     """Gate 2 structural part: no parameter values needed (pre-fit pruning)."""
@@ -46,7 +51,7 @@ def equation_admissibility_structure(model,
                       f"{len(model.equations)} explicit first-order equations (structure)")
 
 
-def equation_admissibility(model,
+def equation_admissibility(model: PhysicalModel,
                            allowed: frozenset[str] = ALLOWED_FUNCTIONS) -> GateResult:
     """Gate 2: structural admissibility of the equation set."""
     structural = equation_admissibility_structure(model, allowed)

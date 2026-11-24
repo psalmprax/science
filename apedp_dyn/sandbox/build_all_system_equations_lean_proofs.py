@@ -355,7 +355,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
     specs: list[AgnosticCandidateSpecification] = []
     specs_by_id: dict[str, AgnosticCandidateSpecification] = {}
 
-    def add_spec(cid: str, formula: str, meta: str = "", invariants: list[DeclaredInvariant] | None = None):
+    def add_spec(cid: str, formula: str, meta: str = "", invariants: list[DeclaredInvariant] | None = None) -> None:
         if cid in specs_by_id:
             if invariants is not None:
                 specs_by_id[cid].declared_invariants = invariants

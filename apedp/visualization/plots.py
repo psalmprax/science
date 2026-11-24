@@ -9,8 +9,8 @@ import numpy as np
 import seaborn as sns
 
 try:
+    import plotly.express  # noqa: F401 - imported only to probe availability
     import plotly.graph_objects as go
-    import plotly.express as px
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
@@ -162,7 +162,7 @@ def plot_scenario_results(
     bars = ax.bar(range(len(scenario_names)), [1] * len(scenario_names), color=colors, alpha=0.85, edgecolor='black')
     
     if scores:
-        for i, (bar, score) in enumerate(zip(bars, scores)):
+        for bar, score in zip(bars, scores, strict=True):
             ax.text(bar.get_x() + bar.get_width()/2., 0.5, f'{score:.2f}', 
                     ha='center', va='center', fontweight='bold', fontsize=9)
     
@@ -212,7 +212,8 @@ def plot_pareto_front(
     ax.scatter(objectives_x, objectives_y, s=100, alpha=0.6, color="#457B9D", label="Candidates")
     
     # Find and highlight Pareto frontier
-    points = sorted(zip(objectives_x, objectives_y), key=lambda p: p[0])
+    points = sorted(zip(objectives_x, objectives_y, strict=False),
+                    key=lambda p: p[0])
     pareto_x, pareto_y = [], []
     best_y = float('inf')
     for x, y in points:

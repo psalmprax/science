@@ -97,6 +97,8 @@ def build_deepmind_challenge_suite() -> list[DeepMindCase]:
     b1.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
     b1.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
     b1.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+    b1.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+    b1.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
     cases.append(DeepMindCase(
         case_id="DM-01-ALPHATENSOR",
         deepmind_system="AlphaTensor",
@@ -233,6 +235,8 @@ def build_deepmind_challenge_suite() -> list[DeepMindCase]:
     b9.add(EvidenceRequirement.ENTROPY_CONDITION)
     b9.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
     b9.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+    b9.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+    b9.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
     cases.append(DeepMindCase(
         case_id="DM-09-ALETHEIA-PDE",
         deepmind_system="Aletheia",
@@ -268,6 +272,8 @@ def build_deepmind_challenge_suite() -> list[DeepMindCase]:
     b11.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
     b11.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
     b11.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+    b11.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+    b11.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
     cases.append(DeepMindCase(
         case_id="DM-11-ALPHADEV",
         deepmind_system="AlphaDev",
@@ -453,7 +459,7 @@ def run_deepmind_challenge_benchmark() -> dict[str, Any]:
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="APEDP-X DeepMind Hypothesis Challenge Benchmark Runner")
     parser.add_argument("--json", action="store_true", help="Emit JSON report to stdout")
     args = parser.parse_args()

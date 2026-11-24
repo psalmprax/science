@@ -40,7 +40,7 @@ from __future__ import annotations
 import dataclasses
 import json
 from collections.abc import Mapping
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 from apedp_dyn.vqc.circuit import Circuit, Gate
 from apedp_dyn.vqc.equivalence import (
@@ -77,7 +77,7 @@ class Candidate(Protocol):
     circuit: Circuit
     claims: Mapping[str, int]
 
-    def as_dict(self) -> dict:  # pragma: no cover - structural protocol
+    def as_dict(self) -> dict[str, Any]:  # pragma: no cover - structural protocol
         ...
 
 
@@ -101,7 +101,7 @@ class CircuitCandidate:
     seed: int | None = 0
     metadata: Mapping[str, str] = dataclasses.field(default_factory=dict)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "candidate_id": self.candidate_id,
             "source": self.source,
@@ -137,11 +137,15 @@ class PromotionRefused(RuntimeError):
                 f"not VALID: {reasons}")
 
 
+if TYPE_CHECKING:
+    from apedp_dyn.vqc.synthesis import SpecificationCandidate
+
+
 @dataclasses.dataclass(frozen=True)
 class CandidateVerdict:
     """The receipt a promoter has to read: both referees' evidence, and a verdict."""
 
-    candidate: Candidate
+    candidate: Candidate | CircuitCandidate | SpecificationCandidate
     tier: str
     equivalence: EquivalenceReport | CliffordEquivalenceReport | None
     distribution: Receipt | None
@@ -168,7 +172,7 @@ class CandidateVerdict:
         return (self.verdict == "VALID" and self.claim_verdict != "UNMET"
                 and self.evidence == "SUFFICIENT")
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "candidate": self.candidate.as_dict(),
             "tier": self.tier,
@@ -239,12 +243,12 @@ def _equivalence(candidate: CircuitCandidate, on: str, as_subroutine: bool = Fal
             passed=(report.verdict == "VALID" if report.verdict != "UNRESOLVED" else None))
 
     if on in ("auto", "dense"):
-        report = adjudicate_equivalence(
+        dense_report = adjudicate_equivalence(
             reference, proposed, as_subroutine=as_subroutine,
             claims=candidate.claims or None,
             provenance={"candidate_id": candidate.candidate_id,
                         "source": candidate.source})
-        decided = all(check.passed is not None for check in report.checks)
+        decided = all(check.passed is not None for check in dense_report.checks)
         if as_subroutine:
             requirement = (f"both unitaries materialisable at at most "
                            f"{MAX_UNITARY_QUBITS} qubits and equal as controlled "
@@ -253,15 +257,15 @@ def _equivalence(candidate: CircuitCandidate, on: str, as_subroutine: bool = Fal
             requirement = (f"both unitaries materialisable at at most "
                            f"{MAX_UNITARY_QUBITS} qubits and equal up to one global "
                            f"phase")
-        return "dense", report, Check(
+        return "dense", dense_report, Check(
             name="the candidate is equivalent to its reference circuit",
             requirement=requirement,
-            measured={"tier": "dense", "verdict": report.verdict,
-                      "scope": report.scope,
-                      "distance": report.distance,
+            measured={"tier": "dense", "verdict": dense_report.verdict,
+                      "scope": dense_report.scope,
+                      "distance": dense_report.distance,
                       "reason": next((check.measured.get("reason") for check in
-                                      report.checks if check.measured.get("reason")), None)},
-            passed=(report.verdict == "VALID") if decided else None)
+                                      dense_report.checks if check.measured.get("reason")), None)},
+            passed=(dense_report.verdict == "VALID") if decided else None)
 
     if on not in ("auto", "dense", "stabilizer"):
         raise ValueError(f"on must be 'auto', 'dense' or 'stabilizer', got {on!r}")
