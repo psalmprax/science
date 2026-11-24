@@ -1,7 +1,7 @@
 {
   "audit": "candidate rows whose correctness claim rests on an unchecked register",
   "why": "Experiment D's candidate was called correct because its syndromes came back; Experiment D2 measured the phase and found 37 of 64 shots wrong. A record can carry the gap only if something asks for it.",
-  "records_scanned": 72,
+  "records_scanned": 73,
   "totals": {
     "claims_correct_aggregate_only": 51,
     "checked": 12,
@@ -1231,6 +1231,11 @@
       "counts": {}
     },
     {
+      "record": "benchmarks/quantum_compilation/vqc_external_comparison_2026-11-10.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/vqc_licence_boundary.json",
       "rows": [],
       "counts": {}
@@ -1279,6 +1284,6 @@
   },
   "reproducibility": {
     "script_sha256": "f65711281363cedc61abb58d7afd743b343d547ac2e6f33eee5d747dfafc44a5",
-    "git_rev": "6d54355156152f206ea280c3acfec06539d60d67"
+    "git_rev": "1ff9feb3bd9cb1ee4bcc8bfc8120386bab591b5a"
   }
 }
