@@ -58,7 +58,8 @@ inferred releases.
   Level 1 on 12 problems a generation; all ended at `g` = 0, which is noise, and the incumbent
   was kept. The limit is plain in the record: Level 0 ran with the first pass, the memory and
   the library only, without the searches that recover most laws on the physics benchmark, so
-  the finder solves about one law in ten and gives the library almost nothing to learn from.
+  the finder solved 8 of the 120 measurement problems and gives the library almost nothing to
+  learn from.
   **What the loop cannot change** (`judge`): the referee package, both threshold files, the
   route, the last checks, the measured range, the learning gate, the curriculum and the progress
   test are sealed by SHA-256 at the start of a run and checked at every generation; a searcher

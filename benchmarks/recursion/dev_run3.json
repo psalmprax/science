@@ -766,7 +766,7 @@
   "The searcher learned six laws in four generations and the library never chose a block: no part was shared by two learned laws with a positive worth. The curriculum moved down to level 0, because fewer than 40 % of a study batch was solved even at level 1. There was nothing to compound.",
   "No settings copy solved more than the incumbent; one was adopted for using 21 % less CPU with as many solved (memory_seconds 10 to 5). The earlier drift on timing noise is gone.",
   "Level 2, round 1, three ways of running Level 1 from the same start, 12 measurement problems a generation: g ended at 0 in all three and every gain per CPU-hour was negative (-10.8, -11.0, -23.8). The incumbent was kept as the least negative. With one or two laws solved of 12 at the start, this compares noise; it says nothing about which way is better.",
-  "What limits it: Level 0 here has no search engine. The four searches that recover most laws on the physics benchmark were left out to keep a problem to seconds of CPU, so the finder being improved solves about one law in ten at the measured levels and feeds the library almost nothing.",
+  "What limits it: Level 0 here has no search engine. The four searches that recover most laws on the physics benchmark were left out to keep a problem to seconds of CPU, so the finder being improved solved 8 of the 120 measurement problems and feeds the library almost nothing.",
   "Round 2 of Level 2 was still running when this was written."
  ],
  "run": {
