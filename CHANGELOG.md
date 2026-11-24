@@ -71,7 +71,17 @@ inferred releases.
     reported a wrong law, and the learning arm reported 14 laws against 3. Three gained against none
     lost is too few to tell from chance (a sign test gives one-sided p = 0.125)
     (`benchmarks/learning_stream/dev_empty_memory.json`).
-  `.github/workflows/learning-stream.yml` runs the stream with the default four searches. Not in force.
+  - **With the default four searches** on GitHub (30 new laws), learning added nothing. From an
+    empty memory both arms recovered 5 (2 gained, 2 lost). From the memory in force the learning
+    arm recovered 8 and the frozen one 10 (1 gained, 3 lost). No arm reported a wrong law
+    (`benchmarks/learning_stream/dev_four_searches.json`).
+  `scripts/run_learning_families.py` and `.github/workflows/learning-families.yml` extend the stream:
+  - to SRBench, starting from an empty memory with the law model seeded on invented laws;
+  - to the ODE systems, where only the memory learns, beside the ODE route's searches;
+  - to LLM-SRBench, which runs only with an `HF_TOKEN` secret of an account granted access, and
+    whose rows carry no equation (`scripts/llm_srbench.py`);
+  - with arms that learn by memory only or by law model only, one that learns from tables beyond the
+    measured range, and one that carries over what was learned on invented laws. Not in force.
 - **A third version of the last checks, in development (2026-11-23).** The second version's weakness
   above 5 % noise (M-36) turned out to be mostly the pole problem (M-34). Of the 70 wrong laws it
   passed there, 66 have a pole among the rows. `discovery_l2/vouching_v3.py` is the second version

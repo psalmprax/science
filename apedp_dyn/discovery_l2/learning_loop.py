@@ -35,6 +35,15 @@ a law from a table outside the range. Never a law while the last checks are off.
 left, so a law refuted later stops being used. The state is the seed plus the
 journal; ``save`` writes the journal, ``LearningState.replay`` rebuilds it.
 
+**On the ODE route** (``discover_component``) only the memory learns, beside
+the route's four searches. The route has no last checks, so its reported law
+is what is learned.
+
+**Taking it apart.** ``LearningState(learners=...)`` lets one learner learn
+alone, and ``learnable(beyond_range=True)`` drops the measured-range condition.
+Both exist for development streams (``scripts/run_learning_families.py``) and
+are not for use in force.
+
 **The risk it carries.** A wrong law that passes the referee is learned, and
 its parts are offered on later problems. The referee and the last checks
 still judge every later law; what they let through is the bound. The stream
@@ -77,10 +86,23 @@ class Learned:
     retracted: bool = False
 
 
-class LearningState:
-    """The learners and the journal of what they learned."""
+LEARNERS = ("memory", "model")
 
-    def __init__(self, memory_seed: Memory, seed_laws: Sequence[str], seed_domains: Sequence[str | None] | None = None) -> None:
+
+class LearningState:
+    """The learners and the journal of what they learned.
+
+    ``learners`` says which of the two learn (both by default); the other stays
+    at its seed. A journal is kept either way, so the same laws can be replayed
+    into a state that learns with both.
+    """
+
+    def __init__(self, memory_seed: Memory, seed_laws: Sequence[str], seed_domains: Sequence[str | None] | None = None,
+                 learners: Sequence[str] = LEARNERS) -> None:
+        unknown = set(learners) - set(LEARNERS)
+        if unknown:
+            raise ValueError(f"learners must be among {LEARNERS}, not {sorted(unknown)}")
+        self.learners = tuple(learners)
         self._memory_seed = memory_seed.as_dict()
         self._seed_laws = list(seed_laws)
         self._seed_domains = list(seed_domains) if seed_domains is not None else [None] * len(self._seed_laws)
@@ -101,9 +123,10 @@ class LearningState:
                 self._apply(item.law, item.domain)
 
     def _apply(self, law: str, domain: str | None) -> bool:
-        self.memory.learn(law)
+        if "memory" in self.learners:
+            self.memory.learn(law)
         tree = parse_law(law)
-        if tree is not None:
+        if tree is not None and "model" in self.learners:
             self.model.observe(tree, domain)
         return tree is not None
 
@@ -146,23 +169,28 @@ class LearningState:
 
     @classmethod
     def replay(cls, path: Path, memory_seed: Memory, seed_laws: Sequence[str],
-               seed_domains: Sequence[str | None] | None = None) -> LearningState:
+               seed_domains: Sequence[str | None] | None = None, learners: Sequence[str] = LEARNERS) -> LearningState:
         """The state a saved journal gives over the same seed."""
-        state = cls(memory_seed, seed_laws, seed_domains)
+        state = cls(memory_seed, seed_laws, seed_domains, learners)
         state.journal = [Learned(**item) for item in json.loads(path.read_text(encoding="utf-8"))["journal"]]
         state._rebuild()
         return state
 
 
-def learnable(record: Mapping[str, Any]) -> str | None:
-    """Why a route's record may not be learned from, or ``None`` if it may."""
+def learnable(record: Mapping[str, Any], *, beyond_range: bool = False) -> str | None:
+    """Why a route's record may not be learned from, or ``None`` if it may.
+
+    ``beyond_range`` drops the measured-range condition. **Development only**:
+    it measures what learning from tables the last checks were never tested on
+    (more than three inputs, say) would add, and must not be used in force.
+    """
     if not record.get("reported") or not record.get("law"):
         return "no law was reported"
     vouching = record.get("vouching") or {}
     if not vouching.get("in_force") or not vouching.get("applied"):
         return "the last checks did not run on it"
     state = (record.get("measured_range") or {}).get("state")
-    if state not in LEARNABLE_RANGE:
+    if not beyond_range and state not in LEARNABLE_RANGE:
         return f"its table is {state or 'unmarked'} with respect to the measured range"
     return None
 
@@ -170,7 +198,7 @@ def learnable(record: Mapping[str, Any]) -> str | None:
 def discover_law(
     X: Mapping[str, np.ndarray], Y: np.ndarray, pool_X: np.ndarray, measure: Callable[[np.ndarray], np.ndarray], *,
     state: LearningState, proposer: ProposerBase | None = None, learn: bool = True, domain: str | None = None,
-    source: str = "", noise: str = "relative", seed: int = 0, memory_seconds: float = SECONDS,
+    source: str = "", noise: str = "relative", seed: int = 0, memory_seconds: float = SECONDS, beyond_range: bool = False,
 ) -> dict[str, Any]:
     """The refined path with the state's memory beside ``proposer`` and the state's order for the first pass,
     then the last checks in force and the measured range; the law is learned if ``learnable`` allows.
@@ -190,7 +218,7 @@ def discover_law(
               "proposer_failures": list(result.proposer_failures), "rounds": [], "refined": result,
               "main_search": result.path}
     out: dict[str, Any] = vouched_route_v2.checked(record, X, Y, pool_X)
-    why_not = learnable(out)
+    why_not = learnable(out, beyond_range=beyond_range)
     learned = None
     if learn and why_not is None:
         learned = state.learn(str(out["law"]), domain=domain, source=source)
@@ -200,3 +228,34 @@ def discover_law(
                        "first_pass": {k: first.get(k) for k in ("evaluated", "candidates", "stopped_early") if k in first},
                        "state": {"learned": len(state.learned()), "motifs": len(state.memory.motifs)}}
     return out
+
+
+def discover_component(dev: Any, pool: Any, component: int, *, state: LearningState, budget_seconds: float,
+                       seed: int = 0, learn: bool = True, source: str = "", memory_seconds: float = SECONDS
+                       ) -> tuple[Any, dict[str, Any]]:
+    """The ODE route in force for one component, with the state's memory beside its four searches.
+
+    Only the memory takes part: the ODE route's searches take no first-pass
+    order. The route has no last checks and no measured range, so the law it
+    reports (not a tentative one) is what is learned. Its reported laws were
+    wrong in 3 of 165 on the blind systems (RESULT-ODE-ADDITIONS).
+    """
+    from apedp_dyn.ode import default_route as ode_default_route
+    from apedp_dyn.ode import route_in_force
+
+    searches = ode_default_route.search_stage(budget_seconds, seed) if budget_seconds > 0 else None
+    grower = state.grower(memory_seconds)
+    stage: ProposerBase = grower if searches is None else SideBySide(searches, grower)
+    started = time.perf_counter()
+    found, done = route_in_force.discover_component(dev, pool, component, budget_seconds=budget_seconds, seed=seed,
+                                                    proposer=stage)
+    learned = None
+    why_not = None if found.law else "no law was reported"
+    if learn and why_not is None:
+        learned = state.learn(str(found.law), source=source)
+    done = dict(done)
+    done["learning"] = {"learned": learned is not None, "key": None if learned is None else learned.key,
+                        "why_not": why_not if learn else "learning was off for this call",
+                        "seconds": round(time.perf_counter() - started, 2),
+                        "state": {"learned": len(state.learned()), "motifs": len(state.memory.motifs)}}
+    return found, done

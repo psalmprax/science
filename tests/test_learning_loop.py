@@ -83,3 +83,27 @@ def test_it_never_reaches_the_referee_or_the_checks() -> None:
     source = inspect.getsource(learning_loop)
     for frozen_thing in ("canonical_spec", "discovery_checks", "vouching_v2.", "LEVEL", "POWER", "ACCURACY"):
         assert frozen_thing not in source.split('"""', 2)[2], frozen_thing
+
+
+def test_each_learner_can_learn_alone_and_the_journal_replays_into_both(tmp_path) -> None:
+    law = "2.3*x0/(x0 + 0.45) - 0.7*exp(-0.45*x1)"
+    tree = parse_law(law)
+    assert tree is not None
+    seed_bits = _state().model.bits(tree)
+    memory_only = learning_loop.LearningState(Memory(), SEED_LAWS, learners=("memory",))
+    memory_only.learn(law)
+    assert memory_only.memory.laws == 1 and memory_only.model.bits(tree) == seed_bits
+    model_only = learning_loop.LearningState(Memory(), SEED_LAWS, learners=("model",))
+    model_only.learn(law)
+    assert model_only.memory.laws == 0 and model_only.model.bits(tree) < seed_bits
+    model_only.save(tmp_path / "journal.json")
+    both = learning_loop.LearningState.replay(tmp_path / "journal.json", Memory(), SEED_LAWS)
+    assert both.memory.laws == 1 and both.model.bits(tree) < seed_bits
+
+
+def test_beyond_range_drops_only_the_range_condition() -> None:
+    outside = _record(measured_range={"state": "outside"})
+    assert learning_loop.learnable(outside) is not None
+    assert learning_loop.learnable(outside, beyond_range=True) is None
+    unvouched = _record(vouching={"in_force": True, "applied": False}, measured_range={"state": "outside"})
+    assert "last checks" in learning_loop.learnable(unvouched, beyond_range=True)
