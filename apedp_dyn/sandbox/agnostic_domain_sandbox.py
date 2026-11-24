@@ -450,6 +450,8 @@ def run_arm_a_specialized(case: AblationTestCase) -> dict[str, Any]:
         bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         if case.candidate.metadata.get("dual_bound_certified", False):
             bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
+        if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
+            bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
 
     adj = adjudicate_scientific_claim(
         candidate_id=case.candidate.candidate_id,

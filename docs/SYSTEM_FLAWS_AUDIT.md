@@ -1288,6 +1288,17 @@ Each entry: cause, what changed, the pin for it.
   that way. What wrote it is not established from the logs. The toolchain is
   now installed in the step right after the isolation, into a home that is
   emptied first; if it is ever found non-empty, a warning lists what was there.
+  **Established 2026-11-20 for the pull-request branch
+  (`optimize-ci-dependency-installs`, a407ca5, test (3.11)):** a merge had left
+  a second copy of the isolation step after the install step. It deleted the
+  toolchain that had just been installed; the next Rust command (rust-cache's
+  `rustc -vV`) made rustup install it again through the proxy with the default
+  profile, which is where `rust-docs` came from, and that install failed on
+  the clippy file when two proxies raced. The existing tests looked up the
+  first step of that name and passed. The copy is removed and
+  `tests/test_ci_rust_toolchain.py` now requires exactly one isolation step
+  and nothing touching that home after the install. `stage` never had the
+  second copy.
   (d) CI's 3.11 leg then ran 3,207 tests and stopped at
   `test_dyn_tournament.py::TestRmseRel::test_present_iff_holdout_reached`: there,
   C1 on rep 2 was fitted to parameters whose holdout run overflowed, so it

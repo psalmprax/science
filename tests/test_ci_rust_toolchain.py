@@ -42,6 +42,21 @@ def test_the_toolchain_is_installed_into_an_empty_home_before_anything_else_runs
     assert "::warning::" in step[:removal]
 
 
+def test_nothing_empties_the_toolchain_home_after_the_toolchain_is_installed():
+    """A merge once left a second copy of the isolation step after the install
+    step. It deleted the toolchain that had just been installed, rustup then
+    reinstalled it lazily at the next Rust command, and that reinstall failed
+    now and then on a clippy file conflict (a407ca5, test (3.11), 2026-11-19).
+    The tests above look up the first step of that name, so they passed."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    test_job = workflow.split("\n  test:\n", 1)[1].split("\n  build:\n", 1)[0]
+    names = [line.strip() for line in test_job.splitlines() if line.startswith("      - name:")]
+    assert names.count("- name: Isolate Rust toolchain home") == 1
+    assert names.count("- name: Set up Rust toolchain") == 1
+    after_install = test_job.split("      - name: Set up Rust toolchain\n", 1)[1]
+    assert "RUNNER_TEMP/rustup" not in after_install.split("\n      - name:", 1)[1]
+
+
 def test_rust_lint_components_remain_installed():
     workflow = WORKFLOW.read_text(encoding="utf-8")
     setup = workflow.split("      - name: Set up Rust toolchain\n", 1)[1].split(

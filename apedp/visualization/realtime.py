@@ -127,10 +127,11 @@ class SearchProcessVisualizer:
                                     y=list(self.diversity), mode='lines',
                                     name='Diversity', line={"color": "red"}), row=2, col=1)
         
+        elapsed = time.time() - self.start_time
         fig.add_trace(go.Indicator(
             mode="number+gauge",
             value=len(self.iterations),
-            title={'text': "Iterations"},
+            title={'text': f"Iterations (elapsed: {elapsed:.1f}s)"},
             gauge={'axis': {'range': [None, max(100, len(self.iterations) * 1.2)]}},
         ), row=3, col=2)
         

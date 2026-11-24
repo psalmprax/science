@@ -1,0 +1,48 @@
+name: Approved native research checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact-run-id:
+        description: Run ID in this repository containing the approved KickMix artifact
+        required: true
+        type: string
+      artifact-name:
+        description: Artifact containing kickmix.so at its root
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  native-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13.14'
+          cache: pip
+          cache-dependency-path: requirements-native.lock
+      - name: Install hash-pinned native dependencies
+        run: python -m pip install --require-hashes -r requirements-native.lock
+      - uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.artifact-run-id }}
+          name: ${{ inputs.artifact-name }}
+          path: build/approved-native
+      - name: Require an approved binary and compatible interpreter
+        run: |
+          python scripts/check_verifier_environment.py \
+            --python-executable "$(command -v python)" \
+            --extension build/approved-native/kickmix.so
+      - name: Check native phase implementations
+        env:
+          PYTHONPATH: ${{ github.workspace }}/build/approved-native
+        run: |
+          python scripts/check_direct_phase.py
+          python scripts/check_parity_phase.py

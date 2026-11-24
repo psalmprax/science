@@ -55,7 +55,6 @@ from apedp_dyn.quantum_compilation.faros_isq import (
     materialize_faros_circuit,
     run_faros_isq_search,
 )
-from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 from tests.kickmix_availability import require_shipped_extension
 
 
@@ -174,18 +173,14 @@ def test_r4_alternative_arithmetic_forms():
     xs = generate_evaluation_subset(max_x=1024)
 
     # Estrin tree
-    estrin_cfg = next(
-        c for c in R4_ALT_ARITHMETIC_CONFIGS
-        if c.arithmetic_form == ArithmeticForm.ESTRIN_TREE)
+    estrin_cfg = next(c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.ESTRIN_TREE)
     p_estrin, _, m_estrin = evaluate_r4_alt_arithmetic(estrin_cfg, xs)
     assert p_estrin is True
     assert m_estrin["cost_evaluation"]["num_qubits"] == 86
     assert m_estrin["cost_evaluation"]["strictly_below_affine_opt"] is True
 
     # Bit-serial
-    serial_cfg = next(
-        c for c in R4_ALT_ARITHMETIC_CONFIGS
-        if c.arithmetic_form == ArithmeticForm.BIT_SERIAL)
+    serial_cfg = next(c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.BIT_SERIAL)
     p_serial, _, m_serial = evaluate_r4_alt_arithmetic(serial_cfg, xs)
     assert p_serial is True
     assert m_serial["cost_evaluation"]["num_qubits"] == 78
@@ -240,11 +235,10 @@ def test_multi_fidelity_pareto_tournament_execution():
     assert best.is_pareto_optimal is True
 
 
-def test_faros_isq_proposer_and_experiment_runner(tmp_path):
-    """Verify FarosIsqProposer integration with ExperimentRunner and ledger."""
-    require_shipped_extension()  # the contract locks against the extension's bytes
+def test_faros_isq_proposer_screen_compile_and_measure():
+    """Verify the FAROS proposer can screen, compile, and price candidates."""
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     contract = load_contract("invsqrt")
-    QuantumCandidateLedger(tmp_path / "faros_test_ledger.jsonl")  # constructed for its file
 
     proposer = FarosIsqProposer(portfolio=R2_PREFIX_RESIDUAL_CONFIGS[:2])
     candidates = proposer.generate(contract, incumbent=None, budget=2)
@@ -263,7 +257,7 @@ def test_faros_isq_proposer_and_experiment_runner(tmp_path):
 
 def test_run_faros_isq_search_end_to_end(tmp_path):
     """Verify end-to-end FAROS search orchestrator and output report."""
-    require_shipped_extension()  # the search locks its contract against the extension
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     report = run_faros_isq_search(
         output_dir=tmp_path / "faros_run",
         budget=5,
@@ -376,7 +370,7 @@ def test_exhaustive_integer_certificate_execution(tmp_path):
 
 def test_materialize_faros_circuit_execution(tmp_path):
     """Verify materialization produces circuit artifact, SHA-256, and metadata."""
-    require_shipped_extension()  # materialisation runs the kickmix circuit builder
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     out_kmb = tmp_path / "invsqrt_faros_test_86q.kmb"
     meta = materialize_faros_circuit(
         output_path=out_kmb,
@@ -396,15 +390,16 @@ def test_materialize_faros_circuit_execution(tmp_path):
 
 
 def test_calibrate_faros_circuit_execution(tmp_path):
-    """Verify cutting-plane calibration report and rotation angle optimization."""
-    require_shipped_extension()  # calibration starts from a materialised circuit
+    """Verify fixed-delta replay without claiming an LP solver ran."""
+    require_shipped_extension()  # CI does not build kickmix (tests/kickmix_availability.py)
     out_kmb = tmp_path / "invsqrt_faros_test_cal.kmb"
     materialize_faros_circuit(output_path=out_kmb)
 
     cal_rep = calibrate_faros_circuit(out_kmb)
     assert cal_rep["calibrated_rotation_count"] == 44
     assert cal_rep["margin_units"] == 73326605
-    assert cal_rep["lp_converged"] is True
+    assert cal_rep["lp_converged"] is None
+    assert cal_rep["margin_verified"] is False
     assert "dropped_original_rotation_indices" in cal_rep
 
 
@@ -423,5 +418,3 @@ def test_verify_faros_candidate_receipt_structure(tmp_path):
     assert data["verified_shots"] >= 200540928
     assert data["worst_error_over_tolerance"] < 1.0
     assert data["circuit_sha256"] == "7bd8955e7bda35382f33ba6df6239c746bcb1adad627f585939db6bc1accc3d0"
-
-

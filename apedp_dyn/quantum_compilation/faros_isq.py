@@ -39,10 +39,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import math
-import os
 import shutil
-import subprocess
-import sys
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -62,6 +59,12 @@ from apedp_dyn.quantum_compilation.experiment import (
     CandidateScreen,
     Proposer,
 )
+from apedp_dyn.quantum_compilation.faros_runtime import (
+    faros_python as _faros_python,
+)
+from apedp_dyn.quantum_compilation.faros_runtime import (
+    run_faros_script as _run_faros_script,
+)
 from apedp_dyn.quantum_compilation.invsqrt_signed_digit import (
     Cfg,
     integer_model,
@@ -70,89 +73,6 @@ from apedp_dyn.quantum_compilation.invsqrt_signed_digit import (
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 from apedp_dyn.quantum_compilation.referee import run_invsqrt_verifier
-
-# The circuit builder runs in a separate CPython 3.13 process because the shipped
-# `kickmix.so` is built for that ABI. `build/qvcc-venv313` is the runtime this
-# repository provisions (scripts/setup_verifier_env.py); the hardcoded
-# `/dev/shm/qvcc-venv313` path that used to be the default existed on one machine.
-_KICKMIX_PYTHON_ENV = "APEDP_Q_KICKMIX_PYTHON"
-_LEGACY_PYTHON_ENV = "APEDP_Q_PYTHON"
-_RESOLVED_PYTHON: dict[str, str] = {}
-
-
-def _builder_runtime_probe(executable: str) -> tuple[bool, str]:
-    """Return whether ``executable`` can build a circuit, and why it cannot."""
-    kickmix_dir = (
-        Path(__file__).resolve().parent.parent
-        / "sandbox"
-        / "google-verifiable-quantum-circuit-compilation"
-        / "kickmix"
-    )
-    probe = (
-        "import sys\n"
-        f"sys.path.insert(0, {str(kickmix_dir)!r})\n"
-        "import numpy, scipy, kickmix\n"
-    )
-    try:
-        proc = subprocess.run(  # noqa: S603 - fixed argv, repository-owned probe
-            [executable, "-c", probe],
-            capture_output=True,
-            text=True,
-            timeout=120,
-            check=False,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        return False, f"{executable}: {exc}"
-    if proc.returncode == 0:
-        return True, ""
-    lines = (proc.stderr or "").strip().splitlines()
-    return False, f"{executable}: {lines[-1] if lines else f'exit {proc.returncode}'}"
-
-
-def resolve_builder_python(explicit: str | None = None) -> str:
-    """Resolve the interpreter that can import numpy, scipy and kickmix.
-
-    Probed in order: the caller's argument, ``APEDP_Q_KICKMIX_PYTHON``, the
-    legacy ``APEDP_Q_PYTHON``, the repository runtime ``build/qvcc-venv313``,
-    and the current interpreter. A machine-local ``/dev/shm`` default used to
-    make every caller elsewhere fail with no diagnosis.
-    """
-    repo_root = Path(__file__).resolve().parent.parent.parent
-    candidates = [
-        explicit,
-        os.environ.get(_KICKMIX_PYTHON_ENV),
-        os.environ.get(_LEGACY_PYTHON_ENV),
-        str(repo_root / "build/qvcc-venv313/bin/python"),
-        sys.executable,
-    ]
-    probed: list[str] = []
-    reasons: list[str] = []
-    for candidate in candidates:
-        if not candidate or candidate in probed:
-            continue
-        probed.append(candidate)
-        if candidate in _RESOLVED_PYTHON:
-            return _RESOLVED_PYTHON[candidate]
-        ok, reason = _builder_runtime_probe(candidate)
-        if ok:
-            _RESOLVED_PYTHON[candidate] = candidate
-            return candidate
-        reasons.append(reason)
-    raise RuntimeError(
-        "no interpreter can run the KickMix circuit builder (needs CPython 3.13 with "
-        f"numpy, scipy and kickmix). Set {_KICKMIX_PYTHON_ENV} to one. "
-        "Probed: " + "; ".join(reasons)
-    )
-
-
-def _child_failure_detail(exc: BaseException) -> str:
-    """Carry the child process's stderr into our error message."""
-    if isinstance(exc, subprocess.CalledProcessError):
-        lines = (exc.stderr or "").strip().splitlines()
-        if lines:
-            return f" Child stderr: {lines[-1]}"
-    return ""
-
 
 __all__ = [
     "R1_NONUNIFORM_CONFIGS",
@@ -538,7 +458,7 @@ def compute_segment_boundaries(
         t = np.linspace(0, 1, num_segments + 1)
         # Quadratic bias toward m_min
         warped = t**1.5
-        _out = m_min + (m_max - m_min) * warped
+        _out: np.ndarray = m_min + (m_max - m_min) * warped
         return _out
 
     # Default fallback: uniform
@@ -1082,8 +1002,8 @@ class FarosParetoTournament:
         c1_vals = [float(c1.get(k, float("inf"))) for k in keys]
         c2_vals = [float(c2.get(k, float("inf"))) for k in keys]
 
-        weakly_better = all(v1 <= v2 for v1, v2 in zip(c1_vals, c2_vals, strict=False))
-        strictly_better = any(v1 < v2 for v1, v2 in zip(c1_vals, c2_vals, strict=False))
+        weakly_better = all(v1 <= v2 for v1, v2 in zip(c1_vals, c2_vals, strict=True))
+        strictly_better = any(v1 < v2 for v1, v2 in zip(c1_vals, c2_vals, strict=True))
         return weakly_better and strictly_better
 
     @classmethod
@@ -1455,7 +1375,7 @@ def exhaustive_integer_certificate(
             worst_ratio, worst_x = float(ratio[i]), int(xs[i])
         if (error > tolerance).any():
             bad_idx = int(np.flatnonzero(error > tolerance)[0])
-            result = {
+            result: dict[str, Any] = {
                 "pass": False,
                 "first_bad_x": int(xs[bad_idx]),
                 "ratio": float(ratio[bad_idx]),
@@ -1507,7 +1427,7 @@ def materialize_faros_circuit(
     out_file = Path(output_path) if output_path else default_out
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    py_bin = resolve_builder_python(python_executable)
+    py_bin = _faros_python(python_executable)
 
     should_build = force_rebuild or not out_file.exists()
 
@@ -1559,20 +1479,7 @@ res = {{
 }}
 print(json.dumps(res))
 """
-            try:
-                subprocess.run(  # noqa: S603 - fixed argv, script assembled in this module
-                    [py_bin, "-c", builder_script],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Circuit builder subprocess failed for {candidate_id}. "
-                    "Silent fallback copying of 90Q champion is permanently prohibited "
-                    "by MOSAIC-2 Evidence Integrity rules."
-                    + _child_failure_detail(exc)
-                ) from exc
+            _run_faros_script(py_bin, builder_script, f"circuit build for {candidate_id}")
 
     # Query operational statistics directly from the verified circuit
     stats_script = f"""
@@ -1593,20 +1500,12 @@ res = {{
 }}
 print(json.dumps(res))
 """
-    try:
-        proc = subprocess.run(  # noqa: S603 - fixed argv, script assembled in this module
-            [py_bin, "-c", stats_script],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        circ_stats = json.loads(proc.stdout.strip().splitlines()[-1])
-        num_qubits, static_toffoli, t_like, rotations = (
-            int(circ_stats[k]) for k in ("num_qubits", "static_toffoli", "t_like", "rotations"))
-        circuit_stats_source, circuit_stats_error = "measured", None
-    except Exception as exc:  # noqa: BLE001 - the statistics come from a second interpreter reading the circuit file; a missing kickmix, a timeout or non-JSON output must not abort compilation
-        num_qubits, static_toffoli, t_like, rotations = 90, 1448, 1, 44  # NOMINAL, not read off the circuit (audit L-02)
-        circuit_stats_source, circuit_stats_error = "nominal", f"{type(exc).__name__}: {exc}"
+    stdout = _run_faros_script(py_bin, stats_script, f"resource measurement for {candidate_id}")
+    circ_stats = json.loads(stdout.strip().splitlines()[-1])
+    num_qubits = int(circ_stats["num_qubits"])
+    static_toffoli = int(circ_stats["static_toffoli"])
+    t_like = int(circ_stats["t_like"])
+    rotations = int(circ_stats["rotations"])
 
     digest = sha256_file(out_file)
     margin_units = 73_326_605
@@ -1620,6 +1519,9 @@ print(json.dumps(res))
     )
 
     metadata = {
+        "resource_evidence": "subprocess circuit statistics",
+        "cost_evidence": "static estimate, not executed verifier score",
+        "margin_evidence": "historical assumed margin, not remeasured for this circuit",
         "candidate_id": candidate_id,
         "path": out_file,
         "sha256": digest,
@@ -1627,8 +1529,6 @@ print(json.dumps(res))
         "static_toffoli": static_toffoli,
         "t_like": t_like,
         "rotations": rotations,
-        "circuit_stats_source": circuit_stats_source,  # "measured" | "nominal"; nominal cost then
-        "circuit_stats_error": circuit_stats_error,
         "min_margin_units": margin_units,
         "cost_evaluation": cost_eval,
     }
@@ -1654,16 +1554,22 @@ def calibrate_faros_circuit(
         raise FileNotFoundError(f"Circuit artifact not found: {c_path}")
 
     out_file = Path(output_path) if output_path else c_path
-    py_bin = resolve_builder_python(python_executable)
+    py_bin = _faros_python(python_executable)
 
     if fixed_deltas is None:
         cal_path = repo_root / "src/invsqrt_calibration.json"
-        if cal_path.exists():
-            fixed_deltas = json.loads(cal_path.read_text(encoding="utf-8"))
+        fixed_deltas = json.loads(cal_path.read_text(encoding="utf-8"))
 
-    margin_units = fixed_deltas.get("marginUnits", 73_326_605) if fixed_deltas else 73_326_605
-    dropped = fixed_deltas.get("droppedOriginalRotationIndices", [18]) if fixed_deltas else [18]
-    eps = (math.pi * float(margin_units) / (2.0**64)) / 44.0
+    margin_units = fixed_deltas["marginUnits"]
+    dropped = fixed_deltas["droppedOriginalRotationIndices"]
+    values = fixed_deltas["deltasPhaseUnits"]
+    if (
+        type(margin_units) is not int or margin_units <= 0
+        or not isinstance(dropped, list) or not all(type(v) is int and v >= 0 for v in dropped)
+        or not isinstance(values, list) or not values or not all(type(v) is int for v in values)
+    ):
+        raise ValueError("Calibration requires positive marginUnits and integer phase/index lists")
+    source_digest = sha256_file(c_path)
 
     cal_script = f"""
 import sys
@@ -1683,8 +1589,7 @@ circuit = km.Circuit.from_file(str(circuit_in))
 stats = circuit.operation_statistics()
 rot_count = int(stats.num_z_pow(min_clifford_hierarchy_level=4))
 
-cal_path = repo_root / 'src/invsqrt_calibration.json'
-fixed_deltas = json.loads(cal_path.read_text(encoding='utf-8')) if cal_path.exists() else {{}}
+fixed_deltas = json.loads({json.dumps(fixed_deltas)!r})
 values = fixed_deltas.get('deltasPhaseUnits', [])
 dropped = set(fixed_deltas.get('droppedOriginalRotationIndices', [18]))
 
@@ -1705,36 +1610,27 @@ print(json.dumps({{
     'sha256': hashlib.sha256(circuit_out.read_bytes()).hexdigest(),
 }}))
 """
-    try:
-        proc = subprocess.run(  # noqa: S603 - fixed argv, script assembled in this module
-            [py_bin, "-c", cal_script],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        res_info = json.loads(proc.stdout.strip().splitlines()[-1])
-        cal_rotations = int(res_info["rotations"])
-        cal_sha256 = str(res_info["sha256"])
-    except Exception as exc:
-        raise RuntimeError(
-            f"Phase calibration subprocess failed for {c_path}. "
-            "Silent fallback copying of input circuit is permanently prohibited "
-            "by MOSAIC-2 Evidence Integrity rules."
-            + _child_failure_detail(exc)
-        ) from exc
+    stdout = _run_faros_script(py_bin, cal_script, f"phase calibration for {c_path}")
+    res_info = json.loads(stdout.strip().splitlines()[-1])
+    cal_rotations = int(res_info["rotations"])
+    cal_sha256 = str(res_info["sha256"])
+    if cal_rotations <= 0:
+        raise ValueError("Calibration produced no non-Clifford rotations")
+    eps = (math.pi * float(margin_units) / (2.0**64)) / cal_rotations
 
     report = {
         "source_circuit": str(c_path),
         "calibrated_circuit": str(out_file),
-        "source_circuit_sha256": sha256_file(c_path),
+        "source_circuit_sha256": source_digest,
         "calibrated_circuit_sha256": cal_sha256,
         "dropped_original_rotation_indices": dropped,
         "calibrated_rotation_count": cal_rotations,
         "margin_units": margin_units,
         "rotation_eps": eps,
         "t_gates_per_rotation": 0.56 * math.log2(1.0 / eps) + 5.3,
-        "calibration_method": "cutting-plane LP on Chebyshev minimax basis phase oracle",
-        "lp_converged": True,
+        "calibration_method": "replay fixed phase deltas; no LP solver executed",
+        "lp_converged": None,
+        "margin_verified": False,
     }
 
     cal_out = out_file.with_suffix(".calibration.json")
@@ -1757,7 +1653,7 @@ def verify_faros_candidate(
         contract = load_contract("invsqrt")
     contract.assert_locked()
 
-    py_bin = resolve_builder_python(python_executable)
+    py_bin = _faros_python(python_executable)
     art_path = Path(artifact_path)
     if not art_path.exists():
         raise FileNotFoundError(f"Artifact not found: {art_path}")
@@ -1779,4 +1675,3 @@ def verify_faros_candidate(
             encoding="utf-8",
         )
     return receipt
-

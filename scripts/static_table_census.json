@@ -83,9 +83,6 @@
       "RECYCLING_MEASUREMENT",
       "WIDTH_LEVERS_MEASURED"
     ],
-    "apedp_dyn/quantum_compilation/faros_isq.py": [
-      "_RESOLVED_PYTHON"
-    ],
     "apedp_dyn/quantum_compilation/quantum_signal.py": [
       "CONTINUOUS_STEPS"
     ],

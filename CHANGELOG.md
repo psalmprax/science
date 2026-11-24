@@ -23,6 +23,28 @@ inferred releases.
 
 ### Changed
 
+- **`master` and pull requests #65 and #62 merged into `stage` (2026-11-24, on the owner's
+  word).** `master`'s nine Dependabot commits (mypy 2.4.1, maturin 1.16.0, CodeQL action v4) and
+  #65 (ruff 0.17.5) are in; `requirements-quality.in` and its hashed lock, which CI installs, now
+  pin the same ruff and mypy as `pyproject.toml`, and the quality baseline holds under both
+  (no count rose). #62 ("Raise type, security, and CI quality gates") brings the hashed CI lock
+  files, the wider type and security gates, the FAROS runtime and evidence scripts, the MMLM
+  byte-level tokenizer fix and its tests. Three choices were made in the merge:
+  - **The VQC comparison record.** `benchmarks/quantum_compilation/vqc_external_comparison.json`
+    pins the hash of `apedp_dyn/vqc/qasm.py`, and #62 rewrote that file's parameter parser
+    (still no `eval`; it now also refuses non-finite values). The record that describes the code
+    now is #62's re-measurement of 2026-11-19, made by the same script (its `script_sha256` is
+    unchanged), so it is the current record. The 2026-11-10 measurement is kept byte-for-byte as
+    `vqc_external_comparison_2026-11-10.json`; nothing measured is lost. Its memory floor (167 MiB)
+    is the eager-import era's; the re-measurement reads 38 MiB since the package inits became lazy.
+  - **No Qualtran submodule.** #62 added a `.gitmodules` entry for
+    `kickmix/_qualtran_src` without a submodule commit, so it pinned nothing and
+    `git submodule update` could not restore anything, while the directory stays git-ignored.
+    The entry is left out and `CONTRIBUTING.md` says how the directory is actually treated.
+  - **A stray 245 KB `search_progress.png` in the repository root is not taken.**
+  The recorded static tables in `apedp_dyn` are 22, not 23: #62 replaced `faros_isq.py`'s
+  interpreter resolver with `faros_runtime.py`, and its `_RESOLVED_PYTHON` memo went with it.
+
 - **Six further published regularities of asset returns, frozen and not run (2026-11-21,
   PREREG-LAW-AUDIT-FINANCE-MORE-2026-11).** The owner asked whether all the audits were built
   before anything is run; five laws were. This batch adds the four remaining facts of Cont's list
@@ -1071,6 +1093,12 @@ inferred releases.
   `macos-14` runner image, which GitHub retired on 2026-11-02. Since then the job was cancelled
   before any step ran, with no log, on every pull request. It now runs on `macos-15`, as the Intel
   job already does, and a contract test refuses a workflow that names a retired image.
+- **CI: the Rust toolchain failure that looked like a flake (2026-11-20).** On the pull-request
+  branch the test job had the step that empties the toolchain home twice, once before the
+  toolchain is installed and once after, left there by a merge. The second copy deleted the
+  toolchain every run; rustup reinstalled it at the next Rust command and sometimes failed on
+  `bin/cargo-clippy` (a407ca5, test (3.11)). The copy is removed and a contract test requires
+  exactly one such step, with nothing touching that home after the install.
 - **The formula parser no longer evaluates unbounded numeric towers.**
   `safe_parse_expr("9**9**9**9")` and `safe_parse_expr("zeta(10**7)")` did not
   return: SymPy folds numeric sub-expressions during the parse, before the
@@ -1288,6 +1316,7 @@ inferred releases.
 - Sizing convergence diagnostics: `SizingDecision` reports `iterations`, `converged` and an analytic `kkt_residual` instead of stopping silently at `max_iterations`, and a non-converged case is polished by an active-set solve with a smooth-QP/kink-snap fallback. All 36 audit cases converge; the worst residual is 2.0e-12.
 - `scripts/audit_sizing_solver_convergence.py` and `benchmarks/sizing_solver_convergence.json` measure the sizing solver on ill-conditioned covariances (36 cases, `n = 2, 4, 8`, `κ = 10²…10¹²`), documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
 - `scripts/audit_sizing_real_market.py` and `benchmarks/sizing_real_market.json` walk the sizing rule forward over the repository's real equity and crypto panels (126-day lookback, 5-day rebalance, 0/5/20 bps). All six runs converge (0 unconverged, worst KKT 1.4e-13); documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
+- Source-linked scaffold inventory with evidence tiers, explicit prediction limits, and a regression guard for its references.
 
 ### Changed
 

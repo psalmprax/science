@@ -1030,14 +1030,18 @@ def test_every_census_module_in_apedp_dyn_is_named_in_the_inventory():
 
     text = (REPO_ROOT / "docs/SCAFFOLD_INVENTORY.md").read_text(encoding="utf-8")
     recorded = _recorded_tables("apedp_dyn")
-    # 20 since 2026-11-19: `discovery_l2/contrast_resolution.py::ACTIONS` (verdict -> next action) and
+    # 17 since the stage/master merge (2026-11-19): faros_isq.py's
+    # `_RESOLVED_PYTHON` memo went with stage's interpreter resolver, which
+    # master's faros_runtime module replaced.
+    # 19 since 2026-11-19: `discovery_l2/contrast_resolution.py::ACTIONS` (verdict -> next action) and
     # `pde/weak_form.py::LIBRARY` (the weak form's seven terms) were added and recorded with their rows.
-    # 21 since PREREG-PDE-2D: `pde/weak_form_2d.py::LIBRARY_2D` (the two-dimensional weak form's eleven terms).
-    # 22 since PREREG-LAW-AUDIT-FINANCE: `market/law_audit.py::STRETCH` (how far each interval is widened;
+    # 20 since PREREG-PDE-2D: `pde/weak_form_2d.py::LIBRARY_2D` (the two-dimensional weak form's eleven terms).
+    # 21 since PREREG-LAW-AUDIT-FINANCE: `market/law_audit.py::STRETCH` (how far each interval is widened;
     # measured on simulated panels and pinned to that measurement by tests/test_market_law_audit.py).
-    # 23 since the agentic variation operator: `proposers/agentic_variation.py::NOTES` (ten hand-written
+    # 22 since the agentic variation operator: `proposers/agentic_variation.py::NOTES` (ten hand-written
     # notes on what to try when a residual looks a certain way, which an agent may read).
-    assert len(recorded) == 23
+    # (Stage counted 21 to 23 before PR 62 was merged into it on 2026-11-24, because stage still had the memo.)
+    assert len(recorded) == 22
 
     for module_path in recorded:
         # The census table writes paths relative to the package root.

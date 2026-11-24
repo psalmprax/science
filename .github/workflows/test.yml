@@ -24,17 +24,21 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - name: Install quality and test tools
+      - name: Install quality tools
+        run: python -m pip install --require-hashes -r requirements-quality.lock
+      - name: Verify quality tool setup
         run: |
-          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test,orchestration]"
           python -m pytest --version
           ruff --version
           mypy --version
       - name: Lint Python
         run: make lint
+      # Only the strict core here: the full-package baseline counts findings
+      # that depend on which libraries are installed (torch, fastapi, the
+      # scientific stack), and this job installs none of them. It runs in the
+      # test job, where they are.
       - name: Strict core type check
-        run: make typecheck
+        run: make typecheck-core
       - name: CI configuration regression checks
         run: >-
           python -m pytest tests/test_ci_quality_contract.py
@@ -176,8 +180,28 @@ jobs:
       - name: Re-measure the axiom audit against the committed record
         run: python scripts/check_lean_checked.py --check --require-lean
 
+  research-models:
+    name: Research model regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-research.lock
+      - name: Install hash-pinned numerical test dependencies
+        run: python -m pip install --require-hashes -r requirements-research.lock
+      - name: Check rounding, normalization, and parity models without native dependencies
+        run: |
+          python -m pytest scripts/check_normalized_invsqrt.py \
+            scripts/check_horner_invsqrt.py scripts/check_parity_phase.py \
+            -k "not native" -q
+
+
   test:
-    needs: [python-quality, rust-quality]
+    needs: [python-quality, rust-quality, research-models]
     runs-on: ubuntu-latest
     # The suite had never run to completion here. Measured on 2026-11-16: the
     # 3.11 leg ran 4,769 tests in 25 minutes and the 3.10 leg 3,270 in 21,
@@ -231,8 +255,15 @@ jobs:
       # install step ran -- "recovering from a partially installed toolchain",
       # with rust-docs among the removed components, which the minimal profile
       # never installs -- and failed on "detected conflict: 'bin/cargo-clippy'".
-      # Which step left it is not established; if the directory is found
-      # non-empty again, the warning below lists what was in it.
+      # What left it, established on 2026-11-20 from the log of a407ca5's failed
+      # test (3.11): a merge had left a second copy of this step after the
+      # install step. It deleted the toolchain that had just been installed;
+      # the next Rust command (rust-cache's `rustc -vV`) made rustup install it
+      # again through the proxy, with the default profile (hence rust-docs),
+      # and that install sometimes failed on the clippy file. The copy is gone
+      # and tests/test_ci_rust_toolchain.py requires exactly one such step. If
+      # the directory is found non-empty again, the warning below lists what
+      # was in it.
       - name: Isolate Rust toolchain home
         run: |
           if [ -e "$RUNNER_TEMP/rustup" ]; then
@@ -256,22 +287,6 @@ jobs:
           components: rustfmt, clippy
 
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip
-          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test,orchestration]"
-          python -m pip install -e packages/jetflow-video
-          python -m pytest --version
-
       # Three tests in tests/test_dyn_lean_universal_bridge.py compile a proof
       # with `lean`. This job sets APEDP_REQUIRE_NATIVE, under which a missing
       # toolchain is a failure and not a skip, so the toolchain is installed
@@ -288,6 +303,30 @@ jobs:
             -C "${{ runner.temp }}/lean-toolchain" --strip-components=1
       - name: Put lean and lake on PATH
         run: echo "${{ runner.temp }}/lean-toolchain/bin" >> "$GITHUB_PATH"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test,orchestration]"
+          python -m pip install -e packages/jetflow-video
+          python -m pytest --version
+
+      # The ratchet's limits were measured with the full stack installed and
+      # Python 3.12, so it runs once, on that entry, before the kernel build.
+      - name: Full-package type baseline
+        if: matrix.python-version == '3.12'
+        run: |
+          source .venv/bin/activate
+          make typecheck-baseline
 
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2
@@ -337,6 +376,21 @@ jobs:
         run: |
           source .venv/bin/activate
           python -m pytest tests/test_smoke_imports.py -q -x
+
+      - name: MMLM and evidence contract regressions
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_mmlm_bpe_tokenizer.py \
+            tests/test_mmlm_two_site_sweep.py tests/test_apedp_mmlm_architecture.py \
+            tests/test_faros_evidence_pipeline.py tests/test_faros_runtime.py -q -x
+
+      - name: Guard expression evaluator branch coverage
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_expression_evaluator.py \
+            --cov --cov-branch --cov-report= -q
+          python -m coverage report \
+            --include='*/apedp/expression_evaluator.py' --fail-under=95
 
       - name: Collection smoke (import every test module)
         run: |
@@ -511,6 +565,7 @@ jobs:
   # mutant FAILS CI — this gate is the mechanism by which the register
   # requirement stays closed-by-evidence rather than closed-by-assertion.
   mutation-battery:
+    needs: build-kernel-wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -536,8 +591,18 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev,test]"
-          maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml
+      - name: Download the required native kernel
+        uses: actions/download-artifact@v8
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse
+      - name: Install and require the native kernel
+        run: |
+          source .venv/bin/activate
+          python -m pip install wheelhouse/*.whl
+          python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
       - name: Run targeted mutation battery (referee + leakage paths)
         run: |
           source .venv/bin/activate

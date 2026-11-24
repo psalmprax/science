@@ -28,6 +28,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "pytest-cov==7.0.0",
     "ruff==0.17.5",
     "mypy==2.4.1",
     "maturin==1.16.0",
@@ -248,7 +249,15 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-files = ["apedp_dyn/conf/paths.py", "apedp_referee/canonical_spec.py"]
+files = [
+    "apedp_dyn/conf/paths.py",
+    "apedp_referee/canonical_spec.py",
+    "apedp_dyn/conf/benchmark.py",
+    "apedp_dyn/quantum_compilation/faros_runtime.py",
+    "apedp_dyn/quantum_compilation/kickmix_builds.py",
+    "scripts/build_faros_candidate.py",
+    "scripts/check_verifier_environment.py",
+]
 strict = true
 # Phase 1 checks the path/specification integrity boundary strictly. Keep
 # imported legacy modules opaque until their typing debt is remediated.
