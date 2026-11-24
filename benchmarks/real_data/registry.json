@@ -1,0 +1,349 @@
+{
+ "note": "Tables of real measurements for testing the route outside invented and textbook-generated data. Pinned by source commit and SHA-256. The split was fixed by table name on 2026-11-24 before any row of a held-back table was read (headers and the sources' README files only; one exception is noted on its table). Development tables are copied under benchmarks/real_data/development/ (MIT sources). Held-back tables are never copied into this repository: they are fetched from the pinned commit at the time of a preregistered run.",
+ "fixed": "2026-11-24",
+ "tables": [
+  {
+   "key": "kepler_solar_system",
+   "split": "development",
+   "kind": "known_law",
+   "source": {
+    "repo": "IBM/AI-Descartes",
+    "commit": "88bda466c605aaff235c160b5bcb7fc61efd1cf0",
+    "licence": "MIT",
+    "citation": "Cornelio et al., Combining data and theory for derivable scientific discovery with AI-Descartes, Nat. Commun. 14, 1777 (2023)",
+    "path": "data/kepler/KEPLER_solar_system.dat"
+   },
+   "sha256": "d6fba0fb665712c83ba2cbd4e909ec7cd6099b12f5e13125db223d37161cf785",
+   "lines": 9,
+   "bytes": 251,
+   "format": "whitespace",
+   "inputs": [
+    "d"
+   ],
+   "target": "p",
+   "law": "a*d**1.5",
+   "law_parameters": [
+    "a"
+   ],
+   "what": "Eight planets: orbital period against distance from the Sun. Kepler's third law.",
+   "columns_left_out": {
+    "m1": "the Sun's mass, the same in every row",
+    "m2": "the planet's mass: at most a thousandth of the Sun's, below what the table's digits show"
+   },
+   "units": {
+    "p": "thousands of days",
+    "d": "astronomical units"
+   }
+  },
+  {
+   "key": "kepler_exoplanets",
+   "split": "held_back",
+   "kind": "known_law",
+   "source": {
+    "repo": "IBM/AI-Descartes",
+    "commit": "88bda466c605aaff235c160b5bcb7fc61efd1cf0",
+    "licence": "MIT",
+    "citation": "Cornelio et al., Combining data and theory for derivable scientific discovery with AI-Descartes, Nat. Commun. 14, 1777 (2023)",
+    "path": "data/kepler/kepler_exoplanets.dat"
+   },
+   "sha256": "02240ac8f5c7fc8c23b0d2575e1e89205127c90045c09d1f819ae75bfe0d8dcb",
+   "lines": 13,
+   "bytes": 337,
+   "format": "whitespace",
+   "inputs": [
+    "m1",
+    "m2",
+    "d"
+   ],
+   "target": "p",
+   "law": "a*sqrt(d**3/(m1 + m2))",
+   "law_parameters": [
+    "a"
+   ],
+   "what": "Exoplanets: period against distance and the two masses. Kepler's third law with masses.",
+   "scale": {
+    "m2": 0.000954488
+   },
+   "units": {
+    "p": "thousands of days",
+    "m1": "solar masses",
+    "m2": "Jupiter masses in the file; solar masses after the scale",
+    "d": "astronomical units"
+   }
+  },
+  {
+   "key": "kepler_binary_stars",
+   "split": "held_back",
+   "kind": "known_law",
+   "source": {
+    "repo": "IBM/AI-Descartes",
+    "commit": "88bda466c605aaff235c160b5bcb7fc61efd1cf0",
+    "licence": "MIT",
+    "citation": "Cornelio et al., Combining data and theory for derivable scientific discovery with AI-Descartes, Nat. Commun. 14, 1777 (2023)",
+    "path": "data/kepler/kepler_binary_stars.dat"
+   },
+   "sha256": "22fa64c229560cfc60a56e5171f342367f083c7f74ab857f6f43d5014897aa9b",
+   "lines": 5,
+   "bytes": 100,
+   "format": "whitespace",
+   "inputs": [
+    "m1",
+    "m2",
+    "d"
+   ],
+   "target": "p",
+   "law": "a*sqrt(d**3/(m1 + m2))",
+   "law_parameters": [
+    "a"
+   ],
+   "what": "Binary stars: period against separation and the two masses.",
+   "units": {
+    "p": "years",
+    "m1": "solar masses",
+    "m2": "solar masses",
+    "d": "astronomical units"
+   }
+  },
+  {
+   "key": "langmuir_table_ix",
+   "split": "development",
+   "kind": "known_law",
+   "source": {
+    "repo": "IBM/AI-Descartes",
+    "commit": "88bda466c605aaff235c160b5bcb7fc61efd1cf0",
+    "licence": "MIT",
+    "citation": "Cornelio et al., Combining data and theory for derivable scientific discovery with AI-Descartes, Nat. Commun. 14, 1777 (2023)",
+    "path": "data/langmuir/langmuir_table_IX.dat"
+   },
+   "sha256": "fd7bbe8ccf3f508b452f8342ca73cb4989299ee66758d1c061758f92bc53905e",
+   "lines": 11,
+   "bytes": 108,
+   "format": "whitespace",
+   "inputs": [
+    "p"
+   ],
+   "target": "q",
+   "law": "a*p/(1 + b*p)",
+   "law_parameters": [
+    "a",
+    "b"
+   ],
+   "what": "Langmuir's 1918 Table IX: gas adsorbed on a surface against pressure. Langmuir's isotherm.",
+   "units": {
+    "p": "bars",
+    "q": "cubic millimetres"
+   }
+  },
+  {
+   "key": "langmuir_sun_et_al",
+   "split": "held_back",
+   "kind": "known_law",
+   "source": {
+    "repo": "IBM/AI-Descartes",
+    "commit": "88bda466c605aaff235c160b5bcb7fc61efd1cf0",
+    "licence": "MIT",
+    "citation": "Cornelio et al., Combining data and theory for derivable scientific discovery with AI-Descartes, Nat. Commun. 14, 1777 (2023)",
+    "path": "data/langmuir/langmuir_sun_et_al.dat"
+   },
+   "sha256": "f4a3fb2c0bc2d64275d7eec465c751372541d299bf72d74315910e73074dc01c",
+   "lines": 18,
+   "bytes": 196,
+   "format": "whitespace",
+   "inputs": [
+    "p"
+   ],
+   "target": "q",
+   "law": "a*p/(1 + b*p)",
+   "law_parameters": [
+    "a",
+    "b"
+   ],
+   "what": "Adsorption measurements of Sun et al.: loading against pressure.",
+   "units": {
+    "p": "kPa",
+    "q": "mol/kg"
+   }
+  },
+  {
+   "key": "time_dilation",
+   "split": "held_back",
+   "kind": "known_law",
+   "source": {
+    "repo": "IBM/AI-Descartes",
+    "commit": "88bda466c605aaff235c160b5bcb7fc61efd1cf0",
+    "licence": "MIT",
+    "citation": "Cornelio et al., Combining data and theory for derivable scientific discovery with AI-Descartes, Nat. Commun. 14, 1777 (2023)",
+    "path": "data/relativistic_time_dilation/relativistic_time_dilation.dat"
+   },
+   "sha256": "6d09a6c89b64ffcc6939305a36cb9be49091070d6535aeb7dfc0a1fde89510c2",
+   "lines": 8,
+   "bytes": 88,
+   "format": "whitespace",
+   "inputs": [
+    "v"
+   ],
+   "target": "t",
+   "law": "a*(sqrt(1 - v**2/b**2) - 1)",
+   "law_parameters": [
+    "a",
+    "b"
+   ],
+   "what": "Clock measurements: time dilation against velocity.",
+   "units": {
+    "v": "m/s",
+    "t": "1e-15"
+   }
+  },
+  {
+   "key": "leavitt",
+   "split": "development",
+   "kind": "known_law",
+   "source": {
+    "repo": "MilesCranmer/pysr_paper",
+    "commit": "b30687433fb32d3b9784fbedb1480d947dc46fc0",
+    "licence": "MIT",
+    "citation": "Cranmer, Interpretable Machine Learning for Science with PySR and SymbolicRegression.jl, arXiv:2305.01582 (EmpiricalBench)",
+    "path": "src/data/empirical_bench/leavitt.csv"
+   },
+   "sha256": "607d8a7f7480f4f28168d04ded32985878b175e99e7fe51edafe017a16bc87d6",
+   "lines": 27,
+   "bytes": 992,
+   "format": "csv",
+   "inputs": [
+    "logP"
+   ],
+   "target": "M",
+   "law": "a*logP + b",
+   "law_parameters": [
+    "a",
+    "b"
+   ],
+   "what": "Leavitt's 1912 Cepheids: magnitude against the logarithm of the period. Leavitt's law.",
+   "units": {
+    "logP": "log10 of days",
+    "M": "magnitude"
+   }
+  },
+  {
+   "key": "hubble_1929",
+   "split": "held_back",
+   "kind": "known_law",
+   "source": {
+    "repo": "MilesCranmer/pysr_paper",
+    "commit": "b30687433fb32d3b9784fbedb1480d947dc46fc0",
+    "licence": "MIT",
+    "citation": "Cranmer, Interpretable Machine Learning for Science with PySR and SymbolicRegression.jl, arXiv:2305.01582 (EmpiricalBench)",
+    "path": "src/data/empirical_bench/hubble.csv"
+   },
+   "sha256": "1c85271e093a3b5a0fb502dd60867896f047195dc7e556cd45f37094ba7a002d",
+   "lines": 33,
+   "bytes": 1198,
+   "format": "csv",
+   "inputs": [
+    "D"
+   ],
+   "target": "v",
+   "law": "a*D",
+   "law_parameters": [
+    "a"
+   ],
+   "what": "Hubble's 1929 nebulae: velocity against distance. Hubble's law.",
+   "units": {
+    "D": "Mpc",
+    "v": "km/s"
+   }
+  },
+  {
+   "key": "tully_fisher",
+   "split": "held_back",
+   "kind": "known_law",
+   "source": {
+    "repo": "MilesCranmer/pysr_paper",
+    "commit": "b30687433fb32d3b9784fbedb1480d947dc46fc0",
+    "licence": "MIT",
+    "citation": "Cranmer, Interpretable Machine Learning for Science with PySR and SymbolicRegression.jl, arXiv:2305.01582 (EmpiricalBench)",
+    "path": "src/data/empirical_bench/tully.csv"
+   },
+   "sha256": "17590bd8a1ab1c75ce7dc18f720b7bf123cb3482d0003b765677e31fa0018770",
+   "lines": 19,
+   "bytes": 690,
+   "format": "csv",
+   "inputs": [
+    "DV"
+   ],
+   "target": "M",
+   "law": "a*log(DV) + b",
+   "law_parameters": [
+    "a",
+    "b"
+   ],
+   "what": "Tully and Fisher's 1977 galaxies: magnitude against line width. A power law in luminosity is a line in magnitude against log width.",
+   "units": {
+    "DV": "km/s",
+    "M": "magnitude"
+   }
+  },
+  {
+   "key": "nikuradse_superpipe",
+   "split": "held_back",
+   "kind": "open",
+   "source": {
+    "repo": "emreunal13/GPTIPS2.0_OMAPISR",
+    "commit": "61ae974f6da642d119474d5bc201b0ec7300b576",
+    "licence": "GPL-3.0 (the repository); fetched at run time, never copied into this repository",
+    "citation": "Unal et al., arXiv:2602.17082; Nikuradse, NACA TM 1292 (1950); Zagarola and Smits, Phys. Rev. Lett. 80, 239 (1998)",
+    "path": "NIKURADSE_DATA_NONZERO_SUPERPIPE_INCH_CONVERTED.csv"
+   },
+   "sha256": "fd4aa4f1244dc2648746d0ad839f115ca4e71949261732d26eb5ecf66a747ade",
+   "lines": 407,
+   "bytes": 43947,
+   "format": "csv",
+   "inputs": [
+    "Re",
+    "eD"
+   ],
+   "target": "f",
+   "law": null,
+   "law_parameters": [],
+   "what": "Turbulent pipe friction: friction factor against Reynolds number and relative roughness (Nikuradse's rough pipes with the Princeton smooth pipe). No accepted closed formula: the check is prediction on pipes left out, against the published correlations.",
+   "other_columns": [
+    "rho",
+    "mu",
+    "D",
+    "V",
+    "e",
+    "L",
+    "delta_P"
+   ]
+  },
+  {
+   "key": "cosmic_chronometers",
+   "split": "held_back",
+   "kind": "open",
+   "source": {
+    "repo": "DeaglanBartlett/ESR",
+    "commit": "e2337cb37329702850900d00b6c0913f2c93c4a4",
+    "licence": "MIT (as declared in setup.py and README)",
+    "citation": "Bartlett, Desmond and Ferreira, Exhaustive Symbolic Regression; cosmic chronometers as compiled there",
+    "path": "esr/data/CC_Hubble.dat"
+   },
+   "sha256": "d1b604ef285ee22de6cad6b17b525c34dfaf92fcd74f734ab3574cc1a31d77d3",
+   "lines": 32,
+   "bytes": 529,
+   "format": "whitespace_no_header",
+   "inputs": [
+    "z"
+   ],
+   "target": "H",
+   "law": null,
+   "law_parameters": [],
+   "what": "Cosmic chronometers: expansion rate against redshift, with each measurement's stated error. The standard model's form is known but disputed forms fit as well: the check is prediction on rows left out.",
+   "columns": [
+    "z",
+    "H",
+    "sigma_H"
+   ],
+   "note": "The file has no header line. Its first row was printed once on 2026-11-24 while looking for one; no other row has been read."
+  }
+ ]
+}

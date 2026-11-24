@@ -1,0 +1,974 @@
+{
+ "reading": [
+  "Nothing was reported on any table, on any split: no false claim on real data. Every law below is tentative (nothing challenged it, since the search stage did not run) and every table is outside the measured range (700 rows; these have 8, 10 and 26).",
+  "Kepler, 8 planets: the product's reading refuses the table (it needs 24 rows). The route called directly gives Kepler's law, 0.363*d**(3/2), on all five splits, as a tentative law.",
+  "Langmuir's Table IX, 10 rows: refused by the product. Called directly, the route's tentative laws are other two-constant forms (a cosine of the fourth root of the pressure, an eighth root of 1/p, a logarithm). They fit these ten rows a little better (R2 0.988 to 0.994) than Langmuir's own form does (0.989). The table does not single the law out; the source that published it used background theory to choose.",
+  "Leavitt's Cepheids, 26 rows: the product runs. Its tentative law is 2*sin(exp(sqrt(logP))) + 12.9 on every split, R2 0.977 against 0.935 for the known straight line, with the same two constants. Either the first pass's choice among thousands of forms is fitting the scatter of 26 points, or the table bends; this run cannot tell which, and a form like that would not be accepted as a law by anyone.",
+  "What the three tables ask of the route: a way to work with tens of rows instead of hundreds; a choice among forms that counts how many were tried and prefers the plain one; and a place for what is known beforehand (units, limits, monotonicity)."
+ ],
+ "record": {
+  "last_checks": "second",
+  "min_rows_of_the_product": 24,
+  "pool_share": 0.3,
+  "search_seconds": 0.0,
+  "tables": [
+   {
+    "inputs": [
+     "d"
+    ],
+    "key": "kepler_solar_system",
+    "known_law": "a*d**1.5",
+    "known_law_fitted": "0.36315512688241*d**1.5",
+    "known_law_r2_all_rows": 0.999999,
+    "readings": [
+     {
+      "direct": {
+       "action": "confirmed",
+       "law": null,
+       "law_as_confirmed": "0.363444720661727*d**(3/2)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "6 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 6,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 6,
+       "rows_pool": 2,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.35,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 1,
+       "law": "0.363444720661727*d**(3/2)",
+       "r2_all_rows": 0.999998,
+       "refit_error": 2.6470256135273246e-17,
+       "same_form_as_the_known_law": true
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 8 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 0
+     },
+     {
+      "direct": {
+       "action": "confirmed",
+       "law": null,
+       "law_as_confirmed": "0.363443965108842*d**(3/2)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "6 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 6,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 6,
+       "rows_pool": 2,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.37,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 1,
+       "law": "0.363443965108842*d**(3/2)",
+       "r2_all_rows": 0.999998,
+       "refit_error": 1.8769816161860236e-18,
+       "same_form_as_the_known_law": true
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 8 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 1
+     },
+     {
+      "direct": {
+       "action": "confirmed",
+       "law": null,
+       "law_as_confirmed": "0.363155100168711*d**(3/2)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "6 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 6,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 6,
+       "rows_pool": 2,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.29,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 1,
+       "law": "0.363155100168711*d**(3/2)",
+       "r2_all_rows": 0.999999,
+       "refit_error": 5.832268119534472e-17,
+       "same_form_as_the_known_law": true
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 8 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 2
+     },
+     {
+      "direct": {
+       "action": "equivalent_class",
+       "law": null,
+       "law_as_confirmed": "0.36315490046838*d**(3/2)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "6 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 6,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 6,
+       "rows_pool": 2,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.31,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 1,
+       "law": "0.36315490046838*d**(3/2)",
+       "r2_all_rows": 0.999999,
+       "refit_error": 1.6788233945237474e-18,
+       "same_form_as_the_known_law": true
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 8 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 3
+     },
+     {
+      "direct": {
+       "action": "confirmed",
+       "law": null,
+       "law_as_confirmed": "0.363053742531366*d**(3/2)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "6 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 6,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 6,
+       "rows_pool": 2,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.39,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 1,
+       "law": "0.363053742531366*d**(3/2)",
+       "r2_all_rows": 0.999999,
+       "refit_error": 4.071744813164353e-19,
+       "same_form_as_the_known_law": true
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 8 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 4
+     }
+    ],
+    "rows": 8,
+    "summary": {
+     "direct_errors": 0,
+     "direct_gave_the_law_tentatively": 5,
+     "direct_reported": 0,
+     "direct_reported_the_law": 0,
+     "direct_run": 5,
+     "product_gave_the_law_tentatively": 0,
+     "product_refused": 5,
+     "product_reported": 0,
+     "product_reported_the_law": 0,
+     "splits": 5
+    },
+    "target": "p"
+   },
+   {
+    "inputs": [
+     "p"
+    ],
+    "key": "langmuir_table_ix",
+    "known_law": "a*p/(1 + b*p)",
+    "known_law_fitted": "13.1792733340367*p/(0.122151106522049*p + 1)",
+    "known_law_r2_all_rows": 0.989252,
+    "readings": [
+     {
+      "direct": {
+       "action": "equivalent_class",
+       "law": null,
+       "law_as_confirmed": "46.262867517519 - 53.2844935457544*cos(p**(1/4))",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "7 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 7,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 7,
+       "rows_pool": 3,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.27,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 2,
+       "law": "46.262867517519 - 53.2844935457544*cos(p**(1/4))",
+       "r2_all_rows": 0.992921,
+       "refit_error": 0.02775821045767016,
+       "same_form_as_the_known_law": false
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 10 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 0
+     },
+     {
+      "direct": {
+       "action": "equivalent_class",
+       "law": null,
+       "law_as_confirmed": "231.41247438204 - 230.634427238041*(1/p)**(1/8)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "7 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 7,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 7,
+       "rows_pool": 3,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.32,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 2,
+       "law": "231.41247438204 - 230.634427238041*(1/p)**(1/8)",
+       "r2_all_rows": 0.992636,
+       "refit_error": 0.03496287051086925,
+       "same_form_as_the_known_law": false
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 10 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 1
+     },
+     {
+      "direct": {
+       "action": "equivalent_class",
+       "law": null,
+       "law_as_confirmed": "46.0374954557391 - 55.6559607761012*cos(p**(1/4))",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "7 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 7,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 7,
+       "rows_pool": 3,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.29,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 2,
+       "law": "46.0374954557391 - 55.6559607761012*cos(p**(1/4))",
+       "r2_all_rows": 0.993608,
+       "refit_error": 0.02775821045767017,
+       "same_form_as_the_known_law": false
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 10 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 2
+     },
+     {
+      "direct": {
+       "action": "equivalent_class",
+       "law": null,
+       "law_as_confirmed": "228.861214577059 - 226.101673571958*(1/p)**(1/8)",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "7 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 7,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 7,
+       "rows_pool": 3,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.4,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 2,
+       "law": "228.861214577059 - 226.101673571958*(1/p)**(1/8)",
+       "r2_all_rows": 0.993229,
+       "refit_error": 0.034962870510869215,
+       "same_form_as_the_known_law": false
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 10 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 3
+     },
+     {
+      "direct": {
+       "action": "equivalent_class",
+       "law": null,
+       "law_as_confirmed": "19.8327881141979*log(p) + 11.1575354596972",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": null,
+        "noise_error": null,
+        "reasons": [
+         "7 rows to fit on; measured on 700",
+         "the law could not be evaluated on these rows, so the noise is not estimated"
+        ],
+        "rows": 7,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "reported": false,
+       "route": "refined",
+       "rows_development": 7,
+       "rows_pool": 3,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.34,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "direct_law": {
+       "constants": 2,
+       "law": "19.8327881141979*log(p) + 11.1575354596972",
+       "r2_all_rows": 0.987733,
+       "refit_error": 0.05621746129479531,
+       "same_form_as_the_known_law": false
+      },
+      "product": {
+       "action": "not_run",
+       "error": "ValueError: 10 usable rows; the route needs at least 24",
+       "law": null,
+       "law_as_confirmed": null,
+       "reported": false,
+       "route": null,
+       "seconds": 0.0
+      },
+      "product_law": {
+       "law": null
+      },
+      "seed": 4
+     }
+    ],
+    "rows": 10,
+    "summary": {
+     "direct_errors": 0,
+     "direct_gave_the_law_tentatively": 0,
+     "direct_reported": 0,
+     "direct_reported_the_law": 0,
+     "direct_run": 5,
+     "product_gave_the_law_tentatively": 0,
+     "product_refused": 5,
+     "product_reported": 0,
+     "product_reported_the_law": 0,
+     "splits": 5
+    },
+    "target": "q"
+   },
+   {
+    "inputs": [
+     "logP"
+    ],
+    "key": "leavitt",
+    "known_law": "a*logP + b",
+    "known_law_fitted": "15.5579686116599 - 2.00314575226137*logP",
+    "known_law_r2_all_rows": 0.934532,
+    "readings": [
+     {
+      "product": {
+       "action": "equivalent_class",
+       "candidates": 2,
+       "complete": false,
+       "found_by": "first_pass",
+       "law": null,
+       "law_as_confirmed": "1.98445082220807*sin(exp(sqrt(logP))) + 12.8782017099626",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": 0.01223,
+        "noise_error": 0.00204,
+        "reasons": [
+         "18 rows to fit on; measured on 700"
+        ],
+        "rows": 18,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "rejected_law": null,
+       "reported": false,
+       "route": "refined",
+       "rows_development": 18,
+       "rows_pool": 8,
+       "rows_read_from_pool": 8,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.27,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "product_law": {
+       "constants": 2,
+       "law": "1.98445082220807*sin(exp(sqrt(logP))) + 12.8782017099626",
+       "r2_all_rows": 0.977577,
+       "refit_error": 0.013668428957457065,
+       "same_form_as_the_known_law": false
+      },
+      "seed": 0
+     },
+     {
+      "product": {
+       "action": "equivalent_class",
+       "candidates": 2,
+       "complete": false,
+       "found_by": "first_pass",
+       "law": null,
+       "law_as_confirmed": "2.02062823755644*sin(exp(sqrt(logP))) + 12.8761478956091",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": 0.00763,
+        "noise_error": 0.00127,
+        "reasons": [
+         "18 rows to fit on; measured on 700"
+        ],
+        "rows": 18,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "rejected_law": null,
+       "reported": false,
+       "route": "refined",
+       "rows_development": 18,
+       "rows_pool": 8,
+       "rows_read_from_pool": 8,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.27,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "product_law": {
+       "constants": 2,
+       "law": "2.02062823755644*sin(exp(sqrt(logP))) + 12.8761478956091",
+       "r2_all_rows": 0.976495,
+       "refit_error": 0.013668428957457063,
+       "same_form_as_the_known_law": false
+      },
+      "seed": 1
+     },
+     {
+      "product": {
+       "action": "equivalent_class",
+       "candidates": 2,
+       "complete": false,
+       "found_by": "first_pass",
+       "law": null,
+       "law_as_confirmed": "1.96603471320561*sin(exp(sqrt(logP))) + 12.8613046549482",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": 0.01125,
+        "noise_error": 0.00188,
+        "reasons": [
+         "18 rows to fit on; measured on 700"
+        ],
+        "rows": 18,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "rejected_law": null,
+       "reported": false,
+       "route": "refined",
+       "rows_development": 18,
+       "rows_pool": 8,
+       "rows_read_from_pool": 8,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.27,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "product_law": {
+       "constants": 2,
+       "law": "1.96603471320561*sin(exp(sqrt(logP))) + 12.8613046549482",
+       "r2_all_rows": 0.977463,
+       "refit_error": 0.01366842895745706,
+       "same_form_as_the_known_law": false
+      },
+      "seed": 2
+     },
+     {
+      "product": {
+       "action": "equivalent_class",
+       "candidates": 2,
+       "complete": false,
+       "found_by": "first_pass",
+       "law": null,
+       "law_as_confirmed": "1.96731328850735*sin(exp(sqrt(logP))) + 12.8549698080068",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": 0.01022,
+        "noise_error": 0.0017,
+        "reasons": [
+         "18 rows to fit on; measured on 700"
+        ],
+        "rows": 18,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "rejected_law": null,
+       "reported": false,
+       "route": "refined",
+       "rows_development": 18,
+       "rows_pool": 8,
+       "rows_read_from_pool": 8,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.28,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "product_law": {
+       "constants": 2,
+       "law": "1.96731328850735*sin(exp(sqrt(logP))) + 12.8549698080068",
+       "r2_all_rows": 0.977274,
+       "refit_error": 0.013668428957457058,
+       "same_form_as_the_known_law": false
+      },
+      "seed": 3
+     },
+     {
+      "product": {
+       "action": "equivalent_class",
+       "candidates": 2,
+       "complete": false,
+       "found_by": "first_pass",
+       "law": null,
+       "law_as_confirmed": "2.06810065395725*sin(exp(sqrt(logP))) + 12.7855127413596",
+       "measured_range": {
+        "inputs": 1,
+        "measured": {
+         "inputs_up_to": 3,
+         "noise_up_to": 0.05,
+         "route": "refined",
+         "rows_at_least": 700
+        },
+        "noise": 0.00755,
+        "noise_error": 0.00126,
+        "reasons": [
+         "18 rows to fit on; measured on 700"
+        ],
+        "rows": 18,
+        "source": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "state": "outside",
+        "unchecked": "Gaussian noise and evenly spread rows were measured too; one table cannot show either"
+       },
+       "rejected_law": null,
+       "reported": false,
+       "route": "refined",
+       "rows_development": 18,
+       "rows_pool": 8,
+       "rows_read_from_pool": 8,
+       "search_stage": "off: first pass alone (give search_seconds, or set APEDP_UI_SEARCH_SECONDS, to run PySR)",
+       "seconds": 0.27,
+       "tentative": true,
+       "tentative_reason": "the search stage did not run; its only rivals were the first pass and the polynomial library",
+       "vouching": {
+        "applied": false,
+        "evidence": "preregistration/RESULT-VOUCHING-V2-2026-11.md",
+        "in_force": true,
+        "version": "second",
+        "why_not": "the route reported no law"
+       }
+      },
+      "product_law": {
+       "constants": 2,
+       "law": "2.06810065395725*sin(exp(sqrt(logP))) + 12.7855127413596",
+       "r2_all_rows": 0.974472,
+       "refit_error": 0.013668428957457063,
+       "same_form_as_the_known_law": false
+      },
+      "seed": 4
+     }
+    ],
+    "rows": 26,
+    "summary": {
+     "direct_errors": 0,
+     "direct_gave_the_law_tentatively": 0,
+     "direct_reported": 0,
+     "direct_reported_the_law": 0,
+     "direct_run": 0,
+     "product_gave_the_law_tentatively": 0,
+     "product_refused": 0,
+     "product_reported": 0,
+     "product_reported_the_law": 0,
+     "splits": 5
+    },
+    "target": "M"
+   }
+  ],
+  "what": "development: the table route in force on three tables of real measurements; not a result"
+ },
+ "run": {
+  "command": "python scripts/run_real_data.py dev --out DIR",
+  "splits": "five 70/30 splits a table (seeds 0 to 4)",
+  "where": "the development workspace, 2026-11-24"
+ },
+ "what": "Development: the table route in force on three tables of real measurements, first pass alone (no search stage: PySR cannot be installed where this was run); not a result."
+}

@@ -23,6 +23,29 @@ inferred releases.
 
 ### Added
 
+- **Real measurements (2026-11-24, asked for by the owner; development).** Everything the route
+  had been measured on was generated. `benchmarks/real_data/registry.json` now lists eleven
+  tables of real measurements, pinned by source commit and SHA-256: nine with a known law
+  (Kepler three times, Langmuir twice, Leavitt, Hubble 1929, Tully and Fisher, time dilation;
+  from IBM's AI-Descartes data and PySR's EmpiricalBench) and two with no accepted formula
+  (Nikuradse's pipe friction with the Princeton smooth pipe; cosmic chronometers). **Three are
+  for development and eight are held back** for a preregistered run. The split was fixed by
+  table name before any held-back row was read (headers and the sources' READMEs only; the
+  first row of the chronometer file, which has no header, was printed once and is noted on its
+  entry). Held-back tables are not in the repository: `scripts/real_data.py` refuses them to
+  development code and fetches one only for a preregistration that exists.
+  **First look** (`benchmarks/real_data/dev_first_pass_alone.json`; first pass alone, since
+  PySR cannot be installed in the development workspace): nothing was reported on any table,
+  so no false claim on real data. But the product refuses Kepler's eight planets and
+  Langmuir's ten rows (it needs 24 rows); called directly, the route gives Kepler's law on all
+  five splits, tentatively. On Langmuir's table its tentative laws are other two-constant forms
+  that fit ten rows slightly better than Langmuir's own; on Leavitt's 26 Cepheids it is
+  `2*sin(exp(sqrt(logP))) + 12.9`, R² 0.977 against 0.935 for the known straight line. What
+  real tables ask for that generated ones did not: working with tens of rows, a choice among
+  forms that counts how many were tried, and a place for what is known beforehand.
+  `scripts/run_real_data.py`, `.github/workflows/real-data-dev.yml` (the same with the
+  searches), `tests/test_real_data.py` (8).
+
 - **Recursive self-improvement on CPUs, inside a fixed judge (2026-11-24, development; not in
   force).** New package `apedp_dyn/recursion/`, asked for by the owner. Three levels: finding laws
   (the route in force, unchanged), improving the finder (`levels.run_level1`: study a self-made
