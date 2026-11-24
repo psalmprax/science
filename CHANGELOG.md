@@ -15,6 +15,13 @@ inferred releases.
 
 ### Security
 
+- **A candidate ID is immutable in the referee's experiment ledger (2026-11-24, outside audit).**
+  `FullLineageExperimentLedger.register_candidate` overwrote the node of an ID that was already
+  registered, so another formula could take over an ID and with it a clean history, while the
+  holdout-inspection registry still counted under the old one. Registering an ID again with the same
+  content now changes nothing; with other content it raises `CandidateIdentityError`. A revision is
+  a new ID with `parent_candidate_id`. Every existing caller and test already used IDs that way
+  (331 tests unchanged); `tests/test_dyn_experiment_ledger_and_benchmarks.py` pins the rule.
 - **The language-model client and its API key (2026-11-20, audit M-21).** CI's security scan
   flagged `proposers/llm_clients.py`: the service address is a parameter and the key goes to
   whatever it names. Nothing leaked (every caller uses the https default). New

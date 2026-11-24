@@ -57,6 +57,10 @@ class DatasetRole(str, Enum):
     PROSPECTIVE_LIVE = "prospective_live"
 
 
+class CandidateIdentityError(ValueError):
+    """A candidate ID that is already registered was registered again with other content."""
+
+
 class HoldoutContaminationError(RuntimeError):
     """Raised when an iterative candidate attempts to inspect a burned/contaminated holdout slice."""
     pass
@@ -460,7 +464,26 @@ class FullLineageExperimentLedger:
         feature_set: tuple[str, ...] = (),
         parameter_choices: dict[str, float] | None = None,
     ) -> CandidateExperimentNode:
-        """Register a newly proposed candidate in the experiment ledger."""
+        """Register a newly proposed candidate in the experiment ledger.
+
+        **A candidate ID is immutable.** Its exposures and its holdout inspections are counted under the ID, so
+        an ID that could be given to another formula would carry a clean history into a registry that still
+        remembers the old one (outside audit, 2026-11-24: registering an existing ID used to overwrite its
+        node). Registering an ID again with the same content changes nothing and returns the node as it stands;
+        with other content it raises :class:`CandidateIdentityError`. A revised formula is a new ID with
+        ``parent_candidate_id`` set.
+        """
+        existing = self._nodes.get(candidate_id)
+        if existing is not None:
+            same = (existing.proposer_id == proposer_id and existing.formula == formula
+                    and existing.parent_candidate_id == parent_candidate_id
+                    and tuple(existing.feature_set) == tuple(feature_set)
+                    and dict(existing.parameter_choices) == dict(parameter_choices or {}))
+            if not same:
+                raise CandidateIdentityError(
+                    f"candidate {candidate_id!r} is already registered with other content; a candidate ID is immutable. "
+                    "Register the revision under a new ID with parent_candidate_id set.")
+            return existing
         version = 1
         attempted_variants = []
         if parent_candidate_id and parent_candidate_id in self._nodes:

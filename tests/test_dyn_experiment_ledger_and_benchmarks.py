@@ -195,3 +195,26 @@ def test_transfer_benchmark_evaluates_generalization_decay():
     report = run_transfer_benchmark(mock_evaluator, test_envs)
     assert "regime_2024" in report.details["per_env_oos_ic"]
     assert isinstance(report.retention_ratio, float)
+
+
+def test_a_candidate_id_is_immutable(tmp_path):
+    """Outside audit, 2026-11-24: registering an existing ID with another formula overwrote its node and so
+    reset the history kept under that ID. An ID now keeps its content; a revision is a new ID with a parent."""
+    from apedp_referee.experiment_ledger import CandidateIdentityError
+
+    ledger = FullLineageExperimentLedger(persistence_path=tmp_path / "ledger.jsonl")
+    first = ledger.register_candidate("cand", "proposer_1", "y = a*x", feature_set=("x",), parameter_choices={"a": 2.0})
+    first.metrics["seen"] = 1                                                    # its history, kept under the ID
+    again = ledger.register_candidate("cand", "proposer_1", "y = a*x", feature_set=("x",), parameter_choices={"a": 2.0})
+    assert again is first and again.metrics == {"seen": 1}                       # the same content again: nothing changes
+
+    for other in ({"formula": "y = a*x**2"}, {"proposer_id": "proposer_2"}, {"feature_set": ("x", "z")},
+                  {"parameter_choices": {"a": 3.0}}, {"parent_candidate_id": "someone_else"}):
+        content = {"proposer_id": "proposer_1", "formula": "y = a*x", "feature_set": ("x",), "parameter_choices": {"a": 2.0}, **other}
+        with pytest.raises(CandidateIdentityError, match="already registered with other content"):
+            ledger.register_candidate("cand", **content)
+    assert ledger.get_candidate("cand") is first and first.formula == "y = a*x" and first.metrics == {"seen": 1}
+
+    revised = ledger.register_candidate("cand_v2", "proposer_1", "y = a*x**2", parent_candidate_id="cand")
+    assert revised.version == 2 and revised.attempted_variants == ["y = a*x"]    # the way to revise: a new ID with a parent
+    assert len(ledger.get_all_candidates()) == 2
