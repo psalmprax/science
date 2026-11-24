@@ -1,0 +1,56 @@
+name: Recursion levels (development)
+
+# Development, not a result: scripts/run_recursion.py on a self-made curriculum of invented laws.
+# Level 1 improves the searcher over generations and measures g_k (fresh laws solved per CPU-hour);
+# Level 2 compares ways of running Level 1. No coding model is given, so the generator's code is not
+# varied. Started by pushing a branch recursion-run-*.
+
+on:
+  push:
+    branches: ['recursion-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  level:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - level: level1
+            options: --generations 4 --measure 24
+          - level: level2
+            options: --rounds 2 --metas 3 --generations 3 --measure 16
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Run ${{ matrix.level }}
+        env:
+          LEVEL: ${{ matrix.level }}
+          OPTIONS: ${{ matrix.options }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py "$LEVEL" --out out --workers 4 $OPTIONS
+      - name: Print the record
+        if: always()
+        env:
+          LEVEL: ${{ matrix.level }}
+        run: |
+          echo "=====BEGIN $LEVEL====="
+          if [ -f "out/$LEVEL.json" ]; then gzip -9c "out/$LEVEL.json" | base64 -w 0; echo; fi
+          echo "=====END $LEVEL====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: recursion-${{ matrix.level }}
+          path: out

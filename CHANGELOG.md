@@ -21,6 +21,31 @@ inferred releases.
   `proposers/llm_https.py` refuses any address that is not https; the frozen file is unchanged and
   its finding is listed in `scripts/bandit_baseline.json`, which the scan reads and a test pins.
 
+### Added
+
+- **Recursive self-improvement on CPUs, inside a fixed judge (2026-11-24, development; not in
+  force).** New package `apedp_dyn/recursion/`, asked for by the owner. Three levels: finding laws
+  (the route in force, unchanged), improving the finder (`levels.run_level1`: study a self-made
+  curriculum, learn a library of building blocks by compression, try settings copies and keep one
+  only if it solves more fresh problems per CPU-hour with no more wrong laws), and improving how
+  the finder is improved (`levels.run_level2`). Tools, all CPU-only: `library` (DreamCoder-style
+  compression into blocks with up to two holes, and a proposer built on them), `curriculum`
+  (invented laws at the level solved about half the time; the benchmark left out by fingerprint,
+  its file never opened), `egraph` (equality saturation; answers "equal" or "not shown", never
+  "different"), `smt` (z3: a pole inside a box, or two rational laws equal there, each proved or
+  left undecided), `mdl` (description length in bits).
+  **The claim is made testable** (`progress`): `g_k` is fresh laws solved per CPU-hour at
+  generation `k`; "recursive" needs `g` to rise by more than two standard errors at every step
+  over three generations or more, with no rise in the share of wrong laws. **No run has shown
+  it.** The only run so far is a one-generation smoke test (0 of 3 solved before and after).
+  **What the loop cannot change** (`judge`): the referee package, both threshold files, the
+  route, the last checks, the measured range, the learning gate, the curriculum and the progress
+  test are sealed by SHA-256 at the start of a run and checked at every generation; a searcher
+  has five bounded settings and none is a threshold. The generator's code is varied only with a
+  coding model the owner provides; none has been, and the step records that it did not run.
+  `z3-solver` joins the `test` extra; `smt` answers "not decided" without it.
+  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (50).
+
 ### Changed
 
 - **`master` and pull requests #65 and #62 merged into `stage` (2026-11-24, on the owner's

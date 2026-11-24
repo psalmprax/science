@@ -47,6 +47,7 @@ test = [
     "scipy>=1.10",
     "cryptography>=41.0",
     "pytest-xdist>=3.6",
+    "z3-solver>=4.12",    # apedp_dyn.recursion.smt; that module answers "not decided" without it
 ]
 # The main symbolic search (apedp_dyn.proposers.pysr_proposer). PySR installs Julia on first use.
 search = [
