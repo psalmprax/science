@@ -126,10 +126,58 @@ The held-back files; GitHub's cores and artifact behaviour on a re-run; anything
 
 ## The rehearsal
 
-Started on 2026-11-24 by the branch `real-tables-blind-rehearsal-1`. This section is completed, with the
-rehearsal's GitHub run and what it showed, before the run itself is started. **Until it is completed the
-plan is not frozen**: the digest pins the files being rehearsed and is written again if the rehearsal
-shows that one of them must change.
+Run on GitHub on 2026-11-24 by the branch `real-tables-blind-rehearsal-1` (run 45476079433, commit
+`efc21eb`), with the search stage as the run will have it: four cores, "four searches side by side
+(PREREG-PORTFOLIO-SEARCH), 90 s; and laws grown from 28 remembered motifs". The tables were the three
+development tables for arm A and two made-up tables for arms B and C (ten pipes on Colebrook's formula
+with 1 % scatter; 32 measurements on the standard model's form). No held-back table was read. The whole
+record is `benchmarks/real_data/dev_rehearsal_on_github.json`.
 
-Without the search stage the same rehearsal ran in the development workspace in four minutes with
-every part answering (`benchmarks/real_data/dev_arm_a_as_frozen.json`).
+**Every part answered.** 39 minutes in all (2,356 s); no child process was killed, none reached its
+limit, none recorded an error of its own.
+
+| Part | Times run | Seconds each |
+|---|---|---|
+| The reading without the search stage (plain, informed) | 6 | 9 to 19 |
+| The reading with the search stage | 3 | 151 to 180 |
+| The reading of a decoy | 3 | 147 to 152 |
+| The route in force, direct, with the search stage | 3 | 149 to 151 |
+| The route in force, direct, first pass alone | 3 | under 1 |
+| The product, with the search stage | 1 | 151 |
+| The product, first pass alone | 1 | under 1 |
+| The product on the two tables under 24 rows | 4 | refused at once, as the product does ("8 usable rows; the route needs at least 24") |
+| Arm B: the reading, then the product | 1 each | 291 and 198 |
+| Arm C: the reading | 1 | 159 |
+
+At these times the run's six tables and arms B and C need about an hour and a half of the 340 minutes the run allows,
+so every arm of the route can be started with its full limit.
+
+**The search stage reached the reading on every table.** On the 8-row and 10-row tables none of its
+laws became a candidate: the count of forms left out for having more constants than the rows allow
+rose by nine on each (31 to 40, 1 to 10), which is where they went. On the 26-row table five of its
+laws were candidates. On none of the three did it change the reading's choice.
+
+**What the development tables gave** is what they gave without the search stage
+(`benchmarks/real_data/dev_arm_a_as_frozen.json`): one table of three counts for expectation A1.
+Kepler's law was reported, and on its decoy the reading reported the decoy's own law. Langmuir's form
+was given but not reported, and was given on its decoy too, so it does not count. Leavitt's line was
+not given (the reading's choice was a cosine, not reported). No law was reported that is not the known
+form. The route in force gave Kepler's form without reporting it, and the known form on neither of the
+other two.
+
+**The made-up tables.** On the pipes made from Colebrook's formula the reading reported a law that is
+not Colebrook's form. Its error on the two pipes left out was 0.0073, against 0.0045 for Colebrook's
+formula itself (the scatter put in) and 0.0047 for Haaland's form refitted. So on a table whose formula
+is known exactly, the reading's reported law was 1.6 times the scatter away on pipes it had not seen.
+This is what arm B is there to show and it is not a fault of the run. On the made-up expansion rates
+the reading's law was not reported.
+
+**Changed because of the rehearsal: nothing.** The 23 frozen files match the digest as it was written
+before the rehearsal (`python scripts/run_real_tables_blind.py check`). The commits made to `stage`
+between the rehearsed commit and the run change none of those files; of the code they change, none is
+on the run's path (the LLM arms and their scripts, the experiment ledger's `register_candidate`, which
+no discovery route calls, the recursion judge's list of sealed files, the Matter gate, the CHANGELOG
+index).
+
+**The plan is frozen as of this section.** The run is started by pushing `stage` to
+`real-tables-blind-run-1`.

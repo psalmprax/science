@@ -183,3 +183,21 @@ must still be `a8177b25…` after the ceremony.
 - Changing the trustee roster or `quorum_threshold`.
 - Generating keys inside this repository or CI.
 - Committing a manifest with placeholder or agent-generated signatures.
+
+## 7. Checked again on 2026-11-24, and what the signature does not cover
+
+The request above is still exact. The specification on disk and its pin are both
+`a8177b25…f37329`, the manifest still seals `a6d026f3…3f6d47`, and the message each
+trustee signs is unchanged. Two signatures over the 64 hex characters in section 3
+close FLAW-01. Nothing else is needed from the trustees for it.
+
+One thing the ceremony does not do. The second specification,
+`specifications/discovery_checks_v1.json` (SHA-256
+`81ae13eb0dd9bd061f246026178d405a4fd7f41a825a7abfa7d90085796232c0`), holds the
+thresholds that decide whether a found law is reported. It is pinned by hash in
+`apedp_dyn/conf/discovery_checks.py` and nowhere in the manifest: a change to it needs
+a new pin and a CHANGELOG entry, and no trustee's signature. Whether the trustees
+should seal it too is the owner's decision. If yes, the manifest format needs a
+second sealed digest (today it holds one `spec_sha256`), which is a code change to
+`apedp_dyn/epistemic/governance.py` to make before the ceremony, so that the
+trustees sign once for both.

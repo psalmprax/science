@@ -46,6 +46,18 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **The blind test on real tables is rehearsed and frozen (2026-11-24).** The rehearsal ran on
+  GitHub (run 45476079433) with the search stage as the run will have it, on the three development
+  tables and two made-up tables: every part answered in 39 minutes, no child process was killed and
+  nothing in the 23 frozen files had to change. Its record is
+  `benchmarks/real_data/dev_rehearsal_on_github.json`; its findings are the last section of
+  `preregistration/REVIEW-REAL-TABLES-2026-11.md`. The run is started by the branch
+  `real-tables-blind-run-1`.
+- **The re-signing request checked again (2026-11-24).** `docs/GOVERNANCE_RESIGNING_REQUEST.md`
+  is still exact: two trustees' signatures over the 64 hex characters of the specification's
+  digest close FLAW-01. New section 7 records that the second specification
+  (`discovery_checks_v1.json`) is pinned by hash in code and is not under the trustees'
+  signature; whether it should be is the owner's decision.
 - **A Matter verdict without a frozen protocol is marked not binding (2026-11-24, outside
   audit).** `mmlm_matter_001.pipeline.run_gate` accepted a preregistration built at the call
   site with no frozen protocol behind it. Such a verdict now says `binding: False` in its record
