@@ -46,6 +46,20 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **A fast hosted model in the loop that rewrites the search's generator (2026-11-24, owner's
+  request).** `scripts/run_fast_generator_loop.py` and `.github/workflows/fast-generator-loop.yml`.
+  Until now only a scripted stand-in had driven that loop. `speed` tries a handful of the models
+  the key reaches on the loop's own first prompt and picks the one that gave a running version
+  soonest; `evolve` runs the loop with it under a ceiling on calls and records where the time
+  went (the model against everything else, mostly the judge); `fresh` compares the champion with
+  the seed on laws drawn afterwards. Development; nothing is installed. First run: at most 300
+  calls.
+- **What is on the list towards a research intelligence, and what waits (2026-11-24).**
+  `docs/ROADMAP_RESEARCH_INTELLIGENCE_2026-11-24.md`: the owner asked whether two outside papers
+  were correct and to add them to the list. Their assessment is confirmed by this repository's own
+  measurements. Six items are taken on, each an experiment with a pass mark or a piece one needs
+  (the four-arm GF(2^12) experiment first); the later stages and the proposed package are listed
+  with the gate that opens each.
 - **Why runs with the searches stopped for ever, and search processes that cannot (2026-11-24).**
   The first recursion run with the searches on (GitHub run 45425871081) produced nothing: all six
   jobs stopped during a search stage, after 1 to 7 searches, and were ended by their five-hour

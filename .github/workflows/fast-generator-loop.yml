@@ -1,0 +1,69 @@
+# A fast hosted model drives the loop that rewrites the search's candidate generator
+# (scripts/run_fast_generator_loop.py; the loop itself is scripts/run_search_evolution.py).
+#   push to fast-generator-loop-run-*  -> which models the key reaches and how fast a handful of them answer the
+#                                         loop's first prompt; the loop with the one picked, under a ceiling on
+#                                         calls; then the champion and the seed on laws drawn after the run.
+# The key is the repository secret CODING_MODEL_API_KEY, or NVIDIA_API_KEY if that is not set. Only the steps that
+# talk to the model are given it; code a model wrote runs in a process that is given none of the environment.
+# Development only: no version is installed, no held-back law is read, no preregistered measurement is taken.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Fast model in the generator loop
+
+on:
+  push:
+    branches: ['fast-generator-loop-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The loop's own tests, with scripted models
+        run: python -m pytest tests/test_fast_generator_loop.py tests/test_evolution.py -q
+      - name: A key has been provided
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY || secrets.NVIDIA_API_KEY }}
+        run: |
+          if [ -z "$CODING_MODEL_API_KEY" ]; then
+            echo "::error::No key: set the repository secret CODING_MODEL_API_KEY or NVIDIA_API_KEY."
+            exit 1
+          fi
+      - name: How fast each model answers the loop's first prompt
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY || secrets.NVIDIA_API_KEY }}
+          CODING_MODEL_BASE_URL: ${{ vars.CODING_MODEL_BASE_URL }}
+        run: python scripts/run_fast_generator_loop.py speed --out out --candidates 6
+      - name: The loop, driven by the model picked, at most 300 calls
+        timeout-minutes: 240
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY || secrets.NVIDIA_API_KEY }}
+          CODING_MODEL_BASE_URL: ${{ vars.CODING_MODEL_BASE_URL }}
+        run: python scripts/run_fast_generator_loop.py evolve --out out --steps 100 --max-calls 300 --seconds 12000
+      - name: The champion and the seed on laws drawn after the run
+        run: python scripts/run_fast_generator_loop.py fresh --out out --laws 60
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: fast-generator-loop
+          path: out/
+          if-no-files-found: warn
+      - name: Print the records for rebuilding from the log
+        if: always()
+        run: |
+          cd out 2>/dev/null || exit 0
+          find . -type f | sort | xargs sha256sum
+          echo "=====BEGIN fast generator loop====="
+          tar -cf - . | gzip -9 | base64 -w 0; echo
+          echo "=====END fast generator loop====="
