@@ -430,3 +430,21 @@ def test_proposers_and_model_adapters_cannot_import_referee_kinematics():
     }
 
     assert {path: names for path, names in offenders.items() if names} == {}
+
+
+def test_a_verdict_without_a_frozen_protocol_is_marked_not_binding_and_a_run_can_refuse_it(tmp_path):
+    """Outside audit, 2026-11-24: a preregistration built at the call site is tied to no frozen file, so its
+    thresholds could move. Such a verdict is a look: its record says so, and a run whose verdicts are to
+    count refuses to give one."""
+    task = _path_task(_own_path().points_mm)
+    ledger_path = tmp_path / "verdicts.jsonl"
+
+    verdict = run_gate(CRANK_ROCKER, task, preregistration=_preregistration(), ledger=ledger_path)
+    assert verdict.passed is True and verdict.protocol_hash is None
+    assert verdict.binding is False and verdict.record()["binding"] is False
+    assert VerdictLedger(ledger_path).rows()[0]["binding"] is False          # the ledger line carries the mark
+
+    with pytest.raises(GateError, match="a verdict counts only under a frozen protocol"):
+        run_gate(CRANK_ROCKER, task, preregistration=_preregistration(), ledger=ledger_path,
+                 require_frozen_protocol=True)
+    assert len(VerdictLedger(ledger_path).rows()) == 1                       # the refused run wrote nothing

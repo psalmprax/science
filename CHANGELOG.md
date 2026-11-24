@@ -46,6 +46,17 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **A Matter verdict without a frozen protocol is marked not binding (2026-11-24, outside
+  audit).** `mmlm_matter_001.pipeline.run_gate` accepted a preregistration built at the call
+  site with no frozen protocol behind it. Such a verdict now says `binding: False` in its record
+  and in the ledger, and a run whose verdicts are to count passes
+  `require_frozen_protocol=True` and is refused without one. Nothing calls the gate outside its
+  tests yet; the hidden benchmark, when it exists, must use the strict form.
+- **The recursion judge's seal covers everything a verdict depends on (2026-11-24, outside
+  audit).** `levels.py` (which decides adoption) and `chain.py` (which carries a measurement
+  from one process to the next) were not among the sealed files. They are now, with the rest
+  of the package's code and its runner. The run in flight uses its own commit and is not
+  affected.
 - **A short index of this file (2026-11-24).** `docs/CHANGELOG_INDEX.md` lists every entry of
   the current block by title and every earlier block by its heading, about 400 lines for nearly
   ten thousand. It is generated (`scripts/changelog_index.py --write`) and a test fails if it is

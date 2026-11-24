@@ -201,7 +201,10 @@ def test_the_seal_covers_the_referee_the_thresholds_and_the_last_checks() -> Non
     for name in ("specifications/canonical_preregistered_spec_v1.json", "specifications/discovery_checks_v1.json",
                  "apedp_dyn/discovery_l2/vouching_v2.py", "apedp_dyn/discovery_l2/measured_range.py",
                  "apedp_dyn/recursion/judge.py", "apedp_dyn/recursion/mdl.py", "apedp_dyn/recursion/progress.py",
-                 "apedp_referee/canonical_spec.py"):
+                 "apedp_referee/canonical_spec.py",
+                 # what decides adoption and carries a measurement across processes (outside audit, 2026-11-24)
+                 "apedp_dyn/recursion/levels.py", "apedp_dyn/recursion/chain.py", "apedp_dyn/recursion/library.py",
+                 "scripts/run_recursion.py"):
         assert name in sealed
     judge.check(sealed)
 

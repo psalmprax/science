@@ -104,8 +104,19 @@ class GateVerdict:
     loop_closure: Mapping[str, Any] | None
     recorded_utc: str
 
+    @property
+    def binding(self) -> bool:
+        """Whether the verdict was reached under a frozen protocol.
+
+        Without one, the thresholds came from a preregistration object built at the call site, which
+        nothing ties to a frozen file: such a verdict is a look, not a research verdict (outside audit,
+        2026-11-24). It is still returned and may be recorded, marked as not binding.
+        """
+        return self.protocol_hash is not None
+
     def record(self) -> dict[str, Any]:
         return {
+            "binding": self.binding,
             "candidate_id": self.candidate_id,
             "task_id": self.task_id,
             "family": self.family,
@@ -193,8 +204,14 @@ def run_gate(
     cognate_input_range_deg: tuple[float, float] | None = None,
     ledger: VerdictLedger | Path | str | None = None,
     recorded_utc: str | None = None,
+    require_frozen_protocol: bool = False,
 ) -> GateVerdict:
     """Adjudicate one candidate under the pinned Phase 0 protocol.
+
+    A verdict is **binding** only if ``protocol`` is given: a frozen protocol whose checkout and
+    thresholds are verified here. Without it the verdict's record says ``binding: False``. A run
+    whose verdicts are to count (the hidden benchmark) passes ``require_frozen_protocol=True``, and
+    is then refused outright without a frozen protocol.
 
     ``samples`` may only restate the preregistered count; a different number is
     refused rather than quietly used. For a T3 task, ``topology`` is the entry the
@@ -211,6 +228,10 @@ def run_gate(
         raise GateError(
             "the gate refuses to run without a Phase 0 preregistration: a threshold "
             "chosen at the call site can move after a result is seen")
+    if protocol is None and require_frozen_protocol:
+        raise GateError(
+            "this run's verdicts are to count, and a verdict counts only under a frozen protocol: "
+            "pass the FrozenProtocol, not a preregistration built at the call site")
     if protocol is not None:
         if not isinstance(protocol, FrozenProtocol):
             raise GateError(

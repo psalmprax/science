@@ -66,6 +66,15 @@ SEALED_FILES = (
     "apedp_dyn/recursion/mdl.py",
     "apedp_dyn/recursion/curriculum.py",
     "apedp_dyn/recursion/progress.py",
+    # what decides adoption and carries a measurement from one process to the next (outside audit, 2026-11-24:
+    # these two were not sealed, so the seal did not cover everything a verdict depends on), and the rest of
+    # the package's own code and its runner
+    "apedp_dyn/recursion/levels.py",
+    "apedp_dyn/recursion/chain.py",
+    "apedp_dyn/recursion/library.py",
+    "apedp_dyn/recursion/egraph.py",
+    "apedp_dyn/recursion/smt.py",
+    "scripts/run_recursion.py",
     "benchmarks/invented_laws_fingerprints.json",
 )
 SEALED_TREES = ("apedp_referee",)
