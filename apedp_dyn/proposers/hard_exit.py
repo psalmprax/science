@@ -19,6 +19,10 @@ budget, the same order of proposals. ``apedp_dyn/proposers/portfolio.py`` and
 ``apedp_dyn/discovery_l2/search_stage.py`` are frozen by earlier preregistrations and are not
 edited; this stage is built from their own parts.
 
+**Confirmed on GitHub** (2026-11-24, run 45493901958): the first job to finish with these members
+ran 24 searches in a row; no search process was told to stop while leaving, and none was left
+over. With the frozen stage 10 of 27 searches had stopped their job for ever.
+
 **Not in force.** The routes and the product still build ``search_stage.default_search_stage``.
 Using this stage there is the owner's decision (AGENTS.md 1.5). The product's reading can be asked
 for it: ``APEDP_SEARCH_PROCESSES=leave_hard`` (``apedp_dyn/ui/route_endpoint.py``); without that

@@ -3,37 +3,36 @@
  "jobs": [
   {
    "job": "measure-0, shard 0",
-   "searches_completed_before_it_stopped": 1,
+   "searches_run_the_last_of_which_stopped_the_job": 1,
    "last_search_processes_told_to_stop_at": "15:48:05",
    "ended_by_its_limit_at": "21:01:34"
   },
   {
    "job": "measure-0, shard 1",
-   "searches_completed_before_it_stopped": 1,
+   "searches_run_the_last_of_which_stopped_the_job": 1,
    "last_search_processes_told_to_stop_at": "15:46:33"
   },
   {
    "job": "improve-1",
-   "searches_completed_before_it_stopped": 2,
+   "searches_run_the_last_of_which_stopped_the_job": 2,
    "last_search_processes_told_to_stop_at": "15:48:41"
   },
   {
    "job": "level2-round1, way 0",
-   "searches_completed_before_it_stopped": 7,
+   "searches_run_the_last_of_which_stopped_the_job": 7,
    "last_search_processes_told_to_stop_at": "15:56:58"
   },
   {
    "job": "level2-round1, way 1",
-   "searches_completed_before_it_stopped": 1,
+   "searches_run_the_last_of_which_stopped_the_job": 1,
    "last_search_processes_told_to_stop_at": "15:39:01"
   },
   {
    "job": "level2-round1, way 2",
-   "searches_completed_before_it_stopped": 2,
+   "searches_run_the_last_of_which_stopped_the_job": 2,
    "last_search_processes_told_to_stop_at": "15:40:36"
   }
  ],
- "searches_completed_in_all": 14,
  "jobs_stopped": 6,
  "what_the_logs_show": [
   "After each search the portfolio tells its four search processes to stop and waits for each to go. Three of the four were still alive each time and were sent the stop signal while Python was closing down inside Julia's exit hook, which was compiling.",
@@ -42,5 +41,40 @@
  ],
  "cause": "most likely: a search process told to stop while Julia's exit hook is running starts Julia's exit a second time and the two wait on each other; the frozen portfolio then waits for that process for ever (pool.join). The same teardown ran 13 times in the blind test's rehearsal without stopping, so it does not happen every time.",
  "what_was_done": "apedp_dyn/proposers/hard_exit.py: search processes leave by os._exit before Julia's exit hook, after handing their answer over. The recursion's searcher builds its stage with it. The frozen portfolio and stage, the routes and the product are unchanged; the blind test on real tables runs each search stage in a process of its own with a hard limit, so there a stop of this kind costs one part, not the run.",
- "open": "the product's search on request uses the frozen stage and can stop for ever in the same way; using the hard-exit stage there is the owner's decision"
+ "open": "the product's search on request uses the frozen stage and can stop for ever in the same way; using the hard-exit stage there is the owner's decision",
+ "the_same_in_the_wider_conditions_run": {
+  "run": "GitHub run 45444150935, branch wider-conditions-run-1, the product's own reading with the frozen stage",
+  "shards": [
+   {
+    "shard": 0,
+    "searches_run_the_last_of_which_stopped_the_job": 2,
+    "last_search_processes_told_to_stop_at": "17:12:21"
+   },
+   {
+    "shard": 1,
+    "searches_run_the_last_of_which_stopped_the_job": 1,
+    "last_search_processes_told_to_stop_at": "17:11:52"
+   },
+   {
+    "shard": 3,
+    "searches_run_the_last_of_which_stopped_the_job": 4,
+    "last_search_processes_told_to_stop_at": "17:19:11"
+   },
+   {
+    "shard": 2,
+    "searches_run_the_last_of_which_stopped_the_job": 6,
+    "note": "from its five recorded rows; its log was not read"
+   }
+  ],
+  "rows_recorded_by_all_four_shards": 9,
+  "note": "every shard was ended by its 320-minute limit",
+  "searches_run_in_all": 13,
+  "jobs_stopped": 4
+ },
+ "after_the_change": {
+  "run": "GitHub run 45493901958, branch recursion-search-run-2, the recursion's searcher with search processes that leave hard",
+  "first_job_to_finish": "measure-0, shard 1: 24 problems, 24 searches in a row in 58 minutes; no search process was told to stop while leaving (none of the 'signal 15' lines the stopped runs show three of after every search), none was left over",
+  "reading": "with the frozen stage 10 of the 27 searches of these two runs stopped their job for ever, about one in three; 24 in a row without a stop would then happen by chance about once in 66,000 times"
+ },
+ "searches_run_in_all": 14
 }
