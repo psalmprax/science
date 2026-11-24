@@ -1,0 +1,516 @@
+{
+ "reading": [
+  "g (laws counted solved per CPU-hour on 24 fresh problems a generation): 4.8, 30.7, 12.7, 14.7, 6.3. progress.verdict: not shown. The rate rose once and then fell.",
+  "Counted solved of 24: 1, 10, 7, 8, 5. No wrong law in any generation.",
+  "In this run 'solved' meant accurate on clean rows (R2 at the accuracy line), which counts accurate approximations. With nothing learned the memory proposes nothing; after the first learned law (a cubic) it proposes ratios and products of cubics, which reach the accuracy line on many one-input laws without being them (checked afterwards on three such laws). The rise from generation 0 to 1 is that source of candidates switching on, not laws being found.",
+  "Most of the 18 laws learned are such approximations (ratios of polynomials up to degree six). They went into the memory and the library, and CPU per measurement rose from 750 s to 2,864 s while the count did not rise.",
+  "Seven of eight settings copies were adopted; none solved more than one extra problem, and most differed from the incumbent only by a few seconds of CPU time. The adoption rule had no margin for timing noise.",
+  "Level 0 ran out of laws at the second study batch and study moved up, as recorded in the curriculum history.",
+  "Changed after this run, before any other: 'solved' now also requires the law to take no more bits than the true law (judge.verdict; 'accurate' is kept beside it); only solved laws are learned; a copy with as many solved needs 20 % less CPU to be adopted (levels.better). This record was made before those changes and its counts are under the earlier meaning."
+ ],
+ "record": {
+  "coding_model": null,
+  "cpu_seconds": 25353.5,
+  "curriculum": [
+   {
+    "level_after": 1.0,
+    "level_before": 2.0,
+    "of": 12,
+    "purpose": "study 1",
+    "solved": 1
+   },
+   {
+    "level_used_up": 0,
+    "purpose": "study 2"
+   },
+   {
+    "level_after": 1.0,
+    "level_before": 1.0,
+    "of": 12,
+    "purpose": "study 2",
+    "solved": 6
+   },
+   {
+    "level_after": 2.0,
+    "level_before": 1.0,
+    "of": 12,
+    "purpose": "study 3",
+    "solved": 8
+   },
+   {
+    "level_after": 1.0,
+    "level_before": 2.0,
+    "of": 12,
+    "purpose": "study 4",
+    "solved": 3
+   }
+  ],
+  "gain_per_cpu_hour": 0.2109,
+  "generation_0": {
+   "cpu_seconds": 749.88,
+   "g": 4.801,
+   "generation": 0,
+   "problems": 24,
+   "reported": 1,
+   "solved": 1,
+   "standard_error": 4.7,
+   "wrong": 0
+  },
+  "generations": [
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 1600.61,
+    "generation": 1,
+    "laws_known": 1,
+    "library_blocks": 0,
+    "measurement": {
+     "cpu_seconds": 1173.07,
+     "g": 30.689,
+     "generation": 1,
+     "problems": 24,
+     "reported": 10,
+     "solved": 10,
+     "standard_error": 7.412,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "cpu_seconds": 438.36,
+      "per_cpu_hour": 24.637,
+      "problems": 10,
+      "reported": 3,
+      "solved": 3,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 2,
+      "library_seconds": 10.0,
+      "library_top": 6,
+      "memory_seconds": 15.0
+     },
+     "variants": [
+      {
+       "adopted": true,
+       "cpu_seconds": 430.42,
+       "per_cpu_hour": 25.092,
+       "problems": 10,
+       "reported": 3,
+       "settings": {
+        "library_blocks": 8,
+        "library_proposals": 3,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 10.0
+       },
+       "solved": 3,
+       "wrong": 0
+      },
+      {
+       "adopted": true,
+       "cpu_seconds": 502.18,
+       "per_cpu_hour": 28.675,
+       "problems": 10,
+       "reported": 4,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 10.0,
+        "library_top": 6,
+        "memory_seconds": 15.0
+       },
+       "solved": 4,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "cpu_seconds": 229.64,
+     "learned": 1,
+     "level": 1.0,
+     "per_cpu_hour": 15.676,
+     "problems": 12,
+     "reported": 1,
+     "retried": 0,
+     "solved": 1,
+     "wrong": 0
+    }
+   },
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 2765.1,
+    "generation": 2,
+    "laws_known": 7,
+    "library_blocks": 4,
+    "measurement": {
+     "cpu_seconds": 1990.03,
+     "g": 12.663,
+     "generation": 2,
+     "problems": 24,
+     "reported": 7,
+     "solved": 7,
+     "standard_error": 4.028,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "cpu_seconds": 836.55,
+      "per_cpu_hour": 21.517,
+      "problems": 10,
+      "reported": 5,
+      "solved": 5,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 2,
+      "library_seconds": 15.0,
+      "library_top": 6,
+      "memory_seconds": 7.5
+     },
+     "variants": [
+      {
+       "adopted": true,
+       "cpu_seconds": 794.68,
+       "per_cpu_hour": 22.651,
+       "problems": 10,
+       "reported": 5,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 15.0,
+        "library_top": 6,
+        "memory_seconds": 7.5
+       },
+       "solved": 5,
+       "wrong": 0
+      },
+      {
+       "adopted": false,
+       "cpu_seconds": 831.35,
+       "per_cpu_hour": 21.652,
+       "problems": 10,
+       "reported": 5,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 10.0,
+        "library_top": 9,
+        "memory_seconds": 15.0
+       },
+       "solved": 5,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "cpu_seconds": 302.52,
+     "learned": 6,
+     "level": 1.0,
+     "per_cpu_hour": 71.4,
+     "problems": 12,
+     "reported": 6,
+     "retried": 0,
+     "solved": 6,
+     "wrong": 0
+    }
+   },
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 7423.58,
+    "generation": 3,
+    "laws_known": 15,
+    "library_blocks": 8,
+    "measurement": {
+     "cpu_seconds": 1952.61,
+     "g": 14.749,
+     "generation": 3,
+     "problems": 24,
+     "reported": 8,
+     "solved": 8,
+     "standard_error": 4.258,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "cpu_seconds": 886.89,
+      "per_cpu_hour": 8.118,
+      "problems": 10,
+      "reported": 2,
+      "solved": 2,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 2,
+      "library_seconds": 7.5,
+      "library_top": 6,
+      "memory_seconds": 7.5
+     },
+     "variants": [
+      {
+       "adopted": true,
+       "cpu_seconds": 838.92,
+       "per_cpu_hour": 8.582,
+       "problems": 10,
+       "reported": 2,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 3,
+        "library_seconds": 15.0,
+        "library_top": 6,
+        "memory_seconds": 7.5
+       },
+       "solved": 2,
+       "wrong": 0
+      },
+      {
+       "adopted": true,
+       "cpu_seconds": 815.36,
+       "per_cpu_hour": 8.83,
+       "problems": 10,
+       "reported": 2,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 7.5,
+        "library_top": 6,
+        "memory_seconds": 7.5
+       },
+       "solved": 2,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "cpu_seconds": 4882.41,
+     "learned": 8,
+     "level": 2.0,
+     "per_cpu_hour": 5.899,
+     "problems": 12,
+     "reported": 8,
+     "retried": 0,
+     "solved": 8,
+     "wrong": 0
+    }
+   },
+   {
+    "code": {
+     "ran": false,
+     "reason": "no coding model was provided; the code of the generator was not varied"
+    },
+    "cpu_seconds_improving": 4835.02,
+    "generation": 4,
+    "laws_known": 18,
+    "library_blocks": 8,
+    "measurement": {
+     "cpu_seconds": 2863.56,
+     "g": 6.286,
+     "generation": 4,
+     "problems": 24,
+     "reported": 5,
+     "solved": 5,
+     "standard_error": 2.501,
+     "wrong": 0
+    },
+    "selection": {
+     "incumbent": {
+      "cpu_seconds": 1147.07,
+      "per_cpu_hour": 3.138,
+      "problems": 10,
+      "reported": 1,
+      "solved": 1,
+      "wrong": 0
+     },
+     "settings": {
+      "library_blocks": 16,
+      "library_proposals": 1,
+      "library_seconds": 7.5,
+      "library_top": 6,
+      "memory_seconds": 7.5
+     },
+     "variants": [
+      {
+       "adopted": true,
+       "cpu_seconds": 1123.93,
+       "per_cpu_hour": 3.203,
+       "problems": 10,
+       "reported": 1,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 2,
+        "library_seconds": 7.5,
+        "library_top": 6,
+        "memory_seconds": 3.75
+       },
+       "solved": 1,
+       "wrong": 0
+      },
+      {
+       "adopted": true,
+       "cpu_seconds": 1096.8,
+       "per_cpu_hour": 3.282,
+       "problems": 10,
+       "reported": 1,
+       "settings": {
+        "library_blocks": 16,
+        "library_proposals": 1,
+        "library_seconds": 7.5,
+        "library_top": 6,
+        "memory_seconds": 7.5
+       },
+       "solved": 1,
+       "wrong": 0
+      }
+     ]
+    },
+    "study": {
+     "cpu_seconds": 1467.22,
+     "learned": 3,
+     "level": 1.0,
+     "per_cpu_hour": 7.361,
+     "problems": 12,
+     "reported": 3,
+     "retried": 0,
+     "solved": 3,
+     "wrong": 0
+    }
+   }
+  ],
+  "measurements": [
+   {
+    "cpu_seconds": 749.88,
+    "g": 4.801,
+    "generation": 0,
+    "problems": 24,
+    "reported": 1,
+    "solved": 1,
+    "standard_error": 4.7,
+    "wrong": 0
+   },
+   {
+    "cpu_seconds": 1173.07,
+    "g": 30.689,
+    "generation": 1,
+    "problems": 24,
+    "reported": 10,
+    "solved": 10,
+    "standard_error": 7.412,
+    "wrong": 0
+   },
+   {
+    "cpu_seconds": 1990.03,
+    "g": 12.663,
+    "generation": 2,
+    "problems": 24,
+    "reported": 7,
+    "solved": 7,
+    "standard_error": 4.028,
+    "wrong": 0
+   },
+   {
+    "cpu_seconds": 1952.61,
+    "g": 14.749,
+    "generation": 3,
+    "problems": 24,
+    "reported": 8,
+    "solved": 8,
+    "standard_error": 4.258,
+    "wrong": 0
+   },
+   {
+    "cpu_seconds": 2863.56,
+    "g": 6.286,
+    "generation": 4,
+    "problems": 24,
+    "reported": 5,
+    "solved": 5,
+    "standard_error": 2.501,
+    "wrong": 0
+   }
+  ],
+  "meta": {
+   "retry": false,
+   "selection": 10,
+   "step": 0.5,
+   "study": 12,
+   "variants": 2
+  },
+  "progress": {
+   "g": [
+    4.801,
+    30.689,
+    12.663,
+    14.749,
+    6.286
+   ],
+   "overall_rose": false,
+   "steps_rose": [
+    true,
+    false,
+    false,
+    false
+   ],
+   "verdict": "not shown",
+   "wrong_share": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "sealed_files": 24,
+  "searcher": {
+   "code": null,
+   "laws": [
+    "0.00527410569067298*x0**3 - 0.181874610051607*x0**2 + 1.56733952860494*x0 + 1.06440701121283",
+    "0.300270540182325/x0",
+    "0.0243453344466811*x0**3/(9.74316059917141e-5*x0**6 + 0.00501653825950052*x0**5 + 0.0655159332957997*x0**4 + 0.0600435201901816*x0**3 + 0.919109089673754*x0**2 + 0.104476539063897*x0 + 1.76528562480442) + 0.0555989980837483*x0**2/(9.74316059917141e-5*x0**6 + 0.00501653825950052*x0**5 + 0.0655159332957997*x0**4 + 0.0600435201901816*x0**3 + 0.919109089673754*x0**2 + 0.104476539063897*x0 + 1.76528562480442) + 1.00250551049396*x0/(9.74316059917141e-5*x0**6 + 0.00501653825950052*x0**5 + 0.0655159332957997*x0**4 + 0.0600435201901816*x0**3 + 0.919109089673754*x0**2 + 0.104476539063897*x0 + 1.76528562480442)",
+    "2.90000000000001*x0**2",
+    "3.70213481131806*x0**3",
+    "0.951796874040279*x0**3/(-2.33911059071801e-16*x0**3 + 0.559880514141344*x0**2 - 1.32455572939052e-14*x0 + 5.02696412930969e-15) + 2.07155790232293*x0/(-2.33911059071801e-16*x0**3 + 0.559880514141344*x0**2 - 1.32455572939052e-14*x0 + 5.02696412930969e-15)",
+    "0.00260966853915789*x0**3/(0.0356787540603935*x0**3 + 0.474860240707103*x0**2 + 1.1791668236233*x0 + 0.585991257531795) + 0.345352788260788*x0**2/(0.0356787540603935*x0**3 + 0.474860240707103*x0**2 + 1.1791668236233*x0 + 0.585991257531795) + 1.72441458740624*x0/(0.0356787540603935*x0**3 + 0.474860240707103*x0**2 + 1.1791668236233*x0 + 0.585991257531795) - 0.00546687335409129",
+    "-0.0299932294892357*x0**3/(6.74928643198512e-5*x0**6 + 0.000582406104003443*x0**5 + 0.00285780246940153*x0**4 + 0.0396510511822699*x0**3 + 0.13678600493767*x0**2 + 0.544754531359311*x0 + 0.810237346590887) + 0.375680110837175*x0**2/(6.74928643198512e-5*x0**6 + 0.000582406104003443*x0**5 + 0.00285780246940153*x0**4 + 0.0396510511822699*x0**3 + 0.13678600493767*x0**2 + 0.544754531359311*x0 + 0.810237346590887) - 0.00268740549216391*x0/(6.74928643198512e-5*x0**6 + 0.000582406104003443*x0**5 + 0.00285780246940153*x0**4 + 0.0396510511822699*x0**3 + 0.13678600493767*x0**2 + 0.544754531359311*x0 + 0.810237346590887)",
+    "0.00105991021021391*x0**3 - 0.0153867303532204*x0**2 + 0.107461045188755*x0 + 0.510360028758351",
+    "0.001719403749764*x0**3/(-8.00085218498031e-7*x0**6 + 0.000101680283807572*x0**5 + 0.000451376575917966*x0**4 + 0.0576214173889763*x0**3 + 0.0300107328065853*x0**2 + 1.49878566545903*x0 + 0.448535719617208) + 0.00170585802453365*x0**2/(-8.00085218498031e-7*x0**6 + 0.000101680283807572*x0**5 + 0.000451376575917966*x0**4 + 0.0576214173889763*x0**3 + 0.0300107328065853*x0**2 + 1.49878566545903*x0 + 0.448535719617208) + 0.201833066658916*x0/(-8.00085218498031e-7*x0**6 + 0.000101680283807572*x0**5 + 0.000451376575917966*x0**4 + 0.0576214173889763*x0**3 + 0.0300107328065853*x0**2 + 1.49878566545903*x0 + 0.448535719617208)",
+    "0.274033708168997*x0**3/(-2.3717042331501e-6*x0**6 + 0.000125746415518212*x0**5 - 0.00224054367102625*x0**4 + 0.0514609626022258*x0**3 + 0.0250003221221736*x0**2 + 0.174415386590104*x0 + 0.230057513102061) + 0.0620121699212359*x0**2/(-2.3717042331501e-6*x0**6 + 0.000125746415518212*x0**5 - 0.00224054367102625*x0**4 + 0.0514609626022258*x0**3 + 0.0250003221221736*x0**2 + 0.174415386590104*x0 + 0.230057513102061) + 1.17667807301361*x0/(-2.3717042331501e-6*x0**6 + 0.000125746415518212*x0**5 - 0.00224054367102625*x0**4 + 0.0514609626022258*x0**3 + 0.0250003221221736*x0**2 + 0.174415386590104*x0 + 0.230057513102061)",
+    "0.492836799100445*x0**2 + 6.19531850350324*x0 - 0.489596987270914",
+    "0.104370586390951*x0**3/(-0.0067991296*x0**6 + 0.24236089*x0**5 - 1.3020071*x0**4 + 1.5750455*x0**3 + 2.0255634*x0**2 + 1.5305586*x0 + 1.1591394) + 0.915771216190748*x0**2/(0.025799729*x0**6 - 0.40029797*x0**5 + 1.3746117*x0**4 + 1.5363308*x0**3 + 1.5977456*x0**2 + 1.4239245*x0 - 0.0067320456) - 0.660385805825413*x0/(0.00085860757*x0**6 - 0.02288936*x0**5 + 0.12632207*x0**4 + 1.3113579*x0**3 + 1.805588*x0**2 + 1.5244727*x0 + 1.3793137)",
+    "1.29977030095912*x0**2 + 2.32891957163705/x1",
+    "1.0*x0**3/(0.769230769230769 + 1/x0)",
+    "-7.52106745661103e-5*x0**3 + 0.00131378615846764*x0**2 - 0.011432662607602*x0 + 0.0886637774564486",
+    "0.219194178385169*sqrt(x0) + 0.26753915934275*x0**2 - 0.160040688581287",
+    "0.450000000000001/(x0*x1)"
+   ],
+   "settings": {
+    "library_blocks": 16,
+    "library_proposals": 1,
+    "library_seconds": 7.5,
+    "library_top": 6,
+    "memory_seconds": 7.5
+   }
+  },
+  "seconds": 6730.2,
+  "seed": 20261124,
+  "tag": "level1",
+  "what": "development; not a result"
+ },
+ "run": {
+  "branch": "recursion-run-2",
+  "commit": "a5da048",
+  "options": "level1 --generations 4 --measure 24 --workers 4; study 12, selection 10, variants 2; no coding model",
+  "run_id": 45362288249,
+  "workflow": "recursion.yml"
+ },
+ "what": "Development run of apedp_dyn.recursion Level 1 on GitHub; not a result. Nothing was preregistered and nothing is in force."
+}

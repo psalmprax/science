@@ -200,7 +200,8 @@ def test_the_seal_covers_the_referee_the_thresholds_and_the_last_checks() -> Non
     sealed = judge.seal()
     for name in ("specifications/canonical_preregistered_spec_v1.json", "specifications/discovery_checks_v1.json",
                  "apedp_dyn/discovery_l2/vouching_v2.py", "apedp_dyn/discovery_l2/measured_range.py",
-                 "apedp_dyn/recursion/judge.py", "apedp_dyn/recursion/progress.py", "apedp_referee/canonical_spec.py"):
+                 "apedp_dyn/recursion/judge.py", "apedp_dyn/recursion/mdl.py", "apedp_dyn/recursion/progress.py",
+                 "apedp_referee/canonical_spec.py"):
         assert name in sealed
     judge.check(sealed)
 
@@ -240,9 +241,29 @@ def test_the_verdict_separates_solved_wrong_and_not_reported() -> None:
     right = judge.verdict({"reported": True, "law": "1.3*x0/(x0 + 0.7)"}, ["x0"], 1.3 * x0 / (0.7 + x0), X, clean)
     wrong = judge.verdict({"reported": True, "law": "0.2*x0"}, ["x0"], 1.3 * x0 / (0.7 + x0), X, clean)
     silent = judge.verdict({"reported": False, "law": None, "tentative_law": "1.3*x0/(x0 + 0.7)"}, ["x0"], x0, X, clean)
-    assert (right["solved"], right["wrong"], right["same_form"]) == (True, False, True)
-    assert (wrong["solved"], wrong["wrong"]) == (False, True)
-    assert (silent["reported"], silent["solved"], silent["wrong"]) == (False, False, False)
+    assert (right["accurate"], right["solved"], right["wrong"], right["same_form"]) == (True, True, False, True)
+    assert (wrong["accurate"], wrong["solved"], wrong["wrong"]) == (False, False, True)
+    assert (silent["reported"], silent["accurate"], silent["solved"], silent["wrong"]) == (False, False, False, False)
+
+
+def test_an_accurate_approximation_longer_than_the_law_is_not_the_law() -> None:
+    """A ratio of cubics reaches the accuracy line on a saturating law without being it. The first run counted such laws solved."""
+    x0 = sp.Symbol("x0")
+    X = np.linspace(1, 5, 400).reshape(-1, 1)
+    truth = 1.3 * sp.exp(-0.45 * x0)
+    clean = 1.3 * np.exp(-0.45 * X[:, 0])
+    top, bottom = np.polyfit(X[:, 0], clean, 3), [1.0]
+    for _ in range(30):                                        # a rational fit by repeated linear solves
+        design = np.column_stack([X[:, 0] ** 3, X[:, 0] ** 2, X[:, 0], np.ones(len(X)), -clean * X[:, 0], -clean * X[:, 0] ** 2])
+        solved, *_ = np.linalg.lstsq(design, clean, rcond=None)
+        top, bottom = solved[:4], [1.0, solved[4], solved[5]]
+    a, b = [float(v) for v in top], [float(v) for v in bottom]
+    approx = f"({a[0]!r}*x0**3 + {a[1]!r}*x0**2 + {a[2]!r}*x0 + {a[3]!r})/(1.0 + {b[1]!r}*x0 + {b[2]!r}*x0**2)"
+    found = judge.verdict({"reported": True, "law": approx}, ["x0"], truth, X, clean)
+    assert found["accurate"] is True and found["wrong"] is False
+    assert found["solved"] is False and found["bits"] > found["truth_bits"]
+    exact = judge.verdict({"reported": True, "law": "1.3*exp(-0.45*x0)"}, ["x0"], truth, X, clean)
+    assert exact["solved"] is True and exact["bits"] == exact["truth_bits"]
 
 
 def test_the_judge_uses_the_named_accuracy_line() -> None:
@@ -291,10 +312,18 @@ def test_varied_settings_stay_the_searchers_own_and_inside_bounds() -> None:
 
 
 def test_a_variant_is_adopted_only_if_faster_per_cpu_and_no_more_wrong() -> None:
-    incumbent = {"per_cpu_hour": 10.0, "wrong": 1}
-    assert levels.better({"per_cpu_hour": 12.0, "wrong": 1}, incumbent)
-    assert not levels.better({"per_cpu_hour": 12.0, "wrong": 2}, incumbent)
-    assert not levels.better({"per_cpu_hour": 10.0, "wrong": 0}, incumbent)
+    incumbent = {"solved": 5, "per_cpu_hour": 10.0, "cpu_seconds": 1800.0, "wrong": 1}
+    assert levels.better({"solved": 6, "per_cpu_hour": 12.0, "cpu_seconds": 1800.0, "wrong": 1}, incumbent)
+    assert not levels.better({"solved": 6, "per_cpu_hour": 12.0, "cpu_seconds": 1800.0, "wrong": 2}, incumbent)
+    assert not levels.better({"solved": 6, "per_cpu_hour": 9.0, "cpu_seconds": 2400.0, "wrong": 1}, incumbent)   # more, but slower per law
+    assert not levels.better({"solved": 4, "per_cpu_hour": 20.0, "cpu_seconds": 720.0, "wrong": 0}, incumbent)
+
+
+def test_a_copy_that_solves_the_same_is_not_taken_for_a_few_seconds_of_timing_noise() -> None:
+    """In the first run a copy with the same problems solved and 2 % less CPU replaced the incumbent, seven times of eight."""
+    incumbent = {"solved": 3, "per_cpu_hour": 24.637, "cpu_seconds": 438.36, "wrong": 0}
+    assert not levels.better({"solved": 3, "per_cpu_hour": 25.092, "cpu_seconds": 430.42, "wrong": 0}, incumbent)
+    assert levels.better({"solved": 3, "per_cpu_hour": 36.0, "cpu_seconds": 300.0, "wrong": 0}, incumbent)
 
 
 def test_without_a_coding_model_the_code_is_not_varied_and_the_record_says_so() -> None:
@@ -360,6 +389,22 @@ def test_level_two_compares_ways_of_improving_from_the_same_start(monkeypatch: p
         assert round_["chosen"] == best["meta"]
     assert out["rounds"][1]["incumbent"] == out["rounds"][0]["chosen"]
     assert out["meta"] == out["rounds"][-1]["chosen"]
+
+
+def test_a_later_round_run_alone_draws_other_problems_and_reports_each_run_as_it_ends(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(levels, "run_batch", _fake_batch)
+    seen: list[dict[str, object]] = []
+    start = levels.Meta(variants=1, study=4, selection=4)
+    first = levels.run_level2(levels.Searcher(), rounds=1, metas=2, generations=2, seed=4, measure=5, meta=start, on_run=seen.append)
+    second = levels.run_level2(levels.Searcher(), rounds=1, metas=2, generations=2, seed=4, measure=5,
+                               meta=levels.Meta(**first["meta"]), first_round=2, on_run=seen.append)
+    assert [(item["round"], item["index"]) for item in seen] == [(1, 0), (1, 1), (2, 0), (2, 1)]
+    assert first["rounds"][0]["round"] == 1 and second["rounds"][0]["round"] == 2
+    assert second["rounds"][0]["incumbent"] == first["meta"]
+    generations: list[dict[str, object]] = []
+    levels.run_level1(levels.Searcher(), generations=2, meta=start, seed=4, measure=5, on_generation=generations.append)
+    assert [g["generation"] for g in generations] == [0, 1, 2] and all("rows" not in g for g in generations)
 
 
 def test_a_varied_meta_differs_in_exactly_one_thing() -> None:

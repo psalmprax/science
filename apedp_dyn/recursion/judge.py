@@ -2,12 +2,23 @@
 
 Status: experimental
 
-**Solved.** A problem is solved when the route *reported* a law (the referee
-confirmed it on measured rows and the last checks in force vouched for it) and
-that law is accurate on clean rows the route never saw: R² at or above
-``DISCOVERY_ACCURACY_R2``, the line that defines a wrong law
-(``apedp_dyn.conf.discovery_checks``). A reported law below that line is
-**wrong** and counted against the searcher. A tentative law is neither.
+**Accurate, solved, wrong.** The route *reported* a law when the referee
+confirmed it on measured rows and the last checks in force vouched for it. A
+reported law is
+
+* **accurate** when, on clean rows the route never saw, its R² is at or above
+  ``DISCOVERY_ACCURACY_R2``, the line that defines a wrong law
+  (``apedp_dyn.conf.discovery_checks``);
+* **solved** when it is accurate *and* takes no more bits to write down than
+  the true law (``mdl.law_bits``). An accurate law that is longer than the
+  truth is an approximation of it, not the law: a ratio of two cubics reaches
+  the accuracy line on many one-input laws without being any of them. The
+  first run of the levels counted those as solved, and its one rise in the
+  rate was made of them (``benchmarks/recursion/dev_level1_run2.json``);
+* **wrong** when it is not accurate; counted against the searcher.
+
+A tentative law is none of these. The comparison of lengths needs the true
+law, which a self-made curriculum has and a table from the world does not.
 ``same_form`` adds, for information only, whether rewrites show the reported
 law equal to the true one with its constants rounded.
 
@@ -34,7 +45,7 @@ import numpy as np
 import sympy as sp
 
 from apedp_dyn.conf.discovery_checks import DISCOVERY_ACCURACY_R2
-from apedp_dyn.recursion import egraph
+from apedp_dyn.recursion import egraph, mdl
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -49,6 +60,7 @@ SEALED_FILES = (
     "apedp_dyn/discovery_l2/measured_range.py",
     "apedp_dyn/discovery_l2/learning_loop.py",
     "apedp_dyn/recursion/judge.py",
+    "apedp_dyn/recursion/mdl.py",
     "apedp_dyn/recursion/curriculum.py",
     "apedp_dyn/recursion/progress.py",
     "benchmarks/invented_laws_fingerprints.json",
@@ -122,10 +134,11 @@ def same_form(law: sp.Expr, truth: sp.Expr, digits: int = 3) -> bool | None:
 
 def verdict(record: Mapping[str, Any], names: list[str], truth: sp.Expr, test_X: np.ndarray, test_clean: np.ndarray
             ) -> dict[str, Any]:
-    """Solved, wrong or neither, for one route record."""
+    """Accurate, solved, wrong or none of them, for one route record."""
     law = record.get("law") if record.get("reported") else None
     if not law:
-        return {"reported": False, "solved": False, "wrong": False, "r2": None, "same_form": None, "law": None}
+        return {"reported": False, "accurate": False, "solved": False, "wrong": False, "r2": None, "same_form": None,
+                "law": None, "bits": None, "truth_bits": None}
     symbols = [sp.Symbol(n) for n in names]
     expr = sp.sympify(str(law), locals=dict(zip(names, symbols, strict=True)))
     with np.errstate(all="ignore"):
@@ -136,5 +149,7 @@ def verdict(record: Mapping[str, Any], names: list[str], truth: sp.Expr, test_X:
         form = same_form(expr, truth)
     except (ValueError, TypeError, RecursionError):
         form = None
-    return {"reported": True, "solved": accurate, "wrong": not accurate, "r2": None if score is None else round(score, 6),
-            "same_form": form, "law": str(law)}
+    bits, truth_bits = mdl.law_bits(expr, len(names)), mdl.law_bits(truth, len(names))
+    return {"reported": True, "accurate": accurate, "solved": bool(accurate and bits <= truth_bits), "wrong": not accurate,
+            "r2": None if score is None else round(score, 6), "same_form": form, "law": str(law),
+            "bits": round(bits, 1), "truth_bits": round(truth_bits, 1)}

@@ -37,14 +37,26 @@ inferred releases.
   **The claim is made testable** (`progress`): `g_k` is fresh laws solved per CPU-hour at
   generation `k`; "recursive" needs `g` to rise by more than two standard errors at every step
   over three generations or more, with no rise in the share of wrong laws. **No run has shown
-  it.** The only run so far is a one-generation smoke test (0 of 3 solved before and after).
+  it.** The first complete Level 1 run (GitHub, `recursion-run-2`, four generations of 24 fresh
+  problems; `benchmarks/recursion/dev_level1_run2.json`) gave `g` = 4.8, 30.7, 12.7, 14.7, 6.3
+  and the verdict *not shown*: the rate rose once and then fell, with no wrong law. Looked at
+  closely, the one rise was not laws being found. With nothing learned the memory offers
+  nothing; after one learned law (a cubic) it offers ratios of cubics, which reach the accuracy
+  line on many one-input laws, and "solved" meant accurate. Those approximations were also
+  learned, and the searcher got slower (750 s to 2,864 s of CPU per measurement) without
+  solving more. Seven of eight settings copies were adopted on a few seconds of timing noise.
+  **Changed after that run:** `judge.verdict` keeps *accurate* and counts a law *solved* only if
+  it is also no longer, in bits, than the true law; only solved laws are learned; a copy with
+  as many solved needs 20 % less CPU to be adopted. Level 2 now runs one round a job and writes
+  each run as it ends (the first Level 2 job would have reached its time limit with nothing
+  written).
   **What the loop cannot change** (`judge`): the referee package, both threshold files, the
   route, the last checks, the measured range, the learning gate, the curriculum and the progress
   test are sealed by SHA-256 at the start of a run and checked at every generation; a searcher
   has five bounded settings and none is a threshold. The generator's code is varied only with a
   coding model the owner provides; none has been, and the step records that it did not run.
   `z3-solver` joins the `test` extra; `smt` answers "not decided" without it.
-  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (51).
+  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (55).
   The first GitHub run (`recursion-run-1`) stopped at its second study batch: the curriculum had
   moved down to level 0, which has under ten distinct laws, and asked it for more. A study batch
   now takes such a slot from the next level up and records the level as used up; a measurement

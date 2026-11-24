@@ -2,8 +2,10 @@ name: Recursion levels (development)
 
 # Development, not a result: scripts/run_recursion.py on a self-made curriculum of invented laws.
 # Level 1 improves the searcher over generations and measures g_k (fresh laws solved per CPU-hour);
-# Level 2 compares ways of running Level 1. No coding model is given, so the generator's code is not
-# varied. Started by pushing a branch recursion-run-*.
+# Level 2 compares ways of running Level 1, one round a job, the second starting from the way the
+# first chose. No coding model is given, so the generator's code is not varied. Each run step has
+# its own time limit below the job's, so the record of what finished is still printed and uploaded.
+# Started by pushing a branch recursion-run-*.
 
 on:
   push:
@@ -12,18 +14,13 @@ on:
 permissions:
   contents: read
 
+env:
+  LEVEL2: --metas 3 --generations 3 --measure 12 --study 8 --selection 6 --rounds 1
+
 jobs:
-  level:
+  level1:
     runs-on: ubuntu-latest
-    timeout-minutes: 340
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - level: level1
-            options: --generations 4 --measure 24
-          - level: level2
-            options: --rounds 2 --metas 3 --generations 3 --measure 16
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -34,23 +31,91 @@ jobs:
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test]"
-      - name: Run ${{ matrix.level }}
-        env:
-          LEVEL: ${{ matrix.level }}
-          OPTIONS: ${{ matrix.options }}
-        run: |
-          # shellcheck disable=SC2086
-          python scripts/run_recursion.py "$LEVEL" --out out --workers 4 $OPTIONS
+      - name: Level 1, four generations
+        timeout-minutes: 320
+        run: python scripts/run_recursion.py level1 --out out --workers 4 --generations 4 --measure 24
       - name: Print the record
         if: always()
-        env:
-          LEVEL: ${{ matrix.level }}
         run: |
-          echo "=====BEGIN $LEVEL====="
-          if [ -f "out/$LEVEL.json" ]; then gzip -9c "out/$LEVEL.json" | base64 -w 0; echo; fi
-          echo "=====END $LEVEL====="
+          echo "=====BEGIN level1 partial====="
+          if [ -f out/level1_partial.jsonl ]; then cat out/level1_partial.jsonl; fi
+          echo "=====END level1 partial====="
+          echo "=====BEGIN level1====="
+          if [ -f out/level1.json ]; then gzip -9c out/level1.json | base64 -w 0; echo; fi
+          echo "=====END level1====="
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: recursion-${{ matrix.level }}
+          name: recursion-level1
+          path: out
+
+  level2-round1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Level 2, round 1
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py level2 --out out --workers 4 $LEVEL2
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN level2 round 1 partial====="
+          if [ -f out/level2_partial.jsonl ]; then cat out/level2_partial.jsonl; fi
+          echo "=====END level2 round 1 partial====="
+          echo "=====BEGIN level2 round 1====="
+          if [ -f out/level2.json ]; then gzip -9c out/level2.json | base64 -w 0; echo; fi
+          echo "=====END level2 round 1====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: recursion-level2-round1
+          path: out
+
+  level2-round2:
+    needs: level2-round1
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          name: recursion-level2-round1
+          path: round1
+      - name: Level 2, round 2, from the way round 1 chose
+        timeout-minutes: 320
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/run_recursion.py level2 --out out --workers 4 $LEVEL2 --first-round 2 --meta-from round1/level2.json
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN level2 round 2 partial====="
+          if [ -f out/level2_partial.jsonl ]; then cat out/level2_partial.jsonl; fi
+          echo "=====END level2 round 2 partial====="
+          echo "=====BEGIN level2 round 2====="
+          if [ -f out/level2.json ]; then gzip -9c out/level2.json | base64 -w 0; echo; fi
+          echo "=====END level2 round 2====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: recursion-level2-round2
           path: out

@@ -12,16 +12,19 @@ whether it was solved.
 
 1. *study*: a batch from the curriculum at the current level. A law is added
    to what the searcher has learned if the route reported it, the learning
-   gate allows it (``learning_loop.learnable``) and the judge found it accurate
-   on clean rows. The last condition uses the true law, which a self-made
-   curriculum has and a table from the world does not: outside a curriculum
-   the first two are all there is. An accurate law need not have the true
-   form, so approximations are learned too. The memory is rebuilt from the
-   laws learned and the library re-chosen by compression; the level moves;
+   gate allows it (``learning_loop.learnable``) and the judge counts it solved:
+   accurate on clean rows and no longer than the true law. The last condition
+   uses the true law, which a self-made curriculum has and a table from the
+   world does not: outside a curriculum the first two are all there is. It
+   keeps accurate approximations out of what is learned: in the first run they
+   were learned, and one cubic in the memory was enough for it to offer ratios
+   of cubics on every later problem. The memory is rebuilt from the laws
+   learned and the library re-chosen by compression; the level moves;
 2. *vary the settings*: ``meta.variants`` copies of the searcher with settings
    moved by ``meta.step``. The incumbent and the copies run on one batch drawn
-   for that comparison. A copy replaces the incumbent only if it solves more
-   per CPU-hour and reports no more wrong laws;
+   for that comparison. A copy replaces the incumbent only if it reports no
+   more wrong laws and either solves more at a higher rate per CPU-hour or
+   solves as many for clearly less CPU (``better``);
 3. *vary the code* (only with a coding model the owner provided): the loop of
    ``apedp_dyn.evolution`` rewrites a candidate generator against solved study
    problems as teaching and fresh problems as score; its champion is adopted
@@ -159,7 +162,8 @@ def run_batch(searcher: Searcher, problems: Sequence[Problem], workers: int = 1)
 def tally(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     cpu = float(sum(r["cpu_seconds"] for r in rows))
     solved = sum(r["solved"] for r in rows)
-    return {"problems": len(rows), "solved": solved, "wrong": sum(r["wrong"] for r in rows),
+    return {"problems": len(rows), "solved": solved, "accurate": sum(r.get("accurate", r["solved"]) for r in rows),
+            "wrong": sum(r["wrong"] for r in rows),
             "reported": sum(r["reported"] for r in rows), "cpu_seconds": round(cpu, 2),
             "per_cpu_hour": round(solved / (cpu / 3600.0), 3) if cpu > 0 else 0.0}
 
@@ -192,9 +196,24 @@ def vary_settings(settings: dict[str, float | int], step: float, rng: np.random.
     return judge.check_settings(out)
 
 
+CPU_MARGIN = 0.2        # with as many solved, a copy has to save this share of the CPU time to be taken
+
+
 def better(candidate: dict[str, Any], incumbent: dict[str, Any]) -> bool:
-    """More solved per CPU-hour, and no more wrong laws."""
-    return bool(candidate["per_cpu_hour"] > incumbent["per_cpu_hour"] and candidate["wrong"] <= incumbent["wrong"])
+    """No more wrong laws, and either more solved at a higher rate, or as many solved for clearly less CPU.
+
+    The first run of the levels took a copy whenever its rate was higher at all. With the same problems solved, a
+    copy that happened to use 2 % less processor time replaced the incumbent, so the settings drifted on timing
+    noise (seven of eight copies taken, none having solved more than one extra problem). ``CPU_MARGIN`` is a
+    development constant of this rule.
+    """
+    if candidate["wrong"] > incumbent["wrong"]:
+        return False
+    if candidate["solved"] > incumbent["solved"]:
+        return bool(candidate["per_cpu_hour"] > incumbent["per_cpu_hour"])
+    if candidate["solved"] == incumbent["solved"]:
+        return bool(candidate["cpu_seconds"] < (1 - CPU_MARGIN) * incumbent["cpu_seconds"])
+    return False
 
 
 def code_step(searcher: Searcher, client: Callable[[str], str] | None, teaching: Sequence[Problem],
@@ -287,21 +306,25 @@ def generation(searcher: Searcher, curriculum: Curriculum, meta: Meta, k: int, *
     measured = run_batch(chosen, curriculum.measurement(measure, f"measurement {k}"), workers)
     counts = tally(measured)
     record["measurement"] = Measurement(k, counts["problems"], counts["solved"], counts["wrong"], counts["reported"],
-                                        counts["cpu_seconds"]).as_dict()
+                                        counts["cpu_seconds"], counts["accurate"]).as_dict()
     record["cpu_seconds_improving"] = round(spent, 2)
     record["rows"] = {"measurement": measured}
     return chosen, record, unsolved
 
 
 def run_level1(start: Searcher, *, generations: int, meta: Meta, seed: int, measure: int = 20, workers: int = 1,
-               client: Callable[[str], str] | None = None, tag: str = "") -> dict[str, Any]:
+               client: Callable[[str], str] | None = None, tag: str = "",
+               on_generation: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
     """Level 1 for ``generations`` generations after a measurement of the starting searcher (generation 0)."""
     sealed = judge.seal()
     curriculum = Curriculum(int.from_bytes(hashlib.sha256(f"{seed}|{tag}".encode()).digest()[:6], "big"))
     rng = np.random.default_rng(curriculum.seed)
     started = time.perf_counter()
     first = tally(run_batch(start, curriculum.measurement(measure, "measurement 0"), workers))
-    measurements = [Measurement(0, first["problems"], first["solved"], first["wrong"], first["reported"], first["cpu_seconds"])]
+    measurements = [Measurement(0, first["problems"], first["solved"], first["wrong"], first["reported"], first["cpu_seconds"],
+                                first["accurate"])]
+    if on_generation is not None:
+        on_generation({"generation": 0, "measurement": measurements[0].as_dict()})
     carried: list[Problem] = []
     searcher, records = start, []
     improving = 0.0
@@ -310,8 +333,10 @@ def run_level1(start: Searcher, *, generations: int, meta: Meta, seed: int, meas
                                                carried=carried, sealed=sealed, rng=rng)
         improving += record["cpu_seconds_improving"]
         m = record["measurement"]
-        measurements.append(Measurement(k, m["problems"], m["solved"], m["wrong"], m["reported"], m["cpu_seconds"]))
+        measurements.append(Measurement(k, m["problems"], m["solved"], m["wrong"], m["reported"], m["cpu_seconds"], m["accurate"]))
         records.append(record)
+        if on_generation is not None:
+            on_generation({k_: v for k_, v in record.items() if k_ != "rows"})
     judge.check(sealed)
     total = improving + sum(m.cpu_seconds for m in measurements)
     gain = measurements[-1].g - measurements[0].g
@@ -337,17 +362,22 @@ def vary_meta(meta: Meta, rng: np.random.Generator) -> Meta:
 
 
 def run_level2(start: Searcher, *, rounds: int, metas: int, generations: int, seed: int, meta: Meta | None = None,
-               measure: int = 20, workers: int = 1, client: Callable[[str], str] | None = None) -> dict[str, Any]:
+               measure: int = 20, workers: int = 1, client: Callable[[str], str] | None = None, first_round: int = 1,
+               on_run: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
     """Level 2: ways of running Level 1 compared by the gain in ``g`` they bought per CPU-hour.
 
     Each round the incumbent ``Meta`` runs again on new problems beside ``metas - 1`` variants of it; the best of the
     round is the next incumbent. Every run starts from the same searcher, so what is compared is the way of improving.
+
+    ``first_round`` numbers the first round (a later round continued in another process draws other problems and
+    other variants than the first); ``on_run`` is called with each Level 1 run as it ends, so a run cut short by a
+    time limit leaves what it finished.
     """
     sealed = judge.seal()
     incumbent = meta or Meta()
-    rng = np.random.default_rng(seed)
     history = []
-    for r in range(1, rounds + 1):
+    for r in range(first_round, first_round + rounds):
+        rng = np.random.default_rng([seed, r])
         judge.check(sealed)
         tried = [incumbent]
         for _ in range(200):
@@ -356,8 +386,14 @@ def run_level2(start: Searcher, *, rounds: int, metas: int, generations: int, se
             copy = vary_meta(incumbent, rng)
             if copy not in tried:
                 tried.append(copy)
-        runs = [run_level1(start, generations=generations, meta=m, seed=seed, measure=measure, workers=workers,
-                           client=client, tag=f"level2 round {r} meta {i}") for i, m in enumerate(tried)]
+        runs = []
+        for i, m in enumerate(tried):
+            runs.append(run_level1(start, generations=generations, meta=m, seed=seed, measure=measure, workers=workers,
+                                   client=client, tag=f"level2 round {r} meta {i}"))
+            if on_run is not None:
+                on_run({"round": r, "index": i, "meta": m.as_dict(), "gain_per_cpu_hour": runs[-1]["gain_per_cpu_hour"],
+                        "measurements": runs[-1]["measurements"], "progress": runs[-1]["progress"],
+                        "cpu_seconds": runs[-1]["cpu_seconds"], "settings": runs[-1]["searcher"]["settings"]})
         best = max(range(len(runs)), key=lambda i: runs[i]["gain_per_cpu_hour"])
         history.append({"round": r, "incumbent": incumbent.as_dict(), "chosen": tried[best].as_dict(), "changed": best != 0,
                         "runs": [{"meta": run["meta"], "gain_per_cpu_hour": run["gain_per_cpu_hour"],

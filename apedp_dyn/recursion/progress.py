@@ -47,6 +47,7 @@ class Measurement:
     wrong: int
     reported: int
     cpu_seconds: float
+    accurate: int = 0            #: reported laws at the accuracy line, the solved among them; an approximation counts here only
 
     @property
     def g(self) -> float:
