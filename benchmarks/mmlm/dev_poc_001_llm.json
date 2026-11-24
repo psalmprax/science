@@ -1,0 +1,521 @@
+{
+ "date": "2026-11-24",
+ "full_record": "benchmarks/mmlm/dev_poc_001_llm_full.json.gz (every prompt length, reply, move and outcome)",
+ "gate_0": {
+  "cleared": false,
+  "mismatches": 363,
+  "why": "the repository holds no copy of the published 51-product decomposition (its loader returns zeros), so no decomposition found here can be compared with it"
+ },
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "moves_per_arm": 60,
+ "reading": [
+  "A real language model (nemotron-3-ultra, 550 billion parameters, NVIDIA's hosted API) chose every move: 3 runs of 60 moves, 180 calls, 383,524 tokens by the service's own count.",
+  "It followed the format every time: no invalid reply in 180. Almost all its moves replaced one product (179 of 180).",
+  "None of its 180 moves lowered the exact count of wrong entries. It ended where it started, at 64, in all three runs.",
+  "The hand-written heuristic, from the same products with the same 60 moves, also ended at 64 in all three runs. The random walk ended worse: 82, 70 and 80.",
+  "So the language model did not beat the heuristic that used to carry its name, and neither made progress from this start. The earlier record's 'LLM advantage' was a property of the heuristic's own starting products and of the label.",
+  "Gate 0 is not cleared: the repository holds no copy of the published 51-product decomposition. Nothing here is a result against it.",
+  "What this does not show: that no language model could help. This is one model, one prompt, one move at a time with no working shown, 60 moves. A model allowed to reason at length, or to propose several products at once, is a different experiment."
+ ],
+ "run": {
+  "branch": "mmlm-llm-run-1",
+  "commit": "88c86c0",
+  "github_run": 45478737550,
+  "seconds": 399.2
+ },
+ "runs": [
+  {
+   "heuristic": {
+    "arm": "diagnostic-guided heuristic (hand-written)",
+    "best_defect": 64,
+    "solved": false,
+    "steps": 60,
+    "tokens": null
+   },
+   "language_model": {
+    "calls": 60,
+    "first_moves": [
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        2,
+        5,
+        8,
+        11
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 64,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        3,
+        6,
+        9
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        3,
+        6,
+        10
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 79,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        3,
+        6,
+        11
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        1,
+        4,
+        7,
+        10
+       ]
+      },
+      "outcome": "rejected"
+     }
+    ],
+    "invalid_replies": 0,
+    "moves_by_kind": {
+     "set_term": 60
+    },
+    "moves_kept": 0,
+    "tokens": {
+     "completion_tokens": 2745,
+     "prompt_tokens": 120152,
+     "total_tokens": 122897
+    },
+    "wrong_entries_after_its_moves": {
+     "64": 8,
+     "68": 42,
+     "71": 1,
+     "76": 1,
+     "77": 2,
+     "79": 5,
+     "84": 1
+    },
+    "wrong_entries_left": 64
+   },
+   "random_walk": {
+    "arm": "random walk",
+    "best_defect": 82,
+    "solved": false,
+    "steps": 60,
+    "tokens": null
+   },
+   "seed": 0
+  },
+  {
+   "heuristic": {
+    "arm": "diagnostic-guided heuristic (hand-written)",
+    "best_defect": 64,
+    "solved": false,
+    "steps": 60,
+    "tokens": null
+   },
+   "language_model": {
+    "calls": 60,
+    "first_moves": [
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        3,
+        6,
+        10
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 64,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        3,
+        6,
+        9
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 79,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        3,
+        6,
+        11
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        1,
+        4,
+        7,
+        10
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 48,
+       "u": [
+        0,
+        3,
+        6,
+        9
+       ],
+       "v": [
+        0,
+        4,
+        6,
+        9
+       ]
+      },
+      "outcome": "rejected"
+     }
+    ],
+    "invalid_replies": 0,
+    "moves_by_kind": {
+     "set_term": 60
+    },
+    "moves_kept": 0,
+    "tokens": {
+     "completion_tokens": 2743,
+     "prompt_tokens": 120136,
+     "total_tokens": 122879
+    },
+    "wrong_entries_after_its_moves": {
+     "64": 8,
+     "68": 43,
+     "77": 4,
+     "79": 4,
+     "84": 1
+    },
+    "wrong_entries_left": 64
+   },
+   "random_walk": {
+    "arm": "random walk",
+    "best_defect": 70,
+    "solved": false,
+    "steps": 60,
+    "tokens": null
+   },
+   "seed": 1
+  },
+  {
+   "heuristic": {
+    "arm": "diagnostic-guided heuristic (hand-written)",
+    "best_defect": 64,
+    "solved": false,
+    "steps": 60,
+    "tokens": null
+   },
+   "language_model": {
+    "calls": 60,
+    "first_moves": [
+     {
+      "after": 68,
+      "move": {
+       "move": "set_term",
+       "term": 17,
+       "u": [
+        0,
+        1,
+        2,
+        4,
+        5
+       ],
+       "v": [
+        0,
+        1,
+        2,
+        4,
+        5
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 72,
+      "move": {
+       "move": "set_term",
+       "term": 17,
+       "u": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        11
+       ],
+       "v": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        11
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 72,
+      "move": {
+       "move": "set_term",
+       "term": 17,
+       "u": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        10,
+        11
+       ],
+       "v": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        10,
+        11
+       ]
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 68,
+      "move": {
+       "bits": [
+        1,
+        2,
+        4,
+        5
+       ],
+       "from": 16,
+       "into": 17,
+       "move": "xor_terms"
+      },
+      "outcome": "rejected"
+     },
+     {
+      "after": 76,
+      "move": {
+       "move": "set_term",
+       "term": 17,
+       "u": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+       ],
+       "v": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+       ]
+      },
+      "outcome": "rejected"
+     }
+    ],
+    "invalid_replies": 0,
+    "moves_by_kind": {
+     "set_term": 59,
+     "xor_terms": 1
+    },
+    "moves_kept": 0,
+    "tokens": {
+     "completion_tokens": 4464,
+     "prompt_tokens": 133284,
+     "total_tokens": 137748
+    },
+    "wrong_entries_after_its_moves": {
+     "64": 2,
+     "68": 5,
+     "69": 2,
+     "72": 3,
+     "73": 1,
+     "76": 9,
+     "78": 1,
+     "81": 1,
+     "82": 11,
+     "86": 3,
+     "87": 4,
+     "88": 1,
+     "89": 3,
+     "90": 3,
+     "91": 1,
+     "92": 5,
+     "93": 2,
+     "94": 1,
+     "97": 1,
+     "99": 1
+    },
+    "wrong_entries_left": 64
+   },
+   "random_walk": {
+    "arm": "random walk",
+    "best_defect": 80,
+    "solved": false,
+    "steps": 60,
+    "tokens": null
+   },
+   "seed": 2
+  }
+ ],
+ "start_wrong_entries": 64,
+ "summary": {
+  "language_model_against_heuristic": {
+   "better": 0,
+   "same": 3,
+   "sign_test_p_one_sided": null,
+   "worse": 0
+  },
+  "language_model_calls": 180,
+  "language_model_invalid_replies": 0,
+  "language_model_moves_kept": 0,
+  "language_model_stopped_early": [],
+  "language_model_tokens": {
+   "completion_tokens": 9952,
+   "prompt_tokens": 373572,
+   "total_tokens": 383524
+  },
+  "runs": 3,
+  "solved": {
+   "heuristic": 0,
+   "language_model": 0,
+   "random_walk": 0
+  },
+  "wrong_entries_left": {
+   "heuristic": [
+    64,
+    64,
+    64
+   ],
+   "language_model": [
+    64,
+    64,
+    64
+   ],
+   "random_walk": [
+    82,
+    70,
+    80
+   ]
+  }
+ },
+ "target_rank": 50,
+ "temperature": 0.7,
+ "what": "development: MMLM-POC-001 with a real language model choosing the moves; not a result, and no claim against the published 51-product decomposition"
+}

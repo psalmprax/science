@@ -1,0 +1,2414 @@
+{
+ "date": "2026-11-24",
+ "laws_seed": 2026112490,
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "noise": 0.01,
+ "reading": [
+  "84 laws the exhaustive search can express: 60 invented from a seed used nowhere else and 24 from other fields. The language model (nemotron-3-ultra) saw 24 rows of numbers per table and nothing else; 84 calls, 55,578 tokens.",
+  "Median place of the true law among the candidates: 545.5 in the search's own order, 49 by MMLM's equation model, 2 with the language model as MMLM's expert.",
+  "The true law within the first ten candidates: 20 of 84 by size, 30 by MMLM, 62 with the expert. Within the first thousand: 46, 70 and 78.",
+  "Law by law against MMLM alone: earlier on 69, later on 10, the same on 5 (one-sided sign test p = 2.8e-12).",
+  "The model named the true law among its eight shapes on 62 of 84 tables, and first on 24. The language model alone reaches those 62 and no others; together with MMLM's taught prior 78 are within the first thousand. Each part adds to the other.",
+  "On the invented laws, which cannot have been read anywhere: named on 49 of 60; median place 23 with MMLM alone and 2 with the expert; earlier on 50, later on 5.",
+  "On the other-field laws: median place 303.5 with MMLM alone and 7 with the expert; earlier on 19, later on 5. These are textbook shapes; the model saw numbers only, but may know them.",
+  "Where the model did not name the law (22 tables), teaching MMLM its shapes sometimes helped (place 5,136 to 1,855) and sometimes hurt (620 to 786): a wrong hint costs places, as designed, not correctness.",
+  "Limits. The invented laws are short products of powers, easy to read from 24 clean-ish rows. Place in the search order is not the same as laws recovered through the referee. Nothing was preregistered: this says the idea is worth a blind test, on fresh and harder laws, with recovery through the route as the measure."
+ ],
+ "rows": [
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.379/sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_00",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 31,
+    "mmlm_with_llm": 4,
+    "size": 12
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "cos(x0)",
+    "sin(1/x0)"
+   ],
+   "tokens": 519
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.749/(x0**2*x1)",
+   "lines_not_read": 0,
+   "name": "invented_01",
+   "rank": {
+    "llm_alone": 7,
+    "mmlm": 269,
+    "mmlm_with_llm": 7,
+    "size": 2770
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**(-2)",
+    "1/x0",
+    "1/(x0*x1)",
+    "1/x1",
+    "x0**(-3)",
+    "x1**(-2)",
+    "1/(x0**2*x1)",
+    "1/(x0*x1**2)"
+   ],
+   "tokens": 726
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.52*x0",
+   "lines_not_read": 0,
+   "name": "invented_03",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 1,
+    "mmlm_with_llm": 1,
+    "size": 1
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "sqrt(x0)",
+    "log(x0)",
+    "x0**2",
+    "x0**0.5",
+    "x0**1.5",
+    "exp(x0)",
+    "sin(x0)"
+   ],
+   "tokens": 504
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "0.982/(x0**2*sqrt(x1))",
+   "lines_not_read": 0,
+   "name": "invented_04",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 5136,
+    "mmlm_with_llm": 1855,
+    "size": 19413
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**(-2)",
+    "1/x0",
+    "1/(x0*x1)",
+    "1/x1",
+    "x1**(-2)",
+    "1/(x0**2 + x1**2)",
+    "1/sqrt(x0**2 + x1**2)",
+    "exp(-x0)"
+   ],
+   "tokens": 732
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.615*x0**3",
+   "lines_not_read": 0,
+   "name": "invented_06",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 7,
+    "mmlm_with_llm": 2,
+    "size": 233
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**3",
+    "x0**2.5",
+    "exp(x0)",
+    "x0**2*log(x0)",
+    "x0**4",
+    "x0*exp(x0)",
+    "x0**(5/2)"
+   ],
+   "tokens": 506
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "0.996*x1**3/x0",
+   "lines_not_read": 0,
+   "name": "invented_07",
+   "rank": {
+    "llm_alone": 5,
+    "mmlm": 654,
+    "mmlm_with_llm": 5,
+    "size": 24367
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**2/x0",
+    "x1**3/x0**2",
+    "x1**2/x0**2",
+    "x1/x0",
+    "x1**3/x0",
+    "exp(x1)/x0",
+    "x1**2*exp(-x0)",
+    "log(x1)/x0"
+   ],
+   "tokens": 710
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.832/sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_09",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 31,
+    "mmlm_with_llm": 4,
+    "size": 12
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "cos(x0)",
+    "sin(1/x0)"
+   ],
+   "tokens": 533
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.309*sqrt(x0)*sqrt(x1)",
+   "lines_not_read": 1,
+   "name": "invented_10",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 48,
+    "mmlm_with_llm": 4,
+    "size": 131
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 7,
+   "shapes_named_by_the_model": [
+    "x0 + x1",
+    "sqrt(x0**2 + x1**2)",
+    "(x0**2 + x1**2)/(x0 + x1)",
+    "2*x0*x1/(x0 + x1)",
+    "sqrt(x0*x1)",
+    "x0/2 + x1/2",
+    "log(exp(x0) + exp(x1))"
+   ],
+   "tokens": 722
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.995*x0",
+   "lines_not_read": 0,
+   "name": "invented_12",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 1,
+    "mmlm_with_llm": 1,
+    "size": 1
+   },
+   "shapes_in_the_search": 6,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "sqrt(x0)",
+    "log(x0)",
+    "x0**2",
+    "x0**0.5",
+    "x0**0.333",
+    "exp(x0)",
+    "sin(x0)"
+   ],
+   "tokens": 503
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.95*x1**3/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_13",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 620,
+    "mmlm_with_llm": 786,
+    "size": 24305
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1**2/x0",
+    "x1**3/x0",
+    "exp(x1)/x0",
+    "x1/x0**2",
+    "x1**2/x0**2",
+    "log(x1)/x0",
+    "x1/log(x0)"
+   ],
+   "tokens": 713
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.142/x0",
+   "lines_not_read": 0,
+   "name": "invented_15",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 6,
+    "mmlm_with_llm": 1,
+    "size": 7
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "1/(x0**2 + 1)",
+    "cos(x0)"
+   ],
+   "tokens": 528
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.467*x1**2/x0",
+   "lines_not_read": 0,
+   "name": "invented_16",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 47,
+    "mmlm_with_llm": 1,
+    "size": 581
+   },
+   "shapes_in_the_search": 6,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**2/x0",
+    "x1**2/(x0 + 1)",
+    "x1**2/(x0 - 1)",
+    "x1**2/sqrt(x0)",
+    "x1**2/log(x0)",
+    "x1**2/x0**2",
+    "x1**3/x0",
+    "x1/x0"
+   ],
+   "tokens": 713
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.493/sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_18",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 31,
+    "mmlm_with_llm": 2,
+    "size": 12
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/(x0 + 1)",
+    "cos(x0)",
+    "sin(1/x0)"
+   ],
+   "tokens": 523
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.524*x1**2/sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_19",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 401,
+    "mmlm_with_llm": 4,
+    "size": 3956
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**2",
+    "x1**2/x0",
+    "x1**2*log(x0)",
+    "x1**2/sqrt(x0)",
+    "sqrt(x0)*x1**2",
+    "x0*x1**2",
+    "x1**3/x0",
+    "x1**2*exp(-x0)"
+   ],
+   "tokens": 709
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.85*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_21",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**(5/2)",
+    "x0**3",
+    "x0**2.5",
+    "x0**2/log(x0)",
+    "x0**2*exp(-1/x0)",
+    "x0**2*sin(x0)"
+   ],
+   "tokens": 522
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "0.809*x0**3*x1**2",
+   "lines_not_read": 0,
+   "name": "invented_22",
+   "rank": {
+    "llm_alone": 5,
+    "mmlm": 305,
+    "mmlm_with_llm": 5,
+    "size": 23918
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2*x1**2",
+    "x0**3*x1",
+    "x0*x1**3",
+    "x0**2*x1**3",
+    "x0**3*x1**2",
+    "x0**4*x1",
+    "x0*x1**4",
+    "x0**2*x1**2*(x0 + x1)"
+   ],
+   "tokens": 716
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.271/x0",
+   "lines_not_read": 0,
+   "name": "invented_24",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 6,
+    "mmlm_with_llm": 1,
+    "size": 7
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "1/(x0**2 + 1)",
+    "cos(x0)"
+   ],
+   "tokens": 522
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "0.813/(x0*sqrt(x1))",
+   "lines_not_read": 0,
+   "name": "invented_25",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 2416,
+    "mmlm_with_llm": 977,
+    "size": 2749
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x1",
+    "1/x0",
+    "1/(x0*x1)",
+    "x1**(-2)",
+    "x0**(-2)",
+    "1/(x0 + x1)",
+    "1/sqrt(x0*x1)",
+    "1/(x0**2 + x1**2)"
+   ],
+   "tokens": 723
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.854/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_27",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 23,
+    "mmlm_with_llm": 2,
+    "size": 38
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "1/(x0**2 + 1)",
+    "x0**(-3)"
+   ],
+   "tokens": 549
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.368*x1**3/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_28",
+   "rank": {
+    "llm_alone": 8,
+    "mmlm": 620,
+    "mmlm_with_llm": 8,
+    "size": 24305
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1/x0**2",
+    "exp(x1)/x0",
+    "x1**2/x0",
+    "x1**2/x0**2",
+    "exp(x1)/x0**2",
+    "x1**3/x0",
+    "x1**3/x0**2"
+   ],
+   "tokens": 702
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.58/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_30",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 23,
+    "mmlm_with_llm": 2,
+    "size": 38
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "1/log(x0)",
+    "x0**(-3)",
+    "1/(x0 - 1)",
+    "cos(x0)/x0"
+   ],
+   "tokens": 533
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.521*x1**2/x0",
+   "lines_not_read": 0,
+   "name": "invented_31",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 47,
+    "mmlm_with_llm": 2,
+    "size": 581
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1**2/x0",
+    "x1**3/x0**2",
+    "x1**2/x0**2",
+    "x1/x0**2",
+    "log(x1/x0)",
+    "exp(x1/x0)",
+    "sqrt(x1/x0)"
+   ],
+   "tokens": 690
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.924*sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_33",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 3,
+    "mmlm_with_llm": 2,
+    "size": 2
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**0.5",
+    "x0**0.33",
+    "x0**0.25",
+    "x0/(x0 + 1)",
+    "1 - exp(-x0)",
+    "log(x0 + 1)"
+   ],
+   "tokens": 509
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.406*x1**3/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_34",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 620,
+    "mmlm_with_llm": 786,
+    "size": 24305
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1**2/x0",
+    "x1**3/x0",
+    "exp(x1)/x0",
+    "x1/x0**2",
+    "x1**2/x0**2",
+    "log(x1)/x0",
+    "x1/log(x0)"
+   ],
+   "tokens": 711
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.073*sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_36",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 3,
+    "mmlm_with_llm": 2,
+    "size": 2
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**0.5",
+    "x0**0.33",
+    "x0**0.25",
+    "log(x0 + 1)",
+    "log(x0)**2",
+    "x0/(x0 + 1)"
+   ],
+   "tokens": 510
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.076*x0*x1**2",
+   "lines_not_read": 0,
+   "name": "invented_37",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 4,
+    "mmlm_with_llm": 1,
+    "size": 529
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 6,
+   "shapes_named_by_the_model": [
+    "x0*x1**2",
+    "x0**2*x1",
+    "x0*x1",
+    "x0**2*x1**2",
+    "x0**2 + x1**2",
+    "x0*x1*(x0 + x1)"
+   ],
+   "tokens": 708
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.793*x0**3",
+   "lines_not_read": 0,
+   "name": "invented_39",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 7,
+    "mmlm_with_llm": 1,
+    "size": 233
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**3",
+    "x0**2",
+    "exp(x0)",
+    "x0**4",
+    "x0**2.5",
+    "x0**3.5",
+    "x0*exp(x0)",
+    "x0**2*exp(x0)"
+   ],
+   "tokens": 507
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.485*x0*x1",
+   "lines_not_read": 0,
+   "name": "invented_40",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 3,
+    "mmlm_with_llm": 1,
+    "size": 87
+   },
+   "shapes_in_the_search": 6,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x1",
+    "x0**2 + x0*x1",
+    "x0*x1 + x1**2",
+    "x0**2 + x0*x1 + x1**2",
+    "x0**2 + x1**2",
+    "x0*x1 + x0",
+    "x0*x1 + x1",
+    "x0*x1*(x0 + x1)"
+   ],
+   "tokens": 726
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.389/x0",
+   "lines_not_read": 0,
+   "name": "invented_42",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 6,
+    "mmlm_with_llm": 1,
+    "size": 7
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "1/(x0**2 + 1)",
+    "cos(x0)"
+   ],
+   "tokens": 531
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.307*sqrt(x0)*x1**2",
+   "lines_not_read": 0,
+   "name": "invented_43",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 220,
+    "mmlm_with_llm": 233,
+    "size": 3789
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**2",
+    "x0*x1",
+    "x0*x1 + x1**2",
+    "x0 + x1**2",
+    "x0*x1**2",
+    "x1**3",
+    "x0**2 + x1**2",
+    "x0**2*x1"
+   ],
+   "tokens": 694
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.689*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_45",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**(5/2)",
+    "x0**3",
+    "x0**2/log(x0)",
+    "x0**2*sin(x0)",
+    "x0**2*cos(x0)",
+    "x0**2*exp(-x0)"
+   ],
+   "tokens": 529
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.433*x0*x1**2",
+   "lines_not_read": 0,
+   "name": "invented_46",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 4,
+    "mmlm_with_llm": 1,
+    "size": 529
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x1**2",
+    "x0**2*x1",
+    "x0*x1",
+    "x0**2 + x1**2",
+    "x0**2*x1**2",
+    "x0**3",
+    "x1**3",
+    "(x0 + x1)**2"
+   ],
+   "tokens": 698
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "1.856*x0",
+   "lines_not_read": 0,
+   "name": "invented_48",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 1,
+    "mmlm_with_llm": 1,
+    "size": 1
+   },
+   "shapes_in_the_search": 6,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**2",
+    "x0**0.5",
+    "x0**0.333",
+    "exp(-x0)",
+    "sin(x0)"
+   ],
+   "tokens": 507
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.973/(x0**2*sqrt(x1))",
+   "lines_not_read": 0,
+   "name": "invented_49",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 5136,
+    "mmlm_with_llm": 1596,
+    "size": 19413
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "1/(x0*x1)",
+    "1/x1 + 1/x0",
+    "1/(x0**2*x1)",
+    "exp(-x0)",
+    "1/(x0 + x1)",
+    "1/(x0**2 + x1**2)"
+   ],
+   "tokens": 733
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.422*sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_51",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 3,
+    "mmlm_with_llm": 2,
+    "size": 2
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**0.5",
+    "x0**0.33",
+    "x0**0.25",
+    "x0/(x0 + 1)",
+    "1 - exp(-x0)",
+    "log(x0 + 1)"
+   ],
+   "tokens": 511
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.629*x0",
+   "lines_not_read": 0,
+   "name": "invented_54",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 1,
+    "mmlm_with_llm": 1,
+    "size": 1
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**2",
+    "x0**0.5",
+    "x0**1.5",
+    "exp(x0)",
+    "sin(x0)"
+   ],
+   "tokens": 499
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "0.515*x0**3/x1**2",
+   "lines_not_read": 0,
+   "name": "invented_55",
+   "rank": {
+    "llm_alone": 6,
+    "mmlm": 619,
+    "mmlm_with_llm": 6,
+    "size": 23919
+   },
+   "shapes_in_the_search": 6,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/x1",
+    "x0/x1**2",
+    "x0**2/x1",
+    "x0**2/x1**2",
+    "x0**2/x1**3",
+    "x0**3/x1**2",
+    "x0**3/x1**3",
+    "x0**3/x1**4"
+   ],
+   "tokens": 715
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.833*sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_57",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 3,
+    "mmlm_with_llm": 2,
+    "size": 2
+   },
+   "shapes_in_the_search": 2,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**0.5",
+    "x0**0.3",
+    "x0**0.4",
+    "x0**0.6",
+    "x0**0.7",
+    "x0**0.8"
+   ],
+   "tokens": 512
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.88*x0*x1**2",
+   "lines_not_read": 0,
+   "name": "invented_58",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 4,
+    "mmlm_with_llm": 1,
+    "size": 529
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x1**2",
+    "x0**2*x1**2",
+    "x1**3",
+    "x0**0.5*x1**2",
+    "x1**2*log(x0)",
+    "x1**2*exp(x0)",
+    "x1**2/x0",
+    "x1**2*sin(x0)"
+   ],
+   "tokens": 707
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.209*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_60",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**(5/2)",
+    "x0**3",
+    "x0**2/log(x0)",
+    "x0**2*sin(x0)",
+    "x0**2*cos(x0)",
+    "x0**2*exp(-x0)"
+   ],
+   "tokens": 522
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.492*sqrt(x1)/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_61",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 468,
+    "mmlm_with_llm": 651,
+    "size": 3860
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "1/(x0*x1)",
+    "1/(x0**2*x1)",
+    "1/(x0*x1**2)",
+    "exp(-x0)",
+    "exp(-x0)/x1",
+    "1/(x0 + x1)"
+   ],
+   "tokens": 721
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.941*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_63",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**3",
+    "x0**(5/2)",
+    "x0**2.5",
+    "x0**2/log(x0)",
+    "x0*exp(x0)",
+    "exp(x0)"
+   ],
+   "tokens": 517
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.385*x1**3/x0",
+   "lines_not_read": 0,
+   "name": "invented_64",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 654,
+    "mmlm_with_llm": 2,
+    "size": 24367
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**2/x0",
+    "x1**3/x0",
+    "x1**2/x0**2",
+    "x1**3/x0**2",
+    "x1/x0",
+    "x0*x1**2",
+    "exp(x1)/x0",
+    "x1**4/x0**2"
+   ],
+   "tokens": 709
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.529*x0",
+   "lines_not_read": 0,
+   "name": "invented_66",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 1,
+    "mmlm_with_llm": 1,
+    "size": 1
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**2",
+    "x0**0.5",
+    "x0**1.5",
+    "exp(x0)",
+    "sin(x0)"
+   ],
+   "tokens": 496
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.707*x0*x1**3",
+   "lines_not_read": 0,
+   "name": "invented_67",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 334,
+    "mmlm_with_llm": 2,
+    "size": 23983
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**4",
+    "x0*x1**3",
+    "x1**3",
+    "x0**2*x1**2",
+    "x0*x1**2",
+    "x1**2",
+    "x0**2*x1",
+    "x0*x1"
+   ],
+   "tokens": 693
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.809*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_69",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**2.5",
+    "x0**3",
+    "x0**(5/2)",
+    "x0**2/log(x0)",
+    "x0*exp(x0)",
+    "exp(x0)"
+   ],
+   "tokens": 520
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.578/(sqrt(x0)*x1)",
+   "lines_not_read": 0,
+   "name": "invented_70",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 2417,
+    "mmlm_with_llm": 985,
+    "size": 2760
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x1",
+    "1/x0",
+    "1/(x0 + x1)",
+    "1/sqrt(x0**2 + x1**2)",
+    "1/(x0*x1)",
+    "x1**(-2)",
+    "x0**(-2)",
+    "1/(x0**2 + x1**2)"
+   ],
+   "tokens": 718
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.583*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_72",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**2.5",
+    "x0**3",
+    "x0**(5/2)",
+    "x0**2/log(x0)",
+    "x0*exp(x0)",
+    "exp(x0)"
+   ],
+   "tokens": 516
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.216*x1/x0",
+   "lines_not_read": 0,
+   "name": "invented_73",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 7,
+    "mmlm_with_llm": 1,
+    "size": 89
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1**2/x0",
+    "x1/x0**2",
+    "log(x1/x0)",
+    "sqrt(x1/x0)",
+    "x1**2/x0**2",
+    "exp(x1/x0)",
+    "sin(x1/x0)"
+   ],
+   "tokens": 694
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.392*x0**2",
+   "lines_not_read": 0,
+   "name": "invented_75",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 2,
+    "mmlm_with_llm": 1,
+    "size": 8
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2*log(x0)",
+    "x0**(5/2)",
+    "x0**3",
+    "x0**2*exp(x0)",
+    "x0**2*sin(x0)",
+    "x0**2*cos(x0)",
+    "x0**2/log(x0)"
+   ],
+   "tokens": 519
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.382*x1/sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_76",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 84,
+    "mmlm_with_llm": 150,
+    "size": 552
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1**2/x0",
+    "x1/x0**2",
+    "log(x1/x0)",
+    "sqrt(x1/x0)",
+    "exp(x1/x0)",
+    "x1**2/x0**2",
+    "sin(x1/x0)"
+   ],
+   "tokens": 693
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.901/sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_78",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 31,
+    "mmlm_with_llm": 2,
+    "size": 12
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/(x0 + 1)",
+    "cos(x0)",
+    "sin(1/x0)"
+   ],
+   "tokens": 504
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.521*x0**3/x1**2",
+   "lines_not_read": 0,
+   "name": "invented_79",
+   "rank": {
+    "llm_alone": 6,
+    "mmlm": 619,
+    "mmlm_with_llm": 6,
+    "size": 23919
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/x1",
+    "x0/x1**2",
+    "x0**2/x1",
+    "x0**2/x1**2",
+    "x0/x1**3",
+    "x0**3/x1**2",
+    "exp(x0)/x1",
+    "x0*exp(-x1)"
+   ],
+   "tokens": 715
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.55*sqrt(x0)",
+   "lines_not_read": 0,
+   "name": "invented_81",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 3,
+    "mmlm_with_llm": 2,
+    "size": 2
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "log(x0)",
+    "sqrt(x0)",
+    "x0**0.5",
+    "x0**0.33",
+    "x0**0.25",
+    "x0/(x0 + 1)",
+    "1 - exp(-x0)",
+    "log(x0 + 1)"
+   ],
+   "tokens": 513
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.527/(sqrt(x0)*x1)",
+   "lines_not_read": 0,
+   "name": "invented_82",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 2417,
+    "mmlm_with_llm": 978,
+    "size": 2760
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x1",
+    "1/x0",
+    "1/(x0*x1)",
+    "1/(x0 + x1)",
+    "x1**(-2)",
+    "x0**(-2)",
+    "1/sqrt(x0*x1)",
+    "1/(x0**2 + x1**2)"
+   ],
+   "tokens": 714
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.367*x0**3",
+   "lines_not_read": 0,
+   "name": "invented_84",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 7,
+    "mmlm_with_llm": 2,
+    "size": 233
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "exp(x0)",
+    "x0**3",
+    "x0**4",
+    "x0**2*exp(x0)",
+    "x0*exp(x0)",
+    "exp(x0**2)",
+    "x0**5",
+    "x0**2"
+   ],
+   "tokens": 499
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "1.936*x1**3/x0",
+   "lines_not_read": 0,
+   "name": "invented_85",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 654,
+    "mmlm_with_llm": 2,
+    "size": 24367
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**2/x0",
+    "x1**3/x0",
+    "x1**2/x0**2",
+    "x1**3/x0**2",
+    "exp(x1)/x0",
+    "x1**2*log(x0)",
+    "x1/x0**2",
+    "x0*x1**2"
+   ],
+   "tokens": 708
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "0.51/x0**2",
+   "lines_not_read": 0,
+   "name": "invented_87",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 23,
+    "mmlm_with_llm": 2,
+    "size": 38
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x0",
+    "x0**(-2)",
+    "exp(-x0)",
+    "1/sqrt(x0)",
+    "log(1/x0)",
+    "1/(x0 + 1)",
+    "x0**(-3)",
+    "1/(x0**2 + 1)"
+   ],
+   "tokens": 551
+  },
+  {
+   "candidates": 29593,
+   "family": "invented",
+   "inputs": 2,
+   "law": "2.261/(sqrt(x0)*x1)",
+   "lines_not_read": 0,
+   "name": "invented_88",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 2417,
+    "mmlm_with_llm": 830,
+    "size": 2760
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/(x0*x1)",
+    "1/(x0 + x1)",
+    "1/(x0**2 + x1**2)",
+    "1/sqrt(x0**2 + x1**2)",
+    "1/(x0*x1**2)",
+    "1/(x0**2*x1)",
+    "x0**(-2)",
+    "x1**(-2)"
+   ],
+   "tokens": 743
+  },
+  {
+   "candidates": 9560,
+   "family": "invented",
+   "inputs": 1,
+   "law": "2.693*x0**3",
+   "lines_not_read": 0,
+   "name": "invented_90",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 7,
+    "mmlm_with_llm": 1,
+    "size": 233
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**3",
+    "x0**4",
+    "exp(x0)",
+    "x0**2",
+    "x0**3.5",
+    "x0**2.5",
+    "x0**5",
+    "x0**2*log(x0)"
+   ],
+   "tokens": 503
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0/(x0 + x1)",
+   "lines_not_read": 0,
+   "name": "saturation_fraction",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 129,
+    "mmlm_with_llm": 167,
+    "size": 3544
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/x1",
+    "x0/x1**2",
+    "x0/sqrt(x1)",
+    "x0*exp(-x1)",
+    "x0*log(x1)/x1",
+    "x0/(x1 + 1)",
+    "x0/x1**1.5",
+    "x0*sin(x1)/x1"
+   ],
+   "tokens": 735
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "exp(-x0/x1)",
+   "lines_not_read": 0,
+   "name": "arrhenius_factor",
+   "rank": {
+    "llm_alone": 7,
+    "mmlm": 1460,
+    "mmlm_with_llm": 7,
+    "size": 2486
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1/x0",
+    "x1**2/x0**2",
+    "x1/x0**2",
+    "x1**2/x0",
+    "log(x1/x0)",
+    "sqrt(x1/x0)",
+    "exp(-x0/x1)",
+    "(-x0 + x1)/(x0 + x1)"
+   ],
+   "tokens": 723
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*x1/x2",
+   "lines_not_read": 0,
+   "name": "ideal_gas_pressure",
+   "rank": {
+    "llm_alone": 1,
+    "mmlm": 365,
+    "mmlm_with_llm": 1,
+    "size": 6269
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x1/x2",
+    "x0*x1/x2**2",
+    "x0*x1**2/x2",
+    "x0**2*x1/x2",
+    "x0*x1/sqrt(x2)",
+    "x0*x1*x2",
+    "x0/x2 + x1/x2",
+    "x0*x1*log(x2)"
+   ],
+   "tokens": 905
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0*x1**4",
+   "lines_not_read": 0,
+   "name": "radiated_power",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 57,
+    "mmlm_with_llm": 67,
+    "size": 3429
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**4",
+    "x0*x1**3",
+    "x1**3",
+    "x0**2*x1**2",
+    "x0*x1**2",
+    "x1**2*exp(x0)",
+    "x0*x1*exp(x1)",
+    "x1**5"
+   ],
+   "tokens": 693
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0*sqrt(x0/x1)",
+   "lines_not_read": 0,
+   "name": "kepler_period",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 1046,
+    "mmlm_with_llm": 413,
+    "size": 23650
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/x1",
+    "x0**2/x1",
+    "x0/x1**2",
+    "x0**2/x1**2",
+    "x0*log(x1)",
+    "x0*sqrt(x1)",
+    "x0**2*log(x1)",
+    "x0**2*sqrt(x1)"
+   ],
+   "tokens": 700
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*exp(-x1*x2)",
+   "lines_not_read": 0,
+   "name": "beer_lambert",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 4937,
+    "mmlm_with_llm": 11012,
+    "size": 49184
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x2",
+    "x2**2",
+    "x2**3",
+    "exp(-x2)",
+    "exp(-x2**2)",
+    "1/x2",
+    "x2**(-2)",
+    "log(x2)"
+   ],
+   "tokens": 927
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0*(-x0 + x1)",
+   "lines_not_read": 0,
+   "name": "logistic_growth_rate",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 138,
+    "mmlm_with_llm": 75,
+    "size": 3431
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "-x0 + x1",
+    "x1/x0",
+    "log(x1/x0)",
+    "-x0**2 + x1**2",
+    "-sqrt(x0) + sqrt(x1)",
+    "-x0**2 + x1",
+    "-sqrt(x0) + x1",
+    "x1/sqrt(x0)"
+   ],
+   "tokens": 707
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*log(x1/x2)",
+   "lines_not_read": 0,
+   "name": "nernst_potential",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 5658,
+    "mmlm_with_llm": 7483,
+    "size": 47187
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x2",
+    "x0/x2",
+    "x1/x2",
+    "x0/x1",
+    "x0*x1/x2",
+    "x0**2/x2",
+    "x1**2/x2",
+    "log(x2)"
+   ],
+   "tokens": 873
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*exp(x1*x2)",
+   "lines_not_read": 0,
+   "name": "compound_growth",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 4796,
+    "mmlm_with_llm": 4,
+    "size": 47148
+   },
+   "shapes_in_the_search": 4,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**x2",
+    "x0*x1**x2",
+    "x1**x2*log(x0)",
+    "x2**x1",
+    "x0*x2**x1",
+    "exp(x1*x2)",
+    "x0*exp(x1*x2)",
+    "x1**x2*x2**x1"
+   ],
+   "tokens": 924
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "sqrt(x0*x1)",
+   "lines_not_read": 1,
+   "name": "geometric_mean_output",
+   "rank": {
+    "llm_alone": 3,
+    "mmlm": 48,
+    "mmlm_with_llm": 3,
+    "size": 131
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 7,
+   "shapes_named_by_the_model": [
+    "sqrt(x0**2 + x1**2)",
+    "x0 + x1",
+    "(x0**2 + x1**2)/(x0 + x1)",
+    "sqrt(x0*x1)",
+    "x0/2 + x1/2",
+    "log(exp(x0) + exp(x1))",
+    "x0*x1/(x0 + x1)"
+   ],
+   "tokens": 726
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*x1**2*x2",
+   "lines_not_read": 0,
+   "name": "drag_force",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 936,
+    "mmlm_with_llm": 2,
+    "size": 47643
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x1*x2",
+    "x0*x1**2*x2",
+    "x0*x1*x2**2",
+    "x0**2*x1*x2",
+    "x0*x1**2*x2**2",
+    "x0**2*x1**2*x2",
+    "x0**2*x1*x2**2",
+    "x0**2*x1**2*x2**2"
+   ],
+   "tokens": 914
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*x1/x2",
+   "lines_not_read": 0,
+   "name": "reynolds_number",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 365,
+    "mmlm_with_llm": 2,
+    "size": 6269
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/x2",
+    "x0*x1/x2",
+    "x0/x2**2",
+    "x0**2/x2",
+    "x0*x1/x2**2",
+    "x0**2/x2**2",
+    "x0/(x1*x2)",
+    "x0*x1**2/x2"
+   ],
+   "tokens": 895
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "1/(1/x1 + 1/x0)",
+   "lines_not_read": 0,
+   "name": "parallel_resistance",
+   "rank": {
+    "llm_alone": 5,
+    "mmlm": 13783,
+    "mmlm_with_llm": 5,
+    "size": 19299
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "x1",
+    "x0 + x1",
+    "sqrt(x0**2 + x1**2)",
+    "x0*x1/(x0 + x1)",
+    "log(x0 + x1)",
+    "x0*x1",
+    "x0**2 + x1**2"
+   ],
+   "tokens": 698
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "sqrt(x0**2 + x1**2)",
+   "lines_not_read": 0,
+   "name": "hypotenuse",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 242,
+    "mmlm_with_llm": 2,
+    "size": 5921
+   },
+   "shapes_in_the_search": 4,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0 + x1",
+    "sqrt(x0**2 + x1**2)",
+    "x0*x1/10 + x0 + x1",
+    "sqrt(x0**2 + x0*x1 + x1**2)",
+    "log(exp(x0) + exp(x1))",
+    "x0*x1/(x0 + x1) + x0 + x1",
+    "(x0**2 + x1**2)/(x0 + x1)",
+    "x0/2 + x1/2 + sqrt(x0*x1)"
+   ],
+   "tokens": 747
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "sqrt(x0/x1)",
+   "lines_not_read": 0,
+   "name": "escape_speed",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 112,
+    "mmlm_with_llm": 49,
+    "size": 132
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/x1",
+    "x0/x1**2",
+    "x0**2/x1",
+    "x0*log(x1)",
+    "x0/sqrt(x1)",
+    "log(x0)/x1",
+    "x0*exp(-x1)",
+    "sin(x0)/x1"
+   ],
+   "tokens": 702
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "exp((x0 - x1)/x2)",
+   "lines_not_read": 0,
+   "name": "boltzmann_ratio",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 11733,
+    "mmlm_with_llm": 3719,
+    "size": 17405
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0/(x1*x2)",
+    "x0/(x1*x2**2)",
+    "x0/(x1**2*x2)",
+    "x0/(x1**2*x2**2)",
+    "x0/(x1*sqrt(x2))",
+    "x0/(x1**2*sqrt(x2))",
+    "x0/(x1*x2**3)",
+    "x0/(x1**3*x2)"
+   ],
+   "tokens": 924
+  },
+  {
+   "candidates": 9560,
+   "family": "other fields",
+   "inputs": 1,
+   "law": "x0*log(x0)",
+   "lines_not_read": 0,
+   "name": "entropy_term",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 50,
+    "mmlm_with_llm": 29,
+    "size": 230
+   },
+   "shapes_in_the_search": 7,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0**2",
+    "x0**2 - 1",
+    "x0**2 - 1/x0",
+    "x0**2 - log(x0)",
+    "-sqrt(x0) + x0**2",
+    "x0**2 - 1/x0**2",
+    "x0**2 - exp(-x0)",
+    "x0**2 - sin(x0)"
+   ],
+   "tokens": 541
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0/x1**2",
+   "lines_not_read": 0,
+   "name": "body_mass_index",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 12,
+    "mmlm_with_llm": 4,
+    "size": 551
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "1/x1",
+    "x1**(-2)",
+    "exp(-x1)",
+    "x0/x1**2",
+    "x0/x1",
+    "1/(x0*x1)",
+    "x0**2/x1**2",
+    "sqrt(x0)/x1**2"
+   ],
+   "tokens": 715
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0*exp(-x1/x2)",
+   "lines_not_read": 0,
+   "name": "radioactive_decay",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 3700,
+    "mmlm_with_llm": 4004,
+    "size": 49188
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x2/x1",
+    "x0*x2**2/x1",
+    "x0**2*x2/x1",
+    "x0*x2/x1**2",
+    "x0*x2/sqrt(x1)",
+    "x0*log(x2)/x1",
+    "x0*x2*log(x1)",
+    "x0*x1*x2"
+   ],
+   "tokens": 910
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "(x0 - x1)/x2",
+   "lines_not_read": 0,
+   "name": "sharpe_ratio",
+   "rank": {
+    "llm_alone": 7,
+    "mmlm": 236,
+    "mmlm_with_llm": 7,
+    "size": 7805
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0 - x1",
+    "x0/x1",
+    "x0 - x1 + x2",
+    "x0/x1 + x2",
+    "x0 - x1 - x2",
+    "x0/x1 - x2",
+    "(x0 - x1)/x2",
+    "x0/(x1*x2)"
+   ],
+   "tokens": 905
+  },
+  {
+   "candidates": 61717,
+   "family": "other fields",
+   "inputs": 3,
+   "law": "x0 - x1/x2",
+   "lines_not_read": 0,
+   "name": "kelly_fraction",
+   "rank": {
+    "llm_alone": null,
+    "mmlm": 187,
+    "mmlm_with_llm": 52,
+    "size": 5954
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0",
+    "x0 - x1",
+    "x0 - x2",
+    "x0 - x1 - x2",
+    "x0/x1",
+    "x0/x2",
+    "x0*x2/x1",
+    "x0*x1/x2"
+   ],
+   "tokens": 872
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0**2*x1",
+   "lines_not_read": 0,
+   "name": "cylinder_volume",
+   "rank": {
+    "llm_alone": 2,
+    "mmlm": 5,
+    "mmlm_with_llm": 2,
+    "size": 540
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x0*x1**2",
+    "x0**2*x1",
+    "x0**2*x1**2",
+    "x0*x1",
+    "x0**3*x1",
+    "x0*x1**3",
+    "x0**2*x1**0.5",
+    "x0**0.5*x1**2"
+   ],
+   "tokens": 711
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "x0/x1**3",
+   "lines_not_read": 0,
+   "name": "tidal_force",
+   "rank": {
+    "llm_alone": 5,
+    "mmlm": 97,
+    "mmlm_with_llm": 5,
+    "size": 24734
+   },
+   "shapes_in_the_search": 8,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "x1**(-2)",
+    "x1**(-3)",
+    "exp(-x1)",
+    "x0/x1**2",
+    "x0/x1**3",
+    "x0*exp(-x1)",
+    "x0**2/x1**2",
+    "x0**2/x1**3"
+   ],
+   "tokens": 731
+  },
+  {
+   "candidates": 29593,
+   "family": "other fields",
+   "inputs": 2,
+   "law": "log(x0/x1)",
+   "lines_not_read": 0,
+   "name": "log_return",
+   "rank": {
+    "llm_alone": 4,
+    "mmlm": 557,
+    "mmlm_with_llm": 4,
+    "size": 219
+   },
+   "shapes_in_the_search": 5,
+   "shapes_named": 8,
+   "shapes_named_by_the_model": [
+    "-x0 + x1",
+    "x0 - x1",
+    "x0/x1",
+    "x1/x0",
+    "log(x0/x1)",
+    "log(x1/x0)",
+    "(x0 - x1)/(x0 + x1)",
+    "(-x0 + x1)/(x0 + x1)"
+   ],
+   "tokens": 727
+  }
+ ],
+ "rows_per_table": 300,
+ "run": {
+  "branch": "mmlm-llm-run-1",
+  "commit": "88c86c0",
+  "github_run": 45478737550,
+  "seconds": 514.2
+ },
+ "summary": {
+  "all": {
+   "law_among_the_named_shapes": 62,
+   "laws": 84,
+   "llm_alone": {
+    "median_rank": null,
+    "within_1": 24,
+    "within_10": 62,
+    "within_100": 62,
+    "within_1000": 62
+   },
+   "mmlm": {
+    "median_rank": 49.0,
+    "within_1": 5,
+    "within_10": 30,
+    "within_100": 46,
+    "within_1000": 70
+   },
+   "mmlm_with_llm": {
+    "median_rank": 2.0,
+    "within_1": 24,
+    "within_10": 62,
+    "within_100": 67,
+    "within_1000": 78
+   },
+   "size": {
+    "median_rank": 545.5,
+    "within_1": 5,
+    "within_10": 20,
+    "within_100": 29,
+    "within_1000": 46
+   },
+   "with_llm_against_mmlm": {
+    "earlier": 69,
+    "later": 10,
+    "same": 5,
+    "sign_test_p_one_sided": 2.7723483195109375e-12
+   }
+  },
+  "calls": 84,
+  "calls_failed": 0,
+  "invented": {
+   "law_among_the_named_shapes": 49,
+   "laws": 60,
+   "llm_alone": {
+    "median_rank": null,
+    "within_1": 23,
+    "within_10": 49,
+    "within_100": 49,
+    "within_1000": 49
+   },
+   "mmlm": {
+    "median_rank": 23.0,
+    "within_1": 5,
+    "within_10": 29,
+    "within_100": 40,
+    "within_1000": 54
+   },
+   "mmlm_with_llm": {
+    "median_rank": 2.0,
+    "within_1": 23,
+    "within_10": 49,
+    "within_100": 49,
+    "within_1000": 58
+   },
+   "size": {
+    "median_rank": 182.0,
+    "within_1": 5,
+    "within_10": 20,
+    "within_100": 29,
+    "within_1000": 40
+   },
+   "with_llm_against_mmlm": {
+    "earlier": 50,
+    "later": 5,
+    "same": 5,
+    "sign_test_p_one_sided": 1.0679213069408887e-10
+   }
+  },
+  "other fields": {
+   "law_among_the_named_shapes": 13,
+   "laws": 24,
+   "llm_alone": {
+    "median_rank": null,
+    "within_1": 1,
+    "within_10": 13,
+    "within_100": 13,
+    "within_1000": 13
+   },
+   "mmlm": {
+    "median_rank": 303.5,
+    "within_1": 0,
+    "within_10": 1,
+    "within_100": 6,
+    "within_1000": 16
+   },
+   "mmlm_with_llm": {
+    "median_rank": 7.0,
+    "within_1": 1,
+    "within_10": 13,
+    "within_100": 18,
+    "within_1000": 20
+   },
+   "size": {
+    "median_rank": 6111.5,
+    "within_1": 0,
+    "within_10": 0,
+    "within_100": 0,
+    "within_1000": 6
+   },
+   "with_llm_against_mmlm": {
+    "earlier": 19,
+    "later": 5,
+    "same": 0,
+    "sign_test_p_one_sided": 0.003305375576019287
+   }
+  },
+  "tokens": {
+   "completion_tokens": 5058,
+   "prompt_tokens": 50520,
+   "total_tokens": 55578
+  }
+ },
+ "what": "development: a language model as one of MMLM's experts, by where the true law stands in the search; not a result"
+}

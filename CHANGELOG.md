@@ -61,7 +61,22 @@ inferred releases.
   search, against the equation model alone and the language model alone.
   Both run on GitHub with the `NVIDIA_API_KEY` secret (`.github/workflows/mmlm-llm.yml`); the
   key is never written anywhere. Tested with a scripted model
-  (`tests/test_mmlm_poc_001_llm.py`, 6; `tests/test_mmlm_llm_expert.py`, 7). No result yet.
+  (`tests/test_mmlm_poc_001_llm.py`, 6; `tests/test_mmlm_llm_expert.py`, 7).
+  **First runs (GitHub run 45478737550, `nemotron-3-ultra`, development):**
+  - *MMLM-POC-001:* 3 runs of 60 moves, 180 calls, 383,524 tokens by the service's count, no
+    invalid reply. **None of the model's 180 moves lowered the exact count of wrong entries**;
+    it ended at 64 where it started, as did the hand-written heuristic. The random walk ended
+    worse (82, 70, 80). The language model did not beat the heuristic that used to carry its
+    name (`benchmarks/mmlm/dev_poc_001_llm.json`).
+  - *MMLM's expert:* on 84 laws (60 invented, 24 from other fields), the median place of the
+    true law in the search went from 49 with MMLM's equation model to **2** with the language
+    model as its expert (545 in the search's own order). Within the first ten candidates: 30
+    of 84 with MMLM, 62 with the expert. Earlier on 69 laws, later on 10 (sign test
+    p = 3e-12). On the invented laws alone, which cannot have been read anywhere: 23 to 2,
+    earlier on 50 and later on 5. 84 calls, 55,578 tokens
+    (`benchmarks/mmlm/dev_llm_expert.json`). Not preregistered; the invented laws are short
+    products of powers; place in the search is not recovery through the referee. It says the
+    idea is worth a blind test.
 - **PREREG-REAL-TABLES-2026-11: the small-table reading's blind test, frozen (2026-11-24; nothing
   in force).** Six held-back tables with a known law, pipe friction and the expansion rate
   against published formulas on rows left out, 360 generated small tables drawn after freezing
