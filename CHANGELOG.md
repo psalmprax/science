@@ -23,6 +23,31 @@ inferred releases.
 
 ### Added
 
+- **A reading for small tables, and what is known beforehand (2026-11-24, asked for by the
+  owner; development, not in force).** The first look at real tables showed three gaps. Two
+  new modules address them. `discovery_l2/small_table.py` reads a table of 6 rows or more: every
+  candidate form is scored on rows it was not fitted to, the law is the plainest form within
+  one standard error of the best, and it is reported only if the same form is chosen with every
+  row removed and its left-out R² reaches the accuracy line; otherwise it is tentative, with the
+  class of forms the table cannot tell apart. Candidates with more than one constant per three
+  rows, or with one transcendental function inside another, are left out before scoring.
+  `discovery_l2/known_beforehand.py` lets what is known before a table is read be stated
+  (increasing, levels off, zero at zero, ...) and checked on a fitted law, by proof with the
+  SMT solver where the law is a ratio of polynomials and on a grid otherwise.
+  On the three development tables: Kepler's eight planets give `0.364*d**(3/2)`, reported and
+  stable; Langmuir's ten rows give Langmuir's isotherm only once the four things known about
+  adsorption are stated (without them the rows prefer other forms), tentative because the
+  table's scatter keeps it under the accuracy line; Leavitt's 26 Cepheids give a curve, not
+  the known straight line: that table bends (a line's left-out R² is 0.918, a cubic's 0.956).
+  One bug was caught by its test before any result used it: two constants that happened to be
+  equal were made one, so a line was fitted with a single constant.
+  `scripts/run_small_tables.py` compares the reading with the route in force on generated
+  small tables; `scripts/run_wider_conditions.py` and `.github/workflows/wider-conditions.yml`
+  run the product's reading at three to five inputs and noise up to 20 %.
+  `tests/test_small_table.py` (16).
+- **`AGENTS.md` 1.7, on the owner's instruction:** all work is pushed to `stage`; `master`
+  changes only by merging `stage` into it.
+
 - **Real measurements (2026-11-24, asked for by the owner; development).** Everything the route
   had been measured on was generated. `benchmarks/real_data/registry.json` now lists eleven
   tables of real measurements, pinned by source commit and SHA-256: nine with a known law

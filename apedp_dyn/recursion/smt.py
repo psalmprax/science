@@ -93,12 +93,15 @@ def zero_in_box(expr: sp.Expr, box: Box, *, sign_too: bool = False) -> dict[str,
         return {"decided": None, "reason": "z3 is not installed"}
     expr = _rational(sp.sympify(expr))
     symbols = sorted(expr.free_symbols, key=str)
+    if not symbols:                                   # a number: nothing to solve
+        value = sp.nsimplify(expr)
+        return {"decided": bool(value <= 0) if sign_too else bool(value == 0)}
     missing = [str(s) for s in symbols if str(s) not in box]
     if missing:
         return {"decided": None, "reason": f"no bounds for {missing}"}
     try:
         poly = sp.Poly(expr, *symbols)
-    except sp.PolynomialError:
+    except sp.polys.polyerrors.BasePolynomialError:
         return {"decided": None, "reason": "not a polynomial in the inputs"}
     if not all(c.is_Rational for c in poly.coeffs()):
         return {"decided": None, "reason": "a coefficient is not rational"}

@@ -39,6 +39,10 @@ When modifying, auditing, or extending this codebase, you **MUST** follow these 
 - **Rule:** Before a preregistration is frozen, and before its result is recorded, a separate reviewer that did not take part in the work checks it cold: the plan's denominators, limits and consequences against what the runner computes, and every number of the record against the raw outputs. Its findings, and what was done about each, go into the record.
 - **Rule:** A blind test of a check includes traps the check was not developed against: at least one arm drawn from a red-team search aimed at the frozen check after freezing, or from a generator other than the one used in development. A test whose traps all come from the development generator measures in-distribution performance and says so.
 
+### 1.7 Branches: `stage` First
+- All work is pushed to `stage`. `master` receives nothing directly.
+- **Rule:** `master` changes only by merging `stage` into it, on the owner's word, after `stage`'s checks have run. A run branch (`*-run-*`) starts a workflow and is never merged.
+
 ---
 
 ## 2. Standard Testing Commands
