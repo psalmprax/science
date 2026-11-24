@@ -81,7 +81,7 @@ jobs:
         run: python scripts/run_red_team_checks.py survey --shard ${{ matrix.shard }}/24 --minutes 20 --out out
       - name: Climb
         run: python scripts/run_red_team_checks.py climb --shard ${{ matrix.shard }}/24 --minutes 15 --out out
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: red-team-checks-${{ matrix.shard }}
           path: out
@@ -119,7 +119,7 @@ jobs:
           echo "=====BEGIN-TAR====="
           tar -cf - . | gzip -9 | base64 -w 76
           echo "=====END-TAR====="
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: red-team-checks-collected
           path: collected
