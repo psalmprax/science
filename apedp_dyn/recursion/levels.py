@@ -102,13 +102,16 @@ class Searcher:
         """What stands beside the first pass and the memory: the route's searches, the library, a generator's code.
 
         The searches are the stage in force (``search_stage.default_search_stage``: four different searches where four
-        cores are free, else one), unchanged, for ``search_seconds``. Members answer in turn, each one's best first.
+        cores are free, else one), for ``search_seconds``, built by ``hard_exit.search_stage_that_cannot_hang``: the
+        same members, seeds and budget, with search processes that leave without Julia's exit hook. With the frozen
+        stage every job of the first run with the searches stopped for ever after one to seven searches (2026-11-24).
+        Members answer in turn, each one's best first.
         """
         parts: list[ProposerBase] = []
         if self.settings["search_seconds"] > 0:
-            from apedp_dyn.discovery_l2.search_stage import default_search_stage
+            from apedp_dyn.proposers.hard_exit import search_stage_that_cannot_hang
 
-            parts.append(default_search_stage(float(self.settings["search_seconds"]), seed=seed)[0])
+            parts.append(search_stage_that_cannot_hang(float(self.settings["search_seconds"]), seed=seed)[0])
         if self.settings["library_seconds"] > 0 and self.settings["library_blocks"] > 0 and self.laws:
             parts.append(FitGuardProposer(LibraryProposer(
                 self.library(), max_proposals=int(self.settings["library_proposals"]),

@@ -46,6 +46,23 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **Why runs with the searches stopped for ever, and search processes that cannot (2026-11-24).**
+  The first recursion run with the searches on (GitHub run 45425871081) produced nothing: all six
+  jobs stopped during a search stage, after 1 to 7 searches, and were ended by their five-hour
+  limits (`benchmarks/recursion/dev_search_run1_stalled.json`). The logs show a search process
+  that was told to stop at 15:48 and was still there at 21:01: told to stop while Julia's exit hook
+  is running, it can wait for ever, and the portfolio waits for it. An earlier development run
+  went silent the same way. New module `apedp_dyn/proposers/hard_exit.py`: a search process leaves
+  by `os._exit` before Julia's hook, once its answer is handed over; same members, seeds, budget
+  and proposals. The recursion's searcher uses it. The frozen portfolio and stage are not edited,
+  and the routes and the product still use them: **the product's search on request can stop the
+  same way**, and changing that is the owner's decision.
+- **The memory's proposals depend on how fast the machine is; a counted variant (2026-11-24).**
+  On 60 development tables the memory's growth was stopped by its 5-second clock on 57, and with
+  the clocks halved its proposals differed on 23. `apedp_dyn/proposers/structure_memory_counted.py`
+  counts fits instead: the same proposals twice on all 60, the true form among them on 10 tables
+  against 11, in about the same time (`benchmarks/small_tables/dev_counted_memory.json`,
+  `scripts/study_counted_memory.py`). Not in force; a proposal.
 - **The blind test on real tables is rehearsed and frozen (2026-11-24).** The rehearsal ran on
   GitHub (run 45476079433) with the search stage as the run will have it, on the three development
   tables and two made-up tables: every part answered in 39 minutes, no child process was killed and
