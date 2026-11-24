@@ -40,10 +40,16 @@ on ten rows is often an odd one (``benchmarks/real_data/dev_first_pass_alone.jso
 5. *Does the choice hold up?* The whole choice is repeated with each row
    removed. The reading is **stable** if the same form is chosen every time.
 
-**What it reports.** A law is *reported* only if the choice is stable and its
+**What it reports.** A law is *reported* only if the choice is stable, its
 error on left-out rows reaches ``DISCOVERY_ACCURACY_R2``, the line that defines
-a wrong law (``apedp_dyn.conf.discovery_checks``). Otherwise the law is
-*tentative* and the record says which of the two failed. Scatter keeps a noisy
+a wrong law (``apedp_dyn.conf.discovery_checks``), and the table has at least
+``REPORT_ROWS_PER_CONSTANT`` rows for each constant the law fits. The last
+condition comes from development: on 120 generated tables the reading
+reported 31 laws and 3 were wrong, all three with four rows a constant on
+tables of 8 or 12 rows; run again with the condition it reported 17 and none
+was wrong (``benchmarks/small_tables/dev_comparison.json``). The condition
+was chosen on those tables. Otherwise the law is *tentative* and the record
+says which condition failed. Scatter keeps a noisy
 table below that line however right its law is, so on most real tables the
 reading is tentative: it names the plainest form the table supports and the
 others it cannot tell from it, and claims nothing more.
@@ -81,6 +87,7 @@ EXPONENT_DENOMINATORS = (1, 2, 3)   # a fitted exponent is rounded to the neares
 MEMORY_SECONDS = 5.0
 SHOWN = 5                    # members of the class listed in the record
 ROWS_PER_CONSTANT = 3        # a form may have one fitted constant for every this many rows
+REPORT_ROWS_PER_CONSTANT = 5 # a law is reported only with this many rows for each constant it fits
 MAX_NESTING = 1              # transcendental functions inside one another: exp(-c*x) is 1, sin(exp(x)) is 2
 RELATIVE_SPAN = 10.0         # noise="auto": relative errors if the target keeps its sign and spans more than this factor
 SHAPE_STARTS = (1.0, 0.3, 3.0, -1.0, -0.3)   # an inner constant's starting values, in units of 1 / the input's median size
@@ -474,9 +481,20 @@ def _r2(y: np.ndarray, errors: np.ndarray, w: np.ndarray | None = None) -> float
     return None if total <= 0 else 1.0 - float(np.sum(errors)) / total
 
 
-def _entry(item: Scored, y: np.ndarray, w: np.ndarray | None = None) -> dict[str, Any]:
+def in_the_tables_units(law: sp.Expr, scale: float) -> sp.Expr:
+    """A law fitted to the target divided by ``scale``, written for the target itself: every term's coefficient times ``scale``."""
+    if scale == 1.0:
+        return law
+    terms = []
+    for term in sp.Add.make_args(law):
+        coefficient, rest = term.as_coeff_Mul()
+        terms.append(sp.Float(float(coefficient) * scale, 8) * rest)
+    return sp.Add(*terms)
+
+
+def _entry(item: Scored, y: np.ndarray, w: np.ndarray | None = None, scale: float = 1.0) -> dict[str, Any]:
     score = _r2(y, item.errors, w)
-    return {"law": str(item.form.written(item.theta)), "shape": item.form.key, "source": item.form.source,
+    return {"law": str(in_the_tables_units(item.form.written(item.theta), scale)), "shape": item.form.key, "source": item.form.source,
             "constants": len(item.form.params), "bits": round(item.form.bits, 1),
             "left_out_error": item.mean, "left_out_standard_error": item.standard_error,
             "left_out_r2": None if score is None else round(score, 6)}
@@ -490,6 +508,10 @@ def read(X: Mapping[str, Any], y: Any, *, units: Mapping[str, str] | None = None
     ``sigma`` is each row's stated measurement error, where the table gives one; errors are then counted in units
     of it and ``noise`` is not used. Above ``LEAVE_ONE_OUT_UP_TO`` rows the choice is repeated with each of the ten
     folds removed in turn, not each row.
+
+    The target is divided by its size before anything is fitted and the laws are written back in its own units, so a
+    table gives the same reading whatever units its target is in (the fits start from constants near one, and on a
+    target of size 1e12 they did not get there).
     """
     started = time.monotonic()
     record: dict[str, Any] = {"action": "not_run", "law": None, "reported": False, "tentative": False, "class": [],
@@ -509,6 +531,10 @@ def read(X: Mapping[str, Any], y: Any, *, units: Mapping[str, str] | None = None
         record["rows"] = len(target)
         if len(target) < MIN_ROWS:
             raise ValueError(f"{len(target)} usable rows; a reading needs at least {MIN_ROWS}")
+        scale = float(np.sqrt(np.mean(target ** 2)))
+        scale = scale if np.isfinite(scale) and scale > 0 else 1.0
+        target = target / scale
+        stated = None if stated is None else stated / scale
         w = weights_of(target, noise) if stated is None else 1.0 / stated
         record["errors"] = "in units of each row's stated error" if stated is not None else (
             "relative" if not np.all(w == 1.0) else "absolute")
@@ -528,7 +554,7 @@ def read(X: Mapping[str, Any], y: Any, *, units: Mapping[str, str] | None = None
                 if known_beforehand.agrees(checks):
                     agreeing.append(item)
                 else:
-                    set_aside.append({**_entry(item, target, w), "contradicts": [c for c in checks if c.get("holds") is False]})
+                    set_aside.append({**_entry(item, target, w, scale), "contradicts": [c for c in checks if c.get("holds") is False]})
             scored = agreeing
         record["set_aside_by_what_is_known"] = {"forms": len(set_aside),
                                                 "best": sorted(set_aside, key=lambda e: e["left_out_error"])[:SHOWN]}
@@ -559,17 +585,21 @@ def read(X: Mapping[str, Any], y: Any, *, units: Mapping[str, str] | None = None
         stable = checked == len(removals) and not changed
         score = _r2(target, chosen.errors, w)
         accurate = bool(score is not None and score >= DISCOVERY_ACCURACY_R2)
+        enough = len(target) >= REPORT_ROWS_PER_CONSTANT * len(chosen.form.params)
         reasons = []
+        if not enough:
+            reasons.append(f"the table has fewer than {REPORT_ROWS_PER_CONSTANT} rows for each constant the law fits")
         if not stable:
             reasons.append("the choice changes when a row is removed" if changed
                            else "the choice could not be repeated with every row removed in the time given")
         if not accurate:
             reasons.append("its error on left-out rows is above the accuracy line")
         record.update({
-            "action": "read", "law": str(chosen.form.written(chosen.theta)), "reported": stable and accurate,
-            "tentative": not (stable and accurate), "tentative_reasons": reasons, "chosen": _entry(chosen, target, w),
-            "best_by_left_out_error": _entry(best, target, w), "class_size": len(members),
-            "class": [_entry(m, target, w) for m in members[:SHOWN]],
+            "action": "read", "law": str(in_the_tables_units(chosen.form.written(chosen.theta), scale)),
+            "reported": stable and accurate and enough,
+            "tentative": not (stable and accurate and enough), "tentative_reasons": reasons, "chosen": _entry(chosen, target, w, scale),
+            "best_by_left_out_error": _entry(best, target, w, scale), "class_size": len(members),
+            "class": [_entry(m, target, w, scale) for m in members[:SHOWN]],
             "stability": {"stable": stable, "rows_removed": checked, "changed": changed[:SHOWN], "changes": len(changed),
                           "forms_taking_part": len(taking_part)},
             "accuracy": {"left_out_r2": None if score is None else round(score, 6), "line": DISCOVERY_ACCURACY_R2,

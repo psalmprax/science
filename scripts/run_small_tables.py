@@ -50,9 +50,11 @@ NOISES = (0.0, 0.01, 0.05)
 LEVELS = (1, 2, 3)            # one input with two blocks; two inputs with two and three
 TEST_ROWS = 400
 ARMS = ("small", "direct")
+GROSS_ERROR = 10.0            # a table with one gross error has one row off by this many of its noise's standard deviations
 
 
-def draw_laws(count: int, seed: int = SEED, leave_out: frozenset[str] = frozenset()) -> list[dict[str, Any]]:
+def draw_laws(count: int, seed: int = SEED, leave_out: frozenset[str] = frozenset(),
+              levels: tuple[int, ...] = LEVELS) -> list[dict[str, Any]]:
     """Invented laws, none with a structure of the benchmark or of ``leave_out``, each with its table's size and noise."""
     excluded = curriculum.benchmark_fingerprints()
     rng = np.random.default_rng(seed)
@@ -61,7 +63,7 @@ def draw_laws(count: int, seed: int = SEED, leave_out: frozenset[str] = frozense
     for _ in range(200_000):
         if len(laws) == count:
             break
-        level = LEVELS[len(laws) % len(LEVELS)]
+        level = levels[len(laws) % len(levels)]
         expr, inputs = curriculum.draw(rng, level)
         shape = curriculum.structure(expr)
         if shape in seen or curriculum.fingerprint(expr) in excluded or not curriculum.acceptable(expr, inputs, rng):
@@ -69,8 +71,8 @@ def draw_laws(count: int, seed: int = SEED, leave_out: frozenset[str] = frozense
         seen.add(shape)
         index = len(laws)
         laws.append({"index": index, "text": str(expr), "inputs": inputs, "level": level,
-                     "rows": ROWS[(index // len(LEVELS)) % len(ROWS)],
-                     "noise": NOISES[(index // (len(LEVELS) * len(ROWS))) % len(NOISES)]})
+                     "rows": ROWS[(index // len(levels)) % len(ROWS)],
+                     "noise": NOISES[(index // (len(levels) * len(ROWS))) % len(NOISES)]})
     if len(laws) != count:
         raise SystemExit(f"only {len(laws)} laws")
     return laws
@@ -85,7 +87,15 @@ def table_of(law: dict[str, Any]) -> dict[str, Any]:
     X = rng.uniform(curriculum.LOW, curriculum.HIGH, (law["rows"] + TEST_ROWS, law["inputs"]))
     clean = np.asarray(sp.lambdify(symbols, truth, "numpy")(*X.T), dtype=float) * np.ones(len(X))
     n = law["rows"]
-    y = clean[:n] + law["noise"] * float(np.sqrt(np.mean(clean[:n] ** 2))) * rng.standard_normal(n)
+    size = float(np.sqrt(np.mean(clean[:n] ** 2)))
+    draws = rng.standard_normal(n)
+    if law.get("trap") == "relative_noise":                  # each row off in proportion to its own value
+        y = clean[:n] * (1.0 + law["noise"] * draws)
+    else:
+        y = clean[:n] + law["noise"] * size * draws
+    if law.get("trap") == "one_gross_error":
+        row = int(rng.integers(n))
+        y[row] += GROSS_ERROR * law["noise"] * size * float(rng.choice([-1.0, 1.0]))
     return {"names": names, "truth": truth, "X": X[:n], "y": y, "test_X": X[n:], "test_clean": clean[n:]}
 
 
@@ -126,7 +136,7 @@ def direct(table: dict[str, Any], seed: int, searches: float) -> dict[str, Any]:
 def one(job: tuple[dict[str, Any], float]) -> dict[str, Any]:
     law, searches = job
     table = table_of(law)
-    row: dict[str, Any] = {k: law[k] for k in ("index", "inputs", "level", "rows", "noise")}
+    row: dict[str, Any] = {k: law[k] for k in ("index", "inputs", "level", "rows", "noise", "trap") if k in law}
     started = time.perf_counter()
     proposer = route_endpoint._proposer(searches)[0] if searches > 0 else None
     reading = small_table.read({n: table["X"][:, i] for i, n in enumerate(table["names"])}, table["y"], proposer=proposer,
@@ -134,6 +144,7 @@ def one(job: tuple[dict[str, Any], float]) -> dict[str, Any]:
     row["small"] = {"reported": bool(reading["reported"]), "action": reading["action"], **judged(reading.get("law"), table),
                     "stable": (reading.get("stability") or {}).get("stable"), "class_size": reading.get("class_size"),
                     "source": (reading.get("chosen") or {}).get("source"), "reasons": reading.get("tentative_reasons"),
+                    "constants": (reading.get("chosen") or {}).get("constants"),
                     "errors": reading.get("errors"), "error": reading.get("error"),
                     "seconds": round(time.perf_counter() - started, 1)}
     started = time.perf_counter()

@@ -1,0 +1,28 @@
+{
+ "preregistration": "PREREG-REAL-TABLES-2026-11",
+ "sha256": {
+  ".github/workflows/real-tables-blind.yml": "a3d8907649d9523a45353a4978c496edf36c036631ca6b65a76a24c6d7c54437",
+  "apedp_dyn/discovery_l2/default_route.py": "7a984f9fe659c0857088ef8b7bf9f6f090a755189ae4eb6338153db4c07c5033",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/known_beforehand.py": "d9cb826091f11eb1663f16594cfded304fecf77b328271f314b36cb10b1b78e2",
+  "apedp_dyn/discovery_l2/memory_stage.py": "5ee26a49837d73a420645fb59d4d5b2eb68af95466a1164f698bbee6a4be3136",
+  "apedp_dyn/discovery_l2/search_stage.py": "23025137bff9e99fd2199ffe438ad5e3369ff6fa4fb1674450be210e98b23678",
+  "apedp_dyn/discovery_l2/small_table.py": "2a6b8b83b6f536d1c9fc9a494e6f9636e940fcb4499eb6abba98dc0419f417c2",
+  "apedp_dyn/discovery_l2/stage_in_force.py": "240b9f5e9f3e4739101014ad4e00c54b62233056e8959a487c53cef8696523b9",
+  "apedp_dyn/discovery_l2/vouched_route_v2.py": "70bcee036f63f229b3442317b97f9fb85d6e19d2b26d57796505b013a61daafb",
+  "apedp_dyn/proposers/structure_memory.py": "32390d2e3decf7a917fd3ba2d20284ea44384ba6ae2e09316213263fb58c4c72",
+  "apedp_dyn/recursion/curriculum.py": "af65321c8d85ed43433bd318df3682ba7729ab2be57eb144a5acf761d7d3e7ec",
+  "apedp_dyn/recursion/mdl.py": "9ec1bbd596a373b40e04fb382d166285b40cb12aca96dfa682957a06db1ec364",
+  "apedp_dyn/recursion/smt.py": "4ef264239d044ed4f1befd733278f4b21c591d03d51e89814349ff001f0caea4",
+  "benchmarks/invented_laws_fingerprints.json": "9bf5373394ca91dc15d08841eeea374d537b0af7572c09fef1e3a31e9c00f8b1",
+  "benchmarks/real_data/known_beforehand.json": "73fa5eb7ca73c1b6de1b2fd4357ab942e2b7665e6b3ae1cc380df3defa7626a4",
+  "benchmarks/real_data/registry.json": "13302899695006a7542f03878651e691c17040a40255cc0d54734e6e8b3a5b27",
+  "benchmarks/structure_memory.json": "c7e6d4ca2f10b26ce3001259ce1c229a7b681450020086e61a6007587d0bc47b",
+  "preregistration/PREREG-REAL-TABLES-2026-11.md": "8849025977b3b9f7ce898f6f7716342d95a59a806121f3ea772ff4e35d77ac8c",
+  "scripts/real_data.py": "fed162d630e6c8eb7533281588ebf8cb8bfe55ff22a66808528dc612fc9a7861",
+  "scripts/run_real_data.py": "84d25f357663ceb766d2ce2512661d1b94a43f15eaf11b3ae250efb9e1797a01",
+  "scripts/run_real_tables_blind.py": "d0e7955f79fbda347ed4c9bb49884e1bbeee5a257d86729eef48283b36758d2a",
+  "scripts/run_small_tables.py": "8ddf2f2c1497d3f35a5c27b1ffac7cb47238a817438439d0f152d4e982c854fa",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd"
+ }
+}

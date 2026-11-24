@@ -1,0 +1,4660 @@
+{
+ "date": "2026-11-24",
+ "first_run_before_the_rule_of_five_rows": {
+  "its_31_reported_tables_read_again_with_the_rule": {
+   "not_reported_for_another_reason_the_second_time": 2,
+   "note": "two readings gave another choice on the repeat: the memory of confirmed laws is given five seconds, and the machine was shared",
+   "reported": 16,
+   "withheld_by_the_rule": 13,
+   "wrong_reports": 0
+  },
+  "summary": {
+   "direct": {
+    "all": {
+     "accurate": 18,
+     "law_given": 100,
+     "not_run": 0,
+     "reported": 0,
+     "reported_true_form": 0,
+     "tables": 120,
+     "true_form": 2,
+     "wrong_reports": 0
+    },
+    "by_noise": {
+     "0.0": {
+      "accurate": 13,
+      "law_given": 37,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 48,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "0.01": {
+      "accurate": 5,
+      "law_given": 31,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 36,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "0.05": {
+      "accurate": 0,
+      "law_given": 32,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 36,
+      "true_form": 0,
+      "wrong_reports": 0
+     }
+    },
+    "by_rows": {
+     "12": {
+      "accurate": 3,
+      "law_given": 28,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 0,
+      "wrong_reports": 0
+     },
+     "20": {
+      "accurate": 5,
+      "law_given": 24,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "30": {
+      "accurate": 7,
+      "law_given": 25,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "8": {
+      "accurate": 3,
+      "law_given": 23,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 0,
+      "wrong_reports": 0
+     }
+    }
+   },
+   "paired": {
+    "true_form_gained_by_small": 15,
+    "true_form_lost_by_small": 0
+   },
+   "small": {
+    "all": {
+     "accurate": 49,
+     "law_given": 120,
+     "not_run": 0,
+     "reported": 31,
+     "reported_true_form": 13,
+     "tables": 120,
+     "true_form": 17,
+     "wrong_reports": 3
+    },
+    "by_noise": {
+     "0.0": {
+      "accurate": 31,
+      "law_given": 48,
+      "not_run": 0,
+      "reported": 23,
+      "reported_true_form": 11,
+      "tables": 48,
+      "true_form": 12,
+      "wrong_reports": 2
+     },
+     "0.01": {
+      "accurate": 16,
+      "law_given": 36,
+      "not_run": 0,
+      "reported": 8,
+      "reported_true_form": 2,
+      "tables": 36,
+      "true_form": 4,
+      "wrong_reports": 1
+     },
+     "0.05": {
+      "accurate": 2,
+      "law_given": 36,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 36,
+      "true_form": 1,
+      "wrong_reports": 0
+     }
+    },
+    "by_rows": {
+     "12": {
+      "accurate": 14,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 6,
+      "reported_true_form": 2,
+      "tables": 30,
+      "true_form": 3,
+      "wrong_reports": 1
+     },
+     "20": {
+      "accurate": 17,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 12,
+      "reported_true_form": 5,
+      "tables": 30,
+      "true_form": 6,
+      "wrong_reports": 0
+     },
+     "30": {
+      "accurate": 15,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 9,
+      "reported_true_form": 5,
+      "tables": 30,
+      "true_form": 7,
+      "wrong_reports": 0
+     },
+     "8": {
+      "accurate": 3,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 4,
+      "reported_true_form": 1,
+      "tables": 30,
+      "true_form": 1,
+      "wrong_reports": 2
+     }
+    }
+   }
+  },
+  "wrong_reports": [
+   {
+    "index": 36,
+    "inputs": 1,
+    "law": "3.6151187 - 3.2461021/cos(1/x0)",
+    "noise": 0.0,
+    "r2_on_clean_rows": 0.223301,
+    "rows": 8,
+    "source": "first pass"
+   },
+   {
+    "index": 76,
+    "inputs": 2,
+    "law": "0.099406983*x0*x1/((x0 + 3.6852269)*(x1 - 0.16196189))",
+    "noise": 0.0,
+    "r2_on_clean_rows": 0.996942,
+    "rows": 12,
+    "source": "plain shapes"
+   },
+   {
+    "index": 85,
+    "inputs": 2,
+    "law": "0.51132736*x1*exp(-0.054566949*x0)",
+    "noise": 0.01,
+    "r2_on_clean_rows": 0.998336,
+    "rows": 8,
+    "source": "plain shapes"
+   }
+  ]
+ },
+ "how": "python scripts/run_small_tables.py dev --out DIR --laws 120 --workers 2 ; collect. Laws of the invented-law grammar at one and two inputs (seed 2026112401), noise 0, 1 % and 5 % of the target's size, no search stage in either arm. Each law given is scored on 400 clean rows: accurate at R2 0.999, and whether it has the true law's form.",
+ "reading": [
+  "Without a search stage, the route in force called directly gave the true form on 2 of 120 small tables and reported nothing; by its own rule it reports only behind a search stage. So this arm is the first pass alone.",
+  "First run: the reading reported 31 laws and 3 were wrong (10 %), above the 5 % a referee is allowed. All three had four rows for each fitted constant, on tables of 8 and 12 rows.",
+  "Second run, with the rule of five rows a constant: 17 reported, 0 wrong, 10 with the true form. The true form on 17 tables and an accurate law on 48. It gained the true form on 15 tables against the first pass and lost it on 0.",
+  "The rule was chosen on these tables, so no wrong report among 17 is not a test of it. PREREG-REAL-TABLES-2026-11 tests it on tables drawn afterwards.",
+  "7 of the 17 true forms were chosen from the memory of confirmed laws, which the first pass alone does not have. The memory was built on laws of this grammar.",
+  "At 5 % noise the reading reported nothing on 36 tables and was accurate on 2. At 8 rows it reported nothing with the rule. Small tables at that noise or size are beyond it.",
+  "Four tables came out differently in the second run than in the first, beyond what the rule changes: the memory's five seconds make a reading depend on machine load.",
+  "About 48 seconds a table on two cores."
+ ],
+ "second_run_as_frozen": {
+  "code": "with the rule of five rows a constant and the target divided by its size before fitting; the reading as frozen by PREREG-REAL-TABLES-2026-11",
+  "rows": [
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.4,
+     "true_form": false
+    },
+    "index": 0,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.3/(x0 + 0.45)",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 2.7,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "4.02627776907003*sqrt(x0*exp(-x1)) + 0.879285315523559",
+     "r2_clean": 0.915489,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 1,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 1,
+     "error": null,
+     "errors": "absolute",
+     "law": "4.9975692*x0**(1/3)/x1",
+     "r2_clean": 0.997394,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 15.0,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "-2.23981817134083e-10*exp(x0**2)",
+     "r2_clean": -0.05099,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 2,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 5,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "-10305619.0*x0*exp(-7.8314433*x1)",
+     "r2_clean": -188564.615816,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 15.1,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.00523763573810258*x0**3 - 0.0953218631432892*x0**2 + 3.31491581760621*x0 + 0.0471707897623068",
+     "r2_clean": 1.0,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 3,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.960432*x0**(7/8) - 1.2407871*x0**(1/4) + 0.55097442",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 9.4,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.66115102892351*sqrt(x0/x1) + 0.58557654149362",
+     "r2_clean": 0.989269,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 4,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.03524793*x0 - 0.068285611*x1 + 1.3194926*sqrt(x0/x1) + 1.0396867",
+     "r2_clean": 0.999158,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 45.3,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "-0.495484497727557*x1 - 4.6623370533519",
+     "r2_clean": 0.926195,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 5,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.37339647*sqrt(x0) - 0.32615806*x1 + 0.45255948*cos(sqrt(x1)) - 4.43441",
+     "r2_clean": 0.999921,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 51.0,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 6,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.0016866649*cos(x0) - 0.097413981 - 0.20292271*cos(1/x0)/sqrt(x0)",
+     "r2_clean": 0.999275,
+     "reasons": [],
+     "reported": true,
+     "seconds": 9.6,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.00148510931084681*x0**3 - 0.000620951578500293*x0**2*x1 - 0.0203803278701107*x0**2 - 0.000354148120156443*x0*x1**2 + 0.00568173359927723*x0*x1 + 0.13736333691988*x0 + 0.000894638293845378*x1**3 - 0.013753790840161*x1**2 + 0.136267629755312*x1 + 0.255972997386716",
+     "r2_clean": 0.999808,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 7,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 5,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.53313497*log(0.29351478*x1 + 1) + 0.91175763 - 2.6330132/(x0 + 3.751471)",
+     "r2_clean": 0.999958,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 52.2,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.00786606944191599*x0**3 - 0.0835893603311854*x0**2 + 1.68066771580294*x0 + 0.0286616918179161*x1**3 - 0.321630331337398*x1**2 + 1.21362554991975*x1 + 0.564829478850455",
+     "r2_clean": 0.999936,
+     "reported": false,
+     "seconds": 1.2,
+     "true_form": false
+    },
+    "index": 8,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "4.0423796*sqrt(exp(sqrt(x0))) + 1.9123631*cos(1/x1) - 4.8330618",
+     "r2_clean": 0.999804,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 74.8,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.4,
+     "true_form": false
+    },
+    "index": 9,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.4892408*x0 + 1.2715348*sqrt(exp(sqrt(x0))) - 0.52973416*sin(sqrt(x0)) - 4.1971704",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 17.5,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.0669409661053235*x0**3 + 0.186029408963095*x0**2*x1 + 0.299157799841084*x0**2 - 0.128729583455199*x0*x1**2 - 0.993874824229983*x0*x1 - 0.0190238223872452*x1**3 + 1.60813742146516*x1**2 + 0.514885809362684*x1",
+     "r2_clean": 0.999783,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 10,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "2.8999999*x1**2/(log(x0 + 0.76923077) + 1.5623643)",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 48.0,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.0302668085533623*x0**2*x1 - 0.0357275601430089*x0**2 - 0.100332962241249*x0*x1**2 + 0.105628129540995*x0 + 0.148169808108993*x1**3 + 0.896507477870774*x1**2 - 1.03713967215856*x1 + 0.404575270995953",
+     "r2_clean": 0.999904,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 11,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "0.71635829*x1**2*log(x1) + 0.052284525*sin(x0) + 0.39073694",
+     "r2_clean": 0.987496,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 45.4,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.293985704805095*log(x0) + 0.27467962787716",
+     "r2_clean": 0.99898,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 12,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 9,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.29431167*log(x0) + 0.2751123",
+     "r2_clean": 0.99924,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 7.6,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 13,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 3,
+     "constants": 1,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.2529341*sqrt(x1)/sqrt(x0)",
+     "r2_clean": 0.994526,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 12.1,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.0752807637298568*x0*x1 + 1.12453023065518",
+     "r2_clean": 0.537146,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 14,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.26392764*log(x0*x1**2) + 0.92241247",
+     "r2_clean": 0.981323,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 14.3,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.44134667857416*x0 + 1.06343484035315",
+     "r2_clean": 0.997997,
+     "reported": false,
+     "seconds": 0.4,
+     "true_form": false
+    },
+    "index": 15,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 23,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.44970301*x0 + 1.0245572",
+     "r2_clean": 0.999852,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 23.8,
+     "source": "a line",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.68946691628059 - 0.825624737766758*sin(sin(log(x1)))",
+     "r2_clean": 0.905434,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 16,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.2805786*exp(0.15509526*x0)*exp(-1.7040898*x1) - 0.00092877481",
+     "r2_clean": 0.998799,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 51.2,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "5.33963304521974 - 1.01721623495941*sin(x0)",
+     "r2_clean": 0.810716,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 17,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.3731578*x0 + 0.58710094*x0/x1 + 0.58929532*log(x1) + 2.9247638",
+     "r2_clean": 0.979937,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 42.6,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-1.54262832267981*x0**3 + 13.1978131134893*x0**2 - 34.0248932728009*x0 + 25.6899642207652",
+     "r2_clean": 0.591197,
+     "reported": false,
+     "seconds": 0.5,
+     "true_form": false
+    },
+    "index": 18,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.0021028124*x0**2 + 2.2917475*sin(2.2977461*x0) + 0.66694149/x0**2",
+     "r2_clean": 0.999933,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 9.9,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.0921033699374228*x0**3 - 0.432453886784345*x0**2*x1 + 2.60464360601182*x0**2 + 0.398719043412751*x0*x1**2 - 1.8998400376623*x0*x1 - 1.46735004631827*x0 - 0.331844212969562*x1**2 + 1.80311111230802*x1",
+     "r2_clean": 0.923746,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 19,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 1,
+     "error": null,
+     "errors": "relative",
+     "law": "0.67517426*x0**3/x1",
+     "r2_clean": 0.997824,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 42.4,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.537660710286399*x0**2 + 0.122486907390781*x0*x1**2 - 1.21227586780109*x0*x1 - 2.12331281515598*x0 - 0.180430376065123*x1**3 + 3.01924023876222*x1**2 + 4.89321476529441",
+     "r2_clean": 0.998939,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 20,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 7,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.7333277*x1**2 - 0.31470626 + 2.7808769*x1/x0",
+     "r2_clean": 0.99971,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 85.8,
+     "source": "first pass",
+     "stable": false,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.324774885111427*x0**2 + 0.276962999061451*x0 - 0.149956010667791",
+     "r2_clean": 0.999994,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 21,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 18,
+     "constants": 2,
+     "error": null,
+     "errors": "relative",
+     "law": "0.25961426*x0*(sqrt(x0) + x0) - 0.072248937",
+     "r2_clean": 0.999992,
+     "reasons": [],
+     "reported": true,
+     "seconds": 9.8,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.0447389464348378*x0**3 - 0.00977898531968698*x0**2*x1 + 0.631208726832557*x0**2 - 0.0161854844168673*x0*x1**2 + 0.154749483854065*x0*x1 - 3.15175600176498*x0 + 0.00279817242965473*x1**3 + 6.58635325729531",
+     "r2_clean": 0.985792,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 22,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 9,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.3913428*log(x1) + 4.1861878*sin(1/x0) + 0.61122939",
+     "r2_clean": 0.993929,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 162.7,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 23,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-8.3496134 + 4.5085888*sin(x1)/x1 + 0.1944971*x1/x0",
+     "r2_clean": 0.997701,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 62.6,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.236828346544151*exp(exp(sin(sqrt(x0)))) - 1.1796780949445",
+     "r2_clean": 0.967264,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 24,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.6098574*sin(sqrt(x0))**8 + 0.84364011",
+     "r2_clean": 0.934651,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 8.3,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.609129461447637 - 0.258621795411613*log(x0*sqrt(x1))",
+     "r2_clean": 0.892371,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 25,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 5,
+     "constants": 1,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.0870913/(x0*x1**(2/3))",
+     "r2_clean": 0.98403,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 12.2,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 1.2,
+     "true_form": false
+    },
+    "index": 26,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 11,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.18373739*log(x0) + 0.76545468",
+     "r2_clean": 0.117699,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 13.6,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "1.50500918403944*sin(log(x0)**2) + 2.25859493565751",
+     "r2_clean": 0.788448,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 27,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 17,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.5953243 - 2.3330537/x0**2",
+     "r2_clean": 0.842643,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 9.3,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.70017083209854*sqrt(x0*x1) - 0.259249453532431",
+     "r2_clean": 0.984185,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 28,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.69330075*sqrt(x0*x1) - 0.046263553*sin(x0**2) - 0.22317633",
+     "r2_clean": 0.980345,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 43.4,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "-3.10159979639609*cos(x1/sin(x0)) - 4.35086320275015",
+     "r2_clean": -2.127031,
+     "reported": false,
+     "seconds": 1.4,
+     "true_form": false
+    },
+    "index": 29,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.6122962*sin(3.7212813*x1) - 3.3784164e+9/(x0 + 1000657300.0)",
+     "r2_clean": 0.957937,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 53.4,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.850993044246922 + 1.81757017998697/x0",
+     "r2_clean": 0.993435,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 30,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.8565627 - 1.3257164*(log(x0)**2)**(1/4)",
+     "r2_clean": 0.990087,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 10.3,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.339044205076747*x0 + 8.07635039204361",
+     "r2_clean": 0.838829,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 31,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 7,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.3501004*sqrt(x0 - cos(x1)) + 6.6216286",
+     "r2_clean": 0.848386,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 67.0,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-0.330666047452168*x0 + 0.386201704714107*x1 - 1.63628714488406",
+     "r2_clean": 0.995398,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 32,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 6,
+     "constants": 4,
+     "error": null,
+     "errors": "relative",
+     "law": "-0.24666273*x0 + 0.39005639*x1 - 0.24728419*log(x0) - 1.6556856",
+     "r2_clean": 0.995276,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 40.4,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-0.14740479168151/log(x0)",
+     "r2_clean": 0.002362,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 33,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.2317085 + 0.023357743/sin(x0**4)**2",
+     "r2_clean": -308718506.751983,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 18.7,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "2.22867560023357*log(x0 + x1) - 1.3221925385584",
+     "r2_clean": 0.946544,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 34,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 24,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.00356154*exp(x0) + 1.2149776*log(x0*x1) + 0.2083377",
+     "r2_clean": 0.99355,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 78.2,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-1.42761540983692*sin(sqrt(exp(x1)))",
+     "r2_clean": 0.391828,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 35,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.3420084*(0.69158879*log(x0 - 0.43255161) + 0.7102678)*sin(2.9003267*x1)",
+     "r2_clean": 0.999703,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 86.9,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "11.1589615278329*sqrt(sin(cos(1/x0))) - 9.86642236475169",
+     "r2_clean": 0.623977,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 36,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.6151187 - 3.246102/cos(1/x0)",
+     "r2_clean": 0.223302,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 8.0,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 37,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 3,
+     "constants": 1,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.85249019*sqrt(x0)*sqrt(x1)",
+     "r2_clean": 0.988859,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 16.7,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.274299854497532 + 0.221040624309593/x1",
+     "r2_clean": 0.730393,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 38,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.095298441*sqrt(x0)/x1 + 0.300199",
+     "r2_clean": 0.99773,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 14.7,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "1.7026177784275 - 1.21887883403867*sqrt(exp(cos(sqrt(x0))))",
+     "r2_clean": 0.998677,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 39,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.69095967*cos(sqrt(sqrt(x0) + x0)) + 0.17262006 + 0.013164966/log(x0)",
+     "r2_clean": -3.832547,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 8.7,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.138048992005348*log(x1) - 0.14024033739798*cos(x1) + 0.396693110730686",
+     "r2_clean": 0.991279,
+     "reported": false,
+     "seconds": 1.4,
+     "true_form": false
+    },
+    "index": 40,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.6999412*sin(0.44999643*x1) + 0.075300316/x0**6",
+     "r2_clean": 0.999226,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 48.8,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "4.71980100567254*x1**4",
+     "r2_clean": 0.964277,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 41,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "4.8776949*x1**4*sqrt(0.2223445*x0 + 0.28904785)",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 66.0,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 42,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 5,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.19498518*(0.2921088*x0**2 + 0.018487878*x0)/(0.083216663*x0**2 + 0.16169124*x0 + 1.6167751)",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 20.5,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "29.6533526006245*x0**3 + 156.472755312344*x0**2*x1 - 596.700227623974*x0**2 + 130.858573519062*x0*x1**2 - 1353.11663971666*x0*x1 + 3126.46593874761*x0 - 214.063714659375*x1**2 + 1870.82799017847*x1 - 3807.28927722345",
+     "r2_clean": 0.989171,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 43,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 1,
+     "error": null,
+     "errors": "relative",
+     "law": "0.45*x0**3*x1**3",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 49.8,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 44,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 5,
+     "error": null,
+     "errors": "absolute",
+     "law": "17.108026*log(0.076627624*x0 + 1) + 2.9154916*log(1.2743844*x1 + 1) + 6.3686164",
+     "r2_clean": 0.999998,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 67.6,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 45,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 6,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.3268819*(0.21606579*x0**2 + 0.46705874*x0)/(0.10770485*x0**2 + 0.44985234*x0 + 0.90980515) + 0.025614542*sin(x0)",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 24.7,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.112763792347965*x0**3 + 1.32574331868682*x0**2 - 5.4887892298841*x0 + 0.0195099238674905*x1**3 - 0.218073245620041*x1**2 + 0.758870657448645*x1 + 8.63105913771979",
+     "r2_clean": 0.993979,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 46,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-3.9482247*exp(-2.4975672*x1) + 5.6822526/(x0 + 0.0051283738)",
+     "r2_clean": 0.998411,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 80.8,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.00570577169540579*x0**3 - 0.0566765929758196*x0**2 - 0.00495752378509962*x0*x1**2 + 0.0416433837028873*x0*x1 + 0.069979445390227*x0 - 0.014464143983972*x1**3 + 0.179150384600526*x1**2 - 0.776977660699351*x1 + 1.20820905202084",
+     "r2_clean": 0.993253,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 47,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.59380927/(x1*(0.041042467*x0**2 - 0.090680451*x0 + 0.90955385))",
+     "r2_clean": 0.99938,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 98.7,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.0235759804193138*x0**3 + 0.290197715782201*x0**2 - 1.14046725500312*x0 + 1.39333861533918",
+     "r2_clean": 0.999772,
+     "reported": false,
+     "seconds": 0.5,
+     "true_form": false
+    },
+    "index": 48,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.59971639 - 0.65644274*sin(sqrt(x0) - 1/x0)",
+     "r2_clean": 0.990942,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 7.6,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 49,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.2068829*cos(x1**2 + x1) + 0.7049422",
+     "r2_clean": -0.46035,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 12.4,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "7.26564652644063 - 10.4980811160276*sin(sqrt(exp(x0)))",
+     "r2_clean": -1.5e-05,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 50,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "4.5364056e-18*x1*exp(9.1222445*x0)",
+     "r2_clean": -0.02255,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 13.8,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "2.21523047767957*x0**2 - 1.00821613137377",
+     "r2_clean": 0.999772,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 51,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 19,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.9201773*x0**2.0775701",
+     "r2_clean": 0.999966,
+     "reasons": [],
+     "reported": true,
+     "seconds": 11.0,
+     "source": "power law, exponents fitted",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "4.37274765596099*sin(1/x1)",
+     "r2_clean": 0.922903,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 52,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 23,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.9394807*x0**0.26174128/x1**0.99067106",
+     "r2_clean": 0.999337,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 50.8,
+     "source": "power law, exponents fitted",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.0121409930598382*sin(x0) + 0.105702232339342",
+     "r2_clean": 0.744543,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 53,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 6,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.0018181585*x0**2 + 0.1293059 - 0.028958403/x1**2",
+     "r2_clean": 0.975397,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 40.8,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.132017208481116*x0**3 - 0.733516388588465*x0**2 + 0.873075387257197*x0",
+     "r2_clean": -0.738999,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 54,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 5,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.31821832*(2.492377*log(x0 + 4.3148178) - 3.5526039)*sin(1.7007235*x0) - 0.010840342/x0**2",
+     "r2_clean": 0.999962,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 12.5,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 55,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 15,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.69778832*x0**2 - 1.5259826*sqrt(x1) + 0.70655329",
+     "r2_clean": 0.999988,
+     "reasons": [],
+     "reported": true,
+     "seconds": 82.6,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.0196400924286156*x0**2 - 0.152551863275508*x0 + 0.0256626860404512*x1**3 - 0.312368621682113*x1**2 + 1.35461709216867*x1 - 1.80033699381756",
+     "r2_clean": 0.992762,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 56,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 5,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.42461364 + 1.3696301*exp(-1.7108957*x0) - 1.8052711/(x1 + 0.16547029)",
+     "r2_clean": 0.999899,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 68.1,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "2.25076870323277*exp(exp(-x0)) - 2.25781223287096",
+     "r2_clean": 0.999744,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 57,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "-0.024324628*sin(x0) - 0.030255572 + 2.7657578*exp(-x0)",
+     "r2_clean": 0.999809,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 8.0,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.00660669822442103*x0**3 - 0.00304290994131239*x0**2*x1 + 0.086147921624059*x0**2 + 0.0199342351801778*x0*x1 - 0.359986919924479*x0 - 0.00950106492274264*x1**3 + 0.10800444736812*x1**2 - 0.46579395733755*x1 + 1.22839057811048",
+     "r2_clean": 0.989591,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 58,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 8,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.72315166*exp(-1.3228217*x0) + 0.45740428/(x1 + 0.027629416)",
+     "r2_clean": 0.999842,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 167.0,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.0429140761818945*x0**3 - 0.474592308544182*x0**2 + 1.7799241071267*x0 - 0.0414908957003126*x1**3 + 0.498926361742397*x1**2 - 2.10341494425665*x1 - 1.62075110196869",
+     "r2_clean": 0.986975,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 59,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 5,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-2.8651586*x0/(x0 - 0.30057374) + 2.641773/(x1 + 0.14918044)",
+     "r2_clean": 0.998851,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 87.2,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.550359467711936 - 0.212118646092225*cos(x0)",
+     "r2_clean": 0.958192,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 60,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.61487474 - 0.16879324*sin(sqrt(x0) + x0)",
+     "r2_clean": 0.909368,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 9.0,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.79953402011444*log(x1) + 1.86551998756393",
+     "r2_clean": 0.909448,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 61,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 11,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.7335212*log(x1) + 1.9553273",
+     "r2_clean": 0.904349,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 15.5,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "13.3942040397215*log(x0) + 18.1820606542503",
+     "r2_clean": 0.833437,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 62,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 3,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "53.019915 - 34.870179*sqrt(1/x0)",
+     "r2_clean": 0.913165,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 13.0,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.706700457888236*sqrt(x0) + 0.245112103955376",
+     "r2_clean": 0.961443,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 63,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 9,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.94525832*x0**0.40078701",
+     "r2_clean": 0.97058,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 8.5,
+     "source": "power law, exponents fitted",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "3.52493730949453 - 0.334745875290371*sin(exp(x0))",
+     "r2_clean": -0.558825,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 64,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 24,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "4.0845295 - 4.8839644/(x0*x1)",
+     "r2_clean": 0.61926,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 44.4,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "7.81569295106217 - 2.36346003814534/x0",
+     "r2_clean": 0.116109,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 65,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 30,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "7.3219375 - 2.0988128/x0**2",
+     "r2_clean": 0.21616,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 47.1,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "6.67818699492587*log(x0)**4 + 2.129109539067",
+     "r2_clean": 0.998041,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 66,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 17,
+     "constants": 2,
+     "error": null,
+     "errors": "relative",
+     "law": "0.38406833*x0**3 + 1.1910105",
+     "r2_clean": 0.998645,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 8.3,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-0.0399732233463994*x0/x1 + 0.27738893458676",
+     "r2_clean": 0.732199,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 67,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 20,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.011120576*x0 + 0.029259238*x1 + 0.17804321",
+     "r2_clean": 0.967959,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 56.9,
+     "source": "a line",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.573200879819922*log(x0*x1)",
+     "r2_clean": 0.973007,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 68,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 29,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.74215229*log(x0*sqrt(x1)) + 0.017992347",
+     "r2_clean": 0.958917,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 61.7,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-0.201566714924464*x0**2 + 1.4566718659579*x0",
+     "r2_clean": 0.972136,
+     "reported": false,
+     "seconds": 0.4,
+     "true_form": false
+    },
+    "index": 69,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 4,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.6466634*sin(0.45023431*x0)",
+     "r2_clean": 0.991252,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 11.1,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-0.0834991516418269*sin(sqrt(exp(x0)))",
+     "r2_clean": 0.413333,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 70,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.12561442*sin(2.8971971*x0)/(0.013941225 - 0.419442*x1)",
+     "r2_clean": 0.999528,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 156.4,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.0369420515874114*x0**3 + 0.0282924055179598*x0**2*x1 - 0.494167832132579*x0**2 - 0.170728459852186*x0*x1 + 2.26809218072101*x0 + 0.517610428467739*x1 - 2.94153967178037",
+     "r2_clean": 0.990935,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 71,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 6,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.0039438695*exp(x1) + 0.98442023*log(x0*sqrt(x1)) - 0.53797795",
+     "r2_clean": 0.991982,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 333.0,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.00790359545093005*x0**3 + 1.11447695176354*x0**2 - 0.473389128966691*x0 + 0.238436694874278",
+     "r2_clean": 1.0,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 72,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.88005739*x0**2.0759394",
+     "r2_clean": 0.999973,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 10.2,
+     "source": "power law, exponents fitted",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 2.3,
+     "true_form": false
+    },
+    "index": 73,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 8,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "-41.877198*x0*exp(-2.2402354*x1)",
+     "r2_clean": -9.010044,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 13.2,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.06929571457806*x0 - 0.575102837898836*x1 + 0.289453572443592",
+     "r2_clean": 0.942544,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 74,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.5300421*log(x0/sqrt(x1)) + 0.32281938",
+     "r2_clean": 0.997276,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 13.9,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.00332055428964383 + 0.259956018606395*exp(-x0)",
+     "r2_clean": 0.997774,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 75,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "-0.0022527369 + 0.28907565*exp(-1.0823135*x0)",
+     "r2_clean": 0.99513,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 21.8,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.0257216549646484*log(x0) + 0.0187822107976693",
+     "r2_clean": 0.978066,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 76,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.099406985*x0*x1/((x0 + 3.6852269)*(x1 - 0.16196189))",
+     "r2_clean": 0.996942,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 38.8,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.84053815223779*x0 - 2.90440609369011*x1 - 1.41707857642898",
+     "r2_clean": 0.997388,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 77,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.2726091*x0 - 2.8987328*x1 + 5.0226632*cos(sqrt(x0)) - 5.2046069",
+     "r2_clean": 0.999998,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 52.8,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-3.65477659848341*sin(sqrt(exp(x0)))",
+     "r2_clean": 0.349353,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 78,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.8590787*sqrt(0.19405757*x0 + 0.32989786)*sin(2.9*x0)",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 11.9,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.00567604854353569*x0**3 + 0.0751350061786321*x0**2 - 0.366394915977288*x0 + 0.0107754167619956*x1**3 - 0.14873481218365*x1**2 + 0.942210336698953*x1 - 0.190447817757368",
+     "r2_clean": 0.999869,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 79,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "relative",
+     "law": "-1.3*x0/(x0 + 0.7) + 1.3*log(1.3*x1 + 1)",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 39.5,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.0281971941461651*x0**2*x1 - 0.0968023939971417*x0**2 - 0.0296418993175208*x0*x1**2 + 0.0438331916083237*x0*x1 + 0.147693399437819*x0 - 0.122856345955526*x1**3 + 1.53260727263092*x1**2 - 6.19378265057226*x1 + 4.38748348704723",
+     "r2_clean": 0.935696,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 80,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 6,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.22072384*log(x0) - 3.9728088 + 9.0372938*exp(-x1)",
+     "r2_clean": 0.973681,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 65.8,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 81,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 7,
+     "error": null,
+     "errors": "absolute",
+     "law": "9.4556386e-6*x0**8 - 0.00024879295*x0**7 + 0.0027876348*x0**6 - 0.017227105*x0**5 + 0.062579087*x0**4 - 0.12177715*x0**3 + 1.2785526*x0",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 13.5,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "3.7*x0*x1**2",
+     "r2_clean": 1.0,
+     "reported": false,
+     "seconds": 1.5,
+     "true_form": true
+    },
+    "index": 82,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 31,
+     "constants": 1,
+     "error": null,
+     "errors": "relative",
+     "law": "3.7*x0*x1**2",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 44.4,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.00500711077355636*x0**3 - 0.0732659778818196*x0**2 + 0.00273375583010001*x0*x1**2 - 0.0211915908800993*x0*x1 + 0.53013348281999*x0 + 0.0280379803418029*x1**3 - 0.408278686938721*x1**2 + 2.0874019316301*x1 + 0.409406212120038",
+     "r2_clean": 0.999661,
+     "reported": false,
+     "seconds": 1.1,
+     "true_form": false
+    },
+    "index": 83,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.51966363*log(x0) + 13.219821*sin(x1**(1/4)) - 8.6625104",
+     "r2_clean": 0.999005,
+     "reasons": [],
+     "reported": true,
+     "seconds": 78.0,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "1.81500292429056*sin(exp(sqrt(x0))) + 2.89755380704052",
+     "r2_clean": 0.691097,
+     "reported": false,
+     "seconds": 0.5,
+     "true_form": false
+    },
+    "index": 84,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.4071001*cos(x0 + sqrt(1/x0)) + 5.1018216",
+     "r2_clean": 0.824552,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 9.4,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.68926823393944*sqrt(x1) - 1.51982043759614",
+     "r2_clean": 0.909751,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 85,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.51132736*x1*exp(-0.054566949*x0)",
+     "r2_clean": 0.998336,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 15.8,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.90841558238669*x1**2",
+     "r2_clean": 0.935303,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 86,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "-8.8173827*sqrt(x1)*sin(x1) + 17.881443",
+     "r2_clean": 0.904555,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 13.8,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 87,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 3,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.30086698*x0 + 0.15849581/x0**4",
+     "r2_clean": 0.99984,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 8.6,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.828471850871258 - 0.0598399216274197/cos(x0)**2",
+     "r2_clean": -3519.522955,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 88,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.28864493*sin(3.2194005*x1)/(cos(x0)**2 + 0.039549586)",
+     "r2_clean": -0.003901,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 65.2,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.0364716047851932*x1 + 0.1048799098",
+     "r2_clean": 0.777075,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 89,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.038567532*log(x1) - 0.034206982*cos(x1/sqrt(x0)) + 0.1671529",
+     "r2_clean": 0.930606,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 40.5,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "1.69190781305171 - 1.59614044420028*cos(log(x0))",
+     "r2_clean": 0.998856,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 90,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "relative",
+     "law": "1.7469175*log(x0 + 1/x0) - 1.1295784",
+     "r2_clean": 0.999181,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 9.1,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "2.92005597850955*x0 + 1.28701061136025*x1**2",
+     "r2_clean": 0.999827,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": true
+    },
+    "index": 91,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 11,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.9430553*x0 + 1.2966579*x1**2 - 0.17663271",
+     "r2_clean": 0.999887,
+     "reasons": [],
+     "reported": true,
+     "seconds": 97.0,
+     "source": "first pass",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "-0.618495872702355*log(x1) - 0.360054931581114",
+     "r2_clean": 0.992899,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 92,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 3,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.047516951*x0/x1 - 0.58710143*sqrt(x1 + log(x1)) + 0.11993172",
+     "r2_clean": 0.998973,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 52.6,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.0958052102914239*x0**2*sin(x0) + 1.84056876605396",
+     "r2_clean": 0.961802,
+     "reported": false,
+     "seconds": 0.6,
+     "true_form": false
+    },
+    "index": 93,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.3056268*sin(0.7003594*x0) - 0.29881483*sin(3.7020957*x0)",
+     "r2_clean": 0.999976,
+     "reasons": [],
+     "reported": true,
+     "seconds": 13.0,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.195198796123193 - 0.102958610989416*log(x0 + x1)",
+     "r2_clean": 0.436934,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 94,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 26,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.001515247 + 1.0952012*exp(-x0*x1)",
+     "r2_clean": 0.958017,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 83.6,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "2.51970797442329 - 3.06064607901546*sin(x1/x0)",
+     "r2_clean": -0.061668,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 95,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.01,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.42941259 + 0.064120224/cos(x0**2)**2",
+     "r2_clean": -8171.70277,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 103.1,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.164244021582083 + 1.83349044876479/x0",
+     "r2_clean": 0.997445,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 96,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.41563107 + 0.25429065*sin(x0)/log(x0)",
+     "r2_clean": -3.222053,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 7.8,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.828421986444244*sqrt(x0*x1) + 0.565209541454262",
+     "r2_clean": 0.913326,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 97,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 3,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.73239661*sqrt(x0)*log(x1) + 1.7146655",
+     "r2_clean": 0.941934,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 12.5,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 98,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.49854065 + 0.70950235*log(x0)/sqrt(x1)",
+     "r2_clean": 0.865794,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 12.0,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 99,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 4,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.40637179*cos(x0) - 0.43667223*cos(x0**2 - x0) - 0.42797265",
+     "r2_clean": 0.093472,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 9.3,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "3.29152956342711 - 1.70373731635511/x1",
+     "r2_clean": 0.523524,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 100,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.7393218*log(x1 + 1.5675892) + 2.6683367/x0**4",
+     "r2_clean": 0.759005,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 43.6,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "-0.390571537481002 + 4.28122983526685/x0",
+     "r2_clean": 0.807879,
+     "reported": false,
+     "seconds": 0.8,
+     "true_form": false
+    },
+    "index": 101,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 12,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "0.65215783*sin(x0) + 0.51186129*cos(x1) + 1.3782707",
+     "r2_clean": 0.740336,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 50.9,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 102,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 12,
+     "constants": 1,
+     "error": null,
+     "errors": "relative",
+     "law": "1.0927498/x0**2",
+     "r2_clean": 0.99314,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 8.5,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.783812937472691 - 0.470881792282382*sin(sin(x0))",
+     "r2_clean": 0.675984,
+     "reported": false,
+     "seconds": 1.8,
+     "true_form": false
+    },
+    "index": 103,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 22,
+     "constants": 1,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.17592138*x0*x1**(1/3)",
+     "r2_clean": 0.979366,
+     "reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 166.4,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "11.2378435465987 - 9.73138274451701*(x1/x0)**(1/4)",
+     "r2_clean": 0.989382,
+     "reported": false,
+     "seconds": 2.3,
+     "true_form": false
+    },
+    "index": 104,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 6,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "4.2607631*sqrt(x0/sqrt(x1)) - 0.014453248*exp(x1) - 3.840604",
+     "r2_clean": 0.965331,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 128.9,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "0.365346212820181*log(x0) + 0.33180355009301",
+     "r2_clean": 0.995875,
+     "reported": false,
+     "seconds": 0.6,
+     "true_form": false
+    },
+    "index": 105,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 32,
+     "constants": 1,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.41868757*sqrt(x0)",
+     "r2_clean": 0.991694,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 17.6,
+     "source": "power law, exponents rounded to simple fractions",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.145932210994801*x0**3 - 0.101770550791513*x0**2*x1 - 1.59497219884101*x0**2 + 0.458906186837531*x0*x1 + 4.84874087634402*x0 - 2.89721071341611",
+     "r2_clean": 0.992626,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 106,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 3,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.1384566*(2.2926943*sin(0.11763088*x1) + 0.65076321)*sin(0.70302644*x0)",
+     "r2_clean": 0.997852,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 183.9,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "102.326572842065*exp(log(x0)**2) - 104.485760357017",
+     "r2_clean": 0.988373,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 107,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.05,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 6,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "10.45539*x0**3 - 70.319085*x0/x1 + 28.821767",
+     "r2_clean": 0.995745,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 174.3,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "equivalent_class",
+     "error": null,
+     "law": "2.25573641012765*sqrt(1/x0) - 0.225060524343584",
+     "r2_clean": 0.999282,
+     "reported": false,
+     "seconds": 0.5,
+     "true_form": false
+    },
+    "index": 108,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 2,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "2.0467816/x0**0.58691841",
+     "r2_clean": 0.99794,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 7.8,
+     "source": "power law, exponents fitted",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "-0.292778586370436 + 3.10382707027089/x0",
+     "r2_clean": 0.719025,
+     "reported": false,
+     "seconds": 1.7,
+     "true_form": false
+    },
+    "index": 109,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "1.8064755*sqrt(x1*exp(-x0)) + 0.087788931",
+     "r2_clean": 0.998768,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 26.7,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "0.839448675793553*x1 - 0.461675018882158",
+     "r2_clean": 0.943767,
+     "reported": false,
+     "seconds": 1.4,
+     "true_form": false
+    },
+    "index": 110,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 8,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 1,
+     "constants": 2,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.1287301*sqrt(x1 + 1/x0) - 3.6467989",
+     "r2_clean": 0.996233,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 23.4,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.00960619327587483*x0**3 + 0.329727134456163*x0**2 + 2.12068977884489*x0 - 0.0917988136037462",
+     "r2_clean": 0.999999,
+     "reported": false,
+     "seconds": 0.3,
+     "true_form": false
+    },
+    "index": 111,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.19302525*sqrt(x0) + 0.7635984*x0*exp(x0**(1/4)) + 0.10239413",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits"
+     ],
+     "reported": false,
+     "seconds": 14.4,
+     "source": "first pass",
+     "stable": true,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "1.77831922198876 - 1.89328456966224*sin(sqrt(x1))",
+     "r2_clean": 0.463564,
+     "reported": false,
+     "seconds": 1.6,
+     "true_form": false
+    },
+    "index": 112,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-83.295192*sin(1.7*x1)/(2.7592314e-14 - 277.65064*x0)",
+     "r2_clean": 1.0,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 81.1,
+     "source": "memory of confirmed laws",
+     "stable": false,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "unchallenged",
+     "error": null,
+     "law": "30.871910773381 - 14.1478856368532*cos(log(x0))",
+     "r2_clean": 0.987054,
+     "reported": false,
+     "seconds": 1.5,
+     "true_form": false
+    },
+    "index": 113,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 12,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.8250971*x0 + 3.7889508*x1**(1/4) + 8.0793329 - 0.27100016*x1/x0",
+     "r2_clean": 0.999819,
+     "reasons": [
+      "the table has fewer than 5 rows for each constant the law fits",
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 73.7,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 0.6,
+     "true_form": false
+    },
+    "index": 114,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "-0.12805757*cos(x0) + 0.66778507 + 3.3755774/x0",
+     "r2_clean": 0.999796,
+     "reasons": [
+      "the choice changes when a row is removed"
+     ],
+     "reported": false,
+     "seconds": 13.0,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "6.89545641015826*sqrt(sqrt(x0) + 1/x1) - 5.95197926752724",
+     "r2_clean": 0.997103,
+     "reported": false,
+     "seconds": 1.7,
+     "true_form": false
+    },
+    "index": 115,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 2,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "3.7*log(0.45*x0 + 1) + 2.3/(x1 + 3.5627106e-16)",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 257.7,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.00930199940091453*x0**3 - 0.00609973008233194*x0**2*x1 - 0.115682252033998*x0**2 - 0.0181804206158022*x0*x1**2 + 0.252018965662257*x0*x1 - 2.17200298730277*x0 + 0.0225728586368363*x1**3 - 0.26884407650308*x1**2 + 1.37606617407345*x1 + 0.355066075015343",
+     "r2_clean": 0.999901,
+     "reported": false,
+     "seconds": 2.1,
+     "true_form": false
+    },
+    "index": 116,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 20,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 10,
+     "constants": 4,
+     "error": null,
+     "errors": "absolute",
+     "law": "-20.473408*exp(0.087058901*x0)*exp(-0.029121553*x1) + 21.302096",
+     "r2_clean": 0.993172,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 142.4,
+     "source": "plain shapes",
+     "stable": false,
+     "true_form": false
+    }
+   },
+   {
+    "direct": {
+     "accurate": true,
+     "action": "confirmed",
+     "error": null,
+     "law": "0.000592856448063514*x0**3 - 0.008909521872293*x0**2 + 0.0555282784943605*x0 - 0.00548029545179696",
+     "r2_clean": 0.999974,
+     "reported": false,
+     "seconds": 0.5,
+     "true_form": false
+    },
+    "index": 117,
+    "inputs": 1,
+    "level": 1,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 1,
+     "constants": 5,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.10531103*(0.10267257*x0**2 + 4.5770762e-16*x0)/(0.055264168*x0**2 + 0.15113549*x0 + 0.055264168)",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 30.3,
+     "source": "memory of confirmed laws",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "widen_search",
+     "error": null,
+     "law": null,
+     "reported": false,
+     "seconds": 1.0,
+     "true_form": false
+    },
+    "index": 118,
+    "inputs": 2,
+    "level": 2,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": true,
+     "action": "read",
+     "class_size": 5,
+     "constants": 3,
+     "error": null,
+     "errors": "absolute",
+     "law": "0.10344828*x1/((x0 + 3.0116616e-16)*(x1 + 0.34482759))",
+     "r2_clean": 1.0,
+     "reasons": [],
+     "reported": true,
+     "seconds": 95.4,
+     "source": "plain shapes",
+     "stable": true,
+     "true_form": true
+    }
+   },
+   {
+    "direct": {
+     "accurate": false,
+     "action": "confirmed",
+     "error": null,
+     "law": "-0.0964389416128353*x0**3 + 0.06613978161548*x0**2*x1 + 0.995494150451828*x0**2 - 0.528662036180243*x0*x1 - 3.44219887876716*x0 + 1.07015171754602*x1 + 4.24126620988085",
+     "r2_clean": 0.998653,
+     "reported": false,
+     "seconds": 0.9,
+     "true_form": false
+    },
+    "index": 119,
+    "inputs": 2,
+    "level": 3,
+    "noise": 0.0,
+    "rows": 30,
+    "small": {
+     "accurate": false,
+     "action": "read",
+     "class_size": 5,
+     "constants": 3,
+     "error": null,
+     "errors": "relative",
+     "law": "5.6617566*sqrt(x1)*exp(-x0) + 0.01097479*x1 + 0.030387987",
+     "r2_clean": 0.998099,
+     "reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ],
+     "reported": false,
+     "seconds": 40.0,
+     "source": "first pass",
+     "stable": false,
+     "true_form": false
+    }
+   }
+  ],
+  "summary": {
+   "direct": {
+    "all": {
+     "accurate": 18,
+     "law_given": 100,
+     "not_run": 0,
+     "reported": 0,
+     "reported_true_form": 0,
+     "tables": 120,
+     "true_form": 2,
+     "wrong_reports": 0
+    },
+    "by_noise": {
+     "0.0": {
+      "accurate": 13,
+      "law_given": 37,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 48,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "0.01": {
+      "accurate": 5,
+      "law_given": 31,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 36,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "0.05": {
+      "accurate": 0,
+      "law_given": 32,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 36,
+      "true_form": 0,
+      "wrong_reports": 0
+     }
+    },
+    "by_rows": {
+     "12": {
+      "accurate": 3,
+      "law_given": 28,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 0,
+      "wrong_reports": 0
+     },
+     "20": {
+      "accurate": 5,
+      "law_given": 24,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "30": {
+      "accurate": 7,
+      "law_given": 25,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 1,
+      "wrong_reports": 0
+     },
+     "8": {
+      "accurate": 3,
+      "law_given": 23,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 0,
+      "wrong_reports": 0
+     }
+    }
+   },
+   "paired": {
+    "true_form_gained_by_small": 15,
+    "true_form_lost_by_small": 0
+   },
+   "small": {
+    "all": {
+     "accurate": 48,
+     "law_given": 120,
+     "not_run": 0,
+     "reported": 17,
+     "reported_true_form": 10,
+     "tables": 120,
+     "true_form": 17,
+     "wrong_reports": 0
+    },
+    "by_noise": {
+     "0.0": {
+      "accurate": 30,
+      "law_given": 48,
+      "not_run": 0,
+      "reported": 12,
+      "reported_true_form": 8,
+      "tables": 48,
+      "true_form": 11,
+      "wrong_reports": 0
+     },
+     "0.01": {
+      "accurate": 16,
+      "law_given": 36,
+      "not_run": 0,
+      "reported": 5,
+      "reported_true_form": 2,
+      "tables": 36,
+      "true_form": 5,
+      "wrong_reports": 0
+     },
+     "0.05": {
+      "accurate": 2,
+      "law_given": 36,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 36,
+      "true_form": 1,
+      "wrong_reports": 0
+     }
+    },
+    "by_rows": {
+     "12": {
+      "accurate": 13,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 1,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 2,
+      "wrong_reports": 0
+     },
+     "20": {
+      "accurate": 17,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 7,
+      "reported_true_form": 5,
+      "tables": 30,
+      "true_form": 7,
+      "wrong_reports": 0
+     },
+     "30": {
+      "accurate": 15,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 9,
+      "reported_true_form": 5,
+      "tables": 30,
+      "true_form": 7,
+      "wrong_reports": 0
+     },
+     "8": {
+      "accurate": 3,
+      "law_given": 30,
+      "not_run": 0,
+      "reported": 0,
+      "reported_true_form": 0,
+      "tables": 30,
+      "true_form": 1,
+      "wrong_reports": 0
+     }
+    }
+   }
+  },
+  "tables_whose_outcome_differs_from_the_first_run": 4,
+  "true_forms_by_the_source_of_the_chosen_form": {
+   "first pass": 2,
+   "memory of confirmed laws": 7,
+   "plain shapes": 5,
+   "power law, exponents rounded to simple fractions": 3
+  }
+ },
+ "the_rule_added": {
+  "chosen_on_these_tables": true,
+  "rule": "a law is reported only if the table has at least 5 rows for each constant the law fits (small_table.REPORT_ROWS_PER_CONSTANT)",
+  "why": "all three wrong reports of the first run had four rows a constant, on tables of 8 and 12 rows"
+ },
+ "what": "development: the small-table reading (apedp_dyn/discovery_l2/small_table.py) against the route in force called directly, on 120 generated tables of 8 to 30 rows; not a result, nothing preregistered, nothing in force"
+}

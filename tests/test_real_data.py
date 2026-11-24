@@ -109,3 +109,14 @@ def test_the_recorded_first_look_reported_nothing_and_says_what_the_product_refu
     assert tables["langmuir_table_ix"]["summary"]["product_refused"] == 5
     assert tables["leavitt"]["summary"]["product_refused"] == 0
     assert tables["leavitt"]["summary"]["product_gave_the_law_tentatively"] == 0
+
+
+def test_a_cell_that_is_not_a_number_is_a_missing_value_and_does_not_lose_the_table() -> None:
+    """A column of names or flags the law does not use must not make a table unreadable (the blind run reads each once)."""
+    table = {"key": "made_up", "format": "csv"}
+    columns = real_data.parse(table, "D,v,galaxy\n0.5,270,NGC 6822\n0.9,,M31  # no speed given\n1.1,450,-\n")
+    assert columns["D"].tolist() == [0.5, 0.9, 1.1]
+    assert columns["v"][0] == 270.0 and np.isnan(columns["v"][1]) and columns["v"][2] == 450.0
+    assert np.all(np.isnan(columns["galaxy"]))
+    with pytest.raises(ValueError, match="values for the columns"):                                   # a ragged row is still an error
+        real_data.parse(table, "D,v\n0.5,270\n0.9\n")

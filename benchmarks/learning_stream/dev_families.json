@@ -1,0 +1,360 @@
+{
+ "date": "2026-11-24",
+ "llm_srbench_note": "LLM-SRBench is gated. Only counts are recorded here: no equation, symbol name or value, and no per-problem row. Its journal was not written.",
+ "paired_sign_tests_one_sided": {
+  "llmsrbench": {
+   "learning": {
+    "gained": 2,
+    "lost": 3,
+    "p": 0.812
+   }
+  },
+  "ode": {
+   "learning": {
+    "gained": 8,
+    "lost": 2,
+    "p": 0.055
+   }
+  },
+  "srbench": {
+   "all-inputs": {
+    "gained": 2,
+    "lost": 4,
+    "p": 0.891
+   },
+   "learning": {
+    "gained": 2,
+    "lost": 2,
+    "p": 0.688
+   },
+   "memory-only": {
+    "gained": 2,
+    "lost": 0,
+    "p": 0.25
+   },
+   "model-only": {
+    "gained": 0,
+    "lost": 1,
+    "p": 1.0
+   },
+   "transfer": {
+    "gained": 5,
+    "lost": 5,
+    "p": 0.623
+   }
+  }
+ },
+ "reading": [
+  "LLM-SRBench, 80 problems: the route in force with its search stage, never learning, recovered 19 of 79 (one problem ended in an error), and reported 24 laws, 1 of them wrong. With learning: 18 of 80 recovered, 21 reported, 0 wrong; 2 gained and 3 lost against the frozen arm. Learning added nothing there.",
+  "About a quarter of LLM-SRBench's problems recovered (19 of 79) is where the route stands on that benchmark, on these 80 problems and at this search budget. It is a development number: the 80 are a fixed draw, not the whole benchmark, and nothing was preregistered.",
+  "ODE systems, 60 components: learning recovered 31 against 25; 8 gained (6 of them in the second half of the stream) and 2 lost; no wrong law in either arm. One-sided sign test p = 0.055: the clearest sign so far that the memory helps later problems, and still short of the usual line.",
+  "SRBench, 133 laws: frozen 51, learning 51 (2 gained, 2 lost), memory only 53 (2 gained, none lost), law model only 50 (none gained, 1 lost), learning without the measured-range condition 49 (2 gained, 4 lost), transfer from invented laws 52 (5 gained, 5 lost). No arm differs from the frozen one by more than chance, and no arm reported a wrong law.",
+  "Taken together: learning from its own confirmed laws helped on the ODE systems and did nothing measurable on the two formula benchmarks. A possible reason, not tested: the components of one system share parts, and the benchmarks' problems share little."
+ ],
+ "run": {
+  "branch": "learning-families-run-1",
+  "commit": "809fb70",
+  "github_run": 45351476980,
+  "how": "scripts/run_learning_families.py: SRBench's 133 laws in three chunks (six arms), 60 components of the ODE systems (two arms), 80 problems of LLM-SRBench (two arms); collect"
+ },
+ "summary": {
+  "llmsrbench": {
+   "empty": {
+    "frozen": {
+     "all": {
+      "learned": 0,
+      "recovered": 19,
+      "reported": 24,
+      "units": 79,
+      "wrong": 1
+     },
+     "errors": 1,
+     "excluded": 0,
+     "first half": {
+      "learned": 0,
+      "recovered": 9,
+      "reported": 10,
+      "units": 40,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 0,
+      "recovered": 10,
+      "reported": 14,
+      "units": 39,
+      "wrong": 1
+     }
+    },
+    "learning": {
+     "against frozen": {
+      "gained": 2,
+      "gained in second half": 1,
+      "lost": 3
+     },
+     "all": {
+      "learned": 9,
+      "recovered": 18,
+      "reported": 21,
+      "units": 80,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 3,
+      "recovered": 10,
+      "reported": 10,
+      "units": 40,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 6,
+      "recovered": 8,
+      "reported": 11,
+      "units": 40,
+      "wrong": 0
+     }
+    }
+   }
+  },
+  "ode": {
+   "empty": {
+    "frozen": {
+     "all": {
+      "learned": 0,
+      "recovered": 25,
+      "reported": 35,
+      "units": 60,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 0,
+      "recovered": 11,
+      "reported": 14,
+      "units": 30,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 0,
+      "recovered": 14,
+      "reported": 21,
+      "units": 30,
+      "wrong": 0
+     }
+    },
+    "learning": {
+     "against frozen": {
+      "gained": 8,
+      "gained in second half": 6,
+      "lost": 2
+     },
+     "all": {
+      "learned": 42,
+      "recovered": 31,
+      "reported": 42,
+      "units": 60,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 18,
+      "recovered": 13,
+      "reported": 18,
+      "units": 30,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 24,
+      "recovered": 18,
+      "reported": 24,
+      "units": 30,
+      "wrong": 0
+     }
+    }
+   }
+  },
+  "srbench": {
+   "empty": {
+    "all-inputs": {
+     "against frozen": {
+      "gained": 2,
+      "gained in second half": 2,
+      "lost": 4
+     },
+     "all": {
+      "learned": 56,
+      "recovered": 49,
+      "reported": 56,
+      "units": 133,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 28,
+      "recovered": 21,
+      "reported": 28,
+      "units": 67,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 28,
+      "recovered": 28,
+      "reported": 28,
+      "units": 66,
+      "wrong": 0
+     }
+    },
+    "frozen": {
+     "all": {
+      "learned": 0,
+      "recovered": 51,
+      "reported": 58,
+      "units": 132,
+      "wrong": 0
+     },
+     "errors": 1,
+     "excluded": 0,
+     "first half": {
+      "learned": 0,
+      "recovered": 23,
+      "reported": 29,
+      "units": 67,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 0,
+      "recovered": 28,
+      "reported": 29,
+      "units": 65,
+      "wrong": 0
+     }
+    },
+    "learning": {
+     "against frozen": {
+      "gained": 2,
+      "gained in second half": 1,
+      "lost": 2
+     },
+     "all": {
+      "learned": 31,
+      "recovered": 51,
+      "reported": 59,
+      "units": 133,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 18,
+      "recovered": 23,
+      "reported": 30,
+      "units": 67,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 13,
+      "recovered": 28,
+      "reported": 29,
+      "units": 66,
+      "wrong": 0
+     }
+    },
+    "memory-only": {
+     "against frozen": {
+      "gained": 2,
+      "gained in second half": 1,
+      "lost": 0
+     },
+     "all": {
+      "learned": 31,
+      "recovered": 53,
+      "reported": 60,
+      "units": 133,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 18,
+      "recovered": 24,
+      "reported": 30,
+      "units": 67,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 13,
+      "recovered": 29,
+      "reported": 30,
+      "units": 66,
+      "wrong": 0
+     }
+    },
+    "model-only": {
+     "against frozen": {
+      "gained": 0,
+      "gained in second half": 0,
+      "lost": 1
+     },
+     "all": {
+      "learned": 30,
+      "recovered": 50,
+      "reported": 59,
+      "units": 133,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 18,
+      "recovered": 22,
+      "reported": 30,
+      "units": 67,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 12,
+      "recovered": 28,
+      "reported": 29,
+      "units": 66,
+      "wrong": 0
+     }
+    },
+    "transfer": {
+     "against frozen": {
+      "gained": 5,
+      "gained in second half": 2,
+      "lost": 5
+     },
+     "all": {
+      "learned": 0,
+      "recovered": 52,
+      "reported": 58,
+      "units": 133,
+      "wrong": 0
+     },
+     "errors": 0,
+     "excluded": 0,
+     "first half": {
+      "learned": 0,
+      "recovered": 23,
+      "reported": 29,
+      "units": 67,
+      "wrong": 0
+     },
+     "second half": {
+      "learned": 0,
+      "recovered": 29,
+      "reported": 29,
+      "units": 66,
+      "wrong": 0
+     }
+    }
+   }
+  }
+ },
+ "what": "development: the learning loop over three families of laws, each arm from an empty memory, with the search stage in force; not a result, nothing preregistered, nothing in force"
+}

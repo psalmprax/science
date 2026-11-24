@@ -1,0 +1,239 @@
+name: Real tables, blind (PREREG-REAL-TABLES-2026-11)
+
+# Runs once: the first branch named real-tables-blind-run-* whose jobs start. The script refuses to run if
+# a file frozen by preregistration/DIGEST-REAL-TABLES.json has changed. The held-back tables are fetched
+# from their pinned commits inside the job, into a temporary folder, and are not kept with the results.
+#
+# The plan's deviation rule, by branch name (a job re-run from the web page does not read the tables again):
+#   real-tables-blind-only-<part>-<n>        a part that failed (a table of arm A, pipe_friction, expansion_rate), alone
+#   real-tables-blind-real-<n>               arms A, B and C again after the check before reading stopped them
+#   real-tables-blind-shard-<arm>-<k>-<n>    shard k of arm D (generated) or E (traps) again, lost to infrastructure
+# The collect step never replaces a part that was read.
+#
+# real-tables-blind-rehearsal-<n> is not the run: every path of it on the development tables and made-up
+# tables, with the search stage on. It needs no digest and fetches nothing.
+
+on:
+  push:
+    branches: ['real-tables-blind-run-*', 'real-tables-blind-only-*', 'real-tables-blind-real-*',
+               'real-tables-blind-shard-*', 'real-tables-blind-rehearsal-*']
+
+permissions:
+  contents: read
+
+jobs:
+  rehearsal:
+    if: startsWith(github.ref_name, 'real-tables-blind-rehearsal-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The whole run on development and made-up tables, the search stage for 90 s, ten minutes a child
+        timeout-minutes: 220
+        run: python scripts/run_real_tables_blind.py rehearse --out out --searches 90 --limit 600
+      - name: Print the record for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN real tables blind, rehearsal====="
+          if [ -f out/rehearsal.json ]; then gzip -9c out/rehearsal.json | base64 -w 0; echo; fi
+          echo "=====END real tables blind, rehearsal====="
+
+  real:
+    if: >-
+      (startsWith(github.ref_name, 'real-tables-blind-run-') || startsWith(github.ref_name, 'real-tables-blind-real-'))
+      && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The frozen files are unchanged
+        run: python scripts/run_real_tables_blind.py check --out out
+      - name: Arms A, B and C, the search stage for 90 s
+        timeout-minutes: 350
+        run: python scripts/run_real_tables_blind.py real --out out --searches 90
+      - name: Print the record for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN real tables blind, real job====="
+          if [ -f out/real.json ]; then gzip -9c out/real.json | base64 -w 0; echo; fi
+          echo "=====END real tables blind, real job====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: real-tables-blind-real
+          path: out/real.json
+
+  real-only:
+    if: startsWith(github.ref_name, 'real-tables-blind-only-') && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: One part alone, under the deviation rule
+        timeout-minutes: 320
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          part="${BRANCH#real-tables-blind-only-}"
+          part="${part%-*}"
+          python scripts/run_real_tables_blind.py real --out out --searches 90 --only "$part"
+      - name: Print the record for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN real tables blind, one part alone====="
+          for record in out/real_only_*.json; do
+            if [ -f "$record" ]; then gzip -9c "$record" | base64 -w 0; echo; fi
+          done
+          echo "=====END real tables blind, one part alone====="
+
+  shard:
+    if: startsWith(github.ref_name, 'real-tables-blind-shard-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: One shard of arm D or E again, under the deviation rule
+        timeout-minutes: 320
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          rest="${BRANCH#real-tables-blind-shard-}"
+          arm="${rest%%-*}"
+          rest="${rest#*-}"
+          shard="${rest%%-*}"
+          python scripts/run_real_tables_blind.py "$arm" --out out --shard "$shard" --shards 3 --workers "$(nproc)"
+      - name: Print the rows for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN real tables blind, one shard====="
+          for rows in out/*.jsonl; do
+            if [ -f "$rows" ]; then echo "file $(basename "$rows")"; gzip -9c "$rows" | base64 -w 0; echo; fi
+          done
+          echo "=====END real tables blind, one shard====="
+
+  generated:
+    if: startsWith(github.ref_name, 'real-tables-blind-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Arm D, shard ${{ matrix.shard }} of 3
+        timeout-minutes: 320
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: python scripts/run_real_tables_blind.py generated --out out --shard "$SHARD" --shards 3 --workers "$(nproc)"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: real-tables-blind-generated-${{ matrix.shard }}
+          path: out
+
+  traps:
+    if: startsWith(github.ref_name, 'real-tables-blind-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Arm E, shard ${{ matrix.shard }} of 3
+        timeout-minutes: 320
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: python scripts/run_real_tables_blind.py traps --out out --shard "$SHARD" --shards 3 --workers "$(nproc)"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: real-tables-blind-traps-${{ matrix.shard }}
+          path: out
+
+  collect:
+    needs: [real, generated, traps]
+    if: always() && startsWith(github.ref_name, 'real-tables-blind-run-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: real-tables-blind-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/run_real_tables_blind.py collect --out got
+      - name: Print the results for rebuilding from the log
+        if: always()
+        run: |
+          echo "=====BEGIN real tables blind, real====="
+          if [ -f got/real.json ]; then gzip -9c got/real.json | base64 -w 0; echo; fi
+          echo "=====END real tables blind, real====="
+          echo "=====BEGIN real tables blind, all====="
+          if [ -f got/results.json ]; then gzip -9c got/results.json | base64 -w 0; echo; fi
+          echo "=====END real tables blind, all====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: real-tables-blind-results
+          path: got/results.json

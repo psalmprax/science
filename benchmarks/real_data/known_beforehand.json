@@ -1,5 +1,5 @@
 {
- "note": "What is known about each table's law before its rows are read, as statements for apedp_dyn/discovery_l2/known_beforehand.py, and the units of its columns. Written on 2026-11-24 from general physics and the sources' README files. For the held-back tables no row had been read when this was written (the registry notes one exception, the first row of the chronometer file).",
+ "note": "What is known about each table's law before its rows are read, as statements for apedp_dyn/discovery_l2/known_beforehand.py, and the units of its columns. Written on 2026-11-24 from general physics and the sources' README files. For the held-back tables no row had been read when this was written (the registry notes one exception, the first row of the chronometer file). 'also_accepted' lists forms counted as the known law on a table, with the reason, where physics says before any row is read that the table cannot tell them from it. 'decoy' is another law that satisfies everything stated about the table; the blind test gives the reading the decoy's values on the table's inputs, with the table's own scatter, to see whether its answer depends on the rows.",
  "tables": {
   "kepler_solar_system": {
    "units": {
@@ -16,7 +16,14 @@
      "input": "d",
      "why": "a wider orbit takes longer"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a*d**2",
+    "parameters": [
+     "a"
+    ],
+    "why": "increasing in d and zero at zero, as stated; a square, not a power of three halves"
+   }
   },
   "langmuir_table_ix": {
    "units": {
@@ -51,7 +58,15 @@
      "input": "p",
      "why": "a surface has a finite number of places"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a*(1 - exp(-b*p))",
+    "parameters": [
+     "a",
+     "b"
+    ],
+    "why": "zero at zero, increasing, concave and levelling off, as stated; an exponential approach, not Langmuir's ratio"
+   }
   },
   "leavitt": {
    "units": {
@@ -64,7 +79,15 @@
      "input": "logP",
      "why": "a longer period goes with a brighter star, and brighter is a smaller magnitude"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a/logP + b",
+    "parameters": [
+     "a",
+     "b"
+    ],
+    "why": "decreasing in logP for a positive constant, as stated; not a line"
+   }
   },
   "kepler_exoplanets": {
    "units": {
@@ -84,7 +107,23 @@
      "input": "m1",
      "why": "a heavier star pulls harder, so the orbit is faster"
     }
-   ]
+   ],
+   "also_accepted": [
+    {
+     "law": "a*sqrt(d**3/m1)",
+     "parameters": [
+      "a"
+     ],
+     "why": "a planet has about a thousandth of its star's mass, so leaving the second mass out changes the period by less than a part in a thousand; periods given to a few digits cannot show it"
+    }
+   ],
+   "decoy": {
+    "law": "a*d**2/(m1 + m2)",
+    "parameters": [
+     "a"
+    ],
+    "why": "increasing in d and decreasing in m1, as stated; other powers"
+   }
   },
   "kepler_binary_stars": {
    "units": {
@@ -104,7 +143,14 @@
      "input": "m1",
      "why": "heavier stars orbit faster"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a*d**2/(m1 + m2)",
+    "parameters": [
+     "a"
+    ],
+    "why": "increasing in d and decreasing in m1, as stated; other powers"
+   }
   },
   "langmuir_sun_et_al": {
    "units": {
@@ -139,7 +185,15 @@
      "input": "p",
      "why": "a surface has a finite number of places"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a*(1 - exp(-b*p))",
+    "parameters": [
+     "a",
+     "b"
+    ],
+    "why": "zero at zero, increasing, concave and levelling off, as stated; an exponential approach, not Langmuir's ratio"
+   }
   },
   "time_dilation": {
    "units": {
@@ -161,7 +215,23 @@
      "input": "v",
      "why": "the slowing grows faster than the speed"
     }
-   ]
+   ],
+   "also_accepted": [
+    {
+     "law": "a*v**2",
+     "parameters": [
+      "a"
+     ],
+     "why": "at laboratory speeds the known law and its first term differ by about (v/c)**2 of the effect itself, far below any clock"
+    }
+   ],
+   "decoy": {
+    "law": "a*v**3",
+    "parameters": [
+     "a"
+    ],
+    "why": "zero at zero, decreasing and concave for a negative constant, as stated; a cube, not a square"
+   }
   },
   "hubble_1929": {
    "units": {
@@ -178,7 +248,14 @@
      "input": "D",
      "why": "farther nebulae recede faster"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a*D**2",
+    "parameters": [
+     "a"
+    ],
+    "why": "zero at zero and increasing, as stated; a square, not a line"
+   }
   },
   "tully_fisher": {
    "units": {
@@ -191,7 +268,15 @@
      "input": "DV",
      "why": "a galaxy that rotates faster is more luminous, and more luminous is a smaller magnitude"
     }
-   ]
+   ],
+   "decoy": {
+    "law": "a*DV + b",
+    "parameters": [
+     "a",
+     "b"
+    ],
+    "why": "decreasing for a negative constant, as stated; a line in the width, not in its logarithm"
+   }
   },
   "nikuradse_superpipe": {
    "units": {},

@@ -1,0 +1,734 @@
+{
+ "reading": [
+  "Kepler (8 rows): both readings report a*d**(3/2), the known law, found among the power laws with exponents rounded to simple fractions.",
+  "Langmuir (10 rows): with the four statements of what is known, the reading gives a*p/(p + b), the known form, tentatively: its error on left-out rows is above the accuracy line (R2 0.983). Without the statements it gives another form.",
+  "Leavitt (26 rows): neither reading gives the line. The measurements scatter (the line's R2 on left-out rows is 0.918) and curves fit a little better.",
+  "The search stage ran in all six readings without failure. Its candidates were scored on Leavitt only; on the two smaller tables every one had more constants than the rows allow."
+ ],
+ "run": {
+  "branch": "real-data-dev-run-small-1",
+  "commit": "71dfbc3",
+  "github_run": 45446253975,
+  "note": "before the rule of five rows a constant was added; neither of the two reported readings is affected by it (eight rows, one constant)"
+ },
+ "search_seconds": 90.0,
+ "tables": [
+  {
+   "key": "kepler_solar_system",
+   "known_law": "a*d**1.5",
+   "known_law_fitted": "0.36315512688241*d**1.5",
+   "known_law_r2_all_rows": 0.999999,
+   "readings": {
+    "informed": {
+     "accuracy": {
+      "left_out_r2": 0.999981,
+      "line": 0.999,
+      "reached": true
+     },
+     "action": "read",
+     "best_by_left_out_error": {
+      "bits": 36.9,
+      "constants": 1,
+      "law": "0.36437898*d**(3/2)",
+      "left_out_error": 1.3077040543154361e-05,
+      "left_out_r2": 0.999981,
+      "left_out_standard_error": 4.495922548703609e-06,
+      "shape": "C*d**(3/2)",
+      "source": "power law, exponents rounded to simple fractions"
+     },
+     "candidates": {
+      "by_source": {
+       "a line": 1,
+       "a line through the origin": 1,
+       "first pass": 3,
+       "plain shapes": 4,
+       "power law, exponents fitted": 1,
+       "power law, exponents rounded to simple fractions": 1
+      },
+      "failures": [],
+      "forms": 11,
+      "left_out": {
+       "more_constants_than_the_rows_allow": 40,
+       "one_function_inside_another": 0
+      },
+      "scored": 6
+     },
+     "chosen": {
+      "bits": 36.9,
+      "constants": 1,
+      "law": "0.36437898*d**(3/2)",
+      "left_out_error": 1.3077040543154361e-05,
+      "left_out_r2": 0.999981,
+      "left_out_standard_error": 4.495922548703609e-06,
+      "shape": "C*d**(3/2)",
+      "source": "power law, exponents rounded to simple fractions"
+     },
+     "class": [
+      {
+       "bits": 36.9,
+       "constants": 1,
+       "law": "0.36437898*d**(3/2)",
+       "left_out_error": 1.3077040543154361e-05,
+       "left_out_r2": 0.999981,
+       "left_out_standard_error": 4.495922548703609e-06,
+       "shape": "C*d**(3/2)",
+       "source": "power law, exponents rounded to simple fractions"
+      }
+     ],
+     "class_size": 1,
+     "errors": "relative",
+     "judged": {
+      "constants": 1,
+      "law": "0.36437898*d**(3/2)",
+      "r2_all_rows": 0.999983,
+      "refit_error": 4.071744813164353e-19,
+      "same_form_as_the_known_law": true
+     },
+     "known_checks_on_the_law": [
+      {
+       "holds": true,
+       "how": "grid",
+       "input": null,
+       "kind": "zero_at_zero",
+       "value_near_zero": 8.772427008369389e-11
+      },
+      {
+       "holds": true,
+       "how": "grid",
+       "input": "d",
+       "kind": "increasing",
+       "over": [
+        0.387,
+        30.0475
+       ]
+      }
+     ],
+     "law": "0.36437898*d**(3/2)",
+     "reported": true,
+     "seconds": 133.49,
+     "set_aside_by_what_is_known": 0,
+     "stability": {
+      "changed": [],
+      "changes": 0,
+      "forms_taking_part": 6,
+      "rows_removed": 8,
+      "stable": true
+     },
+     "tentative": false,
+     "tentative_reasons": []
+    },
+    "plain": {
+     "accuracy": {
+      "left_out_r2": 0.999981,
+      "line": 0.999,
+      "reached": true
+     },
+     "action": "read",
+     "best_by_left_out_error": {
+      "bits": 36.9,
+      "constants": 1,
+      "law": "0.36437898*d**(3/2)",
+      "left_out_error": 1.3077040543154361e-05,
+      "left_out_r2": 0.999981,
+      "left_out_standard_error": 4.495922548703609e-06,
+      "shape": "C*d**(3/2)",
+      "source": "power law, exponents rounded to simple fractions"
+     },
+     "candidates": {
+      "by_source": {
+       "a line": 1,
+       "a line through the origin": 1,
+       "first pass": 3,
+       "plain shapes": 4,
+       "power law, exponents fitted": 1,
+       "power law, exponents rounded to simple fractions": 1
+      },
+      "failures": [],
+      "forms": 11,
+      "left_out": {
+       "more_constants_than_the_rows_allow": 40,
+       "one_function_inside_another": 0
+      },
+      "scored": 6
+     },
+     "chosen": {
+      "bits": 36.9,
+      "constants": 1,
+      "law": "0.36437898*d**(3/2)",
+      "left_out_error": 1.3077040543154361e-05,
+      "left_out_r2": 0.999981,
+      "left_out_standard_error": 4.495922548703609e-06,
+      "shape": "C*d**(3/2)",
+      "source": "power law, exponents rounded to simple fractions"
+     },
+     "class": [
+      {
+       "bits": 36.9,
+       "constants": 1,
+       "law": "0.36437898*d**(3/2)",
+       "left_out_error": 1.3077040543154361e-05,
+       "left_out_r2": 0.999981,
+       "left_out_standard_error": 4.495922548703609e-06,
+       "shape": "C*d**(3/2)",
+       "source": "power law, exponents rounded to simple fractions"
+      }
+     ],
+     "class_size": 1,
+     "errors": "relative",
+     "judged": {
+      "constants": 1,
+      "law": "0.36437898*d**(3/2)",
+      "r2_all_rows": 0.999983,
+      "refit_error": 4.071744813164353e-19,
+      "same_form_as_the_known_law": true
+     },
+     "known_checks_on_the_law": [],
+     "law": "0.36437898*d**(3/2)",
+     "reported": true,
+     "seconds": 134.28,
+     "set_aside_by_what_is_known": 0,
+     "stability": {
+      "changed": [],
+      "changes": 0,
+      "forms_taking_part": 6,
+      "rows_removed": 8,
+      "stable": true
+     },
+     "tentative": false,
+     "tentative_reasons": []
+    }
+   },
+   "rows": 8
+  },
+  {
+   "key": "langmuir_table_ix",
+   "known_law": "a*p/(1 + b*p)",
+   "known_law_fitted": "13.1792733340367*p/(0.122151106522049*p + 1)",
+   "known_law_r2_all_rows": 0.989252,
+   "readings": {
+    "informed": {
+     "accuracy": {
+      "left_out_r2": 0.98309,
+      "line": 0.999,
+      "reached": false
+     },
+     "action": "read",
+     "best_by_left_out_error": {
+      "bits": 67.3,
+      "constants": 2,
+      "law": "107.89319*p/(p + 8.1865808)",
+      "left_out_error": 10.501547420552681,
+      "left_out_r2": 0.98309,
+      "left_out_standard_error": 3.9985025713038755,
+      "shape": "C*p/(C + p)",
+      "source": "plain shapes"
+     },
+     "candidates": {
+      "by_source": {
+       "a line": 1,
+       "a line through the origin": 1,
+       "a parabola": 1,
+       "first pass": 23,
+       "plain shapes": 8,
+       "power law, exponents fitted": 1,
+       "power law, exponents rounded to simple fractions": 1
+      },
+      "failures": [],
+      "forms": 36,
+      "left_out": {
+       "more_constants_than_the_rows_allow": 12,
+       "one_function_inside_another": 7
+      },
+      "scored": 36
+     },
+     "chosen": {
+      "bits": 67.3,
+      "constants": 2,
+      "law": "107.89319*p/(p + 8.1865808)",
+      "left_out_error": 10.501547420552681,
+      "left_out_r2": 0.98309,
+      "left_out_standard_error": 3.9985025713038755,
+      "shape": "C*p/(C + p)",
+      "source": "plain shapes"
+     },
+     "class": [
+      {
+       "bits": 67.3,
+       "constants": 2,
+       "law": "107.89319*p/(p + 8.1865808)",
+       "left_out_error": 10.501547420552681,
+       "left_out_r2": 0.98309,
+       "left_out_standard_error": 3.9985025713038755,
+       "shape": "C*p/(C + p)",
+       "source": "plain shapes"
+      }
+     ],
+     "class_size": 1,
+     "errors": "absolute",
+     "judged": {
+      "constants": 2,
+      "law": "107.89319*p/(p + 8.1865808)",
+      "r2_all_rows": 0.989252,
+      "refit_error": 1.3061708055415028e-16,
+      "same_form_as_the_known_law": true
+     },
+     "known_checks_on_the_law": [
+      {
+       "holds": true,
+       "how": "grid",
+       "input": null,
+       "kind": "zero_at_zero",
+       "value_near_zero": 1.3179272208579167e-05
+      },
+      {
+       "holds": true,
+       "how": "proved",
+       "input": "p",
+       "kind": "increasing",
+       "over": [
+        0.0,
+        488.0
+       ]
+      },
+      {
+       "holds": true,
+       "how": "grid",
+       "input": "p",
+       "kind": "concave",
+       "over": [
+        0.0,
+        488.0
+       ]
+      },
+      {
+       "holds": true,
+       "how": "grid",
+       "input": "p",
+       "kind": "levels_off",
+       "local_exponent": 0.0001,
+       "looked_at": 122000.0
+      }
+     ],
+     "law": "107.89319*p/(p + 8.1865808)",
+     "reported": false,
+     "seconds": 137.72,
+     "set_aside_by_what_is_known": 35,
+     "stability": {
+      "changed": [],
+      "changes": 0,
+      "forms_taking_part": 1,
+      "rows_removed": 10,
+      "stable": true
+     },
+     "tentative": true,
+     "tentative_reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ]
+    },
+    "plain": {
+     "accuracy": {
+      "left_out_r2": 0.99299,
+      "line": 0.999,
+      "reached": false
+     },
+     "action": "read",
+     "best_by_left_out_error": {
+      "bits": 83.3,
+      "constants": 3,
+      "law": "112.62341 - 1254.2261/(p + 12.707881)",
+      "left_out_error": 3.1671951141622694,
+      "left_out_r2": 0.9949,
+      "left_out_standard_error": 1.4797999606175003,
+      "shape": "C + C/(C + p)",
+      "source": "plain shapes"
+     },
+     "candidates": {
+      "by_source": {
+       "a line": 1,
+       "a line through the origin": 1,
+       "a parabola": 1,
+       "first pass": 23,
+       "plain shapes": 8,
+       "power law, exponents fitted": 1,
+       "power law, exponents rounded to simple fractions": 1
+      },
+      "failures": [],
+      "forms": 36,
+      "left_out": {
+       "more_constants_than_the_rows_allow": 12,
+       "one_function_inside_another": 7
+      },
+      "scored": 36
+     },
+     "chosen": {
+      "bits": 78.0,
+      "constants": 2,
+      "law": "303.85238*p/(p + log(p)) - 189.34785",
+      "left_out_error": 4.353637630673676,
+      "left_out_r2": 0.99299,
+      "left_out_standard_error": 1.5525558695315103,
+      "shape": "C*p/(p + log(p)) + C",
+      "source": "first pass"
+     },
+     "class": [
+      {
+       "bits": 78.0,
+       "constants": 2,
+       "law": "303.85238*p/(p + log(p)) - 189.34785",
+       "left_out_error": 4.353637630673676,
+       "left_out_r2": 0.99299,
+       "left_out_standard_error": 1.5525558695315103,
+       "shape": "C*p/(p + log(p)) + C",
+       "source": "first pass"
+      },
+      {
+       "bits": 83.3,
+       "constants": 3,
+       "law": "112.62341 - 1254.2261/(p + 12.707881)",
+       "left_out_error": 3.1671951141622694,
+       "left_out_r2": 0.9949,
+       "left_out_standard_error": 1.4797999606175003,
+       "shape": "C + C/(C + p)",
+       "source": "plain shapes"
+      },
+      {
+       "bits": 84.0,
+       "constants": 2,
+       "law": "112.90442 - 122.85039*exp(-sqrt(p))**(1/4)",
+       "left_out_error": 3.8907128938538165,
+       "left_out_r2": 0.993735,
+       "left_out_standard_error": 1.7753761459176582,
+       "shape": "C*exp(-sqrt(p))**(1/4) + C",
+       "source": "first pass"
+      },
+      {
+       "bits": 90.4,
+       "constants": 3,
+       "law": "98.696717*p/(p + 12.707881) + 13.926696",
+       "left_out_error": 3.1671954634541715,
+       "left_out_r2": 0.9949,
+       "left_out_standard_error": 1.4797998417378642,
+       "shape": "C*p/(C + p) + C",
+       "source": "plain shapes"
+      }
+     ],
+     "class_size": 4,
+     "errors": "absolute",
+     "judged": {
+      "constants": 2,
+      "law": "303.85238*p/(p + log(p)) - 189.34785",
+      "r2_all_rows": 0.995351,
+      "refit_error": 0.03108098326013592,
+      "same_form_as_the_known_law": false
+     },
+     "known_checks_on_the_law": [],
+     "law": "303.85238*p/(p + log(p)) - 189.34785",
+     "reported": false,
+     "seconds": 137.87,
+     "set_aside_by_what_is_known": 0,
+     "stability": {
+      "changed": [
+       {
+        "chosen": "C + C/(C + p)",
+        "row_removed": 1
+       },
+       {
+        "chosen": "C*sin(p**(1/16)) + C",
+        "row_removed": 2
+       },
+       {
+        "chosen": "C*exp(-sqrt(p))**(1/4) + C",
+        "row_removed": 3
+       },
+       {
+        "chosen": "C*sin(p**(1/16)) + C",
+        "row_removed": 4
+       },
+       {
+        "chosen": "C + C/(C + p)",
+        "row_removed": 5
+       }
+      ],
+      "changes": 7,
+      "forms_taking_part": 8,
+      "rows_removed": 10,
+      "stable": false
+     },
+     "tentative": true,
+     "tentative_reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ]
+    }
+   },
+   "rows": 10
+  },
+  {
+   "key": "leavitt",
+   "known_law": "a*logP + b",
+   "known_law_fitted": "15.5579686116599 - 2.00314575226137*logP",
+   "known_law_r2_all_rows": 0.934532,
+   "readings": {
+    "informed": {
+     "accuracy": {
+      "left_out_r2": 0.96209,
+      "line": 0.999,
+      "reached": false
+     },
+     "action": "read",
+     "best_by_left_out_error": {
+      "bits": 187.5,
+      "constants": 6,
+      "law": "207.35123/((13.746522 - 4.1349776*logP)*(0.20466062*logP**3 + 0.36196445*logP + 1.0075963))",
+      "left_out_error": 0.03067239175265592,
+      "left_out_r2": 0.968537,
+      "left_out_standard_error": 0.009969775349502701,
+      "shape": "C/((C*logP + C)*(C*logP**3 + C*logP + C))",
+      "source": "memory of confirmed laws"
+     },
+     "candidates": {
+      "by_source": {
+       "a line": 1,
+       "a line through the origin": 1,
+       "a parabola": 1,
+       "first pass": 10,
+       "memory of confirmed laws": 3,
+       "plain shapes": 8,
+       "power law, exponents fitted": 1,
+       "search stage": 5
+      },
+      "failures": [],
+      "forms": 30,
+      "left_out": {
+       "more_constants_than_the_rows_allow": 0,
+       "one_function_inside_another": 25
+      },
+      "scored": 30
+     },
+     "chosen": {
+      "bits": 53.5,
+      "constants": 2,
+      "law": "2.6519588*cos(logP) + 12.270757",
+      "left_out_error": 0.03695822341528811,
+      "left_out_r2": 0.96209,
+      "left_out_standard_error": 0.010940757983179781,
+      "shape": "C*cos(logP) + C",
+      "source": "first pass"
+     },
+     "class": [
+      {
+       "bits": 53.5,
+       "constants": 2,
+       "law": "2.6519588*cos(logP) + 12.270757",
+       "left_out_error": 0.03695822341528811,
+       "left_out_r2": 0.96209,
+       "left_out_standard_error": 0.010940757983179781,
+       "shape": "C*cos(logP) + C",
+       "source": "first pass"
+      },
+      {
+       "bits": 64.3,
+       "constants": 2,
+       "law": "-0.57824365*exp(logP)*sin(logP) + 15.034273",
+       "left_out_error": 0.034885469279727306,
+       "left_out_r2": 0.964216,
+       "left_out_standard_error": 0.00909994946204549,
+       "shape": "C*exp(logP)*sin(logP) + C",
+       "source": "first pass"
+      },
+      {
+       "bits": 81.0,
+       "constants": 2,
+       "law": "10.341795 + 4.660961*sin(logP)**2/logP**2",
+       "left_out_error": 0.03182107327335199,
+       "left_out_r2": 0.967359,
+       "left_out_standard_error": 0.007867580737950639,
+       "shape": "C + C*sin(logP)**2/logP**2",
+       "source": "first pass"
+      },
+      {
+       "bits": 187.5,
+       "constants": 6,
+       "law": "207.35123/((13.746522 - 4.1349776*logP)*(0.20466062*logP**3 + 0.36196445*logP + 1.0075963))",
+       "left_out_error": 0.03067239175265592,
+       "left_out_r2": 0.968537,
+       "left_out_standard_error": 0.009969775349502701,
+       "shape": "C/((C*logP + C)*(C*logP**3 + C*logP + C))",
+       "source": "memory of confirmed laws"
+      }
+     ],
+     "class_size": 4,
+     "errors": "absolute",
+     "judged": {
+      "constants": 2,
+      "law": "2.6519588*cos(logP) + 12.270757",
+      "r2_all_rows": 0.9726,
+      "refit_error": 0.013274643817796977,
+      "same_form_as_the_known_law": false
+     },
+     "known_checks_on_the_law": [
+      {
+       "holds": true,
+       "how": "grid",
+       "input": "logP",
+       "kind": "decreasing",
+       "over": [
+        0.10551558752997603,
+        2.1050359712230216
+       ]
+      }
+     ],
+     "law": "2.6519588*cos(logP) + 12.270757",
+     "reported": false,
+     "seconds": 144.32,
+     "set_aside_by_what_is_known": 13,
+     "stability": {
+      "changed": [
+       {
+        "chosen": "C*exp(logP)*sin(logP) + C",
+        "row_removed": 6
+       },
+       {
+        "chosen": "C + C*sin(logP)**2/logP**2",
+        "row_removed": 13
+       },
+       {
+        "chosen": "C + C*sin(logP)**2/logP**2",
+        "row_removed": 19
+       },
+       {
+        "chosen": "C*exp(logP)*sin(logP) + C",
+        "row_removed": 24
+       }
+      ],
+      "changes": 4,
+      "forms_taking_part": 8,
+      "rows_removed": 26,
+      "stable": false
+     },
+     "tentative": true,
+     "tentative_reasons": [
+      "the choice changes when a row is removed",
+      "its error on left-out rows is above the accuracy line"
+     ]
+    },
+    "plain": {
+     "accuracy": {
+      "left_out_r2": 0.977245,
+      "line": 0.999,
+      "reached": false
+     },
+     "action": "read",
+     "best_by_left_out_error": {
+      "bits": 275.8,
+      "constants": 7,
+      "law": "-(-0.0010568255*logP**8 + 1.1152917*logP)**2 + 14.928367 - 0.00069855013/(logP - 0.80003845) - 0.024319297*sqrt(logP**4)/(0.48485305 - logP)",
+      "left_out_error": 0.017177991709749405,
+      "left_out_r2": 0.982379,
+      "left_out_standard_error": 0.005772212680654461,
+      "shape": "C + C/(C + logP) + C*sqrt(logP**4)/(C - logP) - (C*logP**8 + C*logP)**2",
+      "source": "search stage"
+     },
+     "candidates": {
+      "by_source": {
+       "a line": 1,
+       "a line through the origin": 1,
+       "a parabola": 1,
+       "first pass": 10,
+       "memory of confirmed laws": 3,
+       "plain shapes": 8,
+       "power law, exponents fitted": 1,
+       "search stage": 5
+      },
+      "failures": [],
+      "forms": 30,
+      "left_out": {
+       "more_constants_than_the_rows_allow": 0,
+       "one_function_inside_another": 25
+      },
+      "scored": 30
+     },
+     "chosen": {
+      "bits": 74.4,
+      "constants": 2,
+      "law": "-0.5920473*exp(logP)*sin(logP)**2 + 14.852946",
+      "left_out_error": 0.02218305481754608,
+      "left_out_r2": 0.977245,
+      "left_out_standard_error": 0.008399604476588104,
+      "shape": "C*exp(logP)*sin(logP)**2 + C",
+      "source": "first pass"
+     },
+     "class": [
+      {
+       "bits": 74.4,
+       "constants": 2,
+       "law": "-0.5920473*exp(logP)*sin(logP)**2 + 14.852946",
+       "left_out_error": 0.02218305481754608,
+       "left_out_r2": 0.977245,
+       "left_out_standard_error": 0.008399604476588104,
+       "shape": "C*exp(logP)*sin(logP)**2 + C",
+       "source": "first pass"
+      },
+      {
+       "bits": 97.6,
+       "constants": 3,
+       "law": "2.0611074*cos(logP) + 0.44675821*cos(logP**2) + 12.370155",
+       "left_out_error": 0.022250191153340423,
+       "left_out_r2": 0.977177,
+       "left_out_standard_error": 0.0078298674377066,
+       "shape": "C*cos(logP) + C*cos(logP**2) + C",
+       "source": "first pass"
+      },
+      {
+       "bits": 164.3,
+       "constants": 5,
+       "law": "-1.2039096*(-0.00090814287*logP**8 + logP)**2 + 14.9262 - 0.001007568/(logP - 0.79899974)",
+       "left_out_error": 0.021847436097275956,
+       "left_out_r2": 0.97759,
+       "left_out_standard_error": 0.006731838440512198,
+       "shape": "C*(C*logP**8 + logP)**2 + C + C/(C + logP)",
+       "source": "search stage"
+      },
+      {
+       "bits": 275.8,
+       "constants": 7,
+       "law": "-(-0.0010568255*logP**8 + 1.1152917*logP)**2 + 14.928367 - 0.00069855013/(logP - 0.80003845) - 0.024319297*sqrt(logP**4)/(0.48485305 - logP)",
+       "left_out_error": 0.017177991709749405,
+       "left_out_r2": 0.982379,
+       "left_out_standard_error": 0.005772212680654461,
+       "shape": "C + C/(C + logP) + C*sqrt(logP**4)/(C - logP) - (C*logP**8 + C*logP)**2",
+       "source": "search stage"
+      }
+     ],
+     "class_size": 4,
+     "errors": "absolute",
+     "judged": {
+      "constants": 2,
+      "law": "-0.5920473*exp(logP)*sin(logP)**2 + 14.852946",
+      "r2_all_rows": 0.979641,
+      "refit_error": 0.015554449892510615,
+      "same_form_as_the_known_law": false
+     },
+     "known_checks_on_the_law": [],
+     "law": "-0.5920473*exp(logP)*sin(logP)**2 + 14.852946",
+     "reported": false,
+     "seconds": 169.0,
+     "set_aside_by_what_is_known": 0,
+     "stability": {
+      "changed": [],
+      "changes": 0,
+      "forms_taking_part": 8,
+      "rows_removed": 26,
+      "stable": true
+     },
+     "tentative": true,
+     "tentative_reasons": [
+      "its error on left-out rows is above the accuracy line"
+     ]
+    }
+   },
+   "rows": 26
+  }
+ ],
+ "what": "development: the small-table reading on three tables of real measurements; not a result"
+}

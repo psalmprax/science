@@ -95,6 +95,18 @@ def test_scatter_keeps_a_reading_tentative_and_says_why() -> None:
     assert reading["law"] and reading["class_size"] >= 1
 
 
+def test_a_law_is_not_reported_from_fewer_than_five_rows_a_constant() -> None:
+    """Development: all three wrong reports of 31 had four rows a constant on tables of 8 or 12 rows."""
+    rng = np.random.default_rng(6)
+    x = rng.uniform(1.0, 5.0, 8)
+    two_constants = st.read({"x0": x}, 2.0 * x + 3.0, memory=False)          # exact, stable, and two constants on eight rows
+    assert two_constants["chosen"]["constants"] == 2 and two_constants["accuracy"]["reached"] is True
+    assert two_constants["reported"] is False
+    assert two_constants["tentative_reasons"] == ["the table has fewer than 5 rows for each constant the law fits"]
+    more = np.linspace(1.0, 5.0, 10)
+    assert st.read({"x0": more}, 2.0 * more + 3.0, memory=False)["reported"] is True
+
+
 def test_too_few_rows_are_not_read_and_candidates_respect_both_limits() -> None:
     assert st.read({"x0": [1.0, 2.0, 3.0]}, [1.0, 2.0, 3.0], memory=False)["action"] == "not_run"
     rng = np.random.default_rng(3)
@@ -189,3 +201,18 @@ def test_langmuirs_ten_rows_give_langmuirs_form_only_with_what_is_known_about_ad
     assert informed["set_aside_by_what_is_known"]["forms"] > 0
     proved = [c for c in informed["known_checks_on_the_law"] if c["kind"] == "increasing"]
     assert proved and proved[0]["how"] == "proved" and proved[0]["holds"] is True
+
+
+def test_a_table_gives_the_same_reading_whatever_units_its_target_is_in() -> None:
+    """Found before freezing: on a target of size 1e12 the fits, which start from constants near one, did not get there."""
+    x = np.array([0.39, 0.72, 1.0, 1.52, 5.2, 9.54, 19.2, 30.1])
+    period = 0.3644 * x ** 1.5 * (1 + 0.002 * np.random.default_rng(2).standard_normal(8))
+    readings = [st.read({"d": x}, period * factor, memory=False) for factor in (1.0, 1e-16, 1e12)]
+    assert [r["chosen"]["shape"] for r in readings] == [readings[0]["chosen"]["shape"]] * 3
+    assert [r["reported"] for r in readings] == [True, True, True]
+    assert [r["accuracy"]["left_out_r2"] for r in readings] == [readings[0]["accuracy"]["left_out_r2"]] * 3
+    for reading, factor in zip(readings, (1.0, 1e-16, 1e12), strict=True):
+        law = sp.sympify(reading["law"])
+        assert float(law.subs(sp.Symbol("d"), 1.0)) == pytest.approx(0.3644 * factor, rel=0.01)       # written in the table's own units
+    assert str(st.in_the_tables_units(sp.sympify("2.0*x/(x + 3.0) + 0.5"), 10.0)) in ("20.0*x/(x + 3.0) + 5.0", "5.0 + 20.0*x/(x + 3.0)")
+    assert st.in_the_tables_units(sp.sympify("2.0*x"), 1.0) == sp.sympify("2.0*x")

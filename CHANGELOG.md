@@ -23,6 +23,46 @@ inferred releases.
 
 ### Added
 
+- **PREREG-REAL-TABLES-2026-11: the small-table reading's blind test, frozen (2026-11-24; nothing
+  in force).** Six held-back tables with a known law, pipe friction and the expansion rate
+  against published formulas on rows left out, 360 generated small tables drawn after freezing
+  and 360 traps. Before freezing, on 120 generated tables the reading reported 31 laws and 3
+  were wrong, all with four rows for each fitted constant; **a law is now reported only with
+  five rows a constant** (second run, as frozen: 17 reported, none wrong; the rule was chosen
+  on those tables). Also before freezing: a reading depended on the units of its target (with
+  the target times 1e12 Kepler's table gave another form); **the target is now divided by its
+  size before fitting**.
+  **An independent reviewer read the draft cold and said not to freeze it** (AGENTS.md 1.6;
+  `preregistration/REVIEW-REAL-TABLES-2026-11.md`): the trap arm's "other generator" was the
+  development grammar under another name; a lost download would have given a misleading
+  record with no way to repair it; one expectation passed with nothing reported; "the known
+  form" let `a*D + b` pass for `a*D`; and three of five real tables were close to given to this
+  reading. All thirteen findings were acted on. The main changes: traps the grammar cannot
+  draw (a function of a function, two inputs inside one function); every table fetched and
+  checked before any is read, and a failed part can be run alone without replacing one that
+  was read; the known form may fit no more constants than the known law has; and **each real
+  table has a decoy**, another law on the same inputs with the table's own scatter, so that a
+  table counts only if the known form is given on it and not on its decoy. On the development
+  tables the decoy already bites: Langmuir's ten rows give Langmuir's form on an exponential
+  decoy too, so that answer came from what was stated, not from the rows.
+  **A second reviewer then read the changed version and again said not to freeze it.** Its
+  blocker: the count of constants included the factor the reading writes when it puts a law
+  back in the table's units, so Langmuir's own form could be judged not Langmuir's, and a right
+  reported law counted as a wrong report. The reading's own count is now used. Its other
+  findings (a child's time limit that could shrink to nothing, no safe way to run a lost shard
+  again without reading the held-back tables twice, a judge's fit that failed silently on
+  tables in awkward units, a check before reading that accepted one usable row) were acted on
+  too. **Between the reviews the route in force with its search stage was found to have gone
+  silent for two hours on a table of six rows** (run 45434942785, cancelled with nothing
+  written; cause not found). So every part of the blind run that uses the search stage now has
+  a process of its own and 25 minutes, the reading is read on every table before the route's
+  arms, and the whole run is rehearsed on the development tables before it is started.
+  `scripts/run_real_data.fitted_law` now spreads its starts over the table's own scales.
+  `scripts/run_real_tables_blind.py`, `.github/workflows/real-tables-blind.yml`,
+  `tests/test_real_tables_blind.py` (27), `benchmarks/small_tables/dev_comparison.json`,
+  `benchmarks/real_data/dev_arm_a_as_frozen.json`. `scripts/real_data.py` now reads a cell that
+  is not a number as a missing value. Borrowing `REFEREE_MAX_FPR` for a share of wrong reports
+  is disclosed in the plan; a named threshold for it is the owner's call.
 - **A reading for small tables, and what is known beforehand (2026-11-24, asked for by the
   owner; development, not in force).** The first look at real tables showed three gaps. Two
   new modules address them. `discovery_l2/small_table.py` reads a table of 6 rows or more: every
@@ -219,6 +259,13 @@ inferred releases.
     whose rows carry no equation (`scripts/llm_srbench.py`);
   - with arms that learn by memory only or by law model only, one that learns from tables beyond the
     measured range, and one that carries over what was learned on invented laws. Not in force.
+  - **The run across families finished on 2026-11-24** (`benchmarks/learning_stream/dev_families.json`,
+    development). On the ODE systems learning recovered 31 of 60 components against 25: 8 gained,
+    6 of them in the second half of the stream, and 2 lost (one-sided p = 0.055). On SRBench no
+    arm differs from the frozen one by more than chance (51 frozen; 49 to 53 across five arms).
+    **On LLM-SRBench, 80 problems, the route recovered 19 of 79 without learning** and 18 of 80
+    with it (counts only; the benchmark is gated and none of its content is recorded). One wrong
+    law was reported in the whole run, on LLM-SRBench without learning.
 - **A third version of the last checks, in development (2026-11-23).** The second version's weakness
   above 5 % noise (M-36) turned out to be mostly the pole problem (M-34). Of the 70 wrong laws it
   passed there, 66 have a pole among the rows. `discovery_l2/vouching_v3.py` is the second version

@@ -58,8 +58,16 @@ def r2(y: np.ndarray, pred: np.ndarray) -> float | None:
     return 1.0 - float(np.sum((y - pred) ** 2)) / total if total > 0 else None
 
 
+FIT_STARTS = 300             # starts tried for the known form's constants
+
+
 def fitted_law(table: dict[str, Any], X: dict[str, np.ndarray], y: np.ndarray) -> tuple[sp.Expr, float | None]:
-    """The known law's form with its constants fitted to the table by least squares, and its R² there."""
+    """The known law's form with its constants fitted to the table by least squares, and its R² there.
+
+    The starts are spread over the table's own scales: a constant may be near one, or the size of the target, of
+    an input, of their ratio or of an inverse. Starts near one alone lose a table whose target is 1e12 or whose
+    law has a constant that must exceed every input (found by review before PREREG-REAL-TABLES was frozen).
+    """
     names = list(X)
     symbols = [sp.Symbol(n) for n in names]
     params = [sp.Symbol(p) for p in table["law_parameters"]]
@@ -74,15 +82,28 @@ def fitted_law(table: dict[str, Any], X: dict[str, np.ndarray], y: np.ndarray) -
         out: np.ndarray = np.where(np.isfinite(value), (value - y) / spread, 1e3)
         return out
 
+    def size(values: np.ndarray) -> float:
+        got = float(np.sqrt(np.mean(np.asarray(values, dtype=float) ** 2)))
+        return got if np.isfinite(got) and got > 0 else 1.0
+
+    target, inputs = size(y), [size(column) for column in columns]
+    scales = [1.0, target, *inputs, *(1.0 / v for v in inputs), *(target / v for v in inputs), *(target * v for v in inputs)]
     best = None
     rng = np.random.default_rng(0)
-    for attempt in range(40):
-        start = np.ones(len(params)) if attempt == 0 else rng.choice([-1.0, 1.0], len(params)) * 10 ** rng.uniform(-3, 3, len(params))
+    for attempt in range(FIT_STARTS):
+        if attempt == 0:
+            start = np.ones(len(params))
+        else:
+            near_one = 10 ** rng.uniform(-3, 3, len(params)) if attempt % 2 else 10 ** rng.uniform(-0.5, 0.5, len(params))
+            start = rng.choice([-1.0, 1.0], len(params)) * near_one * rng.choice(scales, len(params))
         try:
-            fit = least_squares(resid, start, max_nfev=4000)
+            with np.errstate(all="ignore"):
+                fit = least_squares(resid, start, x_scale=np.maximum(np.abs(start), 1e-300), max_nfev=4000)
         except (ValueError, FloatingPointError):
             continue
-        if best is None or fit.cost < best.cost:
+        with np.errstate(all="ignore"):
+            pred = np.asarray(fn(*fit.x, *columns), dtype=float) * np.ones(len(y))
+        if np.all(np.isfinite(pred)) and (best is None or fit.cost < best.cost):
             best = fit
     if best is None:
         raise RuntimeError(f"{table['key']}: the known form could not be fitted")

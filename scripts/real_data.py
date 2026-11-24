@@ -51,8 +51,20 @@ def development_path(key: str) -> Path:
     return DEVELOPMENT / f"{key}.{'csv' if table['format'] == 'csv' else 'dat'}"
 
 
+def _number(cell: str) -> float:
+    """A cell as a number; a cell that is not one (a name, a blank, a flag) is a missing value."""
+    try:
+        return float(cell)
+    except ValueError:
+        return float("nan")
+
+
 def parse(table: dict[str, Any], text: str) -> dict[str, np.ndarray]:
-    """The table's columns by name. Comments (``# ...`` after a row) and a byte-order mark are dropped."""
+    """The table's columns by name. Comments (``# ...`` after a row) and a byte-order mark are dropped.
+
+    A cell that is not a number becomes a missing value (NaN), so that a column of names or flags the table's law
+    does not use cannot make the table unreadable; the caller drops the rows missing a value it needs.
+    """
     lines = [line.split("#", 1)[0].strip() if not line.lstrip("﻿").lstrip().startswith("#") else line.lstrip("﻿").strip()
              for line in text.lstrip("﻿").splitlines()]
     lines = [line for line in lines if line]
@@ -61,9 +73,11 @@ def parse(table: dict[str, Any], text: str) -> dict[str, np.ndarray]:
         names, rows = list(table["columns"]), lines
     else:
         names, rows = [n.strip() for n in lines[0].lstrip("#").strip().split(separator)], lines[1:]
-    values = np.array([[float(cell) for cell in row.split(separator)] for row in rows if not row.startswith("#")], dtype=float)
-    if values.ndim != 2 or values.shape[1] != len(names):
-        raise ValueError(f"{table['key']}: {values.shape} values for the columns {names}")
+    cells = [[_number(cell) for cell in row.split(separator)] for row in rows if not row.startswith("#")]
+    ragged = [len(row) for row in cells if len(row) != len(names)]
+    if not cells or ragged:
+        raise ValueError(f"{table['key']}: {len(cells)} rows, {len(ragged)} of them without {len(names)} values for the columns {names}")
+    values = np.array(cells, dtype=float)
     columns = {name: values[:, i] for i, name in enumerate(names)}
     for name, factor in (table.get("scale") or {}).items():
         columns[name] = columns[name] * float(factor)
