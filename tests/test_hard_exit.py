@@ -97,4 +97,27 @@ def test_nothing_in_force_builds_the_hard_exit_stage() -> None:
     root = Path(__file__).resolve().parents[1]
     users = sorted(path.relative_to(root).as_posix() for path in (root / "apedp_dyn").rglob("*.py")
                    if "hard_exit" in path.read_text(encoding="utf-8") and path.name != "hard_exit.py")
-    assert users == ["apedp_dyn/recursion/levels.py"]            # the recursion package, which is not in force
+    # the recursion package, which is not in force, and the product's reading, which builds it only where asked
+    assert users == ["apedp_dyn/recursion/levels.py", "apedp_dyn/ui/route_endpoint.py"]
+
+
+def test_the_products_reading_builds_it_only_where_the_environment_asks(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from apedp_dyn.discovery_l2 import stage_in_force
+
+    monkeypatch.delenv(hard_exit.ENVIRONMENT_VARIABLE, raising=False)
+    assert hard_exit.asked_for() is False                       # off unless asked: what is in force is unchanged
+    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, "LEAVE_HARD ")
+    assert hard_exit.asked_for() is True
+    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, "yes")
+    assert hard_exit.asked_for() is False
+
+    stage, described = hard_exit.stage_in_force_that_cannot_hang(90.0, cores=4, seed=1)
+    _reference, reference_described = stage_in_force.search_stage(90.0, cores=4, seed=1)
+    # the same description as the stage in force, with the one difference named in the middle of it
+    assert described.replace("; search processes leave hard", "") == reference_described
+    searches = stage._searches._inner if hasattr(stage, "_searches") else stage._inner
+    assert all(isinstance(member, hard_exit.HardExit) for member in searches._members)
+
+    monkeypatch.setenv(stage_in_force.ENVIRONMENT_VARIABLE, stage_in_force.OFF)
+    alone, alone_described = hard_exit.stage_in_force_that_cannot_hang(90.0, cores=4, seed=1)
+    assert alone_described.endswith("search processes leave hard") and isinstance(alone._inner, PortfolioProposer)

@@ -46,6 +46,15 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **The product can be asked for search processes that cannot hang; a proposal for signed
+  evidence (2026-11-24).** The wider-conditions run (45444150935) stopped for ever in every shard
+  after one to four searches: it calls the product's own reading, so the product's search on
+  request can hang. `APEDP_SEARCH_PROCESSES=leave_hard` makes `ui/route_endpoint.py` build the
+  stage in force from `proposers/hard_exit.py` (same searches, the memory beside them). **Off
+  unless asked: the default is unchanged**, and making it the default is the owner's decision.
+  The wider-conditions workflow asks for it. `docs/PROPOSAL_EVIDENCE_RECEIPTS_2026-11-24.md`
+  proposes receipts written and signed by the checker, for the audit's finding that Lean evidence
+  can be constructed by a caller; nothing of it is built.
 - **A fast hosted model in the loop that rewrites the search's generator (2026-11-24, owner's
   request).** `scripts/run_fast_generator_loop.py` and `.github/workflows/fast-generator-loop.yml`.
   Until now only a scripted stand-in had driven that loop. `speed` tries a handful of the models

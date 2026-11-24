@@ -84,7 +84,13 @@ def _proposer(budget: float) -> tuple[Any, str]:
     except Exception as exc:  # noqa: BLE001 - a missing package and a failed Julia start are the same answer here
         return None, f"unavailable: PySR could not be loaded ({type(exc).__name__}); first pass alone"
     from apedp_dyn.discovery_l2 import stage_in_force
+    from apedp_dyn.proposers import hard_exit
 
+    if hard_exit.asked_for():
+        # the same searches, with search processes that cannot hang while leaving; only where the environment asks
+        # (APEDP_SEARCH_PROCESSES=leave_hard). The default below is unchanged: making this the default is the owner's.
+        asked: tuple[Any, str] = hard_exit.stage_in_force_that_cannot_hang(budget)
+        return asked
     stage: tuple[Any, str] = stage_in_force.search_stage(budget)
     return stage
 

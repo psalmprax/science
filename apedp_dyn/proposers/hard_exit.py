@@ -20,7 +20,9 @@ budget, the same order of proposals. ``apedp_dyn/proposers/portfolio.py`` and
 edited; this stage is built from their own parts.
 
 **Not in force.** The routes and the product still build ``search_stage.default_search_stage``.
-Using this stage there is the owner's decision (AGENTS.md 1.5).
+Using this stage there is the owner's decision (AGENTS.md 1.5). The product's reading can be asked
+for it: ``APEDP_SEARCH_PROCESSES=leave_hard`` (``apedp_dyn/ui/route_endpoint.py``); without that
+variable nothing changes.
 """
 from __future__ import annotations
 
@@ -38,7 +40,15 @@ from apedp_dyn.proposers.deep_pass import mixed_members
 from apedp_dyn.proposers.fit_guard import FitGuardProposer
 from apedp_dyn.proposers.portfolio import MemberFactory, PortfolioProposer
 
+ENVIRONMENT_VARIABLE = "APEDP_SEARCH_PROCESSES"
+LEAVE_HARD = "leave_hard"
+
 _armed = False
+
+
+def asked_for() -> bool:
+    """Whether the environment asks for search processes that leave hard. Off unless asked."""
+    return os.environ.get(ENVIRONMENT_VARIABLE, "").strip().lower() == LEAVE_HARD
 
 
 def _leave() -> None:
@@ -122,3 +132,16 @@ def search_stage_that_cannot_hang(budget_seconds: float, *, cores: int | None = 
                               timeout=budget_seconds + search_stage.MEMBER_GRACE_S)
     return (FitGuardProposer(stage),
             f"four searches side by side (PREREG-PORTFOLIO-SEARCH), {budget_seconds:g} s; search processes leave hard")
+
+
+def stage_in_force_that_cannot_hang(budget_seconds: float, *, cores: int | None = None, seed: int = 0) -> tuple[Any, str]:
+    """``stage_in_force.search_stage`` with members that leave hard: the same searches, and the memory beside them
+    unless the environment switches it off, composed by the frozen modules' own functions."""
+    from apedp_dyn.discovery_l2 import memory_stage, stage_in_force
+
+    searches, described = search_stage_that_cannot_hang(budget_seconds, cores=cores, seed=seed)
+    if not stage_in_force.memory_in_force():
+        return searches, described
+    memory = memory_stage.recorded_memory()
+    return (memory_stage.with_memory(searches, memory),
+            f"{described}; and laws grown from {len(memory.motifs)} remembered motifs")

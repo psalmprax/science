@@ -34,6 +34,9 @@ jobs:
         timeout-minutes: 320
         env:
           SHARD: ${{ matrix.shard }}
+          # The same searches, with search processes that cannot hang while leaving. The first run of this
+          # workflow (45444150935) stopped for ever in every shard after one to four searches.
+          APEDP_SEARCH_PROCESSES: leave_hard
         run: python scripts/run_wider_conditions.py run --out out --searches 90 --shard "$SHARD" --shards 4
       - uses: actions/upload-artifact@v7
         if: always()
