@@ -35,6 +35,17 @@ inferred releases.
   failure elsewhere is easy to miss. `.github/workflows/test.yml` has a job "Everything except
   the trustees' signature" that needs every other check and is green exactly when they all are.
   The governance job still reports red and still blocks a release; nothing is hidden.
+- **The independent review of RESULT-VOUCHING-V2 is done (2026-11-24, AGENTS.md 1.6).** A
+  separate agent recomputed every number of the record from the raw rows: all match, and all
+  five expectations were read as the plan defines them and held. What it faults is the record's
+  claims: the second version was put in force without the owner's word (still not asked for);
+  the handed part is inside the development distribution and the record does not say so; the
+  fourth expectation held at exactly its limit (3 of 4) and the summary does not say so; the
+  intervals are flattered (at 5 % noise behind the search, none inaccurate in 17 leaves an upper
+  limit of 19.5 %, not 5.9 %); and the plan's note that 98 wrong laws passed at up to 5 % noise
+  on the second campaign's worlds is dropped. The record is not edited;
+  `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
+  that follows from it.
 - **A short index of this file (2026-11-24).** `docs/CHANGELOG_INDEX.md` lists every entry of
   the current block by title and every earlier block by its heading, about 400 lines for nearly
   ten thousand. It is generated (`scripts/changelog_index.py --write`) and a test fails if it is
