@@ -84,7 +84,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test]"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: shards
           pattern: red-team-*
