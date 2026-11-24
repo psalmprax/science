@@ -44,7 +44,11 @@ inferred releases.
   has five bounded settings and none is a threshold. The generator's code is varied only with a
   coding model the owner provides; none has been, and the step records that it did not run.
   `z3-solver` joins the `test` extra; `smt` answers "not decided" without it.
-  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (50).
+  `scripts/run_recursion.py`, `.github/workflows/recursion.yml`, `tests/test_recursion.py` (51).
+  The first GitHub run (`recursion-run-1`) stopped at its second study batch: the curriculum had
+  moved down to level 0, which has under ten distinct laws, and asked it for more. A study batch
+  now takes such a slot from the next level up and records the level as used up; a measurement
+  stops with an error instead, because its distribution must not change.
 
 ### Changed
 

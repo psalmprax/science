@@ -165,6 +165,18 @@ def test_the_level_follows_what_was_solved() -> None:
     assert course.update(1, 10) == 3.0
 
 
+def test_a_level_that_runs_out_hands_study_to_the_next_level_up_but_never_a_measurement() -> None:
+    """Level 0 has under ten laws. The first GitHub run of the levels stopped when a study batch asked it for more."""
+    course = curriculum.Curriculum(seed=9, level=0.0)
+    drawn = [p for k in range(4) for p in course.batch(8, f"study {k}")]
+    assert len(drawn) == 32 and len({curriculum.structure(p.truth) for p in drawn}) == 32
+    assert 0 in course.used_up and any(entry.get("level_used_up") == 0 for entry in course.history)
+    assert max(p.level for p in drawn) >= 1
+    course.used_up.clear()
+    with pytest.raises(RuntimeError, match="does not change level"):
+        course._draw(5, "measurement", [0], fixed=True)
+
+
 def test_a_problems_rows_depend_on_its_key_alone() -> None:
     (problem,) = curriculum.Curriculum(seed=3).measurement(1, "m")
     a, b = problem.rows(), curriculum.Problem(**problem.as_dict()).rows()

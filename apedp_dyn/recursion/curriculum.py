@@ -15,6 +15,14 @@ known, which is what lets a solve be scored without a human.
   not move with the curriculum: a rate measured at each generation is only
   comparable if the problems come from one fixed distribution.
 
+**A level can run out.** The lowest levels have few distinct laws (level 0 has
+one block in one input: under ten structures). When ``EXHAUSTED`` draws in a
+row at a level give nothing new, a study batch takes that slot from the next
+level up and the curriculum records the level as used up. A measurement never
+does that: its distribution has to stay what it was, so it stops with an error
+instead (the first GitHub run of the levels stopped at its second study batch
+for want of this distinction).
+
 Every draw is seeded by its purpose and generation (``"study"``,
 ``"selection"``, ``"measurement"``, ...), so the three kinds of problem never
 share a law, and no law is drawn twice in a run.
@@ -48,6 +56,7 @@ UP, DOWN = 0.6, 0.4
 ROWS, POOL, TEST_ROWS = 700, 300, 400
 NOISES = (0.0, 0.01)
 MAX_DRAWS = 20_000
+EXHAUSTED = 300          # draws in a row at one level with nothing new, after which the level counts as used up
 
 
 def _block(rng: np.random.Generator, x: sp.Symbol) -> sp.Expr:
@@ -174,20 +183,38 @@ class Curriculum:
     level: float = 2.0
     seen: set[str] = field(default_factory=set)
     history: list[dict[str, Any]] = field(default_factory=list)
+    used_up: set[int] = field(default_factory=set)         #: levels with no law left to draw
     _excluded: frozenset[str] = field(default_factory=benchmark_fingerprints)
 
-    def _draw(self, count: int, purpose: str, levels: list[int]) -> list[Problem]:
+    def _open_level(self, level: int) -> int | None:
+        """The nearest level at or above ``level`` with laws left (below it if none above); ``None`` if none is left."""
+        order = [*range(level, len(LEVELS)), *range(level - 1, -1, -1)]
+        return next((candidate for candidate in order if candidate not in self.used_up), None)
+
+    def _draw(self, count: int, purpose: str, levels: list[int], *, fixed: bool = False) -> list[Problem]:
         key = hashlib.sha256(f"curriculum|{self.seed}|{purpose}".encode()).digest()[:8]
         rng = np.random.default_rng(int.from_bytes(key, "big"))
         out: list[Problem] = []
+        misses = 0
         for attempt in range(MAX_DRAWS):
             if len(out) == count:
                 break
-            level = levels[len(out) % len(levels)]
+            asked = levels[len(out) % len(levels)]
+            level = asked if fixed else self._open_level(asked)
+            if level is None:
+                break
             expr, inputs = draw(rng, level)
             shape = structure(expr)
             if shape in self.seen or fingerprint(expr) in self._excluded or not acceptable(expr, inputs, rng):
+                misses += 1
+                if misses >= EXHAUSTED:
+                    if fixed:
+                        raise RuntimeError(f"level {level} has no law left for {purpose!r}; a measurement does not change level")
+                    self.used_up.add(level)
+                    self.history.append({"purpose": purpose, "level_used_up": level})
+                    misses = 0
                 continue
+            misses = 0
             self.seen.add(shape)
             out.append(Problem(f"{self.seed}|{purpose}|{len(out)}|{attempt}", str(expr), inputs, level,
                                NOISES[len(out) % len(NOISES)]))
@@ -203,7 +230,7 @@ class Curriculum:
 
     def measurement(self, count: int, purpose: str) -> list[Problem]:
         """Laws from the fixed measured levels, equally: the same distribution at every generation."""
-        return self._draw(count, purpose, list(MEASURED_LEVELS))
+        return self._draw(count, purpose, list(MEASURED_LEVELS), fixed=True)
 
     def update(self, solved: int, of: int, purpose: str = "") -> float:
         """Move the level by what was solved; returns the new level."""
