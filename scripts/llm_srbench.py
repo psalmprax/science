@@ -18,7 +18,8 @@ split (``lsr_transform``, ``lsr_synth_bio_pop_growth``, ``lsr_synth_chem_react``
 are in ``lsr_bench_data.hdf5`` under ``/lsr_transform/<name>`` or
 ``/lsr_synth/<domain>/<name>``, with arrays ``train``, ``test`` and, for the
 synthetic domains, ``ood_test``. Each array has one column per symbol; the
-output symbol's property is ``O``.
+output symbol's property is ``O``. An expression may write a variable as a function
+of another, ``P(t)``; that is read as the variable ``P``.
 
 **Nothing is taken on trust.** Each problem's mapping is checked against its
 own rows: the expression, evaluated on the input columns, must reproduce the
@@ -30,6 +31,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -68,8 +70,12 @@ def _group(split: str, name: str) -> str:
     return f"/lsr_synth/{split.removeprefix('lsr_synth_')}/{name}"
 
 
-def _rhs(expression: str) -> str:
-    return expression.split("=", 1)[1] if "=" in expression else expression
+def _rhs(expression: str, symbols: Sequence[str] = ()) -> str:
+    """The right-hand side, with a variable written as a function of another (``P(t)``) written as itself (``P``)."""
+    text = expression.split("=", 1)[1] if "=" in expression else expression
+    for name in sorted(symbols, key=len, reverse=True):
+        text = re.sub(rf"(?<![\w.]){re.escape(name)}\(\s*[A-Za-z_]\w*\s*\)", name, text)
+    return text
 
 
 def _r2(y: np.ndarray, f: np.ndarray) -> float:
@@ -100,7 +106,7 @@ def build(split: str, row: dict[str, Any], arrays: dict[str, np.ndarray]) -> Pro
     inputs = [i for i in range(len(names)) if i != out_at and properties[columns[i]] == VARIABLE]
     local = {name: sp.Symbol(f"s{i}") for i, name in enumerate(names)}
     try:
-        expr = sp.sympify(_rhs(str(row["expression"])), locals=local)
+        expr = sp.sympify(_rhs(str(row["expression"]), names), locals=local)
     except (sp.SympifyError, SyntaxError, TypeError, ValueError):
         return "the expression could not be read"
     renamed: dict[sp.Symbol, Any] = {local[names[i]]: sp.Symbol(f"x{k}") for k, i in enumerate(inputs)}

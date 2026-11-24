@@ -33,7 +33,9 @@ def _stand_in(tmp_path: Path) -> Path:
     rows = []
     with h5py.File(tmp_path / "lsr_bench_data.hdf5", "w") as handle:
         for name, expression, symbols, properties, f in (
-            ("logistic", "dP_dt = 0.8*P*(1 - P/30)", ["dP_dt", "P"], ["O", "V"], lambda P: 0.8 * P * (1 - P / 30)),
+            ("logistic", "0.8*(1 - P(t)/30)*P(t) + 0.1*P(t)**0.5", ["dP_dt", "P"], ["O", "V"],
+             lambda P: 0.8 * (1 - P / 30) * P + 0.1 * P ** 0.5),        # written as the hub writes it: P(t), no '='
+            ("logistic_eq", "dP_dt = 0.8*P*(1 - P/30)", ["dP_dt", "P"], ["O", "V"], lambda P: 0.8 * P * (1 - P / 30)),
             ("rate", "A*exp(-k*T)", ["r", "T", "A", "k"], ["O", "V", "C", "C"], None),
             ("wrong", "x + 1", ["y", "x"], ["O", "V"], lambda x: x ** 2),
         ):
@@ -54,7 +56,7 @@ def _stand_in(tmp_path: Path) -> Path:
 def test_it_loads_checked_problems_and_counts_the_rest(tmp_path) -> None:
     loader = _loader()
     problems, left_out = loader.load(_stand_in(tmp_path), splits=("lsr_synth_bio_pop_growth",))
-    assert len(problems) == 2 and left_out == {"the expression does not reproduce the output column": 1}
+    assert len(problems) == 3 and left_out == {"the expression does not reproduce the output column": 1}
     x0 = sp.Symbol("x0")
     for problem in problems:                     # constants fixed in the rows take their values; inputs become x0, ...
         assert problem.inputs == 1 and problem.truth.free_symbols == {x0}
