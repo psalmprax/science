@@ -64,7 +64,11 @@ inferred releases.
     (still no `eval`; it now also refuses non-finite values). The record that describes the code
     now is #62's re-measurement of 2026-11-19, made by the same script (its `script_sha256` is
     unchanged), so it is the current record. The 2026-11-10 measurement is kept byte-for-byte as
-    `vqc_external_comparison_2026-11-10.json`; nothing measured is lost. Its memory floor (167 MiB)
+    `superseded/vqc_external_comparison_2026-11-10.json`; nothing measured is lost. It sits in a
+    subdirectory because `correctness_audit.json` lists every record of the directory and is itself
+    pinned by the frozen Phase 0 baseline: a new file beside the records forced the audit to be
+    rewritten (CI, 212d008), and rewriting it broke the baseline (found in the full local suite
+    before it reached `master`). The audit is back to its frozen bytes. Its memory floor (167 MiB)
     is the eager-import era's; the re-measurement reads 38 MiB since the package inits became lazy.
   - **No Qualtran submodule.** #62 added a `.gitmodules` entry for
     `kickmix/_qualtran_src` without a submodule commit, so it pinned nothing and
