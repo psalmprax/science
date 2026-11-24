@@ -438,6 +438,29 @@ jobs:
             echo "Failure category: infrastructure/tooling (setup, build, quality, or security step)." >> "$GITHUB_STEP_SUMMARY"
           fi
 
+  # One status to read while the governance manifest waits for the trustees. That job is red by
+  # design until they sign, which makes every run red and a new failure elsewhere easy to miss.
+  # This job is green exactly when everything else is: it hides nothing (the governance job still
+  # reports red and still blocks `build`), and it is the check to look at, or to protect a branch with.
+  all-but-signature:
+    name: Everything except the trustees' signature
+    if: always()
+    needs: [python-quality, rust-quality, referee-core, audit-artifact-drift, lean-checked, research-models, test,
+            build-kernel-wheel, mutation-battery]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every other check succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          needs = json.loads(os.environ["RESULTS"])
+          failed = {job: got["result"] for job, got in needs.items() if got["result"] != "success"}
+          print("every other check succeeded" if not failed else f"not successful: {failed}")
+          sys.exit(1 if failed else 0)
+          PY
+
   build:
     # The image is only built (and then deployed) once every integrity gate is
     # green, not just the test matrix. `needs: test` alone let a release ship

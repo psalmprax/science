@@ -30,6 +30,15 @@ inferred releases.
 
 ### Added
 
+- **One CI status that says whether anything but the trustees' signature failed (2026-11-24).**
+  The governance-manifest job is red until the trustees sign, so every run is red and a new
+  failure elsewhere is easy to miss. `.github/workflows/test.yml` has a job "Everything except
+  the trustees' signature" that needs every other check and is green exactly when they all are.
+  The governance job still reports red and still blocks a release; nothing is hidden.
+- **A short index of this file (2026-11-24).** `docs/CHANGELOG_INDEX.md` lists every entry of
+  the current block by title and every earlier block by its heading, about 400 lines for nearly
+  ten thousand. It is generated (`scripts/changelog_index.py --write`) and a test fails if it is
+  stale.
 - **A real language model in MMLM, in two places (2026-11-24, asked for by the owner;
   development, nothing in force).**
   *MMLM-POC-001.* An outside audit found that the arm labelled "Frontier LLM Agent" in

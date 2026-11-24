@@ -242,3 +242,18 @@ def test_the_test_job_checks_out_full_history():
     job = text.split("\n  test:\n", 1)[1].split("\n  build:\n", 1)[0]
     checkout = job.split("- uses: actions/checkout@", 1)[1].split("\n      - ", 1)[0]
     assert "fetch-depth: 0" in checkout
+
+
+def test_one_job_says_whether_everything_but_the_trustees_signature_passed():
+    """The governance job is red until the trustees sign, so every run is red. One job must say whether
+    anything else failed, and it may leave out only the signature and the release jobs."""
+    import yaml
+
+    workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "test.yml").read_text(encoding="utf-8"))
+    jobs = workflow["jobs"]
+    summary = jobs["all-but-signature"]
+    left_out = {"governance-manifest", "all-but-signature", "build", "deploy", "publish-kernel-wheel"}
+    assert set(summary["needs"]) == set(jobs) - left_out
+    assert summary["if"] == "always()"                                    # it must report when a job it needs failed
+    assert "governance-manifest" in jobs["build"]["needs"]                # the signature still blocks a release
+    assert "continue-on-error" not in jobs["governance-manifest"]         # and still reports red
