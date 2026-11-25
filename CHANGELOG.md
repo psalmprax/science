@@ -68,6 +68,26 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **A search of one input with look-ahead, for the split search's parts (2026-11-26, development;
+  owner's word "add what you think could help this system from that repo").** From the owner's
+  non-neural program-search studies (`psalmprax/non-neural-program-search`), whose largest gain per
+  candidate checked came from look-ahead: `apedp_dyn/proposers/block_search.py` builds a law of one
+  input a block at a time, scores every possible next block on the part's table in closed form,
+  refits the kept candidates together and returns laws of one to three blocks, each with and
+  without its additive constant. In development it returns the exact law for one- and two-block
+  laws of the development grammar written by hand, in about five seconds a part, and misses some
+  quotients of two blocks with constants (docstring). On 20 tables of the first set, with the block
+  search alone and no PySR, a whole was accurate for most tables and the law itself for none: on
+  noisy rows a law of one block often fits the rows set aside as well as the right law of two, and
+  the split search takes the shortest within its tolerance. The measurement
+  (`.github/workflows/table-split-blocks.yml`) sets PySR alone beside the block search first with
+  PySR in the seconds left, table by table, on a fresh set of the development grammar and on a set
+  of another generator with blocks outside the vocabulary (AGENTS.md 1.6). The study's split search
+  lets a part hand on 60 laws in both arms (PySR gives 30 at most, so its arm is unchanged). Two
+  further lessons of those studies (a random-composition control for any learned library; features
+  the system builds for itself for the learned order) are written into
+  `docs/IDEAS_FROM_OUTSIDE_2026-11-25.md`, section 7, not built. Not in force.
+  `tests/test_block_search.py` (10), `tests/test_study_split_search.py` (7).
 - **GF(2^12) multiplication, a flip-graph search with no language model, built (2026-11-25,
   development; decision 4, owner's word "go ahead and build it").** `apedp_dyn/quantum/flip_search.py`
   walks between decompositions of the same length by flips (Kauers and Moosbauer), shortens them by

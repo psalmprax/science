@@ -22,9 +22,18 @@ What it is and is not:
 - The parts' searches together get ``--seconds`` (90 by default: the budget of each of the route's
   four searches in the run it is set beside; the route's searches run side by side on four cores,
   these one after another on one).
+- ``--inner pysr`` (the default) searches each part with PySR; ``--inner blocks`` with the block search
+  of ``apedp_dyn/proposers/block_search.py`` first and PySR in the seconds left, both lists together
+  (the idea of look-ahead taken from the owner's non-neural program-search studies). The two are run on
+  the same tables with the same seconds, so they can be set side by side table by table (``compare``).
+- ``--set third`` reads 30 laws of the development grammar drawn after the block search was fixed;
+  ``--set other`` 30 laws of another generator (``draw_other``), with the same joins and other blocks of
+  one input, three of them outside the block search's vocabulary (AGENTS.md 1.6: a test of the block
+  search with traps it was not developed against). Neither set is drawn by any test.
 
-    python scripts/study_split_search.py run --set first --out DIR [--seconds 90] [--shard 0 --shards 8]
+    python scripts/study_split_search.py run --set first --out DIR [--seconds 90] [--shard 0 --shards 8] [--inner blocks]
     python scripts/study_split_search.py collect --set first --out DIR
+    python scripts/study_split_search.py compare --a RECORD --b RECORD
 """
 from __future__ import annotations
 
@@ -51,7 +60,7 @@ import run_wider_conditions as wider  # noqa: E402
 import study_table_split as shapes  # noqa: E402
 
 from apedp_dyn.grammar.proposer_interface import ProposerBase  # noqa: E402
-from apedp_dyn.proposers import split_search  # noqa: E402
+from apedp_dyn.proposers import block_search, split_search  # noqa: E402
 from apedp_dyn.recursion import curriculum  # noqa: E402
 
 TAG = "DEV-SPLIT-SEARCH-2026-11"
@@ -59,8 +68,89 @@ DEV_ROWS = 700            #: rows the proposer is given: the share of a table th
 SECONDS = 90.0
 TABLE_LIMIT_S = 1200.0    #: a table whose reading and searches take longer is counted as proposing nothing
 KEPT_LAWS = 6             #: laws of each part kept in the record, shortest first; the laws chosen are kept whole beside them
+PER_PART = 2 * split_search.PER_PART   #: laws a part may hand on: PySR gives at most 30, the block search 40 and PySR's beside them
 ROUTE_RECORD = ROOT / "benchmarks" / "wider_conditions" / "dev_run4.json"
+THIRD_SEED = 2026112603   #: drawn after the block search's vocabulary was fixed
+OTHER_SEED = 2026112604
+SETS = ("first", "second", "third", "other")
+INNERS = ("pysr", "blocks")
 Inner = Callable[[float], ProposerBase]
+
+
+def _other_block(rng: np.random.Generator, x: sp.Symbol) -> sp.Expr:
+    """Blocks of one input of another generator. Outside the block search's vocabulary: ``atan(a x)``,
+    ``exp(-a/x)`` and ``1/sqrt(x + a)``; reachable only as two of its blocks: ``x exp(-a x)`` and
+    ``x**1.5``; in it, written otherwise: ``cos(a x)``, ``log(x + a)``, ``x**2/(a + x**2)``, ``1/(1 + a x**2)``."""
+    a = sp.Float(float(rng.choice(curriculum.CONSTANTS)))
+    kind = int(rng.integers(0, 9))
+    if kind == 0:
+        return sp.atan(a * x)
+    if kind == 1:
+        return sp.exp(-a / x)
+    if kind == 2:
+        return 1 / sp.sqrt(x + a)
+    if kind == 3:
+        return x * sp.exp(-a * x)
+    if kind == 4:
+        return x ** sp.Float(1.5)
+    if kind == 5:
+        return sp.cos(a * x)
+    if kind == 6:
+        return sp.log(x + a)
+    if kind == 7:
+        return x**2 / (a + x**2)
+    return 1 / (1 + a * x**2)
+
+
+def draw_other(rng: np.random.Generator, inputs: int) -> sp.Expr:
+    """One block per input and one more, joined left to right as ``run_wider_conditions.draw`` joins them."""
+    symbols = [sp.Symbol(f"x{i}") for i in range(inputs)]
+    order = [*symbols, symbols[int(rng.integers(0, inputs))]]
+    rng.shuffle(order)
+    expr = sp.Float(float(rng.choice(curriculum.CONSTANTS))) * _other_block(rng, order[0])
+    for symbol in order[1:]:
+        term, scale = _other_block(rng, symbol), sp.Float(float(rng.choice(curriculum.CONSTANTS)))
+        kind = int(rng.integers(0, 4))
+        if kind == 0:
+            expr = expr + scale * term
+        elif kind == 1:
+            expr = expr - scale * term
+        elif kind == 2:
+            expr = expr * term
+        else:
+            expr = expr / (scale + term)
+    return expr
+
+
+def draw_other_laws(seed: int = OTHER_SEED) -> list[dict[str, Any]]:
+    """Ten laws of three, four and five inputs from the other generator, each at the four levels of noise."""
+    rng = np.random.default_rng(seed)
+    laws: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for inputs in wider.INPUTS:
+        found = 0
+        for _ in range(200_000):
+            if found == wider.LAWS_PER_INPUTS:
+                break
+            expr = draw_other(rng, inputs)
+            shape = curriculum.structure(expr)
+            if shape in seen or not curriculum.acceptable(expr, inputs, rng):
+                continue
+            seen.add(shape)
+            found += 1
+            for noise in wider.NOISES:
+                laws.append({"index": len(laws), "law": len(seen) - 1, "text": str(expr), "inputs": inputs, "noise": noise})
+        if found != wider.LAWS_PER_INPUTS:
+            raise SystemExit(f"only {found} laws of {inputs} inputs")
+    return laws
+
+
+def jobs(which: str) -> list[dict[str, Any]]:
+    if which == "third":
+        return wider.draw_laws(THIRD_SEED)
+    if which == "other":
+        return draw_other_laws()
+    return shapes.jobs(which)
 
 
 class _TooLong(Exception):
@@ -76,6 +166,11 @@ def pysr_inner(seconds: float) -> ProposerBase:
     from apedp_dyn.proposers.pysr_proposer import PySRProposer
 
     return PySRProposer(budget_seconds=seconds, max_proposals=split_search.PER_PART)
+
+
+def blocks_inner(seconds: float) -> ProposerBase:
+    """The block search first, then PySR in the seconds left; the two lists together, best fit to the part first."""
+    return block_search.BlocksFirst(seconds, pysr_inner)
 
 
 def warm_up() -> None:
@@ -119,7 +214,7 @@ def one(job: dict[str, Any], which: str, inner: Inner, seconds: float = SECONDS,
     test_X, clean, law, names = clean_rows(job, which)
     frame = pd.DataFrame(X[:DEV_ROWS], columns=names)
     frame["target"] = y[:DEV_ROWS]
-    proposer = split_search.SplitSearchProposer(inner, seconds=seconds)
+    proposer = split_search.SplitSearchProposer(inner, seconds=seconds, per_part=PER_PART)
     row: dict[str, Any] = {**{k: job[k] for k in ("index", "law", "inputs", "noise")}, "text": job["text"], "error": None,
                            "proposals": []}
     started = time.perf_counter()
@@ -175,31 +270,70 @@ def summarise(rows: list[dict[str, Any]], route: dict[int, dict[str, Any]] | Non
     return {"all": block(rows), "by_inputs": by_inputs, "cells": cells}
 
 
+def compare(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
+    """Two searches of the parts on the same tables, table by table: where each proposed the law or an accurate one."""
+    if a["set"] != b["set"]:
+        raise ValueError("the two records read different sets")
+    left = {r["index"]: r for r in a["rows"]}
+    right = {r["index"]: r for r in b["rows"]}
+    both = sorted(set(left) & set(right))
+    out: dict[str, Any] = {"set": a["set"], "a": a.get("inner", "pysr"), "b": b.get("inner", "pysr"), "tables": len(both)}
+    for key in ("a_proposal_the_law", "a_proposal_accurate"):
+        only_a = [i for i in both if left[i][key] and not right[i][key]]
+        only_b = [i for i in both if right[i][key] and not left[i][key]]
+        out[key] = {"a": sum(left[i][key] for i in both), "b": sum(right[i][key] for i in both), "both": sum(left[i][key] and right[i][key] for i in both),
+                    "only_a": len(only_a), "only_b": len(only_b), "sign_test_p": _sign_test(len(only_a), len(only_b))}
+        out[key]["by_inputs"] = {str(n): {"a": sum(left[i][key] for i in both if left[i]["inputs"] == n),
+                                          "b": sum(right[i][key] for i in both if right[i]["inputs"] == n)}
+                                 for n in sorted({left[i]["inputs"] for i in both})}
+    return out
+
+
+def _sign_test(wins: int, losses: int) -> float:
+    """Two-sided exact sign test on the tables where only one of the two did it."""
+    n = wins + losses
+    if n == 0:
+        return 1.0
+    from math import comb
+    tail = sum(comb(n, k) for k in range(0, min(wins, losses) + 1)) / 2**n
+    return float(min(1.0, 2 * tail))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("command", choices=("run", "collect"))
-    parser.add_argument("--set", dest="which", choices=("first", "second"), required=True)
-    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("command", choices=("run", "collect", "compare"))
+    parser.add_argument("--set", dest="which", choices=SETS)
+    parser.add_argument("--inner", choices=INNERS, default="pysr")
+    parser.add_argument("--out", type=Path)
+    parser.add_argument("--a", type=Path, help="compare: the record of one search of the parts")
+    parser.add_argument("--b", type=Path, help="compare: the record of the other, on the same tables")
     parser.add_argument("--seconds", type=float, default=SECONDS)
     parser.add_argument("--shard", type=int, default=0)
     parser.add_argument("--shards", type=int, default=1)
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args(argv)
+    if args.command == "compare":
+        print(json.dumps(compare(json.loads(args.a.read_text()), json.loads(args.b.read_text())), indent=1))
+        return 0
+    if args.which is None or args.out is None:
+        parser.error("run and collect need --set and --out")
     args.out.mkdir(parents=True, exist_ok=True)
 
     if args.command == "run":
-        todo = [j for j in shapes.jobs(args.which) if j["index"] % args.shards == args.shard]
+        todo = [j for j in jobs(args.which) if j["index"] % args.shards == args.shard]
         if args.limit:
             todo = todo[:args.limit]
         warm_up()
+        inner = blocks_inner if args.inner == "blocks" else pysr_inner
         rows = []
         for job in todo:
-            rows.append(one(job, args.which, pysr_inner, args.seconds))
+            rows.append(one(job, args.which, inner, args.seconds))
             r = rows[-1]
             print(f"{r['index']:4d} law {r['law']:2d} inputs {r['inputs']} noise {r['noise']:.2f}  parts {r['parts']}  "
                   f"accurate {int(r['a_proposal_accurate'])} the law {int(r['a_proposal_the_law'])}  {r['seconds']} s  {r['error'] or ''}",
                   flush=True)
-            (args.out / f"shard_{args.shard}.json").write_text(json.dumps({"set": args.which, "seconds": args.seconds, "rows": rows}) + "\n")
+            (args.out / f"shard_{args.shard}.json").write_text(json.dumps({"set": args.which, "inner": args.inner,
+                                                                           "seconds": args.seconds, "rows": rows}) + "\n")
         return 0
 
     parts = [json.loads(path.read_text()) for path in sorted(args.out.glob("shard_*.json"))]
@@ -207,13 +341,14 @@ def main(argv: list[str] | None = None) -> int:
     route = None
     if args.which == "first" and ROUTE_RECORD.is_file():
         route = {r["index"]: r for r in json.loads(ROUTE_RECORD.read_text())["rows"]}
-    record = {"tag": TAG, "development_not_a_result": True, "set": args.which,
+    inner = parts[0].get("inner", "pysr") if parts else args.inner
+    record = {"tag": TAG, "development_not_a_result": True, "set": args.which, "inner": inner,
               "what": "a list: whether the law is among what the split-search proposer proposes; nothing is confirmed or reported",
               "settings": {"rows_given": DEV_ROWS, "seconds_for_all_parts": parts[0]["seconds"] if parts else None,
                            "laws_a_part": split_search.PER_PART, "proposals": split_search.MAX_PROPOSALS,
                            "rows_set_aside": split_search.HELD_SHARE, "tolerance": split_search.TOLERANCE,
                            "table_limit_s": TABLE_LIMIT_S, "accurate_r2": base.R2_ACCURACY},
-              "tables_read": len(rows), "tables_of_the_set": len(shapes.jobs(args.which)),
+              "tables_read": len(rows), "tables_of_the_set": len(jobs(args.which)),
               "summary": summarise(rows, route), "rows": rows}
     (args.out / "split_search.json").write_text(json.dumps(record, indent=1) + "\n")
     print(json.dumps(record["summary"]["by_inputs"], indent=1))

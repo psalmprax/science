@@ -228,3 +228,31 @@ of the recursion changes how level 1 searches for settings. See section 5 before
 6. D1 (repeatable tests): needs the owner's word and a pinned threshold.
 
 Each is a development study first, with its pass mark, before anything is proposed for force.
+
+## 7. From the owner's own non-neural program-search studies (added 26 November)
+
+Source: `psalmprax/non-neural-program-search` (private, branch `stage`, commit `78ec3c4`): five
+pre-registered studies of program search guided by learners other than neural networks, on
+programs of 1-7 steps over lists of integers. Its code does not transfer (a different language of
+programs, and this system's main search is PySR, which evolves whole expressions); three of its
+findings do.
+
+* **Look-ahead was the largest gain per candidate checked** (its study 3). *Here:*
+  `apedp_dyn/proposers/block_search.py` builds a law of one input a block at a time and scores
+  every possible next block on the part's table before keeping the best, and the split search can
+  use it for its parts before PySR (`scripts/study_split_search.py --inner blocks`,
+  `.github/workflows/table-split-blocks.yml`). Development; measured against PySR on the same
+  tables and seconds, on a fresh set of the development grammar and on a set from another
+  generator.
+* **A mined library mostly bought what random compositions of the same length buy** (its
+  study 5: +21.0 tasks over rounds, of which +11.7 from random 2-3 step compositions, and level at
+  the end). *Here, not built:* any test of the memory of laws (`structure_memory.py`), the learned
+  order or a library of parts should carry an arm with random compositions of the same length;
+  without it, a gain cannot be credited to what was learned.
+* **Features the system builds for itself beat hand-written ones** (its study 5, ahead in 15 of
+  15 pools). *Here, not built:* the learned order (`apedp_dyn/proposers/ranked_memory.py`) scores
+  laws on features written by hand; features built as small expressions of the table and selected
+  on past solves are the candidate. It waits behind A1 in the order of section 6.
+
+The studies say themselves that at their scale blind search run to completion is only 10-20 times
+slower than the learned search, and that none of it is a new principle.

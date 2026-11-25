@@ -90,3 +90,29 @@ def test_shards_are_put_together_into_one_record(tmp_path):
     record = json.loads((tmp_path / "split_search.json").read_text())
     assert record["development_not_a_result"] and record["tables_read"] == 1 and record["tables_of_the_set"] == 120
     assert record["settings"]["rows_given"] == 700 and record["summary"]["all"]["a_proposal_the_law"] == 1
+
+
+def test_the_other_generator_draws_acceptable_laws_with_blocks_outside_the_block_search():
+    # a seed of its own: the run's laws (OTHER_SEED, THIRD_SEED) are drawn by no test
+    rng = np.random.default_rng(314159)
+    texts = [str(study.draw_other(rng, 3)) for _ in range(200)]
+    assert any("atan" in t for t in texts) and any("exp(-" in t and "/x" in t for t in texts)
+    assert study.OTHER_SEED not in (314159,) and study.THIRD_SEED != shapes.SECOND_SEED
+    assert set(study.SETS) == {"first", "second", "third", "other"} and set(study.INNERS) == {"pysr", "blocks"}
+
+
+def test_compare_counts_tables_table_by_table():
+    def record(flags, inner):
+        rows = [{"index": i, "inputs": 3 + (i % 2), "a_proposal_the_law": law, "a_proposal_accurate": acc}
+                for i, (law, acc) in enumerate(flags)]
+        return {"set": "third", "inner": inner, "rows": rows}
+    a = record([(False, True), (False, False), (True, True), (False, True)], "pysr")
+    b = record([(True, True), (True, True), (True, True), (False, False)], "blocks")
+    got = study.compare(a, b)
+    assert got["tables"] == 4
+    assert got["a_proposal_the_law"] == {**got["a_proposal_the_law"], "a": 1, "b": 3, "both": 1, "only_a": 0, "only_b": 2}
+    assert got["a_proposal_accurate"]["only_a"] == 1 and got["a_proposal_accurate"]["only_b"] == 1
+    assert got["a_proposal_the_law"]["sign_test_p"] == 0.5
+    import pytest
+    with pytest.raises(ValueError):
+        study.compare(a, {**b, "set": "other"})

@@ -60,7 +60,8 @@ def _bits(row: np.ndarray) -> int:
 
 
 def _row(value: int, degree: int) -> np.ndarray:
-    return np.array([(value >> i) & 1 for i in range(degree)], dtype=np.uint8)
+    row: np.ndarray = np.array([(value >> i) & 1 for i in range(degree)], dtype=np.uint8)
+    return row
 
 
 class Scheme:
@@ -380,7 +381,7 @@ def walk(scheme: Scheme, seconds: float, seed: int = 0, target: int | None = Non
 
 def reconstruct(triples: Sequence[tuple[int, int, int]], degree: int) -> np.ndarray:
     """The tensor a list of products adds up to, entry by entry, without simplifying the list first."""
-    out = np.zeros((degree, degree, degree), dtype=np.uint8)
+    out: np.ndarray = np.zeros((degree, degree, degree), dtype=np.uint8)
     for a, b, c in triples:
         out ^= np.einsum("i,j,k->ijk", _row(a, degree), _row(b, degree), _row(c, degree)).astype(np.uint8)
     return out

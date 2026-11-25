@@ -1,0 +1,88 @@
+name: Wide tables by their parts, the block search beside PySR (development)
+
+# Development, not a result: scripts/study_split_search.py runs the split-search proposer with two searches of the parts
+# on the same tables and the same seconds: PySR alone, and the block search of apedp_dyn/proposers/block_search.py
+# first with PySR in the seconds left (look-ahead, the idea of the owner's non-neural program-search studies). Two sets:
+# "third", 30 laws of the development grammar drawn after the block search was fixed, and "other", 30 laws of another
+# generator with blocks outside the block search's vocabulary (AGENTS.md 1.6). It measures a list, not what the route
+# reports. Owner's word of 25-26 November ("add what you think could help this system from that repo").
+#   push to table-split-blocks-run-*  -> 16 jobs (2 sets x 2 searches x 4 shards), then four records.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['table-split-blocks-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        set: [third, other]
+        inner: [pysr, blocks]
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The searches' own tests
+        run: python -m pytest tests/test_table_shape.py tests/test_split_search.py tests/test_block_search.py tests/test_study_split_search.py -q
+      - name: ${{ matrix.set }}, ${{ matrix.inner }}, shard ${{ matrix.shard }} of 4
+        timeout-minutes: 150
+        env:
+          SET: ${{ matrix.set }}
+          INNER: ${{ matrix.inner }}
+          SHARD: ${{ matrix.shard }}
+        run: python scripts/study_split_search.py run --set "$SET" --inner "$INNER" --out "out/${SET}_${INNER}" --seconds 90 --shard "$SHARD" --shards 4
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: split-blocks-${{ matrix.set }}-${{ matrix.inner }}-${{ matrix.shard }}
+          path: out
+
+  collect:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: split-blocks-*
+          path: got
+          merge-multiple: true
+      - name: Collect and compare
+        run: |
+          for set in third other; do
+            for inner in pysr blocks; do
+              python scripts/study_split_search.py collect --set "$set" --out "got/${set}_${inner}"
+            done
+            python scripts/study_split_search.py compare --a "got/${set}_pysr/split_search.json" --b "got/${set}_blocks/split_search.json" > "got/compare_${set}.json"
+          done
+          tar -czf records.tar.gz got/*/split_search.json got/compare_*.json
+      - name: Print the records
+        if: always()
+        run: |
+          echo "=====BEGIN split blocks====="
+          if [ -f records.tar.gz ]; then base64 -w 60000 records.tar.gz; echo; fi
+          echo "=====END split blocks====="
