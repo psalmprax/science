@@ -31,9 +31,13 @@ Each is an experiment with a pass mark, or a small piece one of them needs.
    its stage 1 gate). Random search, the hand-written heuristic, a real language model with the
    same tools, and the language model beside the search; the same starting products, the same
    budget, the checker's verdict. Three arms exist in development
-   (`scripts/run_mmlm_poc_001_llm.py`). Missing: the hybrid arm; the published 51-product
-   decomposition, without which the first gate (reproduce the reference exactly) cannot be cleared
-   and nothing found can be called an improvement; a preregistration.
+   (`scripts/run_mmlm_poc_001_llm.py`). Missing: the hybrid arm; a preregistration.
+   **25 November: the reference is not what it was taken to be.** The "published 51" is the
+   Toffoli count of one circuit, and the literature's bound on the number of products is 42, which
+   is now in the repository and checked exactly
+   (`docs/GF2_12_MULTIPLICATION_RECORD_2026-11-25.md`). Beating 51 is therefore not a discovery.
+   **Proposed, for the owner to decide:** the target becomes 41 products or fewer, starting from
+   the verified 42; the first gate (reproduce the reference exactly) is cleared with the 42.
    **Pass mark, proposed (fixed when the plan is frozen):** the language-model arm ends with fewer
    wrong entries than the heuristic on more starts than the other way round, by a sign test fixed
    beforehand, at equal cost.

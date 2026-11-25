@@ -46,6 +46,26 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **What the "published 51" for GF(2^12) multiplication is, and the 42 that was already in print
+  (2026-11-25, the owner's decision 5; development, nothing in force).** The 51 that MMLM-POC-001
+  and the roadmap's first experiment took as the incumbent is the Toffoli count of one circuit
+  (Khattar et al., arXiv:2510.10967, Table 7: 51 Toffolis and 1,506 CNOTs, built by a modified
+  Karatsuba, not called optimal), first published in October 2025 and not in October 2026. The
+  literature's best bound on the **number of products** is lower: **42** (the survey
+  arXiv:1906.07456, Table 2). So "fewer than 51" is not a discovery; a new result would be 41 or
+  fewer. New `apedp_dyn/quantum/tower_reference.py` makes the 42 explicit by the classical
+  construction (degree 4 over GF(8): 7 values, 6 products of bits each) in the repository's field,
+  accepted only if all 1,728 entries of the tensor are reproduced, and builds a real gate list from
+  any decomposition: `(x, y, z) -> (x, y, z + x*y)` with **42 Toffolis, 474 CNOTs (not minimised)
+  and no qubit beyond the 36**, checked from its gates alone (which settles every basis state) and
+  bit by bit on 20,000 random states. `scripts/record_gf2_mul_tower_42.py` writes and re-checks
+  `benchmarks/quantum_compilation/gf2_mul_tower_42.json`; `tests/test_tower_reference.py` (13).
+  Findings, sources and what is not shown: `docs/GF2_12_MULTIPLICATION_RECORD_2026-11-25.md`. Not
+  shown: that 42 is the least (not known); that nothing lower is published (a search, not a proof);
+  anything measured in the decoder benchmark (the repository's own model reads about 16.7 % fewer
+  Toffolis than at 63 products, which is arithmetic). Not changed: the specification's section 4.1
+  (out of date in three places; its objective is the owner's), the loader that returns zeros, and
+  MMLM-POC-001's records.
 - **Housekeeping, by the owner's decision of 2026-11-25 (6).** **14 modules moved out of the
   package**, byte for byte, into `archive/unused_modules_2026-11-25/` (its README lists them and
   how to bring one back). The audit had counted 40 that no test names and nothing imports; the
