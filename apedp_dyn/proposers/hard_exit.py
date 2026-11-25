@@ -23,16 +23,22 @@ edited; this stage is built from their own parts.
 ran 24 searches in a row; no search process was told to stop while leaving, and none was left
 over. With the frozen stage 10 of 27 searches had stopped their job for ever.
 
-**A second way to stop for ever, and its cure** (2026-11-25). With the members above, the second
-recursion run still lost a job: after 15 searches in half an hour one search never came back, and
-the job sat for five hours (run 45493901958, "Level 2, round 1, way 1"). Leaving hard only helps a
-process that has reached Python's exit hooks. One that is told to stop earlier (still searching at
-the deadline, or between its answer and its exit) is stopped by a signal that Julia handles itself,
-and Julia's own exit can wait for ever. Nothing inside such a process can be relied on, so
-:class:`BoundedPortfolio` bounds the wait from outside: a search process that is still there
-``STOP_GRACE_S`` seconds after the portfolio's deadline, by which time every answer has been taken
-or given up on, is killed, and the kill is printed. No answer can be lost that way, and the
-searches themselves are unchanged.
+**A second way to stop for ever, and its cure** (2026-11-25). With the members above, runs still
+stopped: one job of the second recursion run (45493901958), and every shard of the second
+wider-conditions run (45503100152) after 10 to 20 readings. What the logs of the second show: with
+three inputs no search process was ever sent a stop signal while alive (40 readings); with four
+inputs one was in 19 of 20 readings, each time at the moment the searches ended, and 4 of those 19
+never went. Likely why: when the last answer arrives the portfolio stops its pool at once, and the
+pool's stop competes with the search processes for the lock on their task queue; the process that
+answered last can lose, is never asked to leave, and is sent the signal instead. With three inputs
+the last to answer is usually the deep pass, which holds no Julia runtime and dies at once. With
+four inputs the deep pass does not run and the last is always a PySR search: Julia handles the
+signal itself ("signal 15: Terminated") and its exit can wait for ever. Leaving hard cannot help a
+process that never reaches Python's exit hooks, and nothing inside such a process can be relied
+on, so :class:`BoundedPortfolio` bounds the wait from outside: once the portfolio has waited
+``STOP_GRACE_S`` seconds inside the pool's own stop, the search processes still there are killed,
+and each kill is printed. The answers are all in before that wait begins, so none can be lost, and
+the searches themselves are unchanged.
 
 **Not in force.** The routes and the product still build ``search_stage.default_search_stage``.
 Using this stage there is the owner's decision (AGENTS.md 1.5). The product's reading can be asked
@@ -47,6 +53,7 @@ import multiprocessing.util
 import os
 import sys
 import threading
+import time
 from collections.abc import Sequence
 from typing import Any
 
@@ -58,7 +65,9 @@ from apedp_dyn.proposers.portfolio import MemberFactory, PortfolioProposer
 
 ENVIRONMENT_VARIABLE = "APEDP_SEARCH_PROCESSES"
 LEAVE_HARD = "leave_hard"
-STOP_GRACE_S = 60.0     # how long after the portfolio's deadline a search process may still be there
+STOP_GRACE_S = 20.0     # how long the portfolio may wait for its search processes to go before they are killed
+STOP_FALLBACK_S = 60.0  # the same wait counted from the searches' deadline, should the wait itself never be seen
+STOP_POLL_S = 0.5
 
 _armed = False
 
@@ -146,19 +155,55 @@ def _has_ended(pid: int) -> bool:
     return ended
 
 
-class _Reaper(threading.Thread):
-    """Kills, once ``after`` seconds have passed, every child process that was not there before, until told to stop."""
+def _is_stopping(thread_id: int) -> bool:
+    """Whether that thread is inside the pool's own ``terminate`` or ``join``: the answers are in, the processes told to go."""
+    frame = sys._current_frames().get(thread_id)
+    pool_file = os.path.join("multiprocessing", "pool.py")
+    while frame is not None:
+        code = frame.f_code
+        if code.co_name in ("terminate", "_terminate_pool", "join") and code.co_filename.endswith(pool_file):
+            return True
+        if code.co_name == "_run_members":      # reached the portfolio itself: whatever called it is not looked at
+            return False
+        frame = frame.f_back
+    return False
 
-    def __init__(self, known: set[int | None], after: float) -> None:
+
+class _Reaper(threading.Thread):
+    """Kills the search processes that have not gone, once the portfolio has waited for them long enough.
+
+    Long enough is ``STOP_GRACE_S`` seconds inside the pool's ``terminate`` or ``join`` (seen in the
+    waiting thread's own stack), or, should that never be seen, ``after`` seconds from the start.
+    Only child processes that were not there before the searches began are touched.
+    """
+
+    def __init__(self, known: set[int | None], after: float, waiting_thread: int) -> None:
         super().__init__(name="search-process-reaper", daemon=True)
-        self._known, self._after, self._stopped = known, after, threading.Event()
+        self._known, self._after, self._waiting_thread = known, after, waiting_thread
+        self._stopped = threading.Event()
         self.killed: list[int] = []
 
     def stop(self) -> None:
         self._stopped.set()
 
+    def _waited_long_enough(self) -> bool:
+        """Blocks until the portfolio has waited ``STOP_GRACE_S`` for its processes; false if it returned first."""
+        started = time.monotonic()
+        stopping_since: float | None = None
+        while not self._stopped.wait(STOP_POLL_S):
+            now = time.monotonic()
+            if now - started >= self._after:
+                return True
+            if _is_stopping(self._waiting_thread):
+                stopping_since = now if stopping_since is None else stopping_since
+                if now - stopping_since >= STOP_GRACE_S:
+                    return True
+            else:
+                stopping_since = None
+        return False
+
     def run(self) -> None:
-        if self._stopped.wait(self._after):
+        if not self._waited_long_enough():
             return
         while not self._stopped.is_set():
             # the processes are read from multiprocessing's own list and not through active_children(), which
@@ -172,7 +217,7 @@ class _Reaper(threading.Thread):
                 except (OSError, ValueError, AttributeError):
                     continue
                 self.killed.append(pid)
-                print(f"search process {pid} was still there {STOP_GRACE_S:g} s after the searches' deadline and was killed",
+                print(f"search process {pid} was still there {STOP_GRACE_S:g} s after it was told to stop and was killed",
                       file=sys.stderr, flush=True)
             self._stopped.wait(1.0)
 
@@ -181,10 +226,11 @@ class BoundedPortfolio(PortfolioProposer):
     """The portfolio as frozen, except that its wait for the search processes to go has an end.
 
     The frozen ``_run_members`` takes each answer or gives up on it by ``timeout`` (and at most a
-    second a member later), tells the processes to stop and waits for them. Here a watcher kills
-    whatever search process is still there ``STOP_GRACE_S`` seconds after that point, so the wait
-    returns. By then nothing more is taken from any process, so what the portfolio proposes cannot
-    change; ``killed_processes`` says which processes it was done to.
+    second a member later), then tells the processes to stop and waits for them inside the pool's
+    ``terminate`` and ``join``. Here a watcher kills whatever search process is still there once
+    that wait has lasted ``STOP_GRACE_S`` seconds, so it returns. Nothing more is taken from any
+    process after the wait has begun, so what the portfolio proposes cannot change;
+    ``killed_processes`` says which processes it was done to.
     """
 
     killed_processes: list[int]
@@ -194,7 +240,7 @@ class BoundedPortfolio(PortfolioProposer):
         if not self._parallel or len(self._members) == 1:
             return super()._run_members(columns, target, guesses)
         known: set[int | None] = {process.pid for process in multiprocessing.active_children()}
-        reaper = _Reaper(known, after=self._timeout + len(self._members) + STOP_GRACE_S)
+        reaper = _Reaper(known, after=self._timeout + len(self._members) + STOP_FALLBACK_S, waiting_thread=threading.get_ident())
         reaper.start()
         try:
             return super()._run_members(columns, target, guesses)

@@ -48,17 +48,30 @@ inferred releases.
   that follows from it.
 - **Search processes: a second way to stop for ever, and a wait that is bounded from outside
   (2026-11-25).** With `hard_exit`'s members the second recursion run (45493901958) finished 15 of
-  its first 16 jobs, where the first run had finished none; the sixteenth sat for five hours after a
-  search that never came back. Leaving hard only helps a process that has reached Python's exit
-  hooks: one told to stop earlier is stopped by a signal Julia handles itself, and Julia's exit can
-  wait for ever. New `hard_exit.BoundedPortfolio` (the frozen portfolio, not edited, with one
-  addition): a search process still there `STOP_GRACE_S` = 60 s after the portfolio's deadline is
-  killed and the kill is printed. Every answer has been taken or given up on by then, so the
-  proposals cannot change. `search_stage_that_cannot_hang` builds it. Three new tests (10 in
-  `tests/test_hard_exit.py`), one with a process that ignores being told to stop: the frozen
-  portfolio would wait for it for ever. `scripts/run_wider_conditions.py` now prints where a
-  reading is if it takes more than half an hour. Not in force; the product's default waits, by the
-  owner's decision, for a run that finishes clean.
+  its first 16 jobs, where the first run had finished none, and the second wider-conditions run
+  (45503100152) got 56 readings written where the first got 9; but every one of its four shards
+  still stopped for ever, after 10 to 20 readings. Its logs show what happens. With three inputs no
+  search process was sent a stop signal while alive (40 readings). With four inputs one was in 19
+  of 20 readings, at the moment the searches ended, and 4 of those 19 never went. Likely why: the
+  portfolio stops its pool the moment the last answer arrives, the pool's stop competes with the
+  search processes for the lock on their task queue, and the process that answered last can lose:
+  it is never asked to leave and is sent the signal instead. With three inputs the last to answer
+  is usually the deep pass, which holds no Julia and dies at once; with four the deep pass does not
+  run, the last is a PySR search, Julia handles the signal itself and its exit can wait for ever.
+  Leaving hard does not help a process that never reaches Python's exit hooks. New
+  `hard_exit.BoundedPortfolio` (the frozen portfolio, not edited, with one addition): once the
+  portfolio has waited `STOP_GRACE_S` = 20 s inside the pool's own stop, seen in the waiting
+  thread's stack, the search processes still there are killed and each kill is printed; a fallback
+  counts 60 s from the searches' deadline. The answers are all in before that wait begins, so the
+  proposals cannot change. `search_stage_that_cannot_hang` builds it. Five new tests (12 in
+  `tests/test_hard_exit.py`), two with a process that ignores being told to stop: the frozen
+  portfolio would wait for it for ever. A first version (commit 6f0da7a) acted only at the
+  fallback, which is 5 to 6 minutes into a wait with the stage's 300 s of grace; wider-conditions
+  run 3 runs that version, run 4 this one. `scripts/run_wider_conditions.py` now prints where a
+  reading is if it takes more than half an hour, and its workflow has eight shards. Recorded:
+  `benchmarks/wider_conditions/dev_run2.json` (partial: 7 laws reported in 40 readings with three
+  inputs, none inaccurate; none reported in 16 with four). Not in force; the product's default
+  waits, by the owner's decision, for a run that finishes clean.
 - **What the "published 51" for GF(2^12) multiplication is, and the 42 that was already in print
   (2026-11-25, the owner's decision 5; development, nothing in force).** The 51 that MMLM-POC-001
   and the roadmap's first experiment took as the incumbent is the Toffoli count of one circuit

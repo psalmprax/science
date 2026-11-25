@@ -90,12 +90,30 @@ def test_a_search_process_that_will_not_go_is_killed_and_the_other_answers_are_k
     portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=6.0)
     started = time.monotonic()
     assert _formulas(portfolio) == ["2*x0"]                      # the member that answered is kept
-    assert time.monotonic() - started < 90.0                     # and the wait has an end
+    # the wait ended because it was seen to be a wait (2 s into it), not by the fallback a minute after the deadline
+    assert time.monotonic() - started < 6.0 + 2.0 + 40.0
     assert portfolio.failures == ["member 1: no answer within 6 s"]
     assert len(portfolio.killed_processes) == 1                  # only the process that was still there
-    assert "was still there 2 s after the searches' deadline and was killed" in capfd.readouterr().err
+    assert "was still there 2 s after it was told to stop and was killed" in capfd.readouterr().err
     assert not [thread for thread in threading.enumerate() if thread.name == "search-process-reaper"]
     assert not multiprocessing.active_children()
+
+
+def test_the_wait_also_ends_when_it_cannot_be_seen(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """Should the waiting thread's stack never show the pool's stop, the deadline plus a fallback ends the wait."""
+    monkeypatch.setattr(hard_exit, "_is_stopping", lambda thread_id: False)
+    monkeypatch.setattr(hard_exit, "STOP_FALLBACK_S", 2.0)
+    members = [partial(FixedFormulasProposer, ["2*x0"]), partial(_WillNotGo, ["x0**2"])]
+    portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=5.0)
+    started = time.monotonic()
+    assert _formulas(portfolio) == ["2*x0"]
+    assert 5.0 + 2.0 <= time.monotonic() - started < 90.0
+    assert len(portfolio.killed_processes) == 1 and not multiprocessing.active_children()
+
+
+def test_a_thread_that_is_not_stopping_a_pool_is_not_taken_for_one() -> None:
+    assert hard_exit._is_stopping(threading.get_ident()) is False
+    assert hard_exit._is_stopping(-1) is False                   # no such thread
 
 
 def test_the_bounded_portfolio_kills_nothing_when_every_process_goes() -> None:
