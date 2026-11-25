@@ -68,6 +68,10 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The ladder's missing rung: the dashboard's own 30 seconds (2026-11-25, development).**
+  `.github/workflows/budget-ladder-30.yml` reads the ladder's 40 tables with 30 seconds a search,
+  to be set beside its 90-second rung: the product's switch asks for 30 and no measurement had
+  been made at it. Started as `budget-ladder-30-run-1`; nothing is claimed until it is read.
 - **GF(2^12) multiplication: the baseline with no language model, started (2026-11-25,
   development; decision 4).** `scripts/search_gf2_mul_rank_from_42.py` runs the exact search the
   repository already has, unchanged, from the verified 42 products: deflation and every way to
