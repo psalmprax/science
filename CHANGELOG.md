@@ -68,6 +68,20 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The order score, first run: the law is on the list far more often than among the first three,
+  and an order learned from the system's own problems brings it forward (2026-11-25, development).**
+  `benchmarks/order_score/dev_run1.json` (run 45591697503; five of six arms, the sixth still
+  running): on 300 fresh curriculum problems the memory taught 80 laws had a candidate the judge
+  counts solved on its list for 102 and among the first three for 53; taught 20 laws, 75 and 43;
+  the memory in force, 66 and 39. `benchmarks/order_score/dev_learned_order.json`: scored by an
+  order learned on other problems only, the first three hold the law on 85 problems (taught 80), 73
+  (taught 20) and 57 (in force); the rule that needs no learning gives 70, 63 and 45. Ten problems,
+  the size the recursion decided on, cannot show even a doubling; 300 can show a tenth to a fifth.
+  Limits: the first measurement read each candidate's fit on rows a proposer is not given
+  (measured next with `split-80`), and on the memory in force the learned order moved the law by
+  form down on 6 of 8 lists. On the 60 problems of the language-model run the memory taught 80
+  laws had the law on its list for 19; the model alone added 2 it did not have, the refitted cases
+  3; the three lists together hold it for 24.
 - **The learned order as a proposer, from the rows a proposer really has (2026-11-25, asked for by
   the owner; development, not in force).** The first measurement read each candidate's fit on 300
   pool rows a proposer is not given. New `apedp_dyn/proposers/ranked_memory.py`:

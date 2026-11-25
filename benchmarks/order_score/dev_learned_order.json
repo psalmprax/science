@@ -1,0 +1,1007 @@
+{
+ "arms": {
+  "in-force": {
+   "an_accurate_candidate_as_handed": {
+    "first": 115,
+    "found": 115,
+    "mean_reciprocal_place": 0.3833,
+    "problems": 300,
+    "within_3": 115,
+    "within_3_by_level": {
+     "1": 59,
+     "2": 32,
+     "3": 23,
+     "4": 1,
+     "5": 0
+    }
+   },
+   "as_handed": {
+    "first": 33,
+    "found": 66,
+    "mean_reciprocal_place": 0.1234,
+    "problems": 300,
+    "within_3": 39,
+    "within_3_by_level": {
+     "1": 15,
+     "2": 12,
+     "3": 11,
+     "4": 1,
+     "5": 0
+    }
+   },
+   "learned": {
+    "first": 44,
+    "found": 66,
+    "mean_reciprocal_place": 0.1678,
+    "problems": 300,
+    "within_3": 57,
+    "within_3_by_level": {
+     "1": 35,
+     "2": 11,
+     "3": 10,
+     "4": 1,
+     "5": 0
+    }
+   },
+   "learned_against_as_handed": {
+    "earlier": 32,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0127,
+     0.0762
+    ],
+    "later": 13,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0443,
+    "problems": 300,
+    "same": 255,
+    "sign_test_p": 0.006609,
+    "what": "solved_place"
+   },
+   "learned_against_the_rule": {
+    "earlier": 24,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     -0.0062,
+     0.045
+    ],
+    "later": 11,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0199,
+    "problems": 300,
+    "same": 265,
+    "sign_test_p": 0.04096,
+    "what": "solved_place",
+    "which": "tolerance 3"
+   },
+   "rule": {
+    "tolerance 0.3": {
+     "first": 40,
+     "found": 66,
+     "mean_reciprocal_place": 0.146,
+     "problems": 300,
+     "within_3": 45,
+     "within_3_by_level": {
+      "1": 22,
+      "2": 11,
+      "3": 11,
+      "4": 1,
+      "5": 0
+     }
+    },
+    "tolerance 1": {
+     "first": 37,
+     "found": 66,
+     "mean_reciprocal_place": 0.1388,
+     "problems": 300,
+     "within_3": 43,
+     "within_3_by_level": {
+      "1": 23,
+      "2": 9,
+      "3": 10,
+      "4": 1,
+      "5": 0
+     }
+    },
+    "tolerance 3": {
+     "first": 40,
+     "found": 66,
+     "mean_reciprocal_place": 0.1478,
+     "problems": 300,
+     "within_3": 43,
+     "within_3_by_level": {
+      "1": 26,
+      "2": 9,
+      "3": 7,
+      "4": 1,
+      "5": 0
+     }
+    }
+   },
+   "rule_against_as_handed": {
+    "earlier": 21,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     -0.0064,
+     0.0557
+    ],
+    "later": 12,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0244,
+    "problems": 300,
+    "same": 267,
+    "sign_test_p": 0.162756,
+    "what": "solved_place",
+    "which": "tolerance 3"
+   },
+   "true_form_as_handed": {
+    "first": 8,
+    "found": 8,
+    "mean_reciprocal_place": 0.0267,
+    "problems": 300,
+    "within_3": 8,
+    "within_3_by_level": {
+     "1": 4,
+     "2": 4,
+     "3": 0,
+     "4": 0,
+     "5": 0
+    }
+   },
+   "true_form_learned": {
+    "first": 2,
+    "found": 8,
+    "mean_reciprocal_place": 0.0118,
+    "problems": 300,
+    "within_3": 5,
+    "within_3_by_level": {
+     "1": 3,
+     "2": 2,
+     "3": 0,
+     "4": 0,
+     "5": 0
+    }
+   }
+  },
+  "taught-20": {
+   "an_accurate_candidate_as_handed": {
+    "first": 174,
+    "found": 174,
+    "mean_reciprocal_place": 0.58,
+    "problems": 300,
+    "within_3": 174,
+    "within_3_by_level": {
+     "1": 59,
+     "2": 49,
+     "3": 36,
+     "4": 23,
+     "5": 7
+    }
+   },
+   "as_handed": {
+    "first": 36,
+    "found": 75,
+    "mean_reciprocal_place": 0.1391,
+    "problems": 300,
+    "within_3": 43,
+    "within_3_by_level": {
+     "1": 10,
+     "2": 15,
+     "3": 12,
+     "4": 3,
+     "5": 3
+    }
+   },
+   "learned": {
+    "first": 64,
+    "found": 75,
+    "mean_reciprocal_place": 0.2292,
+    "problems": 300,
+    "within_3": 73,
+    "within_3_by_level": {
+     "1": 30,
+     "2": 21,
+     "3": 16,
+     "4": 3,
+     "5": 3
+    }
+   },
+   "learned_against_as_handed": {
+    "earlier": 38,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0599,
+     0.1233
+    ],
+    "later": 4,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0901,
+    "problems": 300,
+    "same": 258,
+    "sign_test_p": 0.0,
+    "what": "solved_place"
+   },
+   "learned_against_the_rule": {
+    "earlier": 17,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0113,
+     0.0546
+    ],
+    "later": 6,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0317,
+    "problems": 300,
+    "same": 277,
+    "sign_test_p": 0.03469,
+    "what": "solved_place",
+    "which": "tolerance 0.3"
+   },
+   "rule": {
+    "tolerance 0.3": {
+     "first": 56,
+     "found": 75,
+     "mean_reciprocal_place": 0.1975,
+     "problems": 300,
+     "within_3": 61,
+     "within_3_by_level": {
+      "1": 21,
+      "2": 21,
+      "3": 13,
+      "4": 3,
+      "5": 3
+     }
+    },
+    "tolerance 1": {
+     "first": 52,
+     "found": 75,
+     "mean_reciprocal_place": 0.1928,
+     "problems": 300,
+     "within_3": 63,
+     "within_3_by_level": {
+      "1": 21,
+      "2": 21,
+      "3": 15,
+      "4": 3,
+      "5": 3
+     }
+    },
+    "tolerance 3": {
+     "first": 53,
+     "found": 75,
+     "mean_reciprocal_place": 0.1938,
+     "problems": 300,
+     "within_3": 62,
+     "within_3_by_level": {
+      "1": 23,
+      "2": 20,
+      "3": 13,
+      "4": 3,
+      "5": 3
+     }
+    }
+   },
+   "rule_against_as_handed": {
+    "earlier": 24,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0357,
+     0.0851
+    ],
+    "later": 0,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0584,
+    "problems": 300,
+    "same": 276,
+    "sign_test_p": 0.0,
+    "what": "solved_place",
+    "which": "tolerance 0.3"
+   },
+   "true_form_as_handed": {
+    "first": 11,
+    "found": 12,
+    "mean_reciprocal_place": 0.0383,
+    "problems": 300,
+    "within_3": 12,
+    "within_3_by_level": {
+     "1": 5,
+     "2": 7,
+     "3": 0,
+     "4": 0,
+     "5": 0
+    }
+   },
+   "true_form_learned": {
+    "first": 11,
+    "found": 12,
+    "mean_reciprocal_place": 0.0378,
+    "problems": 300,
+    "within_3": 12,
+    "within_3_by_level": {
+     "1": 5,
+     "2": 7,
+     "3": 0,
+     "4": 0,
+     "5": 0
+    }
+   }
+  },
+  "taught-5": {
+   "an_accurate_candidate_as_handed": {
+    "first": 210,
+    "found": 211,
+    "mean_reciprocal_place": 0.7017,
+    "problems": 300,
+    "within_3": 211,
+    "within_3_by_level": {
+     "1": 58,
+     "2": 50,
+     "3": 49,
+     "4": 35,
+     "5": 19
+    }
+   },
+   "as_handed": {
+    "first": 22,
+    "found": 31,
+    "mean_reciprocal_place": 0.0773,
+    "problems": 300,
+    "within_3": 24,
+    "within_3_by_level": {
+     "1": 7,
+     "2": 5,
+     "3": 4,
+     "4": 0,
+     "5": 8
+    }
+   },
+   "learned": {
+    "first": 25,
+    "found": 31,
+    "mean_reciprocal_place": 0.0906,
+    "problems": 300,
+    "within_3": 29,
+    "within_3_by_level": {
+     "1": 8,
+     "2": 6,
+     "3": 7,
+     "4": 1,
+     "5": 7
+    }
+   },
+   "learned_against_as_handed": {
+    "earlier": 9,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     -0.0014,
+     0.0291
+    ],
+    "later": 3,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0133,
+    "problems": 300,
+    "same": 288,
+    "sign_test_p": 0.145996,
+    "what": "solved_place"
+   },
+   "learned_against_the_rule": {
+    "earlier": 6,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     -0.0043,
+     0.0213
+    ],
+    "later": 4,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0072,
+    "problems": 300,
+    "same": 290,
+    "sign_test_p": 0.753906,
+    "what": "solved_place",
+    "which": "tolerance 0.3"
+   },
+   "rule": {
+    "tolerance 0.3": {
+     "first": 24,
+     "found": 31,
+     "mean_reciprocal_place": 0.0834,
+     "problems": 300,
+     "within_3": 25,
+     "within_3_by_level": {
+      "1": 8,
+      "2": 5,
+      "3": 5,
+      "4": 0,
+      "5": 7
+     }
+    },
+    "tolerance 1": {
+     "first": 23,
+     "found": 31,
+     "mean_reciprocal_place": 0.0821,
+     "problems": 300,
+     "within_3": 26,
+     "within_3_by_level": {
+      "1": 8,
+      "2": 5,
+      "3": 5,
+      "4": 1,
+      "5": 7
+     }
+    },
+    "tolerance 3": {
+     "first": 21,
+     "found": 31,
+     "mean_reciprocal_place": 0.0792,
+     "problems": 300,
+     "within_3": 27,
+     "within_3_by_level": {
+      "1": 8,
+      "2": 5,
+      "3": 6,
+      "4": 1,
+      "5": 7
+     }
+    }
+   },
+   "rule_against_as_handed": {
+    "earlier": 4,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     -0.0045,
+     0.0188
+    ],
+    "later": 2,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0061,
+    "problems": 300,
+    "same": 294,
+    "sign_test_p": 0.6875,
+    "what": "solved_place",
+    "which": "tolerance 0.3"
+   },
+   "true_form_as_handed": {
+    "first": 5,
+    "found": 5,
+    "mean_reciprocal_place": 0.0167,
+    "problems": 300,
+    "within_3": 5,
+    "within_3_by_level": {
+     "1": 1,
+     "2": 3,
+     "3": 1,
+     "4": 0,
+     "5": 0
+    }
+   },
+   "true_form_learned": {
+    "first": 5,
+    "found": 5,
+    "mean_reciprocal_place": 0.0167,
+    "problems": 300,
+    "within_3": 5,
+    "within_3_by_level": {
+     "1": 1,
+     "2": 3,
+     "3": 1,
+     "4": 0,
+     "5": 0
+    }
+   }
+  },
+  "taught-80": {
+   "an_accurate_candidate_as_handed": {
+    "first": 200,
+    "found": 202,
+    "mean_reciprocal_place": 0.6692,
+    "problems": 300,
+    "within_3": 201,
+    "within_3_by_level": {
+     "1": 59,
+     "2": 56,
+     "3": 47,
+     "4": 27,
+     "5": 12
+    }
+   },
+   "as_handed": {
+    "first": 50,
+    "found": 102,
+    "mean_reciprocal_place": 0.1842,
+    "problems": 300,
+    "within_3": 53,
+    "within_3_by_level": {
+     "1": 16,
+     "2": 20,
+     "3": 10,
+     "4": 4,
+     "5": 3
+    }
+   },
+   "learned": {
+    "first": 67,
+    "found": 102,
+    "mean_reciprocal_place": 0.2624,
+    "problems": 300,
+    "within_3": 85,
+    "within_3_by_level": {
+     "1": 33,
+     "2": 24,
+     "3": 20,
+     "4": 4,
+     "5": 4
+    }
+   },
+   "learned_against_as_handed": {
+    "earlier": 50,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0471,
+     0.1105
+    ],
+    "later": 9,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0782,
+    "problems": 300,
+    "same": 241,
+    "sign_test_p": 0.0,
+    "what": "solved_place"
+   },
+   "learned_against_the_rule": {
+    "earlier": 33,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0048,
+     0.0612
+    ],
+    "later": 14,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0332,
+    "problems": 300,
+    "same": 253,
+    "sign_test_p": 0.007943,
+    "what": "solved_place",
+    "which": "tolerance 0.3"
+   },
+   "rule": {
+    "tolerance 0.3": {
+     "first": 63,
+     "found": 102,
+     "mean_reciprocal_place": 0.2292,
+     "problems": 300,
+     "within_3": 70,
+     "within_3_by_level": {
+      "1": 25,
+      "2": 21,
+      "3": 16,
+      "4": 4,
+      "5": 4
+     }
+    },
+    "tolerance 1": {
+     "first": 57,
+     "found": 102,
+     "mean_reciprocal_place": 0.2202,
+     "problems": 300,
+     "within_3": 70,
+     "within_3_by_level": {
+      "1": 24,
+      "2": 21,
+      "3": 17,
+      "4": 4,
+      "5": 4
+     }
+    },
+    "tolerance 3": {
+     "first": 57,
+     "found": 102,
+     "mean_reciprocal_place": 0.2211,
+     "problems": 300,
+     "within_3": 69,
+     "within_3_by_level": {
+      "1": 22,
+      "2": 21,
+      "3": 18,
+      "4": 4,
+      "5": 4
+     }
+    }
+   },
+   "rule_against_as_handed": {
+    "earlier": 21,
+    "found_p": 1.0,
+    "gained": 0,
+    "interval_95": [
+     0.0197,
+     0.0719
+    ],
+    "later": 5,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.045,
+    "problems": 300,
+    "same": 274,
+    "sign_test_p": 0.002494,
+    "what": "solved_place",
+    "which": "tolerance 0.3"
+   },
+   "true_form_as_handed": {
+    "first": 13,
+    "found": 13,
+    "mean_reciprocal_place": 0.0433,
+    "problems": 300,
+    "within_3": 13,
+    "within_3_by_level": {
+     "1": 5,
+     "2": 7,
+     "3": 1,
+     "4": 0,
+     "5": 0
+    }
+   },
+   "true_form_learned": {
+    "first": 12,
+    "found": 13,
+    "mean_reciprocal_place": 0.0406,
+    "problems": 300,
+    "within_3": 12,
+    "within_3_by_level": {
+     "1": 4,
+     "2": 7,
+     "3": 1,
+     "4": 0,
+     "5": 0
+    }
+   }
+  }
+ },
+ "carried_to_other_arms": {
+  "learned_on": "taught-80",
+  "model": {
+   "features": [
+    "place",
+    "fit_gap",
+    "held_gap",
+    "held_below_best",
+    "law_bits",
+    "bits_above_shortest",
+    "constants",
+    "small_constants",
+    "large_constants",
+    "operations",
+    "steps",
+    "held_minus_train"
+   ],
+   "mean": [
+    0.467159277504105,
+    2.1411333711360743,
+    0.021855395808302265,
+    2.1531999132960284,
+    1.675124137931029,
+    4.9823337438423465,
+    5.063382594417077,
+    0.6463054187192119,
+    0.40755336617405585,
+    10.176354679802955,
+    1.2476190476190476,
+    -0.021855395808302265
+   ],
+   "offset": -1.1552713096390737,
+   "scale": [
+    0.289326651960608,
+    3.585256797151051,
+    0.24983814023246081,
+    3.587840552264387,
+    0.6082725064155392,
+    3.7790058809210847,
+    1.9062396170458873,
+    0.9115336389997446,
+    0.7959722649032533,
+    3.9070605759092003,
+    0.8303154361520639,
+    0.24983814023246081
+   ],
+   "strength": 1.0,
+   "trained_on": {
+    "candidates": 3045,
+    "problems": 200,
+    "solved": 272
+   },
+   "weights": [
+    -0.3583987423519367,
+    0.4345803138998293,
+    0.08072563453209526,
+    -1.0296971359215148,
+    -1.5957724623093426,
+    -0.8308600859012348,
+    0.2128771899176296,
+    -0.1916925351444546,
+    -0.3633396239153052,
+    -0.1557476423933105,
+    0.09940340201704105,
+    -0.08072563453209526
+   ]
+  },
+  "on": {
+   "in-force": {
+    "against_as_handed": {
+     "earlier": 9,
+     "found_p": 1.0,
+     "gained": 0,
+     "interval_95": [
+      -0.0123,
+      0.092
+     ],
+     "later": 4,
+     "lost": 0,
+     "mean_reciprocal_difference": 0.0395,
+     "problems": 100,
+     "same": 87,
+     "sign_test_p": 0.266846,
+     "what": "solved_place"
+    },
+    "as_handed": {
+     "first": 12,
+     "found": 23,
+     "mean_reciprocal_place": 0.1445,
+     "problems": 100,
+     "within_3": 17,
+     "within_3_by_level": {
+      "1": 6,
+      "2": 5,
+      "3": 5,
+      "4": 1,
+      "5": 0
+     }
+    },
+    "learned": {
+     "first": 16,
+     "found": 23,
+     "mean_reciprocal_place": 0.184,
+     "problems": 100,
+     "within_3": 20,
+     "within_3_by_level": {
+      "1": 12,
+      "2": 5,
+      "3": 2,
+      "4": 1,
+      "5": 0
+     }
+    }
+   },
+   "taught-20": {
+    "against_as_handed": {
+     "earlier": 14,
+     "found_p": 1.0,
+     "gained": 0,
+     "interval_95": [
+      0.0384,
+      0.1338
+     ],
+     "later": 1,
+     "lost": 0,
+     "mean_reciprocal_difference": 0.0821,
+     "problems": 100,
+     "same": 85,
+     "sign_test_p": 0.000977,
+     "what": "solved_place"
+    },
+    "as_handed": {
+     "first": 11,
+     "found": 25,
+     "mean_reciprocal_place": 0.1304,
+     "problems": 100,
+     "within_3": 13,
+     "within_3_by_level": {
+      "1": 3,
+      "2": 5,
+      "3": 3,
+      "4": 0,
+      "5": 2
+     }
+    },
+    "learned": {
+     "first": 18,
+     "found": 25,
+     "mean_reciprocal_place": 0.2125,
+     "problems": 100,
+     "within_3": 24,
+     "within_3_by_level": {
+      "1": 10,
+      "2": 7,
+      "3": 5,
+      "4": 0,
+      "5": 2
+     }
+    }
+   },
+   "taught-5": {
+    "against_as_handed": {
+     "earlier": 4,
+     "found_p": 1.0,
+     "gained": 0,
+     "interval_95": [
+      0.0019,
+      0.0582
+     ],
+     "later": 0,
+     "lost": 0,
+     "mean_reciprocal_difference": 0.0261,
+     "problems": 100,
+     "same": 96,
+     "sign_test_p": 0.125,
+     "what": "solved_place"
+    },
+    "as_handed": {
+     "first": 9,
+     "found": 13,
+     "mean_reciprocal_place": 0.0964,
+     "problems": 100,
+     "within_3": 10,
+     "within_3_by_level": {
+      "1": 3,
+      "2": 3,
+      "3": 1,
+      "4": 0,
+      "5": 3
+     }
+    },
+    "learned": {
+     "first": 12,
+     "found": 13,
+     "mean_reciprocal_place": 0.1225,
+     "problems": 100,
+     "within_3": 12,
+     "within_3_by_level": {
+      "1": 3,
+      "2": 3,
+      "3": 3,
+      "4": 0,
+      "5": 3
+     }
+    }
+   },
+   "taught-80": {
+    "against_as_handed": {
+     "earlier": 17,
+     "found_p": 1.0,
+     "gained": 0,
+     "interval_95": [
+      0.0196,
+      0.1239
+     ],
+     "later": 2,
+     "lost": 0,
+     "mean_reciprocal_difference": 0.0685,
+     "problems": 100,
+     "same": 81,
+     "sign_test_p": 0.000729,
+     "what": "solved_place"
+    },
+    "as_handed": {
+     "first": 12,
+     "found": 29,
+     "mean_reciprocal_place": 0.1367,
+     "problems": 100,
+     "within_3": 12,
+     "within_3_by_level": {
+      "1": 5,
+      "2": 4,
+      "3": 1,
+      "4": 1,
+      "5": 1
+     }
+    },
+    "learned": {
+     "first": 17,
+     "found": 29,
+     "mean_reciprocal_place": 0.2053,
+     "problems": 100,
+     "within_3": 22,
+     "within_3_by_level": {
+      "1": 8,
+      "2": 6,
+      "3": 5,
+      "4": 1,
+      "5": 2
+     }
+    }
+   }
+  },
+  "problems_trained_on": 200
+ },
+ "development": true,
+ "features": [
+  "place",
+  "fit_gap",
+  "held_gap",
+  "held_below_best",
+  "law_bits",
+  "bits_above_shortest",
+  "constants",
+  "small_constants",
+  "large_constants",
+  "operations",
+  "steps",
+  "held_minus_train"
+ ],
+ "handed_to_the_referee": 3,
+ "learning_curve": {
+  "arm": "taught-80",
+  "as_handed": {
+   "first": 19,
+   "found": 40,
+   "mean_reciprocal_place": 0.2107,
+   "problems": 100,
+   "within_3": 20,
+   "within_3_by_level": {
+    "1": 6,
+    "2": 9,
+    "3": 3,
+    "4": 1,
+    "5": 1
+   }
+  },
+  "held_apart": 100,
+  "repeats": 20,
+  "trained_on": {
+   "10": {
+    "first_mean": 23.75,
+    "mean_reciprocal_place": 0.2866,
+    "within_3_max": 35,
+    "within_3_mean": 32.2,
+    "within_3_min": 28
+   },
+   "100": {
+    "first_mean": 25.5,
+    "mean_reciprocal_place": 0.3065,
+    "within_3_max": 37,
+    "within_3_mean": 34.9,
+    "within_3_min": 32
+   },
+   "200": {
+    "first_mean": 24.0,
+    "mean_reciprocal_place": 0.3028,
+    "within_3_max": 37,
+    "within_3_mean": 37.0,
+    "within_3_min": 37
+   },
+   "25": {
+    "first_mean": 23.7,
+    "mean_reciprocal_place": 0.2866,
+    "within_3_max": 36,
+    "within_3_mean": 32.25,
+    "within_3_min": 20
+   },
+   "5": {
+    "first_mean": 20.8,
+    "mean_reciprocal_place": 0.2545,
+    "within_3_max": 34,
+    "within_3_mean": 27.6,
+    "within_3_min": 18
+   },
+   "50": {
+    "first_mean": 23.2,
+    "mean_reciprocal_place": 0.2899,
+    "within_3_max": 35,
+    "within_3_mean": 33.3,
+    "within_3_min": 31
+   }
+  }
+ },
+ "pools": [
+  "benchmarks/order_score/dev_run1_pools.json.gz"
+ ],
+ "tag": "DEV-LEARNED-ORDER-2026-11",
+ "what": "development: other orders of the candidate lists the memory handed over, scored by the place of the first candidate the judge counts solved; not a result, nothing was fixed beforehand"
+}

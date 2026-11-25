@@ -1,0 +1,76 @@
+{
+ "development": true,
+ "learned_on": {
+  "arm": "taught-80",
+  "pools": [
+   "benchmarks/order_score/dev_run1_pools.json.gz"
+  ]
+ },
+ "model": {
+  "features": [
+   "place",
+   "fit_gap",
+   "held_gap",
+   "held_below_best",
+   "law_bits",
+   "bits_above_shortest",
+   "constants",
+   "small_constants",
+   "large_constants",
+   "operations",
+   "steps",
+   "held_minus_train"
+  ],
+  "mean": [
+   0.4666814749000444,
+   2.211009696161956,
+   0.021386263981432733,
+   2.2238084925670814,
+   1.689698356286088,
+   4.980382330075511,
+   5.128831630386495,
+   0.6554864504664594,
+   0.40848511772545537,
+   10.297201243891603,
+   1.2470013327410039,
+   -0.021386263981432733
+  ],
+  "offset": -1.0965504546255374,
+  "scale": [
+   0.2893453576688137,
+   3.5968585955304424,
+   0.2857940068825381,
+   3.598397639816866,
+   0.6116126236552408,
+   3.8082174503719206,
+   1.9253780865541708,
+   0.897533453672129,
+   0.7863501023414529,
+   3.9571882851176228,
+   0.8334593516729759,
+   0.2857940068825381
+  ],
+  "strength": 1.0,
+  "trained_on": {
+   "candidates": 4502,
+   "problems": 300,
+   "solved": 365
+  },
+  "weights": [
+   -0.29417659149580405,
+   0.844237023649747,
+   0.15242268586840954,
+   -1.4033857603334843,
+   -1.7113876435486128,
+   -0.9564774350322136,
+   0.48458856820594465,
+   -0.2486606968937556,
+   -0.2664653518877571,
+   -0.06774880161880963,
+   0.09205907056199784,
+   -0.15242268586840954
+  ]
+ },
+ "tag": "DEV-LEARNED-ORDER-2026-11",
+ "what": "an order of the memory's candidates learned on every list of one arm of the order-score run; development, not in force; read by apedp_dyn.proposers.ranked_memory.load_order"
+}
