@@ -1,0 +1,67 @@
+# What an order-score run has measured so far: reads the shards that have finished in a run of
+# .github/workflows/order-score.yml and prints the record and the candidate pools, without waiting for the slowest arm.
+#   push to order-score-peek-run-<n>-of-<run id>  -> the record of that run, as far as its shards have got.
+# Reads artifacts of this repository's own runs and nothing else. Development only.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Order score, what is in so far (development)
+
+on:
+  push:
+    branches: ['order-score-peek-run-*']
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  peek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Which run
+        id: which
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          run="${BRANCH##*-of-}"
+          case "$run" in
+            ''|*[!0-9]*) echo "::error::the branch name must end in -of-<run id>"; exit 1 ;;
+          esac
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: order-score-taught-*
+          path: got
+          merge-multiple: true
+          run-id: ${{ steps.which.outputs.run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: order-score-in-force-*
+          path: got
+          merge-multiple: true
+          run-id: ${{ steps.which.outputs.run }}
+          github-token: ${{ github.token }}
+      - name: Collect
+        run: |
+          ls -la got
+          python scripts/measure_order_score.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN order score====="
+          if [ -f got/order_score.json ]; then gzip -9c got/order_score.json | base64 -w 60000; echo; fi
+          echo "=====END order score====="
+          echo "=====BEGIN order score pools====="
+          if [ -f got/order_score_pools.json.gz ]; then base64 -w 60000 got/order_score_pools.json.gz; echo; fi
+          echo "=====END order score pools====="
