@@ -1,0 +1,15 @@
+Times at which the search processes of a search stage were told to stop, in the log of the job
+`real` of GitHub run 45486849433 (lines "[pid] signal 15: Terminated", three for each search).
+UTC, 2026-11-24. Nineteen searches. Extracted from the job's log on 2026-11-25; the log itself is
+kept by GitHub for its retention time and is not in the repository.
+
+21:09:08  21:12:59  21:15:56  21:18:32  21:20:49  21:23:18  21:25:33  21:28:11  21:30:51
+21:33:27  21:35:46  21:38:38  21:42:05  21:45:03  21:47:55
+          then nothing for 25 minutes: the route called directly on Langmuir's table, no answer
+22:13:00  22:15:12
+          then nothing for 25 minutes: the route called directly on Hubble's table, no answer
+22:40:12  22:42:23
+          then nothing until the job's last part ended at 23:05: the route called directly on
+          Tully and Fisher's table, no answer
+
+Search processes started in the job: 103. Stop signals: 57.

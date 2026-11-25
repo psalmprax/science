@@ -181,3 +181,45 @@ index).
 
 **The plan is frozen as of this section.** The run is started by pushing `stage` to
 `real-tables-blind-run-1`.
+
+## The result
+
+Reviewed on 2026-11-25, before the record was committed, by a separate agent that took no part in
+the work. It was given the plan, the runner, the raw outputs and the draft of
+`RESULT-REAL-TABLES-2026-11.md`, was told to change nothing, and read no held-back table.
+
+**What it confirmed.** `SHA256SUMS` matches both records. Every cell, breakdown, pair and bound of
+arms D and E matches the 720 raw rows. It regenerated the 720 laws and tables with the frozen
+generator and judged all 1,800 recorded laws again: every `accurate`, `true_form` and R² came out
+the same, the four wrong reports included. Arm A's table, the route's table, the three unanswered
+runs and "16 of 19 searches answered" match the stored fields; arms B and C match. All six
+verdicts are what the plan and the frozen runner give: 2 of 44 and 2 of 41 are at most 5 % with no
+rounding; "decides nothing" is the plan's wording for A2 with no report; the binary stars' table
+was refused and left out of the five as the plan expected; A3 is computed as defined. Only the
+three unanswered runs fall under the deviation rule and none was run again. The 23 frozen files
+match the digest, and none differs between the run's commit and the head. Nothing was put in force.
+
+**What it could not recompute.** The run's number, branch and clock times are not in the outputs
+(the runner's own clock says 118.6 minutes from 21:06:37); the three log times were not in the
+result folder; arm A's judgements and the scores of arms B and C need the held-back tables.
+
+**What it found, and what was done.**
+
+| # | Finding | Done |
+|---|---|---|
+| 1 | The judgement that decided A1 was explained incompletely and is fragile. Time dilation was "no" for two constants against the declared one-constant form; against the registered two-constant law the counts are equal and what failed is the refit, by 1.2e-5 against 1e-8, a distance that comes from the judge's own fit of a constant the table cannot fix. With a physical value it would have passed, A1 would have held and the plan's "proposed" case would have applied. The verdict fits the plan's intent and stands | A section "The judgement that decided A1" gives both reasons and says that this one judgement separates "not proposed" from "proposed". The verdict table says so |
+| 2 | A3 "held" left out what it rests on: the third table is Langmuir, where the decoy gave the same form (2 against 2 as A1 counts); with nothing stated the reading had 0 of 5 and the route's first pass 2 of 5 | Added to the A3 section, the verdict table and the closing list |
+| 3 | D1 and E1: one-sided emphasis, and "the range the table covers" is not what was scored. Clean rows are drawn from 1 to 5, beyond a small table's rows; all four wrong reports are accurate inside the span of their own rows and fail beyond it; three D reports and one E report pass by less than the narrow miss; the disclosure that 4 of 120 readings change between runs was dropped | The accuracy test is described as it is; the four wrong reports have a column for R² inside their own rows' span (checked again by the author from the frozen generator: 0.999156, 0.999997, 0.999881, 0.999638); the near passes and the run-to-run variation are stated |
+| 4 | Causes stated as fact: the three unanswered runs "are" the search-stage fault | Now "consistent with"; the pattern (3 of the direct route's 5 runs, none of the reading's 12 or the product's 2) is stated as unexplained; the log times are kept in the result folder |
+| 5 | "No arm of the route reported a law" left out that the last checks withheld two, and which state of the route was the rival | Added: the second version of the last checks, in force without the owner's word, withheld the product's known form on Hubble and the direct route's law on time dilation |
+| 6 | Limitations and promised items dropped: arm D is inside the development distribution; no red-team arm; 13 of 41 trap reports from outside the grammar, below the 20 a share needs; the reading without the memory at 5.4 %; both counting tables among the three "close to given"; "a first measurement on five tables"; the request for a named threshold; the straight line in arm C | Each added where it belongs |
+| 7 | "What follows" said "as fixed before the run" and then that no case fits; "often enough" softened the plan's words | Rewritten: "not proposed" is fixed by every case with A1 missed; the description is put together from two cases, in the plan's words |
+| 8 | The record cited a review section that did not exist | This section |
+| 9 | Arm B: "half of the test" is by pipes, not rows; in the rehearsal the reading lost to Colebrook's formula on pipes made from it; the published formulas score worse on the work rows; laminar rows cannot be excluded | Added |
+| 10 | Small: 31 of 41 trap reports are not the law, not 29; the pipe table took 229 s; time dilation's decoy gave the decoy's law with a constant | Corrected |
+
+One thing the review raised that is not settled by rewording: under the rule as written, the
+outcome of this test turned on the fit of a constant the data do not fix. A later plan that judges
+"the known form" should fix such a constant beforehand, or judge against the form that the data
+can determine.
+

@@ -46,6 +46,19 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **RESULT-REAL-TABLES-2026-11: the small-table reading on real measurements is not proposed
+  (2026-11-25).** Run once (GitHub run 45486849433). A1 missed: the known law counted on 2 of
+  the 5 readable real tables where 3 were needed, the third hanging on the judgement of one law
+  with a spurious constant. A2 decides nothing: no law was reported on a real table. A3 held on
+  weak ground. D1 and E1 held with no margin (2 wrong of 44 generated tables' reports and 2 of 41
+  traps'; all four fail only beyond their own table's rows). D2 held (34 gained, 1 lost). Three
+  of the route's five runs with its search stage gave no answer. Reviewed independently before
+  recording: every number confirmed, ten findings on what the draft said or left out, each acted
+  on (`REVIEW-REAL-TABLES-2026-11.md`, "The result"). Nothing is in force; the eight held-back
+  tables are used up. **Asked of the owner:** a named threshold for the share of wrong laws among
+  those reported (the plan borrowed `REFEREE_MAX_FPR`).
+- **The flaw list, addressed (2026-11-25).** `docs/FLAW_LIST_2026-11-24.md`: each of the twelve
+  flaws with what was measured, what was done and what is the owner's decision.
 - **The generator loop's first run with a real model (2026-11-24, development).**
   `benchmarks/fast_generator_loop/dev_run1.json` (GitHub run 45498161317). Of 30 models the key
   reaches, six were tried; nemotron-3.5-lightning gave a running version in 4.9 s and was picked.
