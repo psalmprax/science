@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) multiplication, the baseline with no language model: the 42 has no shorter
+  neighbour of the kind the existing search looks for (2026-11-25, development; decision 4).**
+  `benchmarks/gf2_multiplication/rank_search_from_42.json` (run 45661808260). From the verified 42
+  products the exact search the repository already has, unchanged, can drop no product and finds
+  no way to replace two to nine of them by one fewer: every set of every size up to nine tried,
+  597,121,048 in all. The target of 41 or fewer is not met. **This is a weak baseline and is
+  recorded as one:** the family of rewrites is narrow and the search does not move away from its
+  starting point, so the negative is about the neighbourhood of this one decomposition. The strong
+  baseline with no model would be a search that moves (a flip graph); it is not built, and a
+  coding model should be asked to beat that one, not this. No specification is edited.
 - **A red stage build, the agent's, repaired (2026-11-25).** The build of `ca8e581` failed in one
   test of the ranked proposer (`tests/test_ranked_memory.py`): it fitted the memory's list twice
   and required the two lists to be the same text for text, and on GitHub's machine one badly

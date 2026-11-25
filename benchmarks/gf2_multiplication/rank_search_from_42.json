@@ -1,0 +1,115 @@
+{
+ "tag": "DEV-GF2-12-BASELINE-NO-MODEL-2026-11",
+ "development_not_a_result": true,
+ "what": "the existing exact search from the verified 42 products, with no language model: deflation and every k -> k-1 rewrite; a negative is a statement about this family from this starting point only",
+ "search": "apedp_dyn/quantum/gf2_rank_search.py (deflate, reduce_once), unchanged",
+ "start": "apedp_dyn/quantum/tower_reference.build_tower_42_reference()",
+ "summary": {
+  "target": 41,
+  "products_at_the_start": 42,
+  "products_dropped_by_deflation": 0,
+  "rewrites_exhausted_for_k": [
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "sets_tried_in_all": 597121048,
+  "a_rewrite_was_found": false,
+  "fewest_products_reached": 42,
+  "target_met": false
+ },
+ "moves": [
+  {
+   "move": "deflation",
+   "products_at_the_start": 42,
+   "products_dropped": 0,
+   "products_left": 42,
+   "seconds": 0.0
+  },
+  {
+   "move": "2 -> 1 rewrite",
+   "k": 2,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 861,
+   "sets_tried": 861,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 0.0
+  },
+  {
+   "move": "3 -> 2 rewrite",
+   "k": 3,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 11480,
+   "sets_tried": 11480,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 0.3
+  },
+  {
+   "move": "4 -> 3 rewrite",
+   "k": 4,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 111930,
+   "sets_tried": 111930,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 3.1
+  },
+  {
+   "move": "5 -> 4 rewrite",
+   "k": 5,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 850668,
+   "sets_tried": 850668,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 22.1
+  },
+  {
+   "move": "6 -> 5 rewrite",
+   "k": 6,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 5245786,
+   "sets_tried": 5245786,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 129.1
+  },
+  {
+   "move": "7 -> 6 rewrite",
+   "k": 7,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 26978328,
+   "sets_tried": 26978328,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 428.3
+  },
+  {
+   "move": "8 -> 7 rewrite",
+   "k": 8,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 118030185,
+   "sets_tried": 118030185,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 3166.6
+  },
+  {
+   "move": "9 -> 8 rewrite",
+   "k": 9,
+   "products_at_the_start": 42,
+   "sets_of_products_in_the_family": 445891810,
+   "sets_tried": 445891810,
+   "every_set_tried": true,
+   "found": false,
+   "seconds": 6693.7
+  }
+ ]
+}
