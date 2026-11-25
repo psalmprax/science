@@ -52,7 +52,10 @@ inferred releases.
   `DIGEST-REAL-TABLES.json` and ran once on Python 3.12, so it is not edited: the test now lists
   it as a known exception tied to that digest, with exactly that one line, and a second test
   fails if the file is ever no longer frozen. The failure had been hidden behind runs cancelled
-  as superseded; "Everything except the trustees' signature" was red because of it.
+  as superseded; "Everything except the trustees' signature" was red because of it. Behind it
+  was a second failure of the same cause: three tests in `tests/test_real_tables_blind.py` run
+  the runner's `real` command and stop at that line on Python 3.10. They are skipped below
+  Python 3.11, with the reason.
 - **RESULT-REAL-TABLES-2026-11: the small-table reading on real measurements is not proposed
   (2026-11-25).** Run once (GitHub run 45486849433). A1 missed: the known law counted on 2 of
   the 5 readable real tables where 3 were needed, the third hanging on the judgement of one law

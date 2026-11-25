@@ -11,6 +11,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+
+# The frozen runner's `real` command uses datetime.UTC (Python 3.11+). The file is frozen by DIGEST-REAL-TABLES.json
+# and ran once, on Python 3.12, so it is not edited; on an older Python the tests that run that command are skipped.
+runs_the_real_command = pytest.mark.skipif(sys.version_info < (3, 11),
+                                           reason="the frozen runner's `real` command needs Python 3.11 (datetime.UTC)")
+
 def _script(name: str) -> object:
     for folder in (str(ROOT), str(ROOT / "scripts")):
         if folder not in sys.path:
@@ -163,6 +169,7 @@ def _checked(monkeypatch: pytest.MonkeyPatch, rows: int = 5, lines: int = 6) -> 
     return asked
 
 
+@runs_the_real_command
 def test_nothing_is_read_if_one_table_cannot_be_loaded(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Every table is fetched, checked and parsed before a method reads any: a held-back table is read once."""
     asked = _checked(monkeypatch)
@@ -182,6 +189,7 @@ def test_nothing_is_read_if_one_table_cannot_be_loaded(monkeypatch: pytest.Monke
         blind.main(["real", "--out", str(tmp_path), "--searches", "0", "--only", "hubble"])
 
 
+@runs_the_real_command
 def test_nothing_is_read_if_a_table_lost_rows_in_parsing_or_the_judges_own_fit_fails(monkeypatch: pytest.MonkeyPatch,
                                                                                     tmp_path: Path) -> None:
     _checked(monkeypatch, rows=5, lines=13)                                                           # twelve rows promised, five usable
@@ -251,6 +259,7 @@ def _stub_table(key: str, found: bool = True, on_decoy: bool = False, reported: 
             "decoy": {"reading": {"action": "read"}, "judged_against_the_known_law": {"same_form_as_the_known_law": on_decoy}}}
 
 
+@runs_the_real_command
 def test_the_real_run_writes_after_every_part_and_survives_a_part_that_fails(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     import json
 
