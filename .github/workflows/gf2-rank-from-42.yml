@@ -1,0 +1,79 @@
+name: GF(2^12) multiplication, the baseline with no language model (development)
+
+# Development, not a result: scripts/search_gf2_mul_rank_from_42.py runs the exact search the repository already has
+# (apedp_dyn/quantum/gf2_rank_search.py, unchanged) from the verified 42 products: deflation and every k -> k-1
+# rewrite, one job for each k that takes long. The owner's decision 4 of 25 November asks for this before any coding
+# model is given the target of 41 products or fewer. A negative is a statement about this family from this start only.
+#   push to gf2-rank-from-42-run-*  -> every job, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf2-rank-from-42-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: 'k2-6', moves: '--deflation --k 2 3 4 5 6'}
+          - {name: 'k7', moves: '--k 7'}
+          - {name: 'k8', moves: '--k 8'}
+          - {name: 'k9', moves: '--k 9'}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The baseline's own tests
+        run: python -m pytest tests/test_gf2_rank_from_42.py tests/test_gf2_rank_search.py tests/test_tower_reference.py -q
+      - name: Moves ${{ matrix.name }}
+        timeout-minutes: 330
+        env:
+          MOVES: ${{ matrix.moves }}
+        run: python scripts/search_gf2_mul_rank_from_42.py run $MOVES --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf2-from-42-${{ matrix.name }}
+          path: out
+
+  collect:
+    needs: move
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf2-from-42-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/search_gf2_mul_rank_from_42.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf2 rank from 42====="
+          if [ -f got/rank_search_from_42.json ]; then gzip -9c got/rank_search_from_42.json | base64 -w 60000; echo; fi
+          echo "=====END gf2 rank from 42====="

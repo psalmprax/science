@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) multiplication: the baseline with no language model, started (2026-11-25,
+  development; decision 4).** `scripts/search_gf2_mul_rank_from_42.py` runs the exact search the
+  repository already has, unchanged, from the verified 42 products: deflation and every way to
+  replace `k` products by `k-1`. Locally: no product can be dropped, and none of the 124,271 sets
+  of two, three and four products can be replaced by one fewer.
+  `.github/workflows/gf2-rank-from-42.yml` runs `k` up to 9 on GitHub's machines (446 million
+  sets at `k = 9`). **What a negative is worth, said in the script and its record:** the family is
+  narrow and the search does not move away from the 42 it is given, so it is a weak baseline; a
+  flip-graph search is the stronger one and is not built. `tests/test_gf2_rank_from_42.py` (4). No
+  specification is edited.
 - **A table searched by its parts: the proposer and its study, started (2026-11-25, development;
   decision 3).** New `apedp_dyn/proposers/split_search.py`: the shape read by `table_shape.py`, a
   search for each part (any proposer; PySR in the study), the parts' laws put together in that
