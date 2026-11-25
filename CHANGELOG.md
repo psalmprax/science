@@ -68,6 +68,17 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **A table searched by its parts: the proposer and its study, started (2026-11-25, development;
+  decision 3).** New `apedp_dyn/proposers/split_search.py`: the shape read by `table_shape.py`, a
+  search for each part (any proposer; PySR in the study), the parts' laws put together in that
+  shape, the constants of the whole refitted on the rows given, at most three wholes proposed.
+  Where a table does not split it proposes nothing. It decides nothing and is not in force.
+  `scripts/study_split_search.py` and `.github/workflows/table-split-search.yml` run it alone,
+  outside the route, on the wider-conditions tables and on a second set of laws, and score its
+  proposals on rows without noise as accurate and as the law itself, beside what the route in
+  force reported for the same tables. **It measures a list, not what the route would report.**
+  `tests/test_split_search.py` (7), `tests/test_study_split_search.py` (5), both with a stand-in
+  search; no number with PySR exists until the run on GitHub has been read.
 - **The ladder's 2-hour rung and the full run with kept processes, each read under the rule
   written before it (2026-11-25, development; decision 2).** *Two hours:* on the 20 tables the
   rung shares with the others (three and four inputs, 1 % noise) the route reported 4 laws at 90

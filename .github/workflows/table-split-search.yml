@@ -1,0 +1,78 @@
+name: Wide tables searched by their parts (development)
+
+# Development, not a result: scripts/study_split_search.py runs the split-search proposer alone, outside the route
+# (apedp_dyn/proposers/split_search.py: the shape of the law read from the rows, PySR for each part, the parts' laws
+# put together), and scores what it proposes on rows without noise. It measures a list, not what the route reports.
+#   push to table-split-search-run-*          -> the 120 tables of the wider-conditions runs (set "first")
+#   push to table-split-search-second-run-*   -> 120 tables of 30 laws drawn after the shape reading was fixed
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['table-split-search-run-*', 'table-split-search-second-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The proposer's own tests
+        run: python -m pytest tests/test_table_shape.py tests/test_split_search.py tests/test_study_split_search.py -q
+      - name: Shard ${{ matrix.shard }} of 8
+        timeout-minutes: 150
+        env:
+          SHARD: ${{ matrix.shard }}
+          WHICH: ${{ startsWith(github.ref_name, 'table-split-search-second-run-') && 'second' || 'first' }}
+        run: python scripts/study_split_search.py run --set "$WHICH" --out out --seconds 90 --shard "$SHARD" --shards 8
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: split-search-${{ matrix.shard }}
+          path: out
+
+  collect:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: split-search-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        env:
+          WHICH: ${{ startsWith(github.ref_name, 'table-split-search-second-run-') && 'second' || 'first' }}
+        run: python scripts/study_split_search.py collect --set "$WHICH" --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN split search====="
+          if [ -f got/split_search.json ]; then gzip -9c got/split_search.json | base64 -w 60000; echo; fi
+          echo "=====END split search====="
