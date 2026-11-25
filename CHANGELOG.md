@@ -68,6 +68,14 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **A red stage build, the agent's, repaired (2026-11-25).** The build of `ca8e581` failed in one
+  test of the ranked proposer (`tests/test_ranked_memory.py`): it fitted the memory's list twice
+  and required the two lists to be the same text for text, and on GitHub's machine one badly
+  conditioned candidate's constants ended a few digits apart. The test had passed on every
+  earlier build and passes here. It now compares the two lists by shape, and the proposer's own
+  description no longer says that the same table gives the same proposals to the last digit.
+  Nothing recorded rests on that: the arms of the referee test are given recorded candidates, not
+  refitted ones.
 - **The referee test of the ranked proposer is held back by its independent review; an earlier
   result gets an erratum (2026-11-25, AGENTS.md 1.6).** A separate reviewer checked the draft plan
   against its runner before freezing: `docs/REVIEW_PREREG_RANKED_MEMORY_2026-11-25.md`, verdict

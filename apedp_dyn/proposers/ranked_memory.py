@@ -12,7 +12,10 @@ candidates the order puts first.
 **The rows it has.** The order reads how a candidate fits rows it was *not* fitted on. A proposer
 is given development rows and nothing else, so it sets a share of them aside (``HELD_SHARE``),
 fits on the rest and reads the fit on the share set aside. The split is seeded by the table
-itself, so the same table gives the same proposals.
+itself, so the same table has the same rows set aside every time. The fits are made afresh at each
+call: on one machine they have come out the same, and on GitHub's machines a badly conditioned
+candidate's constants have ended a few digits apart between two calls (25 November), so the same
+table gives the same shapes and not always the same last digits.
 
 **What it does not do.** It decides nothing: every candidate it hands over is confirmed and checked
 by the path like any other (AGENTS.md 1.1). It reads no confirmation rows. **Not in force**:

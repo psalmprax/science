@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import sympy as sp
 
 from apedp_dyn.proposers import learned_order, ranked_memory
 from apedp_dyn.proposers.structure_memory import Memory
@@ -51,6 +52,16 @@ def test_the_list_is_fitted_on_the_rows_kept_and_read_on_the_rows_set_aside(memo
     assert learned_order.features(pool).shape == (len(pool), len(learned_order.FEATURES))
 
 
+def _shapes(texts: list[str]) -> list[str]:
+    """Each law with its fitted constants made one symbol, in a fixed order."""
+    constant = sp.Symbol("C")
+    out = []
+    for text in texts:
+        expr = sp.sympify(text, locals={"x0": sp.Symbol("x0")})
+        out.append(str(expr.xreplace(dict.fromkeys(expr.atoms(sp.Float), constant))))
+    return sorted(out)
+
+
 def test_an_order_decides_which_three_are_handed_over_and_adds_no_candidate(memory, table) -> None:
     frame = pd.DataFrame({"x0": table["X"][:, 0], "target": table["y"]})
     by_rule = ranked_memory.RankedMemoryProposer(memory, **FITS)
@@ -63,11 +74,12 @@ def test_an_order_decides_which_three_are_handed_over_and_adds_no_candidate(memo
     longest_first.weights[learned_order.FEATURES.index("law_bits")] = 1.0
     reverse = ranked_memory.RankedMemoryProposer(memory, longest_first, **FITS)
     other = reverse.ordered(["x0"], table["X"], table["y"])
-    assert sorted(other) == sorted(listed) and other != listed   # the same candidates, another order
+    # The same candidates in another order. Two calls fit the list twice, and a badly conditioned fit can end a few
+    # digits apart (seen on GitHub's machines on 25 November, never here), so candidates are compared by shape.
+    assert _shapes(other) == _shapes(listed) and other != listed
     assert reverse.last_run["order"] == "learned" and len(reverse.last_run["moved_to_the_front"]) == 3
     pool, _ = ranked_memory.split_pool(memory, ["x0"], table["X"], table["y"], **FITS)
-    bits = {item["text"]: item["law_bits"] for item in pool}
-    assert bits[other[0]] == max(bits.values())
+    assert pool[longest_first.order(pool)[0]]["law_bits"] == max(item["law_bits"] for item in pool)   # one list, one order
 
 
 def test_an_order_is_loaded_from_its_record_or_from_a_record_that_holds_it(tmp_path) -> None:
