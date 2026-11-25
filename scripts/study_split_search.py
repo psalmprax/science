@@ -58,6 +58,7 @@ TAG = "DEV-SPLIT-SEARCH-2026-11"
 DEV_ROWS = 700            #: rows the proposer is given: the share of a table the route gives a proposer
 SECONDS = 90.0
 TABLE_LIMIT_S = 1200.0    #: a table whose reading and searches take longer is counted as proposing nothing
+KEPT_LAWS = 6             #: laws of each part kept in the record, shortest first; the laws chosen are kept whole beside them
 ROUTE_RECORD = ROOT / "benchmarks" / "wider_conditions" / "dev_run4.json"
 Inner = Callable[[float], ProposerBase]
 
@@ -126,7 +127,8 @@ def one(job: dict[str, Any], which: str, inner: Inner, seconds: float = SECONDS,
     signal.setitimer(signal.ITIMER_REAL, limit)
     try:
         proposals = proposer.fit_and_propose(frame, target_col="target")
-        row["proposals"] = [scored(str(p.formula), law, names, test_X, clean) for p in proposals]
+        row["proposals"] = [{"whole": (p.metadata or {}).get("whole"), **scored(str(p.formula), law, names, test_X, clean)}
+                            for p in proposals]
     except _TooLong:
         row["error"] = f"longer than {limit:g} s"
     except Exception as exc:  # noqa: BLE001 - one table failing is a row of the record, not the end of the shard
@@ -135,8 +137,11 @@ def one(job: dict[str, Any], which: str, inner: Inner, seconds: float = SECONDS,
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, old)
     run = proposer.last_run
+    kept = [{**note, "laws_found": len(note.get("laws") or []), "laws": (note.get("laws") or [])[:KEPT_LAWS]}
+            for note in run.get("part_laws") or []]
     row.update({"seconds": round(time.perf_counter() - started, 1), "read": run.get("read"), "shape": run.get("shape"),
-                "parts": run.get("parts"), "widest": run.get("widest"), "part_laws": run.get("part_laws"),
+                "parts": run.get("parts"), "widest": run.get("widest"), "part_laws": kept, "wholes": run.get("wholes"),
+                "wholes_refitted": run.get("wholes_refitted"),
                 "stand_ins": sum(bool(note.get("stand_in")) for note in run.get("part_laws") or []),
                 "a_proposal_accurate": any(p["accurate"] for p in row["proposals"]),
                 "a_proposal_the_law": any(p["recovered"] for p in row["proposals"]),
@@ -206,6 +211,7 @@ def main(argv: list[str] | None = None) -> int:
               "what": "a list: whether the law is among what the split-search proposer proposes; nothing is confirmed or reported",
               "settings": {"rows_given": DEV_ROWS, "seconds_for_all_parts": parts[0]["seconds"] if parts else None,
                            "laws_a_part": split_search.PER_PART, "proposals": split_search.MAX_PROPOSALS,
+                           "rows_set_aside": split_search.HELD_SHARE, "tolerance": split_search.TOLERANCE,
                            "table_limit_s": TABLE_LIMIT_S, "accurate_r2": base.R2_ACCURACY},
               "tables_read": len(rows), "tables_of_the_set": len(shapes.jobs(args.which)),
               "summary": summarise(rows, route), "rows": rows}

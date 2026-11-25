@@ -68,6 +68,18 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The split search, first run with PySR: accurate laws for wide tables, the law itself for none;
+  and what was changed because of it (2026-11-25, development).** On the 120 wider-conditions
+  tables (`benchmarks/table_split/dev_search_first_run1.json`; a list, outside the route) the
+  proposer had an accurate law for 24 of 40 tables with four inputs and 14 of 40 with five; the
+  route in force had one, reported or held back, for 9 and 4. At 1 % noise: 9 of 10 and 8 of 10
+  against 3 and 0. **It had the law itself for none of the 120.** The parts' laws show why: each
+  is the right term with a long tail fitted to the smooth model's own wiggles, because a part's
+  table looks free of noise and the search's pick was taken as it came. `split_search.py` now
+  sets a fifth of the rows given aside and takes, for each part, the shortest law for which the
+  whole misses those rows by no more than 2 % above the best-fitting whole; that whole is proposed
+  first. **This change was made looking at the first set's tables;** the second set of laws is the
+  one that can say whether it helps. `tests/test_split_search.py` (9).
 - **The ladder's missing rung: the dashboard's own 30 seconds (2026-11-25, development).**
   `.github/workflows/budget-ladder-30.yml` reads the ladder's 40 tables with 30 seconds a search,
   to be set beside its 90-second rung: the product's switch asks for 30 and no measurement had

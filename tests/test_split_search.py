@@ -39,6 +39,21 @@ class _Templates(ProposerBase):
         return [formula_proposal(self.proposer_id, text, names) for _, text in sorted(scored)]
 
 
+class _Overfits(_Templates):
+    """The same search, but its first answer is the best form with a wiggle fitted on top, as a real search answers a smooth table."""
+
+    def fit_and_propose(self, train_data, target_col=None, **kwargs):
+        plain = super().fit_and_propose(train_data, target_col=target_col)
+        (name,) = [c for c in train_data.columns if c != target_col]
+        x, y = train_data[name].to_numpy(dtype=float), train_data[target_col].to_numpy(dtype=float)
+        best = sp.sympify(plain[0].formula)
+        left = y - sp.lambdify(sp.Symbol(name), best, "numpy")(x)
+        wiggles = np.column_stack([np.sin(7.0 * x), np.cos(5.0 * x), x**3])
+        weights, *_ = np.linalg.lstsq(wiggles, left, rcond=None)
+        long = f"{plain[0].formula} + {float(weights[0])!r}*sin(7.0*{name}) + {float(weights[1])!r}*cos(5.0*{name}) + {float(weights[2])!r}*{name}**3"
+        return [formula_proposal(self.proposer_id, long, [name]), *plain]
+
+
 class _Fails(ProposerBase):
     def __init__(self, seconds: float) -> None:
         pass
@@ -85,6 +100,29 @@ def test_noisy_rows_still_give_an_accurate_whole_because_its_constants_are_refit
     proposer = split_search.SplitSearchProposer(lambda seconds: _Templates(seconds, []))
     proposals = proposer.fit_and_propose(frame, target_col="target")
     assert proposals and _r2(proposals[0], frame, clean) > 0.999
+
+
+def test_the_rows_choose_the_shortest_law_of_each_part_and_the_best_fitting_whole_comes_second():
+    frame, clean = _frame(lambda a, b: (1.0 + a) * np.sqrt(b + 1.0), 2, rows=500, noise=0.02)
+    proposer = split_search.SplitSearchProposer(lambda seconds: _Overfits(seconds, []))
+    proposals = proposer.fit_and_propose(frame, target_col="target")
+    assert len(proposals) == 2 and [note["whole"] for note in proposer.last_run["wholes"]] == ["shortest the rows allow", "best fit of each part"]
+    assert "sin(" not in proposals[0].formula and "cos(" not in proposals[0].formula      # the wiggle is gone
+    assert "sin(" in proposals[1].formula and "cos(" in proposals[1].formula
+    assert split_search.size(proposals[0].formula) < split_search.size(proposals[1].formula)
+    assert _r2(proposals[0], frame, clean) > 0.999
+    assert proposer.last_run["wholes_refitted"] <= split_search.MAX_WHOLES + 2
+
+
+def test_the_rows_set_aside_are_a_fifth_chosen_by_the_table_itself():
+    rng = np.random.default_rng(1)
+    X, y = rng.uniform(1.0, 5.0, (200, 2)), rng.standard_normal(200)
+    fit, held = split_search.set_aside(X, y)
+    again = split_search.set_aside(X.copy(), y.copy())
+    assert len(held) == 40 and len(fit) == 160 and not set(fit) & set(held)
+    assert np.array_equal(fit, again[0]) and np.array_equal(held, again[1])
+    assert not np.array_equal(held, split_search.set_aside(X, y + 1.0)[1])
+    assert split_search.size("x + 1") < split_search.size("sin(x)*x + 1") and split_search.size("x +* y") == 10**6
 
 
 def test_a_table_that_does_not_split_gets_no_proposal():
