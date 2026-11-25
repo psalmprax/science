@@ -103,3 +103,40 @@ search stays an option on request. The condition, the rung and the tables are un
 seconds, so nothing recorded says what the product's switch finds against 90 seconds on the same
 tables. A 30-second rung on the ladder's 40 tables would say, at about two hours of GitHub's
 machines; it is a development measurement and is run after the 2-hour rung has been read.
+
+## What the two rules of section 2 gave, 25 November, 16:55 UTC
+
+Both runs ended earlier than expected and were read after the correction above was committed
+(commit 51dcec8).
+
+**The 2-hour rung** (`benchmarks/budget_ladder/dev_run1_cold_7200.json`). On the 20 tables it
+shares with the other rungs (three and four inputs, noise 1 %): 4 laws reported at 90 seconds, 9
+at 15 minutes, 12 at 2 hours; no report inaccurate at any rung; one law recovered by form, at 2
+hours only. Two hours against 90 seconds, table by table: 8 gained, none lost, exact sign test
+0.008. **The condition is met** (below 0.05, and no 2-hour report inaccurate). By the rule a
+change of the product's search budgets is therefore *proposed*; it is the owner's to decide
+(AGENTS.md 1.5) and nothing has been changed.
+
+What the agent proposes, and what it does not:
+
+- *Proposed:* a long search as something the product can be asked for and that does not hold a
+  web request open: a reading started in the background with 15 minutes a search by default and 2
+  hours at most, its result fetched when it is done. Most of the gain was there at 15 minutes (9
+  of the 12; 2 hours against 15 minutes: 3 gained, none lost, sign test 0.25), at a seventh of the
+  time.
+- *Not proposed:* changing the dashboard's switch (30 seconds) or the ceiling of a web request
+  (300 seconds). A request that waits two hours is not a web request, and the 30 seconds have not
+  been measured.
+- *What the measurement does not carry:* 20 tables, one noise level, three and four inputs, a
+  development run with nothing frozen but this rule. Twelve reports with none wrong do not show
+  the named limit on wrong reports held (that needs 29).
+
+**Kept search processes** (`benchmarks/wider_conditions/dev_run5_kept_processes.json`, run
+45645071039). (a) All 120 readings ended; all eight shards finished; no job was cut by its time
+limit. (b) Three readings ended in an error, each "SVD did not converge in Linear Least Squares",
+the fitting error the fresh-process runs also have; none names a search process or the pool. (c)
+Against the fresh-process run on the same tables: 17 laws reported against 15; 4 tables gained, 2
+lost, sign test 0.69; no inaccurate report. **Clean by all three conditions.** By the rule kept
+processes are *proposed* as the default (`APEDP_SEARCH_PROCESSES=warm` as what the product does
+unless told otherwise); the owner decides and nothing has been changed. Measured saving: 6.9
+machine-hours against 8.0 for the 120 readings, 203 seconds a reading at the median against 231.

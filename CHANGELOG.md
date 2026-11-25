@@ -68,6 +68,22 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The ladder's 2-hour rung and the full run with kept processes, each read under the rule
+  written before it (2026-11-25, development; decision 2).** *Two hours:* on the 20 tables the
+  rung shares with the others (three and four inputs, 1 % noise) the route reported 4 laws at 90
+  seconds, 9 at 15 minutes and 12 at 2 hours, none inaccurate, and recovered one law by form, at 2
+  hours only. Against 90 seconds: 8 tables gained, none lost, exact sign test 0.008. The rule was
+  "a change is proposed only if that test is below 0.05 and no 2-hour report is inaccurate"; **it
+  is met, so a change of the product's search budgets is proposed and the owner decides.** Most of
+  the gain is there at 15 minutes (2 hours against 15 minutes: 3 gained, none lost, 0.25).
+  `benchmarks/budget_ladder/dev_run1_cold_7200.json`; the three records saved earlier are the
+  final ones. *Kept processes:* all 120 readings ended and no job was cut; three readings ended in
+  the fitting error the fresh-process runs also have, none naming a process or the pool; against
+  the fresh-process run on the same tables 17 laws reported against 15, 4 gained and 2 lost (sign
+  test 0.69), none inaccurate. **Clean by the three conditions, so kept processes are proposed as
+  the default and the owner decides.** 6.9 machine-hours against 8.0.
+  `benchmarks/wider_conditions/dev_run5_kept_processes.json`. Nothing in force is changed by
+  either (AGENTS.md 1.5).
 - **Split a table before it is searched: the shape of a law read from its rows (2026-11-25,
   development; owner's decision 3, the first idea in order).** The table route has recovered no law
   of four or five inputs by form, and fifteen minutes of search in place of ninety seconds did not
