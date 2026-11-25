@@ -115,3 +115,6 @@ apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtra
 /lean_checked/.lake/
 data/srbench/
 data/mmlm/
+
+# Another coding tool's working files: kept on the machine, not in the repository (owner's decision, 2026-11-25).
+.refact/

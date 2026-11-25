@@ -46,6 +46,17 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **Housekeeping, by the owner's decision of 2026-11-25 (6).** **14 modules moved out of the
+  package**, byte for byte, into `archive/unused_modules_2026-11-25/` (its README lists them and
+  how to bring one back). The audit had counted 40 that no test names and nothing imports; the
+  other 26 stay, because they are not unused: 22 `cpmd_*` files are the code of record of the
+  CPMD preregistrations (one is named by a plan not yet run), two start the interface, two
+  produced a report that tests read, and one is in the VQC inventory. Modules no test names:
+  65 to 51, and the pinned ceiling with it. **`.refact/` is no longer tracked** (75 files of
+  another coding tool; they stay on the machine and are ignored from now on. On any other clone
+  a pull removes them: copy the folder first if you use that tool there). **Signed evidence
+  receipts** (`docs/PROPOSAL_EVIDENCE_RECEIPTS_2026-11-24.md`) are approved in principle and not
+  built; the signing ceremony does not wait for them.
 - **Six decisions of the owner, 2026-11-25 ("yes to all"), carried out in this and the next
   entries.** (1) **The second version of the last checks is kept.** Asked for an explicit yes or
   no with its limits stated, the owner said to keep it; it is in force by that decision
