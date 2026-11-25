@@ -46,6 +46,14 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **The build was red because of this session: a frozen audit file was regenerated (2026-11-25,
+  fixed).** Adding `gf2_mul_tower_42.json` to `benchmarks/quantum_compilation/` made
+  `tests/test_record_correctness_audit.py` ask for `correctness_audit.json` to be regenerated, and
+  regenerating it changed a file that `vqc_phase0_baseline.json` holds byte for byte
+  (`tests/test_vqc_phase0_inventory.py`, which was not re-run after the regeneration). The record
+  now lives in `benchmarks/gf2_multiplication/`, outside that directory, and
+  `correctness_audit.json` is restored to its frozen content (sha256 `ed48e940…3f54`). The baseline
+  was not re-frozen. Commits 98a96d0 to b9a903f carry the changed file.
 - **In force, by the owner's decision 2 of 2026-11-25: the product's searches use processes that
   cannot stop a reading for ever.** The decision waited for a wider-conditions run that finished
   clean. Run 4 (45545555731, the bounded wait as it now is) did: 120 readings, every shard
@@ -111,7 +119,7 @@ inferred releases.
   any decomposition: `(x, y, z) -> (x, y, z + x*y)` with **42 Toffolis, 474 CNOTs (not minimised)
   and no qubit beyond the 36**, checked from its gates alone (which settles every basis state) and
   bit by bit on 20,000 random states. `scripts/record_gf2_mul_tower_42.py` writes and re-checks
-  `benchmarks/quantum_compilation/gf2_mul_tower_42.json`; `tests/test_tower_reference.py` (13).
+  `benchmarks/gf2_multiplication/gf2_mul_tower_42.json`; `tests/test_tower_reference.py` (13).
   Findings, sources and what is not shown: `docs/GF2_12_MULTIPLICATION_RECORD_2026-11-25.md`. Not
   shown: that 42 is the least (not known); that nothing lower is published (a search, not a proof);
   anything measured in the decoder benchmark (the repository's own model reads about 16.7 % fewer

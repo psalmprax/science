@@ -30,7 +30,7 @@ from apedp_dyn.quantum.field_tensor_search import (
 from apedp_dyn.quantum.gf2_rank_search import solve_weights
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-RECORD = ROOT / "benchmarks" / "quantum_compilation" / "gf2_mul_tower_42.json"
+RECORD = ROOT / "benchmarks" / "gf2_multiplication" / "gf2_mul_tower_42.json"
 
 
 @pytest.fixture(scope="module")

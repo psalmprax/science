@@ -42,7 +42,7 @@ from apedp_dyn.quantum.field_tensor_search import (  # noqa: E402
 )
 from apedp_dyn.quantum.gf2_rank_search import solve_weights  # noqa: E402
 
-RECORD = REPO_ROOT / "benchmarks" / "quantum_compilation" / "gf2_mul_tower_42.json"
+RECORD = REPO_ROOT / "benchmarks" / "gf2_multiplication" / "gf2_mul_tower_42.json"
 HEADROOM = REPO_ROOT / "benchmarks" / "quantum_compilation" / "gf_mul_and_static_headroom.json"
 TAG = "DEV-GF2-12-TOWER-42-2026-11"
 PAIRS, STATES, SAMPLE_SEED = 4096, 20000, 20261125
