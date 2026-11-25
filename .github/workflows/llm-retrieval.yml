@@ -1,0 +1,57 @@
+# A language model's proposals with and without the laws of solved tables that looked like the one in hand
+# (scripts/study_llm_retrieval.py; the measurement is apedp_dyn/recursion/order_score.py).
+#   push to llm-retrieval-run-*  -> 60 fresh curriculum problems, two calls each, at most 200 calls in all.
+# The key is the repository secret NVIDIA_API_KEY (or CODING_MODEL_API_KEY); only the step that talks to the model
+# is given it. Development only: no held-back law is read, nothing is installed, no preregistered measurement is taken.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Language model with solved cases (development)
+
+on:
+  push:
+    branches: ['llm-retrieval-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The study's own tests, with a scripted model
+        run: python -m pytest tests/test_llm_retrieval.py tests/test_experience.py tests/test_order_score.py -q
+      - name: A key has been provided
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY || secrets.NVIDIA_API_KEY }}
+        run: |
+          if [ -z "$CODING_MODEL_API_KEY" ]; then
+            echo "::error::No key: set the repository secret NVIDIA_API_KEY or CODING_MODEL_API_KEY."
+            exit 1
+          fi
+      - name: 60 problems, two calls each, at most 200 calls
+        timeout-minutes: 200
+        env:
+          CODING_MODEL_API_KEY: ${{ secrets.CODING_MODEL_API_KEY || secrets.NVIDIA_API_KEY }}
+          CODING_MODEL_BASE_URL: ${{ vars.CODING_MODEL_BASE_URL }}
+        run: python scripts/study_llm_retrieval.py --out out --problems 60 --max-calls 200
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: llm-retrieval
+          path: out/
+          if-no-files-found: warn
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN llm retrieval====="
+          if [ -f out/llm_retrieval.json ]; then gzip -9c out/llm_retrieval.json | base64 -w 60000; echo; fi
+          echo "=====END llm retrieval====="

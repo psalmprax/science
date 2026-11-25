@@ -69,13 +69,17 @@ def test_problems(count: int = PROBLEMS) -> list[Problem]:
     return Curriculum(TEST_SEED).measurement(count, "order score, test")
 
 
-def teaching_laws(count: int, tests: list[Problem]) -> list[str]:
-    """Laws to teach, none with the structure of a test problem; from the measured levels, moving on where one runs out."""
+def teaching_problems(count: int, tests: list[Problem]) -> list[Problem]:
+    """Problems to teach from, none with the structure of a test problem; from the measured levels, moving on where one runs out."""
     if count <= 0:
         return []
     teacher = Curriculum(TEACH_SEED)
     teacher.seen |= {structure(problem.truth) for problem in tests}
-    return [problem.text for problem in teacher._draw(count, "order score, teaching", list(MEASURED_LEVELS))]
+    return teacher._draw(count, "order score, teaching", list(MEASURED_LEVELS))
+
+
+def teaching_laws(count: int, tests: list[Problem]) -> list[str]:
+    return [problem.text for problem in teaching_problems(count, tests)]
 
 
 def memory_of(arm: str, tests: list[Problem]) -> Memory:

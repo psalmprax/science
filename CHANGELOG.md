@@ -68,6 +68,18 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **What the system solved before, found again by what a table looks like; and a language model
+  shown it (2026-11-25, asked for by the owner; development, not in force).** New
+  `apedp_dyn/proposers/experience.py`: a store of solved cases, each a law beside a signature of
+  its table made of rank statistics (no rows kept; the same whatever the order of the inputs or
+  the units), and `nearest`, the laws of the tables that looked most like a new one.
+  `scripts/study_llm_retrieval.py` scores three lists on 60 fresh curriculum problems with the
+  order score: a hosted language model shown the table, the same model also shown the eight
+  nearest cases with their constants removed, and the cases refitted with no model;
+  `.github/workflows/llm-retrieval.yml` runs it with a ceiling of 200 calls.
+  `scripts/study_learned_order.py` scores other orders of the lists kept by the order-score run.
+  `tests/test_experience.py` (4), `tests/test_llm_retrieval.py` (4),
+  `tests/test_study_learned_order.py` (2).
 - **A real budget for the search: kept processes and a ladder of budgets (2026-11-25, asked for by
   the owner; development, nothing in force).** Each search of the stage in force is one core for
   90 seconds in a process started for that table. New `apedp_dyn/proposers/warm_pool.py`: one
