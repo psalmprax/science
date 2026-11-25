@@ -149,25 +149,49 @@ def test_with_fewer_than_four_cores_the_stage_is_the_frozen_one() -> None:
     assert not isinstance(stage._inner, PortfolioProposer)
 
 
-def test_nothing_in_force_builds_the_hard_exit_stage() -> None:
+def test_only_the_recursion_and_the_products_reading_build_the_stage() -> None:
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
     users = sorted(path.relative_to(root).as_posix() for path in (root / "apedp_dyn").rglob("*.py")
                    if "hard_exit" in path.read_text(encoding="utf-8") and path.name != "hard_exit.py")
-    # the recursion package, which is not in force, and the product's reading, which builds it only where asked
+    # the recursion package, which is not in force, and the product's reading, where it is the default by the owner's
+    # decision of 2026-11-25; the routes' modules and the frozen runners build the stage as frozen
     assert users == ["apedp_dyn/recursion/levels.py", "apedp_dyn/ui/route_endpoint.py"]
 
 
-def test_the_products_reading_builds_it_only_where_the_environment_asks(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+def test_the_products_reading_builds_it_unless_the_environment_asks_for_the_frozen_stage(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    import sys
+
+    from apedp_dyn.discovery_l2 import stage_in_force
+    from apedp_dyn.ui import route_endpoint
+
+    monkeypatch.setitem(sys.modules, "pysr", type(sys)("pysr"))          # the endpoint only asks whether it can be loaded
+    monkeypatch.setattr(stage_in_force, "search_stage", lambda budget, **kw: ("as frozen", f"frozen, {budget:g} s"))
+    monkeypatch.setattr(hard_exit, "stage_in_force_that_cannot_hang", lambda budget, **kw: ("bounded", f"bounded, {budget:g} s"))
+
+    monkeypatch.delenv(hard_exit.ENVIRONMENT_VARIABLE, raising=False)
+    assert hard_exit.in_force() is True and hard_exit.asked_for() is False       # the default, by the owner's decision
+    assert route_endpoint._proposer(12.0) == ("bounded", "bounded, 12 s")
+    status = route_endpoint.status_block()["search_processes"]
+    assert status["in_force"].startswith("leave at once") and "2026-11-25" in status["decision"]
+    assert status["switch"] == "APEDP_SEARCH_PROCESSES=wait builds the stage as frozen" and "dev_run4.json" in status["measured"]
+
+    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, "LEAVE_HARD ")            # the earlier switch still means the same
+    assert hard_exit.in_force() is True and hard_exit.asked_for() is True
+    assert route_endpoint._proposer(12.0) == ("bounded", "bounded, 12 s")
+
+    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, " Wait")                  # the stage as frozen, on request
+    assert hard_exit.in_force() is False
+    assert route_endpoint._proposer(12.0) == ("as frozen", "frozen, 12 s")
+    assert route_endpoint.status_block()["search_processes"]["in_force"].startswith("as frozen")
+    assert route_endpoint._proposer(0.0)[0] is None                              # no budget: no search stage either way
+
+
+def test_the_stage_built_for_the_product_is_the_stage_in_force_with_wrapped_members(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from apedp_dyn.discovery_l2 import stage_in_force
 
     monkeypatch.delenv(hard_exit.ENVIRONMENT_VARIABLE, raising=False)
-    assert hard_exit.asked_for() is False                       # off unless asked: what is in force is unchanged
-    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, "LEAVE_HARD ")
-    assert hard_exit.asked_for() is True
-    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, "yes")
-    assert hard_exit.asked_for() is False
 
     stage, described = hard_exit.stage_in_force_that_cannot_hang(90.0, cores=4, seed=1)
     _reference, reference_described = stage_in_force.search_stage(90.0, cores=4, seed=1)

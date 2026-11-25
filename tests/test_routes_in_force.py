@@ -156,10 +156,14 @@ def test_the_memory_stands_beside_the_searches_and_the_stage_says_so(monkeypatch
 
 
 def test_the_endpoint_builds_the_stage_in_force(monkeypatch):
+    from apedp_dyn.proposers import hard_exit
     from apedp_dyn.ui import route_endpoint
 
     monkeypatch.setattr(stage_in_force, "search_stage", lambda budget, **kw: ("the stage in force", f"in force, {budget:g} s"))
     monkeypatch.setitem(sys.modules, "pysr", type(sys)("pysr"))          # the endpoint only asks whether it can be loaded
+    # since 2026-11-25 the endpoint builds the same stage with search processes that cannot stop a reading for ever
+    # (tests/test_hard_exit.py); the stage as frozen is built where the environment asks for it
+    monkeypatch.setenv(hard_exit.ENVIRONMENT_VARIABLE, hard_exit.WAIT)
     assert route_endpoint._proposer(12.0) == ("the stage in force", "in force, 12 s")
     assert route_endpoint._proposer(0.0)[0] is None
     block = route_endpoint.status_block()

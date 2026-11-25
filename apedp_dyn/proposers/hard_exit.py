@@ -40,10 +40,14 @@ on, so :class:`BoundedPortfolio` bounds the wait from outside: once the portfoli
 and each kill is printed. The answers are all in before that wait begins, so none can be lost, and
 the searches themselves are unchanged.
 
-**Not in force.** The routes and the product still build ``search_stage.default_search_stage``.
-Using this stage there is the owner's decision (AGENTS.md 1.5). The product's reading can be asked
-for it: ``APEDP_SEARCH_PROCESSES=leave_hard`` (``apedp_dyn/ui/route_endpoint.py``); without that
-variable nothing changes.
+**In force for the product's reading since 2026-11-25, by the owner's decision** ("make the hang
+fix the product's default once the wider-conditions run finishes clean"). The run that finished
+clean is the fourth (45545555731): 120 readings, every shard finished, and each search process
+that would not go was killed about 20 s into the wait (``benchmarks/wider_conditions/dev_run4.json``).
+``apedp_dyn/ui/route_endpoint.py`` builds this stage unless the environment says
+``APEDP_SEARCH_PROCESSES=wait``, which builds the stage as frozen. The searches are the same either
+way. The benchmark runners frozen by earlier plans still build
+``search_stage.default_search_stage`` and are not touched.
 """
 from __future__ import annotations
 
@@ -65,6 +69,9 @@ from apedp_dyn.proposers.portfolio import MemberFactory, PortfolioProposer
 
 ENVIRONMENT_VARIABLE = "APEDP_SEARCH_PROCESSES"
 LEAVE_HARD = "leave_hard"
+WAIT = "wait"           # the stage as frozen: the portfolio waits for its search processes however long they take
+DECISION = ("the owner's decision of 2026-11-25: the product's searches use processes that cannot stop a reading for ever, "
+            "once a wider-conditions run has finished clean (run 4, benchmarks/wider_conditions/dev_run4.json)")
 STOP_GRACE_S = 20.0     # how long the portfolio may wait for its search processes to go before they are killed
 STOP_FALLBACK_S = 60.0  # the same wait counted from the searches' deadline, should the wait itself never be seen
 STOP_POLL_S = 0.5
@@ -73,8 +80,13 @@ _armed = False
 
 
 def asked_for() -> bool:
-    """Whether the environment asks for search processes that leave hard. Off unless asked."""
+    """Whether the environment asks by name for search processes that leave hard (the default since 2026-11-25)."""
     return os.environ.get(ENVIRONMENT_VARIABLE, "").strip().lower() == LEAVE_HARD
+
+
+def in_force() -> bool:
+    """Whether the product's reading builds this stage: yes, unless the environment asks for the stage as frozen."""
+    return os.environ.get(ENVIRONMENT_VARIABLE, "").strip().lower() != WAIT
 
 
 def _leave() -> None:

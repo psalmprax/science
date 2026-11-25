@@ -86,13 +86,28 @@ def _proposer(budget: float) -> tuple[Any, str]:
     from apedp_dyn.discovery_l2 import stage_in_force
     from apedp_dyn.proposers import hard_exit
 
-    if hard_exit.asked_for():
-        # the same searches, with search processes that cannot hang while leaving; only where the environment asks
-        # (APEDP_SEARCH_PROCESSES=leave_hard). The default below is unchanged: making this the default is the owner's.
-        asked: tuple[Any, str] = hard_exit.stage_in_force_that_cannot_hang(budget)
-        return asked
+    if hard_exit.in_force():
+        # the same searches, with search processes that cannot stop a reading for ever: the default by the owner's
+        # decision of 2026-11-25 (hard_exit.DECISION). APEDP_SEARCH_PROCESSES=wait builds the stage as frozen.
+        bounded: tuple[Any, str] = hard_exit.stage_in_force_that_cannot_hang(budget)
+        return bounded
     stage: tuple[Any, str] = stage_in_force.search_stage(budget)
     return stage
+
+
+def _search_processes() -> dict[str, Any]:
+    """How the search stage's processes are stopped, for the status block: what is in force, by whose word, and the switch."""
+    from apedp_dyn.proposers import hard_exit
+
+    bounded = hard_exit.in_force()
+    return {"in_force": ("leave at once after their answer; one that has not gone 20 s after it was told to is killed"
+                         if bounded else "as frozen: the search stage waits for them however long they take"),
+            "decision": hard_exit.DECISION,
+            "measured": ("wider-conditions run 4, development: 120 readings, none stopped; of 80 search processes sent the "
+                         "stop signal while alive, those that never went were killed about 20 s later "
+                         "(benchmarks/wider_conditions/dev_run4.json). With the stage as frozen every shard of run 2 "
+                         "stopped for ever"),
+            "switch": f"{hard_exit.ENVIRONMENT_VARIABLE}={hard_exit.WAIT} builds the stage as frozen"}
 
 
 def _clean(X: Mapping[str, Any], y: Any) -> tuple[list[str], np.ndarray, np.ndarray]:
@@ -278,6 +293,7 @@ def status_block() -> dict[str, Any]:
                      "(PREREG-MAIN-SEARCH-2026-11). Kept importable."),
         },
         "search_stage": _proposer(_search_budget(None))[1],
+        "search_processes": _search_processes(),
         "search_stage_measured": ("four searches side by side: SRBench, 73 and 63 of 103 problems recovered against 61 and "
                                   "61 for one search (preregistration/RESULT-PORTFOLIO-SEARCH-2026-11.md). A memory of "
                                   "reported laws beside them: 23 of 80 new laws recovered against 17, none lost, no wrong "

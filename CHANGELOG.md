@@ -46,6 +46,32 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **In force, by the owner's decision 2 of 2026-11-25: the product's searches use processes that
+  cannot stop a reading for ever.** The decision waited for a wider-conditions run that finished
+  clean. Run 4 (45545555731, the bounded wait as it now is) did: 120 readings, every shard
+  finished, no stall report, no process left over. In each of the 80 readings with four or five
+  inputs one search process was sent the stop signal while alive; 19 never went, and each was
+  killed 20 s after its signal. Run 3 (45539830136, the first version) also finished: 25 that
+  never went, each killed 333 to 346 s after its signal. With the stage as frozen, every shard of
+  run 2 stopped for ever. `apedp_dyn/ui/route_endpoint._proposer` now builds
+  `hard_exit.stage_in_force_that_cannot_hang` by default; `APEDP_SEARCH_PROCESSES=wait` builds the
+  stage as frozen (`hard_exit.in_force`, `hard_exit.WAIT`), and `leave_hard` still means what it
+  meant. `status_block()` gained `search_processes`: what is in force, by whose word, the run
+  behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
+  The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
+  `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The table route beyond its measured conditions: two full runs (2026-11-25, development, not a
+  result).** `benchmarks/wider_conditions/dev_run3.json` and `dev_run4.json`: the product's
+  reading on 30 invented laws with three, four and five inputs at noise 1, 5, 10 and 20 %, the
+  same 120 tables in both runs. Inside the measured range (three inputs, noise up to 5 %): 8 and 7
+  laws reported in 20 readings, none inaccurate. Beyond it: 10 reported in 100 readings with **2
+  not accurate** in run 3 (four and five inputs at 5 % noise; both marked by the reading as
+  outside its measured range, both passed the last checks), and 8 with none inaccurate in run 4.
+  Nothing was reported at 20 % noise. No report in either run is the law itself by form. 13
+  tables were reported in both runs, 5 only in the third, 2 only in the fourth: reports beyond the
+  range are not stable from run to run, and too few to bound the share of wrong ones. Three
+  readings in run 3 and one in run 4 ended in a least-squares error and reported nothing: a defect
+  of the reading, open.
 - **Search processes: a second way to stop for ever, and a wait that is bounded from outside
   (2026-11-25).** With `hard_exit`'s members the second recursion run (45493901958) finished 15 of
   its first 16 jobs, where the first run had finished none, and the second wider-conditions run
