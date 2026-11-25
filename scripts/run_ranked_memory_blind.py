@@ -61,7 +61,7 @@ MEMORY_BLIND_LAWS = ROOT / "benchmarks" / "memory_blind_laws.json"
 FROZEN = (
     "preregistration/PREREG-RANKED-MEMORY-2026-11.md", "scripts/run_ranked_memory_blind.py",
     "benchmarks/ranked_memory_blind_laws.json", "benchmarks/structure_memory.json",
-    "benchmarks/order_score/learned_order_in_force.json",
+    "benchmarks/order_score/learned_order_model.json",
     "scripts/build_invented_laws.py", "scripts/run_srbench_baseline.py", "scripts/run_srbench_main_search.py",
     "apedp_dyn/discovery_l2/ranked_stage.py", "apedp_dyn/proposers/ranked_memory.py", "apedp_dyn/proposers/learned_order.py",
     "apedp_dyn/proposers/structure_memory_counted.py", "apedp_dyn/proposers/structure_memory.py",

@@ -45,6 +45,14 @@ stage that measures where candidates disagree when a pool of further cases exist
 reduction where units are given; and, since this week, the order score, a learned order, a store
 of solved cases found by what a table looks like, kept search processes and a ladder of budgets.
 
+*Correction, 25 November, evening.* This list left out something the system had: the older
+package has a separability test (`apedp/separability.py`: each pair of inputs judged by the mixed
+curvature of local quadratic fits, groups that add or groups that multiply, used to seed that
+package's search). It was missed when idea C1 was written. The table route does not use it, and
+read with it the 300 tables of the split study gave 2 splits (`benchmarks/table_split/`), so C1
+stands as work to do; but "not yet part of this system" was too strong for the idea, and right
+only for the method that was then built (`apedp_dyn/proposers/table_shape.py`).
+
 ## 4. The ideas
 
 Ordered by how directly they answer a row of section 2. "Pass mark" always means: on the 300
@@ -138,6 +146,7 @@ seeded with the verified 42 products. Waits for the owner's word on the target.
 arXiv:2006.10782) fits a smooth model and tests it for additive and multiplicative separability
 and symmetries; Cranmer et al. read laws off the parts of a trained network (arXiv:2006.11287).
 *Here:* nothing in the route in force splits a table; four and five inputs are searched whole.
+(The older package has a pairwise test that seeds its own search; see the correction in section 3.)
 *Test:* the wider-conditions tables with four and five inputs: laws recovered by form (now 0 of
 160), wrong reports no higher. *Cost:* CPU. **The most direct answer to a measured failure.**
 

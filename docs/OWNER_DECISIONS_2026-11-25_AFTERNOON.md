@@ -76,3 +76,30 @@ what the existing search reaches with no language model, on GitHub's machines.
 *Does not cover:* proposals 2 and 3 of that document (correcting section 4.1 of
 `specifications/APEDP_QUANTUM_DISCOVERY_V1.md`, and measuring the 42 in the decoder benchmark).
 They stay open. No specification file is edited on the strength of this decision.
+
+## Correction to section 2, 25 November, 16:19 UTC (written before the 2-hour rung was read)
+
+"The default search budget stays 90 seconds" is wrong as a description of the product, in the
+agent's words to the owner and in this record. **The product has no default search budget of 90
+seconds.** Read from the code (`apedp_dyn/ui/route_endpoint.py`, `apedp_dyn/ui/dashboard.html`):
+
+- a table reading runs the first pass alone unless a budget is given (`search_seconds` in the
+  request, or the variable `APEDP_UI_SEARCH_SECONDS`): the search stage is **off by default**;
+- the dashboard's switch for the search stage asks for **30 seconds**;
+- a request can ask for at most **300 seconds** (`MAX_SEARCH_SECONDS`), unless the process
+  raises that ceiling for itself, as the measurements do.
+
+Ninety seconds is the budget the development measurements of 24 and 25 November were made at (the
+wider-conditions runs, and the first rung of the ladder). 240 seconds is the budget of the
+preregistered benchmark runs.
+
+*What the owner's "keep 90 seconds" therefore fixes:* nothing in the product's budgets changes:
+the search stays off unless asked for, the dashboard asks for 30 seconds, the ceiling stays 300.
+*The rule for the 2-hour rung* reads as before with one substitution: a change of those budgets is
+proposed only if the condition of section 2 is met; otherwise they stay as they are and a longer
+search stays an option on request. The condition, the rung and the tables are unchanged.
+
+*What this leaves unmeasured:* the dashboard's own 30 seconds. No rung of the ladder ran at 30
+seconds, so nothing recorded says what the product's switch finds against 90 seconds on the same
+tables. A 30-second rung on the ladder's 40 tables would say, at about two hours of GitHub's
+machines; it is a development measurement and is run after the 2-hour rung has been read.

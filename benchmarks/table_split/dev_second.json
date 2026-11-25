@@ -1,0 +1,9615 @@
+{
+ "tag": "DEV-TABLE-SPLIT-2026-11",
+ "development_not_a_result": true,
+ "set": "second",
+ "settings": {
+  "z_refused": 2.0,
+  "folds": 5,
+  "max_rows": 1000,
+  "grid": 200,
+  "forms": [
+   "g*h",
+   "g+h",
+   "c+g*h",
+   "g*h+k(B)",
+   "g*h+k(A)"
+  ],
+  "max_unsplit_error": 0.5
+ },
+ "exact_within": 1e-06,
+ "close_within": 0.01,
+ "accuracy_line": 0.031622776601683805,
+ "summary": {
+  "all": {
+   "tables": 120,
+   "not_read": 13,
+   "exact": 75,
+   "close": 16,
+   "wrong": 29,
+   "split_at_all": 107,
+   "split_and_within_the_accuracy_line": 93,
+   "split_and_beyond_the_accuracy_line": 14,
+   "down_to_the_exact_widest": 78,
+   "finer_than_the_law_allows": 0,
+   "exact_and_as_fine": 62,
+   "widest_read": {
+    "1": 107,
+    "3": 1,
+    "4": 3,
+    "5": 9
+   },
+   "widest_exact": {
+    "1": 120
+   },
+   "median_seconds": 7.705
+  },
+  "by_noise": {
+   "0.01": {
+    "tables": 30,
+    "not_read": 2,
+    "exact": 26,
+    "close": 3,
+    "wrong": 1,
+    "split_at_all": 28,
+    "split_and_within_the_accuracy_line": 28,
+    "split_and_beyond_the_accuracy_line": 0,
+    "down_to_the_exact_widest": 27,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 24,
+    "widest_read": {
+     "1": 28,
+     "5": 2
+    },
+    "widest_exact": {
+     "1": 30
+    },
+    "median_seconds": 7.76
+   },
+   "0.05": {
+    "tables": 30,
+    "not_read": 2,
+    "exact": 19,
+    "close": 5,
+    "wrong": 6,
+    "split_at_all": 28,
+    "split_and_within_the_accuracy_line": 27,
+    "split_and_beyond_the_accuracy_line": 1,
+    "down_to_the_exact_widest": 22,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 17,
+    "widest_read": {
+     "1": 28,
+     "5": 2
+    },
+    "widest_exact": {
+     "1": 30
+    },
+    "median_seconds": 7.755
+   },
+   "0.1": {
+    "tables": 30,
+    "not_read": 4,
+    "exact": 17,
+    "close": 5,
+    "wrong": 8,
+    "split_at_all": 26,
+    "split_and_within_the_accuracy_line": 24,
+    "split_and_beyond_the_accuracy_line": 2,
+    "down_to_the_exact_widest": 18,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 13,
+    "widest_read": {
+     "1": 26,
+     "4": 1,
+     "5": 3
+    },
+    "widest_exact": {
+     "1": 30
+    },
+    "median_seconds": 7.59
+   },
+   "0.2": {
+    "tables": 30,
+    "not_read": 5,
+    "exact": 13,
+    "close": 3,
+    "wrong": 14,
+    "split_at_all": 25,
+    "split_and_within_the_accuracy_line": 14,
+    "split_and_beyond_the_accuracy_line": 11,
+    "down_to_the_exact_widest": 11,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 8,
+    "widest_read": {
+     "1": 25,
+     "3": 1,
+     "4": 2,
+     "5": 2
+    },
+    "widest_exact": {
+     "1": 30
+    },
+    "median_seconds": 7.415
+   }
+  },
+  "by_inputs": {
+   "3": {
+    "tables": 40,
+    "not_read": 1,
+    "exact": 33,
+    "close": 0,
+    "wrong": 7,
+    "split_at_all": 39,
+    "split_and_within_the_accuracy_line": 36,
+    "split_and_beyond_the_accuracy_line": 3,
+    "down_to_the_exact_widest": 32,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 32,
+    "widest_read": {
+     "1": 39,
+     "3": 1
+    },
+    "widest_exact": {
+     "1": 40
+    },
+    "median_seconds": 5.27
+   },
+   "4": {
+    "tables": 40,
+    "not_read": 3,
+    "exact": 26,
+    "close": 10,
+    "wrong": 4,
+    "split_at_all": 37,
+    "split_and_within_the_accuracy_line": 33,
+    "split_and_beyond_the_accuracy_line": 4,
+    "down_to_the_exact_widest": 33,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 23,
+    "widest_read": {
+     "1": 37,
+     "4": 3
+    },
+    "widest_exact": {
+     "1": 40
+    },
+    "median_seconds": 8.55
+   },
+   "5": {
+    "tables": 40,
+    "not_read": 9,
+    "exact": 16,
+    "close": 6,
+    "wrong": 18,
+    "split_at_all": 31,
+    "split_and_within_the_accuracy_line": 24,
+    "split_and_beyond_the_accuracy_line": 7,
+    "down_to_the_exact_widest": 13,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 7,
+    "widest_read": {
+     "1": 31,
+     "5": 9
+    },
+    "widest_exact": {
+     "1": 40
+    },
+    "median_seconds": 8.565000000000001
+   }
+  }
+ },
+ "tables": [
+  {
+   "index": 0,
+   "law": 0,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "(0.3*tanh(0.45*x1) + 2.9*exp(-3.7*x2))/((log(0.7*x0 + 1) + 0.7)*(log(2.9*x0 + 1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1) + f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 6.51615789962979e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.028843860756206593,
+   "shaped_error_of_spread": 0.027434542925133393,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9584701461204239,
+     "worst_z": -0.08013582981793331,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9923519979079659,
+     "worst_z": -0.8985652676234815,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.45
+  },
+  {
+   "index": 1,
+   "law": 0,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "(0.3*tanh(0.45*x1) + 2.9*exp(-3.7*x2))/((log(0.7*x0 + 1) + 0.7)*(log(2.9*x0 + 1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1) + f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 6.51615789962979e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.13808295032982532,
+   "shaped_error_of_spread": 0.13400115949701819,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9733410257018164,
+     "worst_z": -0.43329540767123387,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9970190800462592,
+     "worst_z": 0.07776936861253991,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 3.95
+  },
+  {
+   "index": 2,
+   "law": 0,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "(0.3*tanh(0.45*x1) + 2.9*exp(-3.7*x2))/((log(0.7*x0 + 1) + 0.7)*(log(2.9*x0 + 1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1) + f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 6.51615789962979e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.2624682789896741,
+   "shaped_error_of_spread": 0.26047787413688894,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9922650097259257,
+     "worst_z": 0.5319440549338147,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 1.0001527608060095,
+     "worst_z": 0.1359310360271276,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.19
+  },
+  {
+   "index": 3,
+   "law": 0,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "(0.3*tanh(0.45*x1) + 2.9*exp(-3.7*x2))/((log(0.7*x0 + 1) + 0.7)*(log(2.9*x0 + 1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1) + f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 6.51615789962979e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.4666282687187761,
+   "shaped_error_of_spread": 0.46126124645778205,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9901477247329359,
+     "worst_z": -0.9841103862360407,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9983341545354396,
+     "worst_z": -0.14065772910203003,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 5.51
+  },
+  {
+   "index": 4,
+   "law": 1,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "3.7/(x2*(x1/(x1 + 1.3) + 2.3)*(sin(0.45*x0) + 0.7)*(tanh(1.3*x1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 7.674978900123587e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.026282416048150688,
+   "shaped_error_of_spread": 0.02380545532354139,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9088523416494111,
+     "worst_z": 0.9238964555999216,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9965931005608173,
+     "worst_z": -0.3431039779712636,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 5.41
+  },
+  {
+   "index": 5,
+   "law": 1,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "3.7/(x2*(x1/(x1 + 1.3) + 2.3)*(sin(0.45*x0) + 0.7)*(tanh(1.3*x1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 4.204413689769393e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.11412503692103634,
+   "shaped_error_of_spread": 0.11167081513368499,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9814629447804876,
+     "worst_z": 0.17021273825805577,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9969763306531056,
+     "worst_z": 0.022031787953734873,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.32
+  },
+  {
+   "index": 6,
+   "law": 1,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "3.7/(x2*(x1/(x1 + 1.3) + 2.3)*(sin(0.45*x0) + 0.7)*(tanh(1.3*x1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 7.674978900123587e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.22186677665338397,
+   "shaped_error_of_spread": 0.2192735830110801,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9897469393254568,
+     "worst_z": 0.7292464915084458,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9985501285426284,
+     "worst_z": -0.7373154686065438,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.74
+  },
+  {
+   "index": 7,
+   "law": 1,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "3.7/(x2*(x1/(x1 + 1.3) + 2.3)*(sin(0.45*x0) + 0.7)*(tanh(1.3*x1) + 0.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 0.031122372895310564,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.42086537800803586,
+   "shaped_error_of_spread": 0.41705560198458935,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.99134884726398,
+     "worst_z": 0.4408583016748537,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9995954087200417,
+     "worst_z": 0.6094289110228739,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 8.42
+  },
+  {
+   "index": 8,
+   "law": 2,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "-0.45*x2 + 0.45*exp(-1.7*x0) - 1.3/x2 + 0.7/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x2)) + f(x1)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 9.57727867366833e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.05089446924571257,
+   "shaped_error_of_spread": 0.04968038742476246,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9785074796503047,
+     "worst_z": -3.620092711570324,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9975857447593034,
+     "worst_z": 0.1673991940870421,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 5.05
+  },
+  {
+   "index": 9,
+   "law": 2,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "-0.45*x2 + 0.45*exp(-1.7*x0) - 1.3/x2 + 0.7/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x1)) + f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 1.7102428896564568e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.2360714658154974,
+   "shaped_error_of_spread": 0.2345780223266883,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9931953895935954,
+     "worst_z": -1.0377139091441747,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 1.000481653210846,
+     "worst_z": 0.4178555035781073,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 6.06
+  },
+  {
+   "index": 10,
+   "law": 2,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "-0.45*x2 + 0.45*exp(-1.7*x0) - 1.3/x2 + 0.7/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x1)) + f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 0.01264616066583864,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.43254699044850037,
+   "shaped_error_of_spread": 0.4311430920314786,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.996763101643437,
+     "worst_z": -0.5651953110728221,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9999912146540305,
+     "worst_z": -0.03552493046498467,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 7.73
+  },
+  {
+   "index": 11,
+   "law": 2,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "-0.45*x2 + 0.45*exp(-1.7*x0) - 1.3/x2 + 0.7/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": false,
+   "shape": "f(x0, x1, x2)",
+   "widest": 3,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.7051867253548421,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 5.06
+  },
+  {
+   "index": 12,
+   "law": 3,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "1.3*x1*exp(-0.45*x2)/(log(0.7*x0 + 1) + 0.7) + 0.45*sin(2.3*x2)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x1))*f(x2) + f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 5.906730596165577e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.015472894446262068,
+   "shaped_error_of_spread": 0.015103852340986264,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.984309468608099,
+     "worst_z": -0.7926558943911587,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9917095729925407,
+     "worst_z": -0.01728851650891649,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 7.29
+  },
+  {
+   "index": 13,
+   "law": 3,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "1.3*x1*exp(-0.45*x2)/(log(0.7*x0 + 1) + 0.7) + 0.45*sin(2.3*x2)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x1))*f(x2) + f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 5.906730596165577e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.08158673057202803,
+   "shaped_error_of_spread": 0.08030317725879071,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.987596972404573,
+     "worst_z": -1.1018333655467167,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9966288366186338,
+     "worst_z": 0.5758431775226851,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 6.28
+  },
+  {
+   "index": 14,
+   "law": 3,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "1.3*x1*exp(-0.45*x2)/(log(0.7*x0 + 1) + 0.7) + 0.45*sin(2.3*x2)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x1))*f(x2) + f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 5.906730596165577e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.15315637505672092,
+   "shaped_error_of_spread": 0.1513550102918508,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9921222917784205,
+     "worst_z": -0.7101614236580868,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9960852642175211,
+     "worst_z": -0.16791166078817027,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 7.01
+  },
+  {
+   "index": 15,
+   "law": 3,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "1.3*x1*exp(-0.45*x2)/(log(0.7*x0 + 1) + 0.7) + 0.45*sin(2.3*x2)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x1))*f(x2) + f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 5.906730596165577e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.29797853233557936,
+   "shaped_error_of_spread": 0.29500894230036523,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9918559299534951,
+     "worst_z": -1.8793794087198665,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9981633268931925,
+     "worst_z": -0.8640361429713905,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 7.46
+  },
+  {
+   "index": 16,
+   "law": 4,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "0.3*x2*sin(1.3*x0)*sin(1.7*x1) + 2.9*exp(-0.3*x1)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x2))*f(x1) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 3.482356991170402e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.022368425378231954,
+   "shaped_error_of_spread": 0.021514414285355464,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9557019487115175,
+     "worst_z": -2.4558781610686276,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.006402350893598,
+     "worst_z": 1.2473203275473193,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 6.21
+  },
+  {
+   "index": 17,
+   "law": 4,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "0.3*x2*sin(1.3*x0)*sin(1.7*x1) + 2.9*exp(-0.3*x1)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x2))*f(x1) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 3.482356991170402e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.11243075161575866,
+   "shaped_error_of_spread": 0.1089262416340626,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9765068206344795,
+     "worst_z": -2.0495882111146155,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9921380916482627,
+     "worst_z": -2.254891369361942,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 5.01
+  },
+  {
+   "index": 18,
+   "law": 4,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "0.3*x2*sin(1.3*x0)*sin(1.7*x1) + 2.9*exp(-0.3*x1)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(c + f(x0)*f(x2))*f(x1) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 3.482356991170402e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.22931754686216405,
+   "shaped_error_of_spread": 0.22519150595527884,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.983006484089469,
+     "worst_z": -0.618642324414163,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9989835468024914,
+     "worst_z": -0.20191743937715645,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 5.23
+  },
+  {
+   "index": 19,
+   "law": 4,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "0.3*x2*sin(1.3*x0)*sin(1.7*x1) + 2.9*exp(-0.3*x1)",
+   "exact_shape": "f(x0)*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(f(x0)*f(x2))*f(x1) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.021276042355284668,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.3841031989337356,
+   "shaped_error_of_spread": 0.38177822821623814,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9887815594382552,
+     "worst_z": -2.040772242015451,
+     "worst_against": "unsplit"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 1.0052240618686081,
+     "worst_z": 1.1321262986970257,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 5.1
+  },
+  {
+   "index": 20,
+   "law": 5,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "1.7*x0**3*x1*sqrt(x2 + 2.3)/((x1 + 3.7)*(sqrt(x1 + 0.3) + 2.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 5.694910722993879e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.014407281247128234,
+   "shaped_error_of_spread": 0.013994429185555789,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9778108345577842,
+     "worst_z": 0.17756573093061742,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.993386627754541,
+     "worst_z": -2.9139155594949244,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.29
+  },
+  {
+   "index": 21,
+   "law": 5,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "1.7*x0**3*x1*sqrt(x2 + 2.3)/((x1 + 3.7)*(sqrt(x1 + 0.3) + 2.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 5.694910722993879e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.07221564589404154,
+   "shaped_error_of_spread": 0.07143840945172353,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.990530856236583,
+     "worst_z": -1.2279022599942648,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9986940622772235,
+     "worst_z": -0.8746117355669475,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 4.13
+  },
+  {
+   "index": 22,
+   "law": 5,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "1.7*x0**3*x1*sqrt(x2 + 2.3)/((x1 + 3.7)*(sqrt(x1 + 0.3) + 2.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 5.694910722993879e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.13982615393761455,
+   "shaped_error_of_spread": 0.13946417555516935,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9975889417613835,
+     "worst_z": 0.2662099802857084,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.999821854213756,
+     "worst_z": -0.05993918973682612,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 4.3
+  },
+  {
+   "index": 23,
+   "law": 5,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "1.7*x0**3*x1*sqrt(x2 + 2.3)/((x1 + 3.7)*(sqrt(x1 + 0.3) + 2.3))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0)*(f(x1) + f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 0.03663830723562874,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.27330351072732717,
+   "shaped_error_of_spread": 0.2718077143042132,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9951661327237153,
+     "worst_z": 0.0719466313162598,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9993577395908377,
+     "worst_z": -0.5724324270447319,
+     "worst_against": "g*h"
+    }
+   ],
+   "seconds": 4.85
+  },
+  {
+   "index": 24,
+   "law": 6,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "1.7*x1*x2**3/((x1 + 0.7)*(sin(2.3*x2) + 1.3)*(tanh(0.45*x0) + 0.45))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 4.494044902520169e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.015202371566444113,
+   "shaped_error_of_spread": 0.013468839252872062,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.8875392894264964,
+     "worst_z": -0.6185592988627809,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.998231428760132,
+     "worst_z": 0.10907708969577164,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 5.56
+  },
+  {
+   "index": 25,
+   "law": 6,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "1.7*x1*x2**3/((x1 + 0.7)*(sin(2.3*x2) + 1.3)*(tanh(0.45*x0) + 0.45))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 4.494044902520169e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.06978374738107614,
+   "shaped_error_of_spread": 0.06578999564094774,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9506097202864224,
+     "worst_z": -0.43819315517166263,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9917525356585554,
+     "worst_z": -0.9379342734213343,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 6.25
+  },
+  {
+   "index": 26,
+   "law": 6,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "1.7*x1*x2**3/((x1 + 0.7)*(sin(2.3*x2) + 1.3)*(tanh(0.45*x0) + 0.45))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 0.03378974025103796,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.12683569755156393,
+   "shaped_error_of_spread": 0.12314206759331668,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9729062284992901,
+     "worst_z": -0.7998701706351584,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9979159308408059,
+     "worst_z": -0.6383902540001085,
+     "worst_against": "g*h"
+    }
+   ],
+   "seconds": 6.05
+  },
+  {
+   "index": 27,
+   "law": 6,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "1.7*x1*x2**3/((x1 + 0.7)*(sin(2.3*x2) + 1.3)*(tanh(0.45*x0) + 0.45))",
+   "exact_shape": "f(x0)*(f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x1))*f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 4.494044902520169e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.24113953180562678,
+   "shaped_error_of_spread": 0.23585327352447927,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9797952240915736,
+     "worst_z": -1.172575381526044,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9982473750265682,
+     "worst_z": -1.043738863429284,
+     "worst_against": "g+h"
+    }
+   ],
+   "seconds": 5.83
+  },
+  {
+   "index": 28,
+   "law": 7,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "0.3*x0 - 0.7*log(3.7*x2 + 1) + 0.7*sin(0.45*x1) - 0.45/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x2)) + f(x1)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 4.180696872706117e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.013336227343717678,
+   "shaped_error_of_spread": 0.013205573292807663,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9909346944613697,
+     "worst_z": -1.109872683962709,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9992616851009551,
+     "worst_z": 0.15037652406923746,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.18
+  },
+  {
+   "index": 29,
+   "law": 7,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "0.3*x0 - 0.7*log(3.7*x2 + 1) + 0.7*sin(0.45*x1) - 0.45/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0) + (f(x1) + f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 2.168936396742762e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.06506385984344333,
+   "shaped_error_of_spread": 0.06504517479000642,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9964011931649935,
+     "worst_z": -0.6884128490100789,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 1.003323587566918,
+     "worst_z": 1.4100505282852223,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 4.76
+  },
+  {
+   "index": 30,
+   "law": 7,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "0.3*x0 - 0.7*log(3.7*x2 + 1) + 0.7*sin(0.45*x1) - 0.45/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x1)) + f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 3.448200108846925e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.12732399577782405,
+   "shaped_error_of_spread": 0.1268281932534524,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9950425060923036,
+     "worst_z": -0.18208901560150453,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 1.0010687696695626,
+     "worst_z": 0.8345841815947262,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 4.38
+  },
+  {
+   "index": 31,
+   "law": 7,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "0.3*x0 - 0.7*log(3.7*x2 + 1) + 0.7*sin(0.45*x1) - 0.45/x1",
+   "exact_shape": "f(x0) + (f(x1) + f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x1)) + f(x2)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 3.448200108846925e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.24364445999461454,
+   "shaped_error_of_spread": 0.2430390293913952,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.996939007627884,
+     "worst_z": -1.0227731827764934,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 1.0005778674397472,
+     "worst_z": 1.0403037870567073,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.88
+  },
+  {
+   "index": 32,
+   "law": 8,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "1.7*x2*sqrt(x2 + 0.3)*log(1.7*x1 + 1)/(x2 + 2.9) - 0.3/x0",
+   "exact_shape": "f(x0) + (c + f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0) + (c + f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 1.4458592961372474e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.025019715448449907,
+   "shaped_error_of_spread": 0.024870270809522102,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9938493624752778,
+     "worst_z": -1.6612051495459428,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0001786613228016,
+     "worst_z": 0.5183574150439632,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 4.7
+  },
+  {
+   "index": 33,
+   "law": 8,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "1.7*x2*sqrt(x2 + 0.3)*log(1.7*x1 + 1)/(x2 + 2.9) - 0.3/x0",
+   "exact_shape": "f(x0) + (c + f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "f(x0) + (c + f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 3,
+   "departure": 1.4458592961372474e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.12221485432240708,
+   "shaped_error_of_spread": 0.121611184465977,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9978143433323579,
+     "worst_z": -0.9678703071918304,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9972402099451172,
+     "worst_z": -0.37359860168487175,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 4.93
+  },
+  {
+   "index": 34,
+   "law": 8,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "1.7*x2*sqrt(x2 + 0.3)*log(1.7*x1 + 1)/(x2 + 2.9) - 0.3/x0",
+   "exact_shape": "f(x0) + (c + f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0) + f(x2))*f(x1)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 0.021960418435795732,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.2577042365629896,
+   "shaped_error_of_spread": 0.25626441186224697,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9961145724313162,
+     "worst_z": -1.2719724439626579,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9982916691714595,
+     "worst_z": -1.0108686738426307,
+     "worst_against": "g*h"
+    }
+   ],
+   "seconds": 4.98
+  },
+  {
+   "index": 35,
+   "law": 8,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "1.7*x2*sqrt(x2 + 0.3)*log(1.7*x1 + 1)/(x2 + 2.9) - 0.3/x0",
+   "exact_shape": "f(x0) + (c + f(x1)*f(x2))",
+   "exact_widest": 1,
+   "exact_parts": 3,
+   "read": true,
+   "shape": "(f(x0)*f(x2))*f(x1)",
+   "widest": 1,
+   "parts": 3,
+   "departure": 0.03353130326234142,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.44825229149751344,
+   "shaped_error_of_spread": 0.4472797383178801,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9980195331605161,
+     "worst_z": -0.10964198918724267,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9998104356235112,
+     "worst_z": -0.44430588570200497,
+     "worst_against": "g+h"
+    }
+   ],
+   "seconds": 5.39
+  },
+  {
+   "index": 36,
+   "law": 9,
+   "inputs": 3,
+   "noise": 0.01,
+   "text": "(0.3*exp(-1.7*x0) + 0.45*sin(1.7*x1)/(x0**2 + 0.7))/(sqrt(x2 + 0.7) + 0.3)",
+   "exact_shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.1250790430916784e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.01245922413505051,
+   "shaped_error_of_spread": 0.01067772110025301,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.8901809135151798,
+     "worst_z": -1.297989376388988,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9627406202221866,
+     "worst_z": -2.095881154213931,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 5.31
+  },
+  {
+   "index": 37,
+   "law": 9,
+   "inputs": 3,
+   "noise": 0.05,
+   "text": "(0.3*exp(-1.7*x0) + 0.45*sin(1.7*x1)/(x0**2 + 0.7))/(sqrt(x2 + 0.7) + 0.3)",
+   "exact_shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.1250790430916784e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.0593206368154237,
+   "shaped_error_of_spread": 0.05434249320516565,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9306703509086725,
+     "worst_z": -2.1499787970242967,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.984323552089465,
+     "worst_z": -1.5889127995224197,
+     "worst_against": "so far"
+    }
+   ],
+   "seconds": 5.72
+  },
+  {
+   "index": 38,
+   "law": 9,
+   "inputs": 3,
+   "noise": 0.1,
+   "text": "(0.3*exp(-1.7*x0) + 0.45*sin(1.7*x1)/(x0**2 + 0.7))/(sqrt(x2 + 0.7) + 0.3)",
+   "exact_shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.1250790430916784e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.11060591542514112,
+   "shaped_error_of_spread": 0.10653196232365256,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9834384979412968,
+     "worst_z": -0.834017098312101,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.979387072019054,
+     "worst_z": -2.956933266928273,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 5.85
+  },
+  {
+   "index": 39,
+   "law": 9,
+   "inputs": 3,
+   "noise": 0.2,
+   "text": "(0.3*exp(-1.7*x0) + 0.45*sin(1.7*x1)/(x0**2 + 0.7))/(sqrt(x2 + 0.7) + 0.3)",
+   "exact_shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0)*f(x1) + f(x0))*f(x2)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.1250790430916784e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.21544068599164645,
+   "shaped_error_of_spread": 0.21008992047504532,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9819242702383192,
+     "worst_z": -0.5389441463005022,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9931149022968478,
+     "worst_z": -1.6952417744022121,
+     "worst_against": "so far"
+    }
+   ],
+   "seconds": 5.8
+  },
+  {
+   "index": 40,
+   "law": 10,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "(1.3*x3 + (-3.7*x3 + 2.9*sin(2.3*x1))/(sqrt(x2 + 1.3) + 1.7))*sin(1.7*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (c + f(x2)*f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "f(x0)*((f(x1) + f(x3))*f(x2) + (f(x1) + f(x3)))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 6.604535967884064e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.013973948506752664,
+   "shaped_error_of_spread": 0.01074994783701636,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.8111163693747374,
+     "worst_z": -0.19970456853234214,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9646200388214643,
+     "worst_z": -2.5900791270818035,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9859854814900763,
+     "worst_z": 0.45489888642717413,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1,
+      2
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9971884796364486,
+     "worst_z": -0.00916769991061393,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 13.15
+  },
+  {
+   "index": 41,
+   "law": 10,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "(1.3*x3 + (-3.7*x3 + 2.9*sin(2.3*x1))/(sqrt(x2 + 1.3) + 1.7))*sin(1.7*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (c + f(x2)*f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*(f(x2) + f(x3)) + (c + f(x2)*f(x3)))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 7.048310603979522e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.05958039975714974,
+   "shaped_error_of_spread": 0.05449531088008046,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9338131751213357,
+     "worst_z": -0.2193205533495628,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9816085216358567,
+     "worst_z": -2.437045427247751,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 1.0000309719229032,
+     "worst_z": 1.2909007045578824,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      2
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.997801043680417,
+     "worst_z": -0.5315621108732438,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 11.13
+  },
+  {
+   "index": 42,
+   "law": 10,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "(1.3*x3 + (-3.7*x3 + 2.9*sin(2.3*x1))/(sqrt(x2 + 1.3) + 1.7))*sin(1.7*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (c + f(x2)*f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (f(x2)*f(x3)))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 0.004079444376427095,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.11071786644847423,
+   "shaped_error_of_spread": 0.10361977044141185,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9402857427686907,
+     "worst_z": -1.2588847756977168,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9929482735935581,
+     "worst_z": -1.4913633757908995,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.997665367795156,
+     "worst_z": -0.8103048134910775,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      2
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0047396582071346,
+     "worst_z": 0.9401246975905573,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 14.13
+  },
+  {
+   "index": 43,
+   "law": 10,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "(1.3*x3 + (-3.7*x3 + 2.9*sin(2.3*x1))/(sqrt(x2 + 1.3) + 1.7))*sin(1.7*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (c + f(x2)*f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (f(x2)*f(x3)))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 0.004079444376427095,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.21891245562240297,
+   "shaped_error_of_spread": 0.20814280682038144,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9568390020217767,
+     "worst_z": -0.42378083934376876,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9938518549435258,
+     "worst_z": -1.6531597211553122,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      2
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9998938576650166,
+     "worst_z": 0.14723559208682255,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9999459172807785,
+     "worst_z": -0.13759672271124582,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 14.87
+  },
+  {
+   "index": 44,
+   "law": 11,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "x0*(-0.45*x3/(x3 + 1.3) + 2.9*sin(0.3*x2)/(x2 + 2.3)) + 2.9*tanh(0.3*x1)",
+   "exact_shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 1.6669366565751657e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.042515278929979416,
+   "shaped_error_of_spread": 0.0417220099148846,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.993406203621211,
+     "worst_z": 0.4403999670313254,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9849798947841389,
+     "worst_z": -1.5993917531978277,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 1.0029192232588882,
+     "worst_z": 0.8819421765287905,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 10.86
+  },
+  {
+   "index": 45,
+   "law": 11,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "x0*(-0.45*x3/(x3 + 1.3) + 2.9*sin(0.3*x2)/(x2 + 2.3)) + 2.9*tanh(0.3*x1)",
+   "exact_shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 1.6669366565751657e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.20383422705493176,
+   "shaped_error_of_spread": 0.2016040329056331,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.995824346439638,
+     "worst_z": -0.6894444842153886,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9948664209867436,
+     "worst_z": -1.1352447282038614,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9983310807141247,
+     "worst_z": -1.6095078091754027,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 12.94
+  },
+  {
+   "index": 46,
+   "law": 11,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "x0*(-0.45*x3/(x3 + 1.3) + 2.9*sin(0.3*x2)/(x2 + 2.3)) + 2.9*tanh(0.3*x1)",
+   "exact_shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 1.6669366565751657e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.3864238311500394,
+   "shaped_error_of_spread": 0.3818705757654342,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9950610509167058,
+     "worst_z": 0.18445291678915543,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9949844490852572,
+     "worst_z": -1.7514186461075427,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9981280802838721,
+     "worst_z": -1.4527604798343008,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 14.06
+  },
+  {
+   "index": 47,
+   "law": 11,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "x0*(-0.45*x3/(x3 + 1.3) + 2.9*sin(0.3*x2)/(x2 + 2.3)) + 2.9*tanh(0.3*x1)",
+   "exact_shape": "(c + f(x0)*(f(x2) + f(x3))) + f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3)",
+   "widest": 4,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.6511570392156542,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 10.09
+  },
+  {
+   "index": 48,
+   "law": 12,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "-2.3*x1/(x1 + 2.9) + 0.7*sqrt(x2 + 2.3)*log(3.7*x0 + 1) - 3.7*tanh(0.45*x3) - 3.7*exp(-0.7*x0)",
+   "exact_shape": "(f(x0)*f(x2) + f(x0)) + (f(x1) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "(f(x0)*f(x2) + f(x0)) + (f(x1) + f(x3))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 2.2181408461430855e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.01330013483310911,
+   "shaped_error_of_spread": 0.012980385829272889,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9787071968059261,
+     "worst_z": -0.07937403626494889,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9970570273259515,
+     "worst_z": -0.5152871683164959,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 1.0001353487710771,
+     "worst_z": 0.6147555444212837,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 12.45
+  },
+  {
+   "index": 49,
+   "law": 12,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "-2.3*x1/(x1 + 2.9) + 0.7*sqrt(x2 + 2.3)*log(3.7*x0 + 1) - 3.7*tanh(0.45*x3) - 3.7*exp(-0.7*x0)",
+   "exact_shape": "(f(x0)*f(x2) + f(x0)) + (f(x1) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "(c + f(x0)*f(x2)) + (f(x1) + f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0028123620698062503,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.06430632928288908,
+   "shaped_error_of_spread": 0.06344124070927973,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9858500097065743,
+     "worst_z": 0.35373615835198363,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9990276997320648,
+     "worst_z": -0.35455274139854664,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0016813153174104,
+     "worst_z": 0.6561096596644238,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 11.72
+  },
+  {
+   "index": 50,
+   "law": 12,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "-2.3*x1/(x1 + 2.9) + 0.7*sqrt(x2 + 2.3)*log(3.7*x0 + 1) - 3.7*tanh(0.45*x3) - 3.7*exp(-0.7*x0)",
+   "exact_shape": "(f(x0)*f(x2) + f(x0)) + (f(x1) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "((c + f(x0)*f(x2)) + f(x1)) + f(x3)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.00281236206980622,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.11933344292228812,
+   "shaped_error_of_spread": 0.11786215120097693,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9912237892050155,
+     "worst_z": -2.352671683037124,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9987367035235624,
+     "worst_z": -0.4006235245353685,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9976758639905059,
+     "worst_z": 0.17562715847511845,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 11.95
+  },
+  {
+   "index": 51,
+   "law": 12,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "-2.3*x1/(x1 + 2.9) + 0.7*sqrt(x2 + 2.3)*log(3.7*x0 + 1) - 3.7*tanh(0.45*x3) - 3.7*exp(-0.7*x0)",
+   "exact_shape": "(f(x0)*f(x2) + f(x0)) + (f(x1) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "((c + f(x0)*f(x2)) + f(x1)) + f(x3)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.00281236206980622,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.23713910882297023,
+   "shaped_error_of_spread": 0.23465494274045515,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9904340308304842,
+     "worst_z": -0.7369906888242107,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9988101345035317,
+     "worst_z": -0.7214118043155735,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0002718081574784,
+     "worst_z": 0.37414685528104935,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 11.76
+  },
+  {
+   "index": 52,
+   "law": 13,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "(-3.7*x3/(x3 + 1.3) + 1.3*sqrt(x2 + 2.9) - 2.9/x1)/((2.3 + exp(-0.7*x1))*(log(1.3*x0 + 1) + 3.7))",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2) + f(x3)) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*(f(x1)*(f(x2) + f(x3)) + f(x1))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 9.31586176483541e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.01373505835345195,
+   "shaped_error_of_spread": 0.013010346152796809,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9665490920321916,
+     "worst_z": -0.09983298784234562,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9829657749458689,
+     "worst_z": -1.9595164595565313,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.997001998179897,
+     "worst_z": -0.4336198839483749,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 11.86
+  },
+  {
+   "index": 53,
+   "law": 13,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "(-3.7*x3/(x3 + 1.3) + 1.3*sqrt(x2 + 2.9) - 2.9/x1)/((2.3 + exp(-0.7*x1))*(log(1.3*x0 + 1) + 3.7))",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2) + f(x3)) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*(c + f(x1)*(f(x2) + f(x3)))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0013546070444512325,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.06487420758807126,
+   "shaped_error_of_spread": 0.06295396648484895,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9843911659145803,
+     "worst_z": 0.23081029801245181,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9877470051411603,
+     "worst_z": 0.5659172623800947,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.998016228185017,
+     "worst_z": -0.2049120660482891,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 13.67
+  },
+  {
+   "index": 54,
+   "law": 13,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "(-3.7*x3/(x3 + 1.3) + 1.3*sqrt(x2 + 2.9) - 2.9/x1)/((2.3 + exp(-0.7*x1))*(log(1.3*x0 + 1) + 3.7))",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2) + f(x3)) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*(c + f(x1)*(f(x2) + f(x3)))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0013546070444512325,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.12580150410380686,
+   "shaped_error_of_spread": 0.12405140522213297,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9937590370058633,
+     "worst_z": -1.438562943743041,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.993214505347522,
+     "worst_z": -0.08000556225260176,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9990603192224731,
+     "worst_z": -0.342694666185085,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 12.6
+  },
+  {
+   "index": 55,
+   "law": 13,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "(-3.7*x3/(x3 + 1.3) + 1.3*sqrt(x2 + 2.9) - 2.9/x1)/((2.3 + exp(-0.7*x1))*(log(1.3*x0 + 1) + 3.7))",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2) + f(x3)) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*((f(x1) + f(x3)) + f(x2))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.03384345849957467,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.2334821288854555,
+   "shaped_error_of_spread": 0.23429478432917367,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9943250330031941,
+     "worst_z": -2.0861328481218084,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 1.0035489799756858,
+     "worst_z": 0.8642498046381202,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 1.0056388184772114,
+     "worst_z": 1.8098110965773886,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 12.85
+  },
+  {
+   "index": 56,
+   "law": 14,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "(1.7*log(0.45*x3 + 1)*tanh(0.7*x2)/(x1**2 + 3.7) - 0.7/x2)*tanh(0.3*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (f(x2)*f(x3) + f(x2)))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "f(x0)*((c + f(x1)*f(x3))*f(x2) + f(x2))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 9.30332570533627e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.015251262229092288,
+   "shaped_error_of_spread": 0.01408432183381087,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9551470170415192,
+     "worst_z": -0.48376373197396416,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9772625106145021,
+     "worst_z": -1.8193784951340293,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9893471099025379,
+     "worst_z": -1.0626752631308554,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 12.5
+  },
+  {
+   "index": 57,
+   "law": 14,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "(1.7*log(0.45*x3 + 1)*tanh(0.7*x2)/(x1**2 + 3.7) - 0.7/x2)*tanh(0.3*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (f(x2)*f(x3) + f(x2)))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "f(x0)*(c + (c + f(x1)*f(x3))*f(x2))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0067453582389418775,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.07125683645945051,
+   "shaped_error_of_spread": 0.06873025843583459,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9769649753270069,
+     "worst_z": -0.517157156716783,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9919763369710203,
+     "worst_z": 0.9097784742903277,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9952705025234906,
+     "worst_z": -1.2568972337477045,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 10.83
+  },
+  {
+   "index": 58,
+   "law": 14,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "(1.7*log(0.45*x3 + 1)*tanh(0.7*x2)/(x1**2 + 3.7) - 0.7/x2)*tanh(0.3*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (f(x2)*f(x3) + f(x2)))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "f(x0)*(c + (c + f(x1)*f(x3))*f(x2))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0067453582389418775,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.1441110649975438,
+   "shaped_error_of_spread": 0.14066872754627469,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9859692203873014,
+     "worst_z": -0.4336250262091036,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9934216757085941,
+     "worst_z": -0.4534654698141554,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9965595194733308,
+     "worst_z": -0.6369660587763593,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 7.44
+  },
+  {
+   "index": 59,
+   "law": 14,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "(1.7*log(0.45*x3 + 1)*tanh(0.7*x2)/(x1**2 + 3.7) - 0.7/x2)*tanh(0.3*x0)",
+   "exact_shape": "f(x0)*(f(x1)*(f(x2)*f(x3)) + (f(x2)*f(x3) + f(x2)))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "f(x0)*(c + (c + f(x1)*f(x3))*f(x2))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0067453582389418775,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.27518812657139746,
+   "shaped_error_of_spread": 0.2691363015263628,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9837965945914702,
+     "worst_z": 0.1801543818463294,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9986133547723233,
+     "worst_z": -0.5782987285731337,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9954968811979708,
+     "worst_z": -1.5994355009889414,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 9.57
+  },
+  {
+   "index": 60,
+   "law": 15,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "x1*(-0.3*log(2.9*x3 + 1) + 2.9*sin(2.9*x0) - 1.3/x2)/(sin(0.3*x1) + 3.7)",
+   "exact_shape": "(f(x0) + (f(x2) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + (f(x2) + f(x3)))*f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 3.1521251014122054e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.01433994590246679,
+   "shaped_error_of_spread": 0.012676499927977999,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.918601458471231,
+     "worst_z": -0.6267099029432548,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9636049703490981,
+     "worst_z": -0.2552121108812671,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9986784608508789,
+     "worst_z": -0.6562914326405784,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 7.68
+  },
+  {
+   "index": 61,
+   "law": 15,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "x1*(-0.3*log(2.9*x3 + 1) + 2.9*sin(2.9*x0) - 1.3/x2)/(sin(0.3*x1) + 3.7)",
+   "exact_shape": "(f(x0) + (f(x2) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "((f(x0) + f(x3)) + f(x2))*f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.7640891843973e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.06394796314819307,
+   "shaped_error_of_spread": 0.062237125179648786,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.983963312299695,
+     "worst_z": 0.3408000610573936,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9901377612941713,
+     "worst_z": -1.569204772991803,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9989604130361392,
+     "worst_z": 0.4549311254694199,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.25
+  },
+  {
+   "index": 62,
+   "law": 15,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "x1*(-0.3*log(2.9*x3 + 1) + 2.9*sin(2.9*x0) - 1.3/x2)/(sin(0.3*x1) + 3.7)",
+   "exact_shape": "(f(x0) + (f(x2) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "((f(x0) + f(x3)) + f(x2))*f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.7640891843973e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.1252860939105355,
+   "shaped_error_of_spread": 0.1231333131032753,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9846240736199783,
+     "worst_z": 0.11497666979709749,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9976858630614851,
+     "worst_z": -0.2827375025081118,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 1.0004800370951823,
+     "worst_z": 0.17952715476826564,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 7.43
+  },
+  {
+   "index": 63,
+   "law": 15,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "x1*(-0.3*log(2.9*x3 + 1) + 2.9*sin(2.9*x0) - 1.3/x2)/(sin(0.3*x1) + 3.7)",
+   "exact_shape": "(f(x0) + (f(x2) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + (f(x2) + f(x3)))*f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 3.1521251014122054e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.23790623901682245,
+   "shaped_error_of_spread": 0.23248261230063352,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9913063933446913,
+     "worst_z": -0.3757001097335688,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9858724336467826,
+     "worst_z": -3.054058967569479,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9998987261139617,
+     "worst_z": -1.092400884105495,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 6.57
+  },
+  {
+   "index": 64,
+   "law": 16,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "-1.3*x0 + 2.3*x1**3/((x3**3 + 3.7)*(sin(2.9*x3) + 2.3)) - 2.9/x2",
+   "exact_shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 2.090420213543481e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.016014404106979744,
+   "shaped_error_of_spread": 0.013143837770767773,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.8761705263270521,
+     "worst_z": -2.078590362260182,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9951439163619877,
+     "worst_z": -1.2024877837349215,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9413191082555086,
+     "worst_z": -0.7501499046315293,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 7.27
+  },
+  {
+   "index": 65,
+   "law": 16,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "-1.3*x0 + 2.3*x1**3/((x3**3 + 3.7)*(sin(2.9*x3) + 2.3)) - 2.9/x2",
+   "exact_shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 2.090420213543481e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.06028420703766134,
+   "shaped_error_of_spread": 0.057258219827918774,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.965205578614427,
+     "worst_z": 0.36701511444434837,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9978531081579637,
+     "worst_z": -2.4809731485659996,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9861610630221814,
+     "worst_z": -0.2678529489210051,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 6.71
+  },
+  {
+   "index": 66,
+   "law": 16,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "-1.3*x0 + 2.3*x1**3/((x3**3 + 3.7)*(sin(2.9*x3) + 2.3)) - 2.9/x2",
+   "exact_shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 2.090420213543481e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.11617479428156172,
+   "shaped_error_of_spread": 0.1114100564531282,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9725473010360276,
+     "worst_z": -2.426193512684984,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 1.0000921240718965,
+     "worst_z": 0.08765318393769228,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.985965552922636,
+     "worst_z": 0.0492852468164827,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 6.2
+  },
+  {
+   "index": 67,
+   "law": 16,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "-1.3*x0 + 2.3*x1**3/((x3**3 + 3.7)*(sin(2.9*x3) + 2.3)) - 2.9/x2",
+   "exact_shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + f(x2)) + (c + f(x1)*f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 2.090420213543481e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.21741907733991467,
+   "shaped_error_of_spread": 0.2136113659029333,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9912474243180209,
+     "worst_z": -1.4703449821298882,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9999592899905293,
+     "worst_z": -0.292110048186669,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.991202336950784,
+     "worst_z": -1.3153053521848397,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 7.15
+  },
+  {
+   "index": 68,
+   "law": 17,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "-0.3*x2/(x2 + 2.3) + 0.45*sqrt(x0 + 2.9) + 2.3*log(2.9*x1 + 1) - 0.7*log(1.3*x3 + 1) - 3.7*sin(0.3*x1)",
+   "exact_shape": "(f(x0) + f(x1)) + (f(x2) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "((f(x0) + f(x2)) + f(x3)) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 6.53109925590095e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.0793468562540569,
+   "shaped_error_of_spread": 0.07813813430640762,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9873948782992973,
+     "worst_z": -1.18093135525894,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9972090309541789,
+     "worst_z": -1.4853950915235001,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 1.000129505262442,
+     "worst_z": 0.18167077898198902,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 6.37
+  },
+  {
+   "index": 69,
+   "law": 17,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "-0.3*x2/(x2 + 2.3) + 0.45*sqrt(x0 + 2.9) + 2.3*log(2.9*x1 + 1) - 0.7*log(1.3*x3 + 1) - 3.7*sin(0.3*x1)",
+   "exact_shape": "(f(x0) + f(x1)) + (f(x2) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "f(x0) + ((f(x1) + f(x2)) + f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 1.623971207544749e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.37089727527311395,
+   "shaped_error_of_spread": 0.36961486024357776,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9958411280625256,
+     "worst_z": -0.09680309634665371,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9997956629348245,
+     "worst_z": 0.7105383294008345,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 1.0009087217153425,
+     "worst_z": 1.2948014663470815,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.85
+  },
+  {
+   "index": 70,
+   "law": 17,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "-0.3*x2/(x2 + 2.3) + 0.45*sqrt(x0 + 2.9) + 2.3*log(2.9*x1 + 1) - 0.7*log(1.3*x3 + 1) - 3.7*sin(0.3*x1)",
+   "exact_shape": "(f(x0) + f(x1)) + (f(x2) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3)",
+   "widest": 4,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.622055689448926,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 5.56
+  },
+  {
+   "index": 71,
+   "law": 17,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "-0.3*x2/(x2 + 2.3) + 0.45*sqrt(x0 + 2.9) + 2.3*log(2.9*x1 + 1) - 0.7*log(1.3*x3 + 1) - 3.7*sin(0.3*x1)",
+   "exact_shape": "(f(x0) + f(x1)) + (f(x2) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3)",
+   "widest": 4,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.8566594747741549,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 6.59
+  },
+  {
+   "index": 72,
+   "law": 18,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "-1.3*x0 + 1.7*x2*x3**3*exp(-1.3*x2)/(x2 + 3.7) - 2.3/x1",
+   "exact_shape": "(f(x0) + f(x1)) + (c + f(x2)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + (c + f(x2)*f(x3))) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.4207264227601983e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.020528288206212397,
+   "shaped_error_of_spread": 0.019475887883576903,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.961768956399406,
+     "worst_z": -1.512224207430181,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9984023706153156,
+     "worst_z": -0.37662926211091263,
+     "worst_against": "so far"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9880255397694215,
+     "worst_z": -0.7941115246423228,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 6.32
+  },
+  {
+   "index": 73,
+   "law": 18,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "-1.3*x0 + 1.7*x2*x3**3*exp(-1.3*x2)/(x2 + 3.7) - 2.3/x1",
+   "exact_shape": "(f(x0) + f(x1)) + (c + f(x2)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + f(x1)) + (c + f(x2)*f(x3))",
+   "widest": 1,
+   "parts": 4,
+   "departure": 2.8510601952133167e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.09824975240356505,
+   "shaped_error_of_spread": 0.09641089872183177,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9910793645535421,
+     "worst_z": -0.5607210625387625,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9988334736165461,
+     "worst_z": -1.3713512019347838,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9912726976060966,
+     "worst_z": -0.5037632313279259,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 5.98
+  },
+  {
+   "index": 74,
+   "law": 18,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "-1.3*x0 + 1.7*x2*x3**3*exp(-1.3*x2)/(x2 + 3.7) - 2.3/x1",
+   "exact_shape": "(f(x0) + f(x1)) + (c + f(x2)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + (c + f(x2)*f(x3))) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.4207264227601983e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.19825822178094238,
+   "shaped_error_of_spread": 0.19546140789415928,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9959439130310236,
+     "worst_z": -1.5069627909418462,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.998908353870672,
+     "worst_z": -0.4647698161308541,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9909900391992719,
+     "worst_z": -1.2975780812871045,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 6.06
+  },
+  {
+   "index": 75,
+   "law": 18,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "-1.3*x0 + 1.7*x2*x3**3*exp(-1.3*x2)/(x2 + 3.7) - 2.3/x1",
+   "exact_shape": "(f(x0) + f(x1)) + (c + f(x2)*f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 4,
+   "read": true,
+   "shape": "(f(x0) + (c + f(x2)*f(x3))) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 4.4207264227601983e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.3524527737603699,
+   "shaped_error_of_spread": 0.3492852187222173,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9957583432209131,
+     "worst_z": -1.0268643284851853,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g+h",
+     "ratio": 1.0006982792218366,
+     "worst_z": 0.2985709899204369,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9945397998975453,
+     "worst_z": -0.5464080024746073,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 5.88
+  },
+  {
+   "index": 76,
+   "law": 19,
+   "inputs": 4,
+   "noise": 0.01,
+   "text": "(-0.45*exp(-1.7*x1) + 2.3*tanh(0.3*x0)/(x3 + 1.3))*log(0.7*x2 + 1) + 0.3*sin(2.3*x1)",
+   "exact_shape": "(c + f(x0)*f(x3))*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "(c + f(x0)*f(x3))*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "widest": 1,
+   "parts": 7,
+   "departure": 4.7312201864691e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.01935915660261902,
+   "shaped_error_of_spread": 0.017546003884173357,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9260318704307259,
+     "worst_z": -3.1437317948190695,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9951621063063566,
+     "worst_z": -0.13322041457685535,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9881668023650206,
+     "worst_z": -1.57150250730771,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      2
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9952719496569955,
+     "worst_z": -0.21869189220784324,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 6.89
+  },
+  {
+   "index": 77,
+   "law": 19,
+   "inputs": 4,
+   "noise": 0.05,
+   "text": "(-0.45*exp(-1.7*x1) + 2.3*tanh(0.3*x0)/(x3 + 1.3))*log(0.7*x2 + 1) + 0.3*sin(2.3*x1)",
+   "exact_shape": "(c + f(x0)*f(x3))*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "(c + (f(x0)*f(x2))*f(x3)) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.035023341566879834,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.08862070199219559,
+   "shaped_error_of_spread": 0.08772338845623939,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 1.0036189365668438,
+     "worst_z": 1.5879960389502175,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9885888204632153,
+     "worst_z": -0.6186083645620886,
+     "worst_against": "unsplit"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9976901183278938,
+     "worst_z": -0.790996165765952,
+     "worst_against": "unsplit"
+    }
+   ],
+   "seconds": 6.93
+  },
+  {
+   "index": 78,
+   "law": 19,
+   "inputs": 4,
+   "noise": 0.1,
+   "text": "(-0.45*exp(-1.7*x1) + 2.3*tanh(0.3*x0)/(x3 + 1.3))*log(0.7*x2 + 1) + 0.3*sin(2.3*x1)",
+   "exact_shape": "(c + f(x0)*f(x3))*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "((f(x0)*f(x2))*f(x3)) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.035247065539492625,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.1651635179769492,
+   "shaped_error_of_spread": 0.16096954788252937,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9854207112541474,
+     "worst_z": -1.1707953457830484,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9909325761987853,
+     "worst_z": 0.5363666750428908,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9980764487673236,
+     "worst_z": -0.12145443408770831,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 7.45
+  },
+  {
+   "index": 79,
+   "law": 19,
+   "inputs": 4,
+   "noise": 0.2,
+   "text": "(-0.45*exp(-1.7*x1) + 2.3*tanh(0.3*x0)/(x3 + 1.3))*log(0.7*x2 + 1) + 0.3*sin(2.3*x1)",
+   "exact_shape": "(c + f(x0)*f(x3))*(f(x1)*f(x2)) + (f(x1)*f(x2) + f(x1))",
+   "exact_widest": 1,
+   "exact_parts": 7,
+   "read": true,
+   "shape": "((f(x0)*f(x3))*f(x2)) + f(x1)",
+   "widest": 1,
+   "parts": 4,
+   "departure": 0.0352470649582939,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.3316391798661928,
+   "shaped_error_of_spread": 0.32541431195936144,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9811535174964732,
+     "worst_z": -2.2885565489165454,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9982565395440189,
+     "worst_z": -0.16935459557526333,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0018245916377626,
+     "worst_z": 0.9510044929128805,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 7.37
+  },
+  {
+   "index": 80,
+   "law": 20,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "1.7*x1*exp(-2.9*x2)*log(1.3*x4 + 1)/((0.3 + 1/x3)*(sin(1.7*x0) + 0.3)) + 0.45*x3/(x3 + 0.3)",
+   "exact_shape": "(c + f(x0)*f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 1.0205792765385266,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 12.6
+  },
+  {
+   "index": 81,
+   "law": 20,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "1.7*x1*exp(-2.9*x2)*log(1.3*x4 + 1)/((0.3 + 1/x3)*(sin(1.7*x0) + 0.3)) + 0.45*x3/(x3 + 0.3)",
+   "exact_shape": "(c + f(x0)*f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 1.0039459135628097,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 10.36
+  },
+  {
+   "index": 82,
+   "law": 20,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "1.7*x1*exp(-2.9*x2)*log(1.3*x4 + 1)/((0.3 + 1/x3)*(sin(1.7*x0) + 0.3)) + 0.45*x3/(x3 + 0.3)",
+   "exact_shape": "(c + f(x0)*f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.8729842468612082,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 8.41
+  },
+  {
+   "index": 83,
+   "law": 20,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "1.7*x1*exp(-2.9*x2)*log(1.3*x4 + 1)/((0.3 + 1/x3)*(sin(1.7*x0) + 0.3)) + 0.45*x3/(x3 + 0.3)",
+   "exact_shape": "(c + f(x0)*f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.8883617500988175,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 8.31
+  },
+  {
+   "index": 84,
+   "law": 21,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "(1.7*x4/(x4 + 2.3) + 1.3*sqrt(x2 + 2.3) - 1.3*sin(0.45*x0) - 1.7/x1)*log(0.45*x3 + 1) - 0.7/x3",
+   "exact_shape": "(f(x0) + f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": true,
+   "shape": "(f(x0)*f(x3))*(f(x1) + (f(x2) + f(x4))) + (c + f(x0)*f(x3))",
+   "widest": 1,
+   "parts": 7,
+   "departure": 0.0034611616300449163,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.025633481335599735,
+   "shaped_error_of_spread": 0.024037023040567,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      1,
+      2,
+      4
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.940819912843582,
+     "worst_z": -3.870692210769117,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9897858647833214,
+     "worst_z": -1.096079475724619,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9969519423745999,
+     "worst_z": 0.3649321384032709,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9997335637743892,
+     "worst_z": 0.08663546457863931,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      2
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0103383599000026,
+     "worst_z": 1.6040821927476658,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.14
+  },
+  {
+   "index": 85,
+   "law": 21,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "(1.7*x4/(x4 + 2.3) + 1.3*sqrt(x2 + 2.3) - 1.3*sin(0.45*x0) - 1.7/x1)*log(0.45*x3 + 1) - 0.7/x3",
+   "exact_shape": "(f(x0) + f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": true,
+   "shape": "c + (((f(x0) + f(x4)) + f(x2)) + f(x1))*f(x3)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.008508482591295077,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.10895701310130737,
+   "shaped_error_of_spread": 0.1074486758001661,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2,
+      4
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.996875721795729,
+     "worst_z": 1.9233004654216057,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2,
+      4
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9906889863960476,
+     "worst_z": -0.6002067505056017,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9986163318333477,
+     "worst_z": -0.5059852715356411,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9999282998148149,
+     "worst_z": -0.10569266728244915,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 7.75
+  },
+  {
+   "index": 86,
+   "law": 21,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "(1.7*x4/(x4 + 2.3) + 1.3*sqrt(x2 + 2.3) - 1.3*sin(0.45*x0) - 1.7/x1)*log(0.45*x3 + 1) - 0.7/x3",
+   "exact_shape": "(f(x0) + f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": true,
+   "shape": "c + (((f(x0)*f(x4)) + f(x2)) + f(x1))*f(x3)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.017434185591723734,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.2232164211178329,
+   "shaped_error_of_spread": 0.21896382132983316,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2,
+      4
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9860335086013626,
+     "worst_z": 0.7829028790053189,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2,
+      4
+     ],
+     "second": [
+      1
+     ],
+     "form": "g+h",
+     "ratio": 0.9958332965894683,
+     "worst_z": -0.2587430427323379,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9995556244361274,
+     "worst_z": 1.3637267587689357,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9994496923301632,
+     "worst_z": -0.28628813479478504,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 8.93
+  },
+  {
+   "index": 87,
+   "law": 21,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "(1.7*x4/(x4 + 2.3) + 1.3*sqrt(x2 + 2.3) - 1.3*sin(0.45*x0) - 1.7/x1)*log(0.45*x3 + 1) - 0.7/x3",
+   "exact_shape": "(f(x0) + f(x1))*(f(x2)*(f(x3)*f(x4))) + (f(x2)*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))",
+   "exact_widest": 1,
+   "exact_parts": 11,
+   "read": true,
+   "shape": "f(x0) + ((c + (f(x1) + f(x2))*f(x3)) + f(x4))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.07593449646019848,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.39297953776553884,
+   "shaped_error_of_spread": 0.39523351403962825,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9999647695249871,
+     "worst_z": 0.9628030066955332,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 1.0079601591298697,
+     "worst_z": 1.5904598790702384,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9981202634850704,
+     "worst_z": 0.9513800368043888,
+     "worst_against": "unsplit"
+    },
+    {
+     "at": [
+      1,
+      0,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9997073564161304,
+     "worst_z": 0.8969967159557628,
+     "worst_against": "unsplit"
+    }
+   ],
+   "seconds": 8.91
+  },
+  {
+   "index": 88,
+   "law": 22,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "1.3*x3*x4*exp(-0.3*x1)/((x0 + 1.7)*(x4 + 2.3)) - 1.7*exp(-1.7*x2) + 0.45/x0",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x3)*f(x4)) + (f(x0)*f(x1) + f(x0))) + f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "((f(x0)*f(x3))*(c + f(x1)*f(x4)) + (f(x0)*f(x3) + f(x0))) + f(x2)",
+   "widest": 1,
+   "parts": 8,
+   "departure": 1.5929699568442422e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.024855668827674947,
+   "shaped_error_of_spread": 0.02204292688387129,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      3,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9328715969667669,
+     "worst_z": -0.419791014289441,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      1,
+      4
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.957925923720582,
+     "worst_z": -2.3998995056471775,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.996265516275634,
+     "worst_z": 0.11039748198068358,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9953540229364857,
+     "worst_z": -1.2179467941587114,
+     "worst_against": "so far"
+    },
+    {
+     "at": [
+      0,
+      2
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 1.000777044366522,
+     "worst_z": 0.3202350330535854,
+     "worst_against": "so far"
+    }
+   ],
+   "seconds": 9.47
+  },
+  {
+   "index": 89,
+   "law": 22,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "1.3*x3*x4*exp(-0.3*x1)/((x0 + 1.7)*(x4 + 2.3)) - 1.7*exp(-1.7*x2) + 0.45/x0",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x3)*f(x4)) + (f(x0)*f(x1) + f(x0))) + f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + f(x0)*(c + (f(x1)*f(x4))*f(x3))) + f(x2)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.014083233035956806,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.11218142289032929,
+   "shaped_error_of_spread": 0.10790914455558132,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      3,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9794118521654173,
+     "worst_z": -0.7571246883462477,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      3,
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9934298811263542,
+     "worst_z": 0.6849485825563842,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      1,
+      4
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9911133295085821,
+     "worst_z": -0.7231825188782531,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9974965776593576,
+     "worst_z": 0.16013407321565737,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 8.0
+  },
+  {
+   "index": 90,
+   "law": 22,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "1.3*x3*x4*exp(-0.3*x1)/((x0 + 1.7)*(x4 + 2.3)) - 1.7*exp(-1.7*x2) + 0.45/x0",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x3)*f(x4)) + (f(x0)*f(x1) + f(x0))) + f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + f(x0)*(c + f(x1)*(f(x3)*f(x4)))) + f(x2)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.014083233035956799,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.18952519875043333,
+   "shaped_error_of_spread": 0.18564978893479,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      3,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.991079123559924,
+     "worst_z": -0.4295364358506087,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      3,
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9945354791251304,
+     "worst_z": -0.16887917607550273,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3,
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9941906056492524,
+     "worst_z": -1.003471644818835,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      1,
+      1
+     ],
+     "first": [
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9996068766059706,
+     "worst_z": -0.16668415051914728,
+     "worst_against": "c+g*h"
+    }
+   ],
+   "seconds": 8.43
+  },
+  {
+   "index": 91,
+   "law": 22,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "1.3*x3*x4*exp(-0.3*x1)/((x0 + 1.7)*(x4 + 2.3)) - 1.7*exp(-1.7*x2) + 0.45/x0",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x3)*f(x4)) + (f(x0)*f(x1) + f(x0))) + f(x2)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "((c + f(x0)*(c + f(x1)*f(x3)))*f(x4)) + f(x2)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.03883100689194272,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.3774114855954295,
+   "shaped_error_of_spread": 0.372765806361744,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      3,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9906735543394586,
+     "worst_z": -0.8881308104561131,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      1,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9982703965476791,
+     "worst_z": -0.13772296402129988,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9998671717755357,
+     "worst_z": 0.3336099958240777,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0,
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9988491015763741,
+     "worst_z": -0.29630344252052265,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.76
+  },
+  {
+   "index": 92,
+   "law": 23,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "(2.3*sin(1.3*x0) - 0.7*sin(0.7*x2) + 2.9*sin(2.9*x3) + 1.7*exp(-0.7*x4))*sin(2.9*x0)/x1",
+   "exact_shape": "((f(x0)*f(x2))*(f(x3) + f(x4)) + (f(x0)*f(x2) + f(x0)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.7409910414185797,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 7.84
+  },
+  {
+   "index": 93,
+   "law": 23,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "(2.3*sin(1.3*x0) - 0.7*sin(0.7*x2) + 2.9*sin(2.9*x3) + 1.7*exp(-0.7*x4))*sin(2.9*x0)/x1",
+   "exact_shape": "((f(x0)*f(x2))*(f(x3) + f(x4)) + (f(x0)*f(x2) + f(x0)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.7941250709728842,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 8.7
+  },
+  {
+   "index": 94,
+   "law": 23,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "(2.3*sin(1.3*x0) - 0.7*sin(0.7*x2) + 2.9*sin(2.9*x3) + 1.7*exp(-0.7*x4))*sin(2.9*x0)/x1",
+   "exact_shape": "((f(x0)*f(x2))*(f(x3) + f(x4)) + (f(x0)*f(x2) + f(x0)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.8005861116463615,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 8.86
+  },
+  {
+   "index": 95,
+   "law": 23,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "(2.3*sin(1.3*x0) - 0.7*sin(0.7*x2) + 2.9*sin(2.9*x3) + 1.7*exp(-0.7*x4))*sin(2.9*x0)/x1",
+   "exact_shape": "((f(x0)*f(x2))*(f(x3) + f(x4)) + (f(x0)*f(x2) + f(x0)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(f(x0)*((c + f(x2)*f(x4)) + f(x3)) + f(x0))*f(x1)",
+   "widest": 1,
+   "parts": 6,
+   "departure": 1.0,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.274099672318189,
+   "shaped_error_of_spread": 0.236043197354156,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3,
+      4
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9026299106497894,
+     "worst_z": -0.7115830759773937,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3,
+      4
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9560113339481506,
+     "worst_z": -1.5105211675198675,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2,
+      4
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9979860794766426,
+     "worst_z": -0.3080408999529619,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1,
+      0
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9999671360376431,
+     "worst_z": -1.4804138783697356,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 13.11
+  },
+  {
+   "index": 96,
+   "law": 24,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "((2.9*x1 + 1.3*log(2.3*x3 + 1))/(sin(0.45*x2) + 2.9) - 2.9*sqrt(x4 + 0.3) + 0.3*sqrt(x4 + 2.3))/(x0/(x0 + 1.3) + 0.3)",
+   "exact_shape": "f(x0)*((c + (f(x1) + f(x3))*f(x2)) + f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*((c + (f(x1) + f(x3))*f(x2)) + f(x4))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 1.8442018333379284e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.017048668886740934,
+   "shaped_error_of_spread": 0.015725793446823396,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9335581198545015,
+     "worst_z": -0.5201960364184743,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9919919275909402,
+     "worst_z": -1.1432487513498826,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9969654422255259,
+     "worst_z": -0.310512548081766,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9990621079581352,
+     "worst_z": -0.2659918610643808,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 9.84
+  },
+  {
+   "index": 97,
+   "law": 24,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "((2.9*x1 + 1.3*log(2.3*x3 + 1))/(sin(0.45*x2) + 2.9) - 2.9*sqrt(x4 + 0.3) + 0.3*sqrt(x4 + 2.3))/(x0/(x0 + 1.3) + 0.3)",
+   "exact_shape": "f(x0)*((c + (f(x1) + f(x3))*f(x2)) + f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*((c + f(x1)*f(x2)) + (f(x3) + f(x4)))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.004278151919859671,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.08392595875190255,
+   "shaped_error_of_spread": 0.08124125968887758,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9786210661165146,
+     "worst_z": 0.26999644668811174,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2
+     ],
+     "second": [
+      3,
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9931543793194145,
+     "worst_z": 0.7953815681824677,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 1.0001630498215817,
+     "worst_z": 0.43200053334556204,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.995813958117354,
+     "worst_z": -1.1425759963169393,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 8.46
+  },
+  {
+   "index": 98,
+   "law": 24,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "((2.9*x1 + 1.3*log(2.3*x3 + 1))/(sin(0.45*x2) + 2.9) - 2.9*sqrt(x4 + 0.3) + 0.3*sqrt(x4 + 2.3))/(x0/(x0 + 1.3) + 0.3)",
+   "exact_shape": "f(x0)*((c + (f(x1) + f(x3))*f(x2)) + f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*(((c + f(x1)*f(x2)) + f(x4)) + f(x3))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.004278151919859671,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.16854911893665536,
+   "shaped_error_of_spread": 0.16802112047096454,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9919152421623135,
+     "worst_z": -1.17383237040908,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2,
+      4
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 1.000617984579245,
+     "worst_z": 0.41516804893452086,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1,
+      2
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 1.0026205447323586,
+     "worst_z": 0.9991248767617866,
+     "worst_against": "so far"
+    },
+    {
+     "at": [
+      1,
+      0,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0017467038677026,
+     "worst_z": 0.42219525474334035,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 9.5
+  },
+  {
+   "index": 99,
+   "law": 24,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "((2.9*x1 + 1.3*log(2.3*x3 + 1))/(sin(0.45*x2) + 2.9) - 2.9*sqrt(x4 + 0.3) + 0.3*sqrt(x4 + 2.3))/(x0/(x0 + 1.3) + 0.3)",
+   "exact_shape": "f(x0)*((c + (f(x1) + f(x3))*f(x2)) + f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 5,
+   "read": true,
+   "shape": "f(x0)*(((f(x1) + f(x4)) + f(x3)) + f(x2))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.041670850503923676,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.2965170520156392,
+   "shaped_error_of_spread": 0.2951845310548956,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9951260159845744,
+     "worst_z": -1.3603808876948909,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3,
+      4
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9980349124384188,
+     "worst_z": 1.5839358997907074,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1,
+      4
+     ],
+     "second": [
+      3
+     ],
+     "form": "g+h",
+     "ratio": 0.9998800999287394,
+     "worst_z": 0.14003281390142241,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      0,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "g+h",
+     "ratio": 1.0024718407042597,
+     "worst_z": 0.9498703267991802,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 9.28
+  },
+  {
+   "index": 100,
+   "law": 25,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "(2.3*x1*x4/(x3*(x2**2 + 0.3)*(x4 + 2.9)) + 0.7*sqrt(x0 + 3.7))*tanh(1.7*x3)",
+   "exact_shape": "(f(x0)*f(x3))*(c + f(x1)*(f(x2)*f(x4))) + (f(x0)*f(x3) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "f(x0) + (c + (f(x1)*(f(x2)*f(x3) + f(x3)))*f(x4))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 0.007979545245697807,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.07096710782000377,
+   "shaped_error_of_spread": 0.0680957920600383,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9739171077472832,
+     "worst_z": -1.2556738900582052,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9861871979857719,
+     "worst_z": 0.1345616449385236,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0126507542277525,
+     "worst_z": 1.2190607299124419,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      1,
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9865568664594937,
+     "worst_z": -0.6091653433961367,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 9.36
+  },
+  {
+   "index": 101,
+   "law": 25,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "(2.3*x1*x4/(x3*(x2**2 + 0.3)*(x4 + 2.9)) + 0.7*sqrt(x0 + 3.7))*tanh(1.7*x3)",
+   "exact_shape": "(f(x0)*f(x3))*(c + f(x1)*(f(x2)*f(x4))) + (f(x0)*f(x3) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "f(x0) + (c + (f(x1)*f(x3))*(f(x2)*f(x4)))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.011342042551760665,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.2841072083763353,
+   "shaped_error_of_spread": 0.2766801599881052,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "form": "g+h",
+     "ratio": 0.9965769778223212,
+     "worst_z": -0.29832031047533286,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      2,
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9785856369559116,
+     "worst_z": -0.14377599366460786,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9972221238563956,
+     "worst_z": 0.2809658508828822,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0013690701787443,
+     "worst_z": 1.3376698277458796,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 8.73
+  },
+  {
+   "index": 102,
+   "law": 25,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "(2.3*x1*x4/(x3*(x2**2 + 0.3)*(x4 + 2.9)) + 0.7*sqrt(x0 + 3.7))*tanh(1.7*x3)",
+   "exact_shape": "(f(x0)*f(x3))*(c + f(x1)*(f(x2)*f(x4))) + (f(x0)*f(x3) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.5063570938361777,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 6.02
+  },
+  {
+   "index": 103,
+   "law": 25,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "(2.3*x1*x4/(x3*(x2**2 + 0.3)*(x4 + 2.9)) + 0.7*sqrt(x0 + 3.7))*tanh(1.7*x3)",
+   "exact_shape": "(f(x0)*f(x3))*(c + f(x1)*(f(x2)*f(x4))) + (f(x0)*f(x3) + f(x3))",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": false,
+   "shape": "f(x0, x1, x2, x3, x4)",
+   "widest": 5,
+   "parts": 1,
+   "departure": 0.0,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.8126118809151789,
+   "shaped_error_of_spread": null,
+   "steps": [],
+   "seconds": 5.55
+  },
+  {
+   "index": 104,
+   "law": 26,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "(3.7*x0**2*x2**2*x4/(x4 + 2.3) + 1.7*x3**3)/((x3 + 0.3)*(sin(0.3*x1) + 0.45))",
+   "exact_shape": "((c + f(x0)*f(x2))*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "((c + f(x0)*f(x2))*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))*f(x1)",
+   "widest": 1,
+   "parts": 8,
+   "departure": 1.0709082032805513e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.036800540402135436,
+   "shaped_error_of_spread": 0.021985447759716947,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3,
+      4
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.7385431417926849,
+     "worst_z": -1.2400203185366916,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3,
+      4
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.8564228642859605,
+     "worst_z": -1.6495714872907998,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9537993791479257,
+     "worst_z": -1.4566110414688576,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9884054544439173,
+     "worst_z": -0.5370608450481368,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      2
+     ],
+     "first": [
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 1.0019010393410823,
+     "worst_z": 0.43152374163068,
+     "worst_against": "so far"
+    }
+   ],
+   "seconds": 9.38
+  },
+  {
+   "index": 105,
+   "law": 26,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "(3.7*x0**2*x2**2*x4/(x4 + 2.3) + 1.7*x3**3)/((x3 + 0.3)*(sin(0.3*x1) + 0.45))",
+   "exact_shape": "((c + f(x0)*f(x2))*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + ((c + f(x0)*f(x2))*f(x3) + f(x3))*f(x4))*f(x1)",
+   "widest": 1,
+   "parts": 6,
+   "departure": 0.022439599361514122,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.07819321234974874,
+   "shaped_error_of_spread": 0.07383152640800815,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3,
+      4
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9681026211427676,
+     "worst_z": 0.8849666040968309,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9961890000972259,
+     "worst_z": 0.5859270022840777,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9772296736653746,
+     "worst_z": -2.0254463971365437,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0018737736872312,
+     "worst_z": 0.7175408722373684,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 7.76
+  },
+  {
+   "index": 106,
+   "law": 26,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "(3.7*x0**2*x2**2*x4/(x4 + 2.3) + 1.7*x3**3)/((x3 + 0.3)*(sin(0.3*x1) + 0.45))",
+   "exact_shape": "((c + f(x0)*f(x2))*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "((c + f(x0)*f(x4))*(f(x2)*f(x3)) + (f(x2)*f(x3) + f(x3)))*f(x1)",
+   "widest": 1,
+   "parts": 8,
+   "departure": 8.425226390857282e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.1577596552363111,
+   "shaped_error_of_spread": 0.14906795920507676,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3,
+      4
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9546147391344433,
+     "worst_z": -1.340181629094658,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      4
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9917400612315608,
+     "worst_z": -0.3564846073590608,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9986840207311312,
+     "worst_z": 0.3541745333707427,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      4
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0006779685186504,
+     "worst_z": 0.709442392557149,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      2
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9987112123526548,
+     "worst_z": 0.07802868635139944,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 8.63
+  },
+  {
+   "index": 107,
+   "law": 26,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "(3.7*x0**2*x2**2*x4/(x4 + 2.3) + 1.7*x3**3)/((x3 + 0.3)*(sin(0.3*x1) + 0.45))",
+   "exact_shape": "((c + f(x0)*f(x2))*(f(x3)*f(x4)) + (f(x3)*f(x4) + f(x3)))*f(x1)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + (f(x0)*f(x3))*f(x2))*(f(x1)*f(x4))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.12325801339509745,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.30295064904107527,
+   "shaped_error_of_spread": 0.2977937694591176,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9792523707281726,
+     "worst_z": -0.41362245107588197,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9936850779460203,
+     "worst_z": -1.696176552432485,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0039163464322978,
+     "worst_z": 0.6930763001958571,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0062428194984556,
+     "worst_z": 1.714705293819983,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 7.27
+  },
+  {
+   "index": 108,
+   "law": 27,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "(-0.7*x1/(x1 + 0.7) + 2.9*sqrt(x1 + 0.7)*tanh(0.3*x0)*tanh(0.7*x2)/x3)/(x4 + 2.9)",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x2)*f(x3)) + (f(x0)*f(x1) + f(x1)))*f(x4)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + ((f(x0)*f(x1))*f(x3) + (f(x0)*f(x1) + f(x1)))*f(x2))*f(x4)",
+   "widest": 1,
+   "parts": 8,
+   "departure": 0.014059408526731421,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.021709024000093176,
+   "shaped_error_of_spread": 0.017408284411595892,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.8800646372557673,
+     "worst_z": -0.1006356791421338,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      1,
+      3
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9563804418051123,
+     "worst_z": 1.911287034049055,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h+k(A)",
+     "ratio": 0.9586529546332472,
+     "worst_z": -1.2212434106339658,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 0.9926776734482566,
+     "worst_z": -0.4260817784108437,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0,
+      0,
+      2
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 1.0011536815716362,
+     "worst_z": 0.47083982478230435,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 11.71
+  },
+  {
+   "index": 109,
+   "law": 27,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "(-0.7*x1/(x1 + 0.7) + 2.9*sqrt(x1 + 0.7)*tanh(0.3*x0)*tanh(0.7*x2)/x3)/(x4 + 2.9)",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x2)*f(x3)) + (f(x0)*f(x1) + f(x1)))*f(x4)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + (c + (f(x0)*f(x2))*f(x3))*f(x1))*f(x4)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.010593512247507004,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.0759816059976354,
+   "shaped_error_of_spread": 0.07210355163866883,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9715882013939576,
+     "worst_z": 0.626026144250451,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9810016559761217,
+     "worst_z": 1.6626257608780453,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9912677536216706,
+     "worst_z": -0.07293226403505328,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 1.0043966078080637,
+     "worst_z": 1.3721997481250265,
+     "worst_against": "g*h+k(A)"
+    }
+   ],
+   "seconds": 8.35
+  },
+  {
+   "index": 110,
+   "law": 27,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "(-0.7*x1/(x1 + 0.7) + 2.9*sqrt(x1 + 0.7)*tanh(0.3*x0)*tanh(0.7*x2)/x3)/(x4 + 2.9)",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x2)*f(x3)) + (f(x0)*f(x1) + f(x1)))*f(x4)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "(c + (c + (f(x0)*f(x2))*f(x3))*f(x1))*f(x4)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.010593512247507004,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.1468619890426779,
+   "shaped_error_of_spread": 0.1411659260369156,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9713539444474913,
+     "worst_z": 0.10432509695054316,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9935814498215202,
+     "worst_z": 0.7979840861839178,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9933530565158547,
+     "worst_z": -1.0720518748388566,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 1.0026188385207793,
+     "worst_z": 0.9746964747233403,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 8.4
+  },
+  {
+   "index": 111,
+   "law": 27,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "(-0.7*x1/(x1 + 0.7) + 2.9*sqrt(x1 + 0.7)*tanh(0.3*x0)*tanh(0.7*x2)/x3)/(x4 + 2.9)",
+   "exact_shape": "((f(x0)*f(x1))*(c + f(x2)*f(x3)) + (f(x0)*f(x1) + f(x1)))*f(x4)",
+   "exact_widest": 1,
+   "exact_parts": 8,
+   "read": true,
+   "shape": "((c + (f(x0)*f(x2))*f(x3))*f(x1))*f(x4)",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.03958815046665891,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.27588543964602147,
+   "shaped_error_of_spread": 0.26696241954557737,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9790598056544552,
+     "worst_z": 0.0404193613112813,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1
+     ],
+     "form": "g*h",
+     "ratio": 1.0019940620483403,
+     "worst_z": 1.3806191355300954,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9875798127518769,
+     "worst_z": -1.0871960120886162,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9987913586120327,
+     "worst_z": -0.40058345528361955,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.13
+  },
+  {
+   "index": 112,
+   "law": 28,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "x1*sqrt(x0 + 0.45)*(3.7*log(0.3*x1 + 1) - 1.3*exp(-1.3*x2))/((x1 + 0.7)*(x4 + 0.7)*(log(3.7*x3 + 1) + 0.3))",
+   "exact_shape": "(f(x0)*f(x3))*((f(x1)*f(x2) + f(x1))*f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(f(x0)*(c + f(x1)*f(x2)))*(f(x3)*f(x4))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.0014596653816658564,
+   "verdict": "close",
+   "unsplit_error_of_spread": 0.024373122970560858,
+   "shaped_error_of_spread": 0.022326441198640568,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      1,
+      2
+     ],
+     "second": [
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9367368346246533,
+     "worst_z": 0.9801463268454693,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9861735227181467,
+     "worst_z": -0.6610020093280894,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9942761607312792,
+     "worst_z": -0.27354184966699097,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 0.9973104281296007,
+     "worst_z": -0.08527162780007062,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.29
+  },
+  {
+   "index": 113,
+   "law": 28,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "x1*sqrt(x0 + 0.45)*(3.7*log(0.3*x1 + 1) - 1.3*exp(-1.3*x2))/((x1 + 0.7)*(x4 + 0.7)*(log(3.7*x3 + 1) + 0.3))",
+   "exact_shape": "(f(x0)*f(x3))*((f(x1)*f(x2) + f(x1))*f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(f(x0)*f(x4))*((f(x1) + f(x2))*f(x3))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.010105605507326046,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.10780553837753776,
+   "shaped_error_of_spread": 0.1043172941527437,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      4
+     ],
+     "second": [
+      1,
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9735411467354648,
+     "worst_z": -2.012676752741669,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9949455177217581,
+     "worst_z": 0.03013153168082081,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g+h",
+     "ratio": 0.9987387544771041,
+     "worst_z": -0.4291699172460943,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 1.0002526874398292,
+     "worst_z": 0.07297550289889032,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 7.11
+  },
+  {
+   "index": 114,
+   "law": 28,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "x1*sqrt(x0 + 0.45)*(3.7*log(0.3*x1 + 1) - 1.3*exp(-1.3*x2))/((x1 + 0.7)*(x4 + 0.7)*(log(3.7*x3 + 1) + 0.3))",
+   "exact_shape": "(f(x0)*f(x3))*((f(x1)*f(x2) + f(x1))*f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "((f(x0)*f(x3))*f(x4))*(f(x1)*f(x2))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.020148923040552272,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.1998190970385574,
+   "shaped_error_of_spread": 0.19481233592099534,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      3,
+      4
+     ],
+     "second": [
+      1,
+      2
+     ],
+     "form": "g*h",
+     "ratio": 0.9763785735595266,
+     "worst_z": -1.7078756508207367,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9966291890066578,
+     "worst_z": 1.0075352759008551,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h",
+     "ratio": 1.0000980282095937,
+     "worst_z": 0.3179456751213182,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0018092742326234,
+     "worst_z": 0.8878533574645069,
+     "worst_against": "g*h+k(B)"
+    }
+   ],
+   "seconds": 8.5
+  },
+  {
+   "index": 115,
+   "law": 28,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "x1*sqrt(x0 + 0.45)*(3.7*log(0.3*x1 + 1) - 1.3*exp(-1.3*x2))/((x1 + 0.7)*(x4 + 0.7)*(log(3.7*x3 + 1) + 0.3))",
+   "exact_shape": "(f(x0)*f(x3))*((f(x1)*f(x2) + f(x1))*f(x4))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(f(x0)*(f(x2)*f(x3)))*(f(x1)*f(x4))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.02014892304055227,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.37328818299663663,
+   "shaped_error_of_spread": 0.36722805884042514,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9844499601165427,
+     "worst_z": -0.8589652597549554,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2,
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9993521707398777,
+     "worst_z": -0.2344106327298275,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0,
+      1
+     ],
+     "first": [
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9997231584398666,
+     "worst_z": -0.8309384090234092,
+     "worst_against": "g+h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 1.0002294942031134,
+     "worst_z": 0.09229059345717182,
+     "worst_against": "so far"
+    }
+   ],
+   "seconds": 10.97
+  },
+  {
+   "index": 116,
+   "law": 29,
+   "inputs": 5,
+   "noise": 0.01,
+   "text": "x3*x4*(-0.45*sqrt(x2 + 2.3) + 2.9*exp(-0.3*x0)*sin(2.3*x2))*log(0.7*x1 + 1)/(x3 + 2.3)",
+   "exact_shape": "(f(x0)*f(x2) + f(x2))*(f(x1)*(f(x3)*f(x4)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "((f(x0)*f(x2) + f(x2))*f(x3))*(f(x1)*f(x4))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 1.0753141034986107e-15,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.021153646080827496,
+   "shaped_error_of_spread": 0.01480914530572805,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.7701837510557056,
+     "worst_z": -1.7272007639855604,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9384443396788456,
+     "worst_z": -0.7127650849581674,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9780072496567597,
+     "worst_z": -2.0896761791279244,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9903753338532201,
+     "worst_z": -1.2875893850424576,
+     "worst_against": "so far"
+    }
+   ],
+   "seconds": 10.65
+  },
+  {
+   "index": 117,
+   "law": 29,
+   "inputs": 5,
+   "noise": 0.05,
+   "text": "x3*x4*(-0.45*sqrt(x2 + 2.3) + 2.9*exp(-0.3*x0)*sin(2.3*x2))*log(0.7*x1 + 1)/(x3 + 2.3)",
+   "exact_shape": "(f(x0)*f(x2) + f(x2))*(f(x1)*(f(x3)*f(x4)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(f(x0)*f(x2) + f(x2))*((f(x1)*f(x3))*f(x4))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 9.789535279794847e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.08435753107005782,
+   "shaped_error_of_spread": 0.07243772575813592,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.8725104933560964,
+     "worst_z": 0.35230425118272346,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9887098167541511,
+     "worst_z": -2.3093412760849,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0028931100126377,
+     "worst_z": 1.3036103681391793,
+     "worst_against": "rank 2"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.9925372014650766,
+     "worst_z": -0.1133499437960484,
+     "worst_against": "rank 2"
+    }
+   ],
+   "seconds": 8.72
+  },
+  {
+   "index": 118,
+   "law": 29,
+   "inputs": 5,
+   "noise": 0.1,
+   "text": "x3*x4*(-0.45*sqrt(x2 + 2.3) + 2.9*exp(-0.3*x0)*sin(2.3*x2))*log(0.7*x1 + 1)/(x3 + 2.3)",
+   "exact_shape": "(f(x0)*f(x2) + f(x2))*(f(x1)*(f(x3)*f(x4)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "(f(x0)*f(x2) + f(x2))*((f(x1)*f(x3))*f(x4))",
+   "widest": 1,
+   "parts": 6,
+   "departure": 9.789535279794847e-16,
+   "verdict": "exact",
+   "unsplit_error_of_spread": 0.15712868142884517,
+   "shaped_error_of_spread": 0.14476364563248584,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      1,
+      3,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9260027124055981,
+     "worst_z": -1.3720567595701179,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1,
+      3
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9953975348013814,
+     "worst_z": -0.9815098114055207,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1,
+      0
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 1.0031637576720887,
+     "worst_z": 1.1372878341853392,
+     "worst_against": "c+g*h"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "g*h+k(B)",
+     "ratio": 0.996376308064976,
+     "worst_z": -1.2028122187814776,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 8.39
+  },
+  {
+   "index": 119,
+   "law": 29,
+   "inputs": 5,
+   "noise": 0.2,
+   "text": "x3*x4*(-0.45*sqrt(x2 + 2.3) + 2.9*exp(-0.3*x0)*sin(2.3*x2))*log(0.7*x1 + 1)/(x3 + 2.3)",
+   "exact_shape": "(f(x0)*f(x2) + f(x2))*(f(x1)*(f(x3)*f(x4)))",
+   "exact_widest": 1,
+   "exact_parts": 6,
+   "read": true,
+   "shape": "((c + f(x0)*f(x2))*f(x3))*(f(x1)*f(x4))",
+   "widest": 1,
+   "parts": 5,
+   "departure": 0.03913385317303285,
+   "verdict": "wrong",
+   "unsplit_error_of_spread": 0.2761976660015245,
+   "shaped_error_of_spread": 0.26764618679237356,
+   "steps": [
+    {
+     "at": [],
+     "first": [
+      0,
+      2,
+      3
+     ],
+     "second": [
+      1,
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9641725739098673,
+     "worst_z": -1.4811962506218581,
+     "worst_against": "g*h+k(B)"
+    },
+    {
+     "at": [
+      0
+     ],
+     "first": [
+      0,
+      2
+     ],
+     "second": [
+      3
+     ],
+     "form": "g*h",
+     "ratio": 0.9964134600827718,
+     "worst_z": -0.07663785633208303,
+     "worst_against": "g*h+k(A)"
+    },
+    {
+     "at": [
+      1
+     ],
+     "first": [
+      1
+     ],
+     "second": [
+      4
+     ],
+     "form": "g*h",
+     "ratio": 0.9995530930796881,
+     "worst_z": -0.4559723114007492,
+     "worst_against": "rank 3"
+    },
+    {
+     "at": [
+      0,
+      0
+     ],
+     "first": [
+      0
+     ],
+     "second": [
+      2
+     ],
+     "form": "c+g*h",
+     "ratio": 1.0091153892041418,
+     "worst_z": 1.5111349580978863,
+     "worst_against": "rank 3"
+    }
+   ],
+   "seconds": 7.76
+  }
+ ],
+ "the_earlier_analyzer": {
+  "what": "apedp.separability.SeparabilityAnalyzer().decompose on the same tables, its groups joined into a shape and scored the same way",
+  "summary": {
+   "all": {
+    "tables": 120,
+    "not_read": 0,
+    "exact": 119,
+    "close": 0,
+    "wrong": 1,
+    "split_at_all": 2,
+    "split_and_within_the_accuracy_line": 2,
+    "split_and_beyond_the_accuracy_line": 0,
+    "down_to_the_exact_widest": 1,
+    "finer_than_the_law_allows": 0,
+    "exact_and_as_fine": 1,
+    "widest_read": {
+     "1": 1,
+     "3": 39,
+     "4": 41,
+     "5": 39
+    },
+    "widest_exact": {
+     "1": 120
+    },
+    "median_seconds": 0.0
+   },
+   "by_noise": {
+    "0.01": {
+     "tables": 30,
+     "not_read": 0,
+     "exact": 29,
+     "close": 0,
+     "wrong": 1,
+     "split_at_all": 2,
+     "split_and_within_the_accuracy_line": 2,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 1,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 1,
+     "widest_read": {
+      "1": 1,
+      "3": 9,
+      "4": 11,
+      "5": 9
+     },
+     "widest_exact": {
+      "1": 30
+     },
+     "median_seconds": 0.0
+    },
+    "0.05": {
+     "tables": 30,
+     "not_read": 0,
+     "exact": 30,
+     "close": 0,
+     "wrong": 0,
+     "split_at_all": 0,
+     "split_and_within_the_accuracy_line": 0,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 0,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 0,
+     "widest_read": {
+      "3": 10,
+      "4": 10,
+      "5": 10
+     },
+     "widest_exact": {
+      "1": 30
+     },
+     "median_seconds": 0.0
+    },
+    "0.1": {
+     "tables": 30,
+     "not_read": 0,
+     "exact": 30,
+     "close": 0,
+     "wrong": 0,
+     "split_at_all": 0,
+     "split_and_within_the_accuracy_line": 0,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 0,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 0,
+     "widest_read": {
+      "3": 10,
+      "4": 10,
+      "5": 10
+     },
+     "widest_exact": {
+      "1": 30
+     },
+     "median_seconds": 0.0
+    },
+    "0.2": {
+     "tables": 30,
+     "not_read": 0,
+     "exact": 30,
+     "close": 0,
+     "wrong": 0,
+     "split_at_all": 0,
+     "split_and_within_the_accuracy_line": 0,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 0,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 0,
+     "widest_read": {
+      "3": 10,
+      "4": 10,
+      "5": 10
+     },
+     "widest_exact": {
+      "1": 30
+     },
+     "median_seconds": 0.0
+    }
+   },
+   "by_inputs": {
+    "3": {
+     "tables": 40,
+     "not_read": 0,
+     "exact": 40,
+     "close": 0,
+     "wrong": 0,
+     "split_at_all": 1,
+     "split_and_within_the_accuracy_line": 1,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 1,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 1,
+     "widest_read": {
+      "1": 1,
+      "3": 39
+     },
+     "widest_exact": {
+      "1": 40
+     },
+     "median_seconds": 0.0
+    },
+    "4": {
+     "tables": 40,
+     "not_read": 0,
+     "exact": 40,
+     "close": 0,
+     "wrong": 0,
+     "split_at_all": 0,
+     "split_and_within_the_accuracy_line": 0,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 0,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 0,
+     "widest_read": {
+      "4": 40
+     },
+     "widest_exact": {
+      "1": 40
+     },
+     "median_seconds": 0.0
+    },
+    "5": {
+     "tables": 40,
+     "not_read": 0,
+     "exact": 39,
+     "close": 0,
+     "wrong": 1,
+     "split_at_all": 1,
+     "split_and_within_the_accuracy_line": 1,
+     "split_and_beyond_the_accuracy_line": 0,
+     "down_to_the_exact_widest": 0,
+     "finer_than_the_law_allows": 0,
+     "exact_and_as_fine": 0,
+     "widest_read": {
+      "4": 1,
+      "5": 39
+     },
+     "widest_exact": {
+      "1": 40
+     },
+     "median_seconds": 0.0
+    }
+   }
+  },
+  "tables": [
+   {
+    "index": 0,
+    "law": 0,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 1,
+    "law": 0,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 2,
+    "law": 0,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 3,
+    "law": 0,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 4,
+    "law": 1,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 5,
+    "law": 1,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 6,
+    "law": 1,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 7,
+    "law": 1,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 8,
+    "law": 2,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 9,
+    "law": 2,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 10,
+    "law": 2,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 11,
+    "law": 2,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 12,
+    "law": 3,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 13,
+    "law": 3,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 14,
+    "law": 3,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 15,
+    "law": 3,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 16,
+    "law": 4,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 17,
+    "law": 4,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 18,
+    "law": 4,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 19,
+    "law": 4,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 20,
+    "law": 5,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 21,
+    "law": 5,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 22,
+    "law": 5,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 23,
+    "law": 5,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 24,
+    "law": 6,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 25,
+    "law": 6,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 26,
+    "law": 6,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 27,
+    "law": 6,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 28,
+    "law": 7,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0) + (f(x1) + f(x2))",
+    "widest": 1,
+    "parts": 3,
+    "departure": 2.168936396742762e-16,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 29,
+    "law": 7,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 30,
+    "law": 7,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 31,
+    "law": 7,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 32,
+    "law": 8,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 33,
+    "law": 8,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 34,
+    "law": 8,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 35,
+    "law": 8,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 36,
+    "law": 9,
+    "inputs": 3,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 37,
+    "law": 9,
+    "inputs": 3,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 38,
+    "law": 9,
+    "inputs": 3,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 39,
+    "law": 9,
+    "inputs": 3,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2)",
+    "widest": 3,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 40,
+    "law": 10,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 41,
+    "law": 10,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 42,
+    "law": 10,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 43,
+    "law": 10,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 44,
+    "law": 11,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 45,
+    "law": 11,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 46,
+    "law": 11,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 47,
+    "law": 11,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 48,
+    "law": 12,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 49,
+    "law": 12,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 50,
+    "law": 12,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 51,
+    "law": 12,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 52,
+    "law": 13,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 53,
+    "law": 13,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 54,
+    "law": 13,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 55,
+    "law": 13,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 56,
+    "law": 14,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 57,
+    "law": 14,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 58,
+    "law": 14,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 59,
+    "law": 14,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 60,
+    "law": 15,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 61,
+    "law": 15,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 62,
+    "law": 15,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 63,
+    "law": 15,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 64,
+    "law": 16,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 65,
+    "law": 16,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 66,
+    "law": 16,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 67,
+    "law": 16,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 68,
+    "law": 17,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 69,
+    "law": 17,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 70,
+    "law": 17,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 71,
+    "law": 17,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 72,
+    "law": 18,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 73,
+    "law": 18,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 74,
+    "law": 18,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 75,
+    "law": 18,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 76,
+    "law": 19,
+    "inputs": 4,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 77,
+    "law": 19,
+    "inputs": 4,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 78,
+    "law": 19,
+    "inputs": 4,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 79,
+    "law": 19,
+    "inputs": 4,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3)",
+    "widest": 4,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 80,
+    "law": 20,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 81,
+    "law": 20,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 82,
+    "law": 20,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 83,
+    "law": 20,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 84,
+    "law": 21,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 85,
+    "law": 21,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 86,
+    "law": 21,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 87,
+    "law": 21,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 88,
+    "law": 22,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 89,
+    "law": 22,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 90,
+    "law": 22,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 91,
+    "law": 22,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 92,
+    "law": 23,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 93,
+    "law": 23,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 94,
+    "law": 23,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 95,
+    "law": 23,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 96,
+    "law": 24,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x4) + f(x3)",
+    "widest": 4,
+    "parts": 2,
+    "departure": 0.013605013251516043,
+    "verdict": "wrong",
+    "seconds": 0.0
+   },
+   {
+    "index": 97,
+    "law": 24,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 98,
+    "law": 24,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 99,
+    "law": 24,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 100,
+    "law": 25,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 101,
+    "law": 25,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 102,
+    "law": 25,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 103,
+    "law": 25,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 104,
+    "law": 26,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 105,
+    "law": 26,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 106,
+    "law": 26,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 107,
+    "law": 26,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 108,
+    "law": 27,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 109,
+    "law": 27,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 110,
+    "law": 27,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 111,
+    "law": 27,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 112,
+    "law": 28,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 113,
+    "law": 28,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.01
+   },
+   {
+    "index": 114,
+    "law": 28,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 115,
+    "law": 28,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 116,
+    "law": 29,
+    "inputs": 5,
+    "noise": 0.01,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 117,
+    "law": 29,
+    "inputs": 5,
+    "noise": 0.05,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 118,
+    "law": 29,
+    "inputs": 5,
+    "noise": 0.1,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   },
+   {
+    "index": 119,
+    "law": 29,
+    "inputs": 5,
+    "noise": 0.2,
+    "exact_widest": 1,
+    "read": true,
+    "shape": "f(x0, x1, x2, x3, x4)",
+    "widest": 5,
+    "parts": 1,
+    "departure": 0.0,
+    "verdict": "exact",
+    "seconds": 0.0
+   }
+  ]
+ }
+}

@@ -44,10 +44,10 @@ def _unit(number: int, noise: float, in_force: str, ranked: str, **done) -> list
 def test_the_run_is_the_table_route_at_the_budget_the_memory_was_adopted_at(run) -> None:
     assert run.ARMS == ("in force", "ranked") and run.NOISE_LEVELS == (0.0, 0.01)
     assert run.SEARCH_BUDGET_S == 240.0 and run.LAW_COUNT == 100
-    for rel in run.FROZEN:                                # every frozen file is a file; three are written at freezing
-        if rel not in ("preregistration/PREREG-RANKED-MEMORY-2026-11.md", "benchmarks/ranked_memory_blind_laws.json",
-                       "benchmarks/order_score/learned_order_in_force.json"):
+    for rel in run.FROZEN:                                # every frozen file is a file; the laws are drawn at freezing
+        if rel != "benchmarks/ranked_memory_blind_laws.json":
             assert (ROOT / rel).is_file(), rel
+    assert "benchmarks/order_score/learned_order_model.json" in run.FROZEN
     for module in ("ranked_stage.py", "ranked_memory.py", "learned_order.py", "vouched_route_v2.py", "hard_exit.py"):
         assert any(rel.endswith("/" + module) for rel in run.FROZEN)
 

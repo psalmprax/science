@@ -68,6 +68,61 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Split a table before it is searched: the shape of a law read from its rows (2026-11-25,
+  development; owner's decision 3, the first idea in order).** The table route has recovered no law
+  of four or five inputs by form, and fifteen minutes of search in place of ninety seconds did not
+  change that. New `apedp_dyn/proposers/table_shape.py` reads from a table how its law is put
+  together, so that a table of five inputs need not be searched as one. Five forms for two groups
+  of inputs, simplest first: `g(A)*h(B)`, `g(A)+h(B)`, `c+g(A)*h(B)`, `g(A)*h(B)+k(B)`,
+  `g(A)*h(B)+k(A)`; each part can be split again. One smooth model of the table is fitted, with a
+  kernel that is a product of one factor an input, so that its value on any recombination of rows
+  is a matrix product and every form is a matrix of rank one after a constant or the row or column
+  means are taken off. A form is kept only if it predicts rows left out of the fit no worse than
+  the unsplit model, the shape so far, every other form, and the matrix cut to rank two and three.
+  It proposes nothing, judges nothing and is not in force. **What was measured**
+  (`scripts/study_table_split.py`; no search is run; `benchmarks/table_split/`): the shape read
+  from 1,000 noisy rows against the law's own exact shape. Every law of the development grammar
+  splits down to tables of one input, exactly. On 30 laws drawn after the rule was fixed, of
+  three, four and five inputs: at 1 % noise 28 of 30 tables split, all 28 into a shape a law of
+  which could still be accurate (R² 0.999), 24 exactly and down to one input; at 5 % 28, 27 and
+  17; at 10 % 26, 24 and 13; at 20 % 25, 14 and 8. The 30 laws the rule was worked out on read
+  alike (26, 19, 14 and 11 exact and down to one input). With five inputs it is weaker: 7 of 40
+  tables exact and down to one input on the second set. **Where it is wrong, and why it cannot
+  always be right:** a departure from a form smaller than the left-out rows can show reads as the
+  form, and the statistic it decides by does not separate the good steps from the bad ones where
+  that is so. On 15 laws written by hand in which inputs meet inside a function, which no form
+  separates, it split such inputs apart in 3 of 15 tables at 1 % noise and in 8 of 15 at 10 %,
+  because a smooth function of two inputs on a box is nearly a sum of products. No law has been found with
+  it yet: the parts' searches and the candidates put together from them are the next step.
+  **What the system already had, which the agent's list of ideas did not say:** the older package
+  has a separability test (`apedp/separability.py`, pairs of inputs judged by local quadratic fits,
+  seeding that package's search). The table route does not use it; read with it, called as that
+  search calls it, the same 300 tables gave 2 splits, because its fits follow polynomials and not
+  the sines, logarithms and exponentials these laws are made of. The idea was in the system; this
+  method is new to it. `docs/IDEAS_FROM_OUTSIDE_2026-11-25.md` is corrected.
+  `tests/test_table_shape.py` (10), `tests/test_study_table_split.py` (13).
+- **The order for the referee test of the ranked proposer, chosen on development data and said so
+  (2026-11-25, decision 1).** The memory in force, its list built as a proposer builds it, on the
+  first set (`benchmarks/order_score/dev_in_force_first1.json`: solved on the list for 66 of 300
+  problems, among the first three on 38) and on the second
+  (`dev_in_force_fresh1.json`: 44 of 200, and 28). On the second set the order learned on that
+  memory's own lists brought the law among the first three on 37 problems, and the order learned
+  earlier on the lists of the memory taught 80 laws on 42 (19 lists earlier, 6 later, sign test
+  0.015), leaving the law by form first on all 4 lists that hold it
+  (`dev_learned_order_in_force.json`). `ranked_stage.ORDER_FILE` and the runner's frozen list now
+  name that order, `learned_order_model.json`; the other is kept as
+  `learned_order_in_force.json`. The draft plan `preregistration/PREREG-RANKED-MEMORY-2026-11.md`
+  is in the repository, **not frozen**: it says the 42 is the better of two looks, and that a
+  candidate added is a candidate displaced, which the agent had told the owner as "adds three
+  more". Still to come before freezing: the dress rehearsal, the separate reviewer, the laws.
+- **A correction: the product has no default search budget of 90 seconds (2026-11-25).** The agent
+  told the owner "keep 90 seconds" and recorded "the default search budget stays 90 seconds".
+  Read from the code, the search stage is off unless a budget is given, the dashboard's switch
+  asks for 30 seconds, and a request can ask for at most 300; 90 seconds is the budget the
+  measurements of 24 and 25 November were made at. `docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md`
+  carries the correction, dated before the ladder's 2-hour rung was read: the decision leaves the
+  product's budgets as they are, the rule for the 2-hour rung is unchanged, and the dashboard's own
+  30 seconds has not been measured against 90.
 - **The referee test of the ranked proposer: its stage, runner and workflow, not yet frozen
   (2026-11-25, decision 1).** New `apedp_dyn/discovery_l2/ranked_stage.py`: a stage's candidates
   as they are, and after them up to three of the ranked proposer's whose shape the stage did not

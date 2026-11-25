@@ -39,7 +39,7 @@ from apedp_dyn.proposers.fit_guard import FitGuardProposer
 from apedp_dyn.proposers.learned_order import LearnedOrder
 from apedp_dyn.proposers.structure_memory import Memory
 
-ORDER_FILE = Path(__file__).resolve().parents[2] / "benchmarks" / "order_score" / "learned_order_in_force.json"
+ORDER_FILE = Path(__file__).resolve().parents[2] / "benchmarks" / "order_score" / "learned_order_model.json"
 EXTRA = 3                #: candidates the ranked proposer may add
 OFFERED = 12             #: how far down its own order it is read for shapes the stage did not hand over
 _CONSTANT = sp.Symbol("C")
@@ -55,7 +55,12 @@ def shape(formula: str, names: Sequence[str]) -> str:
 
 
 def recorded_order() -> LearnedOrder:
-    """The order learned for the memory in force (``scripts/study_learned_order.py --model-out``)."""
+    """The order this stage ranks with: learned on the lists of the memory taught 80 curriculum laws.
+
+    Of the two orders at hand it is the one that, on the second set of problems, brought the law
+    forward further on the lists of the memory **in force** than the order learned on that memory's
+    own lists did (``benchmarks/order_score/dev_learned_order_in_force.json``).
+    """
     return ranked_memory.load_order(ORDER_FILE)
 
 
