@@ -68,6 +68,19 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The referee test's dress rehearsal, and the stage changed because of it before anything is
+  frozen (2026-11-25, decision 1).** The rehearsal (run 45658660944: sixteen laws the memory
+  proposer was developed on, 32 runs an arm, not the run) ran the runner end to end. With the
+  stage as first written, which added three candidates in every run: 21 laws reported against 22
+  for the arm in force, none wrong; one report gained (the law itself, added by the ranked
+  proposer), two lost (accurate laws that were not the law); 13 recovered against 12. Read from
+  the rehearsal's rows: in 23 of 32 runs every added candidate missed the development rows by
+  more than 1.25 times what the stage's best missed them by, often by thousands of times, both
+  lost runs among them. `ranked_stage.py` now adds only a candidate that misses the development
+  rows by at most 1.25 times what the stage's best misses them by (`GATE`); the draft plan says
+  that the stage of the run was shaped by 32 development runs and that nothing yet says the gate
+  helps on new laws. `tests/test_ranked_stage.py` (8). A second rehearsal with the gate is started;
+  the plan is still not frozen and its laws are not drawn.
 - **The split search, first run with PySR: accurate laws for wide tables, the law itself for none;
   and what was changed because of it (2026-11-25, development).** On the 120 wider-conditions
   tables (`benchmarks/table_split/dev_search_first_run1.json`; a list, outside the route) the

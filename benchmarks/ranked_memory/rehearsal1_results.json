@@ -1,0 +1,183 @@
+{
+ "frozen": null,
+ "preregistration": "PREREG-RANKED-MEMORY-2026-11",
+ "rows": 64,
+ "summary": {
+  "expectations": {
+   "1_holds": false,
+   "1_share_of_reported_laws_wrong": {
+    "in force": {
+     "reported": 22,
+     "share": 0.0,
+     "share_allowed": 0.05,
+     "upper_bound": 0.1273054316548387,
+     "upper_bound_allowed": 0.1,
+     "upper_bound_confidence": 0.95,
+     "verdict": "not shown",
+     "wrong": 0
+    },
+    "ranked": {
+     "reported": 21,
+     "share": 0.0,
+     "share_allowed": 0.05,
+     "upper_bound": 0.13294591102652337,
+     "upper_bound_allowed": 0.1,
+     "upper_bound_confidence": 0.95,
+     "verdict": "not shown",
+     "wrong": 0
+    }
+   },
+   "2_holds": false,
+   "2_right_in_force": {
+    "0.0": 11,
+    "0.01": 11,
+    "all": 22
+   },
+   "2_right_ranked": {
+    "0.0": 11,
+    "0.01": 10,
+    "all": 21
+   },
+   "3_holds": true,
+   "3_recovered_in_force": 12,
+   "3_recovered_ranked": 13
+  },
+  "in force|0.0": {
+   "errors": 0,
+   "median_seconds": 318.78,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_displaced_the_law": 0,
+   "recovered": 9,
+   "reported": 11,
+   "reported_accurate_not_the_law": 2,
+   "right": 11,
+   "runs": 16,
+   "tentative": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "in force|0.01": {
+   "errors": 0,
+   "median_seconds": 326.47,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_displaced_the_law": 0,
+   "recovered": 3,
+   "reported": 11,
+   "reported_accurate_not_the_law": 8,
+   "right": 11,
+   "runs": 16,
+   "tentative": 2,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "in force|all": {
+   "errors": 0,
+   "median_seconds": 321.71000000000004,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_displaced_the_law": 0,
+   "recovered": 12,
+   "reported": 22,
+   "reported_accurate_not_the_law": 10,
+   "right": 22,
+   "runs": 32,
+   "tentative": 2,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "ranked|0.0": {
+   "errors": 0,
+   "median_seconds": 24.145,
+   "ranked_added_a_candidate": 16,
+   "ranked_added_the_law": 1,
+   "ranked_displaced_the_law": 3,
+   "recovered": 9,
+   "reported": 11,
+   "reported_accurate_not_the_law": 2,
+   "right": 11,
+   "runs": 16,
+   "tentative": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "ranked|0.01": {
+   "errors": 0,
+   "median_seconds": 25.369999999999997,
+   "ranked_added_a_candidate": 16,
+   "ranked_added_the_law": 3,
+   "ranked_displaced_the_law": 1,
+   "recovered": 4,
+   "reported": 10,
+   "reported_accurate_not_the_law": 6,
+   "right": 10,
+   "runs": 16,
+   "tentative": 2,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "ranked|all": {
+   "errors": 0,
+   "median_seconds": 24.784999999999997,
+   "ranked_added_a_candidate": 32,
+   "ranked_added_the_law": 4,
+   "ranked_displaced_the_law": 4,
+   "recovered": 13,
+   "reported": 21,
+   "reported_accurate_not_the_law": 8,
+   "right": 21,
+   "runs": 32,
+   "tentative": 2,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "run_for_run": {
+   "recovered|0.0": {
+    "gained": 0,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "recovered|0.01": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "recovered|all": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "reported|0.0": {
+    "gained": 0,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "reported|0.01": {
+    "gained": 1,
+    "lost": 2,
+    "sign_test_p": 1.0
+   },
+   "reported|all": {
+    "gained": 1,
+    "lost": 2,
+    "sign_test_p": 1.0
+   },
+   "right|0.0": {
+    "gained": 0,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "right|0.01": {
+    "gained": 1,
+    "lost": 2,
+    "sign_test_p": 1.0
+   },
+   "right|all": {
+    "gained": 1,
+    "lost": 2,
+    "sign_test_p": 1.0
+   }
+  }
+ }
+}

@@ -31,7 +31,7 @@ def test_two_laws_of_one_shape_differ_only_in_their_constants() -> None:
 def test_the_first_new_shapes_are_added_and_take_the_place_of_the_stage_s_last() -> None:
     offered = ["7.7*x0**2 + 0.1*x1",                       # the stage's second shape with other constants: not new
                "1.1*sin(0.3*x0)", "2.2*exp(-0.4*x1)", "3.3*log(x0 + 1.5)", "4.4*sqrt(x1 + 0.2)"]
-    stage = ranked_stage.WithRanked(FixedFormulasProposer(STAGE), FixedFormulasProposer(offered))
+    stage = ranked_stage.WithRanked(FixedFormulasProposer(STAGE), FixedFormulasProposer(offered), gate=float("inf"))
     out = [str(p.formula) for p in stage.fit_and_propose(_frame(), target_col="__target__")]
     assert out == [*STAGE[:7], *offered[1:4]] and len(out) == MAX_PROPOSALS
     report = stage.last_run["ranked"]
@@ -40,11 +40,40 @@ def test_the_first_new_shapes_are_added_and_take_the_place_of_the_stage_s_last()
 
 
 def test_nothing_is_displaced_while_the_stage_s_list_has_room() -> None:
-    stage = ranked_stage.WithRanked(FixedFormulasProposer(STAGE[:6]), FixedFormulasProposer(["1.1*sin(0.3*x0)", "2.2*exp(-0.4*x1)"]))
+    stage = ranked_stage.WithRanked(FixedFormulasProposer(STAGE[:6]), FixedFormulasProposer(["1.1*sin(0.3*x0)", "2.2*exp(-0.4*x1)"]),
+                                    gate=float("inf"))
     out = [str(p.formula) for p in stage.fit_and_propose(_frame(), target_col="__target__")]
     assert out == [*STAGE[:6], "1.1*sin(0.3*x0)", "2.2*exp(-0.4*x1)"] and stage.last_run["ranked"]["displaced"] == []
     nothing_new = ranked_stage.WithRanked(FixedFormulasProposer(STAGE), FixedFormulasProposer(["9.9*x0**3 + 0.2*x1"]))
     assert [str(p.formula) for p in nothing_new.fit_and_propose(_frame(), target_col="__target__")] == STAGE
+
+
+def test_a_candidate_that_fits_far_worse_than_the_stage_s_best_is_left_out_and_takes_no_place() -> None:
+    near = "1.31*x0/(x0 + 0.7) + 0.9*x1"                    # the stage's best: the law with one constant a little off
+    as_good = "1.3*x0/(x0 + 0.7) + 0.9*x1 + 1.0e-9*x0**2"   # another shape that fits the rows as well
+    junk = "1.1*sin(0.3*x0)"
+    handed = [near, *STAGE[: MAX_PROPOSALS - 1]]
+    stage = ranked_stage.WithRanked(FixedFormulasProposer(handed), FixedFormulasProposer([junk, as_good, "2.2*exp(-0.4*x1)"]))
+    out = [str(p.formula) for p in stage.fit_and_propose(_frame(), target_col="__target__")]
+    assert out == [*handed[: MAX_PROPOSALS - 1], as_good]              # one added, so one displaced; the junk displaced nothing
+    report = stage.last_run["ranked"]
+    assert report["added"] == [as_good] and report["displaced"] == [handed[-1]] and report["left_out_as_fitting_worse"] == 2
+    assert report["gate"] == ranked_stage.GATE == 1.25 and 0.0 < report["best_miss_of_the_stage"] < 0.01
+    only_junk = ranked_stage.WithRanked(FixedFormulasProposer(handed), FixedFormulasProposer([junk]))
+    assert [str(p.formula) for p in only_junk.fit_and_propose(_frame(), target_col="__target__")] == handed
+
+
+def test_the_gate_measures_a_candidate_on_the_rows_given_and_holds_nothing_back_where_the_stage_handed_nothing() -> None:
+    frame = _frame()
+    target = frame["__target__"].to_numpy(dtype=float)
+    law, junk = (FixedFormulasProposer([text]).fit_and_propose(frame, target_col="__target__")[0]
+                 for text in ("1.3*x0/(x0 + 0.7) + 0.9*x1", "1.1*sin(0.3*x0)"))
+    assert ranked_stage.miss(law, frame, target) < 1e-9 < 0.1 < ranked_stage.miss(junk, frame, target)
+    unreadable = FixedFormulasProposer(["log(-x0 - 1.0)"]).fit_and_propose(frame, target_col="__target__")[0]
+    assert ranked_stage.miss(unreadable, frame, target) == float("inf")
+    alone = ranked_stage.WithRanked(FixedFormulasProposer([]), FixedFormulasProposer(["1.1*sin(0.3*x0)"]))
+    assert [str(p.formula) for p in alone.fit_and_propose(frame, target_col="__target__")] == ["1.1*sin(0.3*x0)"]
+    assert alone.last_run["ranked"]["best_miss_of_the_stage"] is None
 
 
 def test_a_ranked_proposer_that_fails_costs_the_stage_nothing() -> None:

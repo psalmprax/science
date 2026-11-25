@@ -36,6 +36,13 @@ the same development rows, orders it with the order in
 stage did not hand over** are added after the stage's: at most three, read from the first twelve
 of its order.
 
+**Only a candidate that fits about as well as the stage's best is added.** A candidate that misses
+the development rows by more than 1.25 times what the best candidate of the stage misses them by is
+left out (`ranked_stage.GATE`; root mean square on the development rows the proposers were given,
+no pool row). This rule was added after the dress rehearsal and because of it (see "Disclosed
+before freezing"): a candidate that fits far worse than what the searches already hold can take a
+place and cannot be the law.
+
 **A candidate added is a candidate displaced.** The path confirms at most ten candidates of a
 stage, and the searches alone handed over ten in every one of the 160 runs of
 PREREG-MEMORY-2026-11. Where the stage's list is full, the added candidates take the place of its
@@ -102,20 +109,21 @@ A run that crashes or exceeds 1,800 seconds counts as reporting nothing, in both
 3. **It does not trade the law itself away.** The `ranked` arm recovers by form at least as many
    laws as `in force` in total.
 4. Reported without a criterion: laws gained and lost run for run, with the exact sign test; in
-   how many runs the ranked proposer added a candidate, added the law itself, and displaced the
-   law itself; laws reported that are accurate without being the law; the path's actions; what
-   the checks held back; errors, timeouts and time.
+   how many runs the ranked proposer added a candidate, how many candidates it added and how many
+   it left out as fitting worse, in how many runs it added the law itself and displaced the law
+   itself; laws reported that are accurate without being the law; the path's actions; what the
+   checks held back; errors, timeouts and time.
 
 **The author's own expectations**, recorded so that they can be wrong, and no criterion. The arm
 in force reports about 135 laws in 200 runs, nearly all of them right and about 55 of them the law
 itself (PREREG-MEMORY-2026-11's memory arm reported 57 of 80 and recovered 23, before the last
-checks). The ranked proposer adds a candidate in nearly every run and adds the law itself in about
-15 of 200; the searches or the memory had handed over most of those already in another form, so
-the route gains 3 to 6 right laws. It loses 2 to 4: through displacement, or because one more
-accurate rival makes the path or the last checks hold back a law they would have reported.
-Expectation 2 holds with about four chances in ten: a gain of this size is within what chance
-moves in either direction. Expectation 1 holds for both arms. Expectation 3 holds with about two
-chances in three.
+checks). With the gate the ranked proposer adds a candidate in about a third of the runs and adds
+the law itself in about 15 of 200; the searches or the memory had handed over most of those
+already in another form, so the route gains 3 to 6 right laws. It loses 1 to 4: through
+displacement, or because one more accurate rival makes the path or the last checks hold back a law
+they would have reported (the first rehearsal showed both). Expectation 2 holds with about four
+chances in ten: a gain of this size is within what chance moves in either direction. Expectation 1
+holds for both arms. Expectation 3 holds with about two chances in three.
 
 A miss is reported as a miss.
 
@@ -157,10 +165,22 @@ Nothing is put in force by this run. A change to the stage for tables is the own
   generator the check was not developed against. This is a test of a proposer; the checks are
   those in force, unchanged. The laws come from a generator other than the one the order was
   learned on, and from the family the memory was tested on.
-- **A dress rehearsal is run before freezing** on sixteen laws the memory proposer was developed
-  on (`ranked-memory-rehearsal-*`), to see the runner end to end. None is a law of this run. Its
-  counts go into the record of the review, and this line is put in the past tense with them when
-  the plan is frozen.
+- **The stage was changed after a dress rehearsal, on development laws.** The first rehearsal
+  (run 45658660944, 25 November: sixteen laws the memory proposer was developed on, 32 runs an
+  arm; none is a law of this run) ran the runner end to end with the stage as first written, which
+  added three candidates in every run. It reported 21 laws against 22 for the arm in force, none
+  wrong in either; run for run one report gained (the law itself, which the ranked proposer had
+  added) and two lost, both accurate laws that were not the law; 13 laws recovered against 12. In
+  one of the two lost runs the reported candidate was the stage's tenth and was displaced; in the
+  other it stood fourth and stayed, and the path reported nothing all the same. Read from the
+  rehearsal's own rows afterwards: in 23 of the 32 runs every candidate added missed the
+  development rows by more than 1.25 times what the stage's best missed them by, often by
+  thousands of times, and both lost runs are among them; in the run gained the added candidates
+  missed them by 1.01 to 1.02 times. The gate above was written on that reading, its 1.25 before
+  the ratios were computed. **So the stage of this run was shaped by 32 development runs,** and
+  nothing here says the gate helps on new laws: that is what the run measures. A second rehearsal
+  with the gate (`ranked-memory-rehearsal-2`) is run before freezing to see the runner end to end
+  again; its counts go into the record of the review.
 - **No discovery was run on any of the 100 laws,** by any engine, before freezing. What was run on
   them: the generator and its acceptance rule.
 - **Two noise levels, uniform rows, up to three inputs.** The conditions of the earlier runs, and

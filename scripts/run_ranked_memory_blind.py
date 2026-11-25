@@ -309,6 +309,8 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 "reported_accurate_not_the_law": sum(_right(r) and not _recovered(r) for r in ok),
                 "tentative": sum(bool(r.get("tentative")) for r in ok),
                 "ranked_added_a_candidate": sum(bool(d.get("added")) for d in done),
+                "ranked_candidates_added": sum(len(d.get("added") or []) for d in done),
+                "ranked_candidates_left_out_as_fitting_worse": sum(int(d.get("left_out_as_fitting_worse") or 0) for d in done),
                 "ranked_added_the_law": sum(bool(d.get("the_law_among_the_added")) for d in done),
                 "ranked_displaced_the_law": sum(bool(d.get("the_law_among_the_displaced")) for d in done),
                 "median_seconds": float(np.median([r["seconds"] for r in sel])) if sel else None,
