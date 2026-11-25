@@ -21,7 +21,8 @@ another's. An order moves candidates; it adds none, so "found" cannot change, on
 
 With ``--fresh`` (the pools of ``measure_order_score.py --set fresh``): an order learned on all of
 an arm's lists of the first set is scored on that arm's lists of a second set of problems, drawn
-after the first was read and sharing no structure with it.
+with another seed and sharing no structure with it. The order is learned before the second set's
+lists are read, and nothing about it is changed afterwards.
 
     python scripts/study_learned_order.py --pools benchmarks/order_score/dev_run1_pools.json.gz --out benchmarks/order_score/dev_learned_order.json
 """

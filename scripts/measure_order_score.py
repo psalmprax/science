@@ -19,7 +19,7 @@ For every problem the whole list is kept with what each candidate was (accurate,
 and a few cheap features, so that other orders of the same candidates can be scored afterwards
 without running anything again.
 
-``--set fresh`` reads a second set of 200 problems drawn afterwards, none with the structure of a
+``--set fresh`` reads a second set of 200 problems drawn with another seed, none with the structure of a
 problem of the first set or of a law taught; the memories are the same as for the first set.
 
     python scripts/measure_order_score.py run --out DIR --arm taught-80 --shard 0 --shards 8
@@ -62,7 +62,7 @@ from apedp_dyn.recursion.curriculum import (  # noqa: E402
 TAG = "DEV-ORDER-SCORE-2026-11"
 TEST_SEED, TEACH_SEED, FRESH_SEED = 2026112501, 2026112502, 2026112503
 PROBLEMS = 300
-FRESH = 200                     # a second set, drawn after the first run was read; level 1 has no more than 40 unused laws
+FRESH = 200                     # a second set, from another seed; level 1 has no more than 40 laws left unused
 TAUGHT = (0, 5, 20, 80, 320)
 ARMS = (*(f"taught-{n}" for n in TAUGHT), "in-force")
 POOL = 40                       # candidates kept for a problem, best BIC first; the product hands the referee the first 3

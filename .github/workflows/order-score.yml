@@ -2,7 +2,7 @@
 # (scripts/measure_order_score.py; the measurement is apedp_dyn/recursion/order_score.py).
 # Development only: nothing was fixed beforehand, no held-back law is read, no search engine is run.
 #   push to order-score-run-*        -> every arm on its shards over the 300 test problems, then one record.
-#   push to order-score-fresh-run-*  -> three arms over the second set: 200 problems drawn after the first run was read,
+#   push to order-score-fresh-run-*  -> three arms over the second set: 200 problems drawn with another seed,
 #                                       none with the structure of a problem of the first set or of a law taught.
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 name: Order score of the memory's proposals (development)
