@@ -11,7 +11,8 @@ same table and memory give the same list on any machine.
 
 Arms: the memory taught 0, 5, 20, 80 and 320 laws of a teaching set drawn apart from the test
 problems (no test problem's structure is in it), and the memory in force for tables
-(``memory_stage.recorded_memory``). A memory "taught" a law here is given the generator's own law:
+(``memory_stage.recorded_memory``). ``split-80`` is the memory taught 80 laws with its list built
+as a proposer can build it: fitted on four fifths of the rows, read on the fifth set aside. A memory "taught" a law here is given the generator's own law:
 that is an upper bound on what the same number of laws confirmed by the referee would teach, and it
 says whether the learner has room to learn at all.
 
@@ -38,20 +39,13 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import sympy as sp
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from apedp_dyn.proposers import structure_memory as timed  # noqa: E402
+from apedp_dyn.proposers import ranked_memory  # noqa: E402
 from apedp_dyn.proposers.structure_memory import Memory  # noqa: E402
-from apedp_dyn.proposers.structure_memory_counted import (  # noqa: E402
-    GROW_FITS,
-    WHOLE_FITS,
-    grow_counted,
-    remembered_whole_counted,
-)
-from apedp_dyn.recursion import judge, mdl, order_score  # noqa: E402
+from apedp_dyn.recursion import order_score  # noqa: E402
 from apedp_dyn.recursion.curriculum import (  # noqa: E402
     MEASURED_LEVELS,
     Curriculum,
@@ -64,7 +58,8 @@ TEST_SEED, TEACH_SEED, FRESH_SEED = 2026112501, 2026112502, 2026112503
 PROBLEMS = 300
 FRESH = 200                     # a second set, from another seed; level 1 has no more than 40 laws left unused
 TAUGHT = (0, 5, 20, 80, 320)
-ARMS = (*(f"taught-{n}" for n in TAUGHT), "in-force")
+SPLIT = (80,)                   # the same memory, its list built as a proposer can build it (ranked_memory.split_pool)
+ARMS = (*(f"taught-{n}" for n in TAUGHT), "in-force", *(f"split-{n}" for n in SPLIT))
 POOL = 40                       # candidates kept for a problem, best BIC first; the product hands the referee the first 3
 HANDED = 3
 
@@ -100,50 +95,30 @@ def memory_of(arm: str, tests: list[Problem]) -> Memory:
 
         return memory_stage.recorded_memory()
     memory = Memory()
-    for law in teaching_laws(int(arm.split("-")[1]), tests):
+    for law in teaching_laws(int(arm.split("-")[1]), tests):       # "taught-80" and "split-80" are the same memory
         memory.learn(law)
     return memory
 
 
-def candidates(memory: Memory, problem: Problem, pool: int = POOL) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """The memory's candidates for a problem, best BIC first, as ``CountedMemoryProposer`` orders them, with features."""
+def candidates(memory: Memory, problem: Problem, pool: int = POOL, *, as_a_proposer: bool = False
+               ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """The memory's candidates for a problem, best BIC first, as ``CountedMemoryProposer`` orders them, with features.
+
+    As measured first: fitted on the problem's 700 rows, with the fit on unseen rows read on its pool of 300 (rows a
+    proposer is not given). ``as_a_proposer``: fitted on four fifths of the 700 and read on the fifth set aside, which is
+    what ``ranked_memory.RankedMemoryProposer`` does with the rows it has.
+    """
     rows = problem.rows()
-    names = problem.names
-    X, y = rows["X"], rows["y"]
-    best, motifs, report = grow_counted(memory, X, y, max_fits=GROW_FITS, keep=pool)
-    whole, whole_report = remembered_whole_counted(memory, names, X, y, max_fits=WHOLE_FITS)
-    pairs = [*[(g.bic, timed.written(g, names, motifs), len(g.steps)) for g in best], *[(bic, law, 0) for bic, law in whole]]
-    symbols = [sp.Symbol(name) for name in names]
-    out: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for bic, law, steps in sorted(pairs, key=lambda item: item[0]):
-        if law.free_symbols != set(symbols):
-            continue
-        key = str(law.xreplace(dict.fromkeys(law.atoms(sp.Float), timed.C)))
-        if key in seen:
-            continue
-        seen.add(key)
-        constants = [abs(float(value)) for value in law.atoms(sp.Float)]
-        with np.errstate(all="ignore"):
-            function = sp.lambdify(symbols, law, "numpy")
-            train = np.asarray(function(*X.T), dtype=float) * np.ones(len(X))
-            held = np.asarray(function(*rows["pool_X"].T), dtype=float) * np.ones(len(rows["pool_X"]))
-        out.append({"text": str(law), "bic": round(float(bic), 3), "steps": int(steps), "constants": len(constants),
-                    "small_constants": sum(value < 0.02 for value in constants),
-                    "large_constants": sum(value > 50.0 for value in constants),
-                    "operations": int(sp.count_ops(law)),
-                    "train_r2": judge.r2(y, train), "held_r2": judge.r2(rows["pool_y"], held),
-                    "law_bits": round(float(mdl.law_bits(law, len(names))), 1)})
-        if len(out) == pool:
-            break
-    return out, {"fits": report.get("fits"), "motifs": report.get("motifs"), "whole_fits": whole_report.get("fits")}
+    if as_a_proposer:
+        return ranked_memory.split_pool(memory, problem.names, rows["X"], rows["y"], pool)
+    return ranked_memory.pool_with_features(memory, problem.names, rows["X"], rows["y"], rows["pool_X"], rows["pool_y"], pool)
 
 
 def one(job: tuple[str, dict[str, Any], dict[str, Any]]) -> dict[str, Any]:
     arm, memory_record, problem_record = job
     problem = Problem(**problem_record)
     started = time.perf_counter()
-    pool, report = candidates(Memory.from_dict(memory_record), problem)
+    pool, report = candidates(Memory.from_dict(memory_record), problem, as_a_proposer=arm.startswith("split-"))
     row = order_score.measure(problem, [item["text"] for item in pool])
     for item, judged in zip(pool, row["candidates"], strict=True):
         judged.update({key: value for key, value in item.items() if key != "text"})
@@ -178,9 +153,12 @@ def summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
                   "an_accurate_candidate_but_none_counted_solved": sum(row["accurate_place"] is not None and row["solved_place"] is None
                                                                        for row in found)}
             for arm, found in by_arm.items()}
-    order = [arm for arm in ARMS if arm in by_arm]
+    order = [arm for arm in ARMS if arm in by_arm and arm.startswith("taught-")]
     steps = {f"{second} against {first}": order_score.compare(by_arm[first], by_arm[second])
-             for first, second in itertools.pairwise(order) if second != "in-force"}
+             for first, second in itertools.pairwise(order)}
+    for n in SPLIT:                 # the same memory, its list built from the rows a proposer has
+        if f"taught-{n}" in by_arm and f"split-{n}" in by_arm:
+            steps[f"split-{n} against taught-{n}"] = order_score.compare(by_arm[f"taught-{n}"], by_arm[f"split-{n}"])
     reference = by_arm.get("taught-80") or next(iter(by_arm.values()), [])
     seen = {str(n): {f"churn {churn:g}": order_score.smallest_visible_gain(reference, n, churn=churn)
                      for churn in (0.0, 0.1, 0.25)} for n in (10, 48, 100, 300)} if reference else {}

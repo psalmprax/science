@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The learned order as a proposer, from the rows a proposer really has (2026-11-25, asked for by
+  the owner; development, not in force).** The first measurement read each candidate's fit on 300
+  pool rows a proposer is not given. New `apedp_dyn/proposers/ranked_memory.py`:
+  `RankedMemoryProposer` sets a fifth of its development rows aside (seeded by the table), fits the
+  memory's list on the rest, reads it on the fifth and hands over the three candidates the learned
+  order puts first; `pool_with_features` is now the one place the list is built, and
+  `scripts/measure_order_score.py` uses it (the same lists as before on four problems compared).
+  New arm `split-80` measures the list built that way (branch `order-score-split-run-*`);
+  `scripts/study_learned_order.py --model-out` writes the order a proposer loads.
+  `tests/test_ranked_memory.py` (5). Nothing in `apedp_dyn` builds the proposer.
 - **Ideas from outside, set against what the system measures in itself (2026-11-25, asked for by
   the owner).** `docs/IDEAS_FROM_OUTSIDE_2026-11-25.md`: twenty ideas from papers, textbooks and
   talks (two of them built this week), each with the measured weakness it answers, a test and a

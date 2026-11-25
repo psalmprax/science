@@ -4,12 +4,14 @@
 #   push to order-score-run-*        -> every arm on its shards over the 300 test problems, then one record.
 #   push to order-score-fresh-run-*  -> three arms over the second set: 200 problems drawn with another seed,
 #                                       none with the structure of a problem of the first set or of a law taught.
+#   push to order-score-split-run-*  -> the second set again, the list built as a proposer can build it
+#                                       (fitted on four fifths of the rows, read on the fifth set aside).
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 name: Order score of the memory's proposals (development)
 
 on:
   push:
-    branches: ['order-score-run-*', 'order-score-fresh-run-*']
+    branches: ['order-score-run-*', 'order-score-fresh-run-*', 'order-score-split-run-*']
 
 permissions:
   contents: read
@@ -30,6 +32,9 @@ jobs:
             order-score-fresh-run-*)
               echo 'set=fresh' >> "$GITHUB_OUTPUT"
               echo 'arms=["taught-20","taught-80","taught-320"]' >> "$GITHUB_OUTPUT" ;;
+            order-score-split-run-*)
+              echo 'set=fresh' >> "$GITHUB_OUTPUT"
+              echo 'arms=["split-80"]' >> "$GITHUB_OUTPUT" ;;
             *)
               echo 'set=test' >> "$GITHUB_OUTPUT"
               echo 'arms=["taught-0","taught-5","taught-20","taught-80","taught-320","in-force"]' >> "$GITHUB_OUTPUT" ;;

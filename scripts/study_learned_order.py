@@ -132,15 +132,17 @@ def on_fresh(arms: dict[str, list[dict[str, Any]]], fresh: dict[str, list[dict[s
     """An order learned on all of an arm's lists of the first set, scored on that arm's lists of the second set."""
     out: dict[str, Any] = {}
     for arm, found in fresh.items():
-        if arm not in arms or not any(row["candidates"] for row in found):
+        source = arm if arm in arms else arm.replace("split-", "taught-")      # "split-80" is the memory of "taught-80"
+        if source not in arms or not any(row["candidates"] for row in found):
             continue
-        shared = {row["key"] for row in arms[arm]} & {row["key"] for row in found}
+        shared = {row["key"] for row in arms[source]} & {row["key"] for row in found}
         if shared:
             raise ValueError(f"{len(shared)} problems of the second set are in the first: it is not a second set")
-        model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[arm]])
+        model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[source]])
         learned = learned_order.reorder(found, model)
         rules = {f"tolerance {tolerance:g}": learned_order.reorder(found, tolerance=tolerance) for tolerance in TOLERANCES}
-        out[arm] = {"trained_on": dict(model.trained_on), "model": model.as_dict(), "as_handed": brief(found),
+        out[arm] = {"learned_on_the_first_set_s": source, "trained_on": dict(model.trained_on), "model": model.as_dict(),
+                    "as_handed": brief(found),
                     "rule": {name: brief(rows) for name, rows in rules.items()}, "learned": brief(learned),
                     "true_form_as_handed": brief(found, "form_place"), "true_form_learned": brief(learned, "form_place"),
                     "learned_against_as_handed": order_score.compare(found, learned),
@@ -151,7 +153,8 @@ def on_fresh(arms: dict[str, list[dict[str, Any]]], fresh: dict[str, list[dict[s
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--pools", type=Path, required=True)
-    parser.add_argument("--fresh", type=Path, help="pools of the second set (measure_order_score.py --set fresh)")
+    parser.add_argument("--fresh", type=Path, nargs="+", help="pools of the second set (measure_order_score.py --set fresh)")
+    parser.add_argument("--model-out", type=Path, help="write the order learned on all of the reference arm's lists")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
     arms = read(args.pools)
@@ -163,8 +166,20 @@ def main(argv: list[str] | None = None) -> int:
               "arms": {arm: arm_study(rows) for arm, rows in arms.items() if any(row["candidates"] for row in rows)},
               "learning_curve": {"arm": reference, **learning_curve(arms[reference])},
               "carried_to_other_arms": carried(arms, reference)}
-    if args.fresh is not None:
-        record["on_the_second_set"] = {"pools": str(args.fresh), **on_fresh(arms, read(args.fresh))}
+    if args.fresh:
+        second: dict[str, list[dict[str, Any]]] = {}
+        for path in args.fresh:
+            second.update(read(path))
+        record["on_the_second_set"] = {"pools": [str(path) for path in args.fresh], **on_fresh(arms, second)}
+    if args.model_out is not None:
+        model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[reference]])
+        args.model_out.parent.mkdir(parents=True, exist_ok=True)
+        args.model_out.write_text(json.dumps({
+            "tag": TAG, "development": True,
+            "what": "an order of the memory's candidates learned on every list of one arm of the order-score run; development, "
+                    "not in force; read by apedp_dyn.proposers.ranked_memory.load_order",
+            "learned_on": {"pools": str(args.pools), "arm": reference}, "model": model.as_dict()}, indent=1, sort_keys=True) + "\n",
+            encoding="utf-8")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     for arm, study in record["arms"].items():

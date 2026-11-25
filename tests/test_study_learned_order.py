@@ -93,3 +93,20 @@ def test_an_order_learned_on_the_first_set_is_scored_on_a_second_set_that_shares
         assert block[arm]["model"]["features"] == list(study.learned_order.FEATURES)
     with pytest.raises(ValueError, match="not a second set"):
         study.main(["--pools", str(first), "--fresh", str(first), "--out", str(out)])
+
+
+def test_the_order_of_the_reference_arm_is_written_where_a_proposer_can_load_it(study, tmp_path, monkeypatch) -> None:
+    from apedp_dyn.proposers import ranked_memory
+
+    monkeypatch.setattr(study, "HELD_APART", 20)
+    monkeypatch.setattr(study, "CURVE", (5,))
+    monkeypatch.setattr(study, "REPEATS", 2)
+    first = _pools(tmp_path / "first.json.gz")
+    model = tmp_path / "model.json"
+    assert study.main(["--pools", str(first), "--model-out", str(model), "--out", str(tmp_path / "learned.json")]) == 0
+    record = json.loads(model.read_text())
+    assert record["learned_on"]["arm"] == "taught-80" and record["development"] is True
+    order = ranked_memory.load_order(model)
+    assert order.trained_on["problems"] == 60 and list(order.names) == list(study.learned_order.FEATURES)
+    arms = study.read(first)
+    assert study.learned_order.place_under(arms["taught-80"][0]["candidates"], order.order(arms["taught-80"][0]["candidates"])) == 1
