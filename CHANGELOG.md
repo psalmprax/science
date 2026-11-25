@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The split search on laws it was not shaped on, and the dashboard's 30 seconds measured
+  (2026-11-25, development).** *Second set* (`benchmarks/table_split/dev_search_second_run1.json`):
+  30 laws drawn after the shape reading was fixed, read by the proposer as it stood after its one
+  change. An accurate proposal on 61 of 120 tables (22, 22 and 17 of 40 with three, four and five
+  inputs); at 1 % noise on 26 of 30, at 5 % on 23 of 30, at 10 % on 11, at 20 % on 1. **The law
+  itself on none.** This agrees with the first set, so the picture holds on new laws: accurate
+  laws for wide tables, not their form. The route has not been run on these tables. *Thirty
+  seconds* (`benchmarks/budget_ladder/dev_run2_cold_30.json`): on the ladder's 40 tables 8 laws
+  reported at 30 seconds a search against 12 at 90, none inaccurate; 5 tables gained and 1 lost by
+  the longer search (sign test 0.22). The dashboard's switch asks for 30.
 - **The split search with the rows choosing each part's law: shorter wholes, as accurate, and
   still almost never the law itself (2026-11-25, development).** Second run on the 120
   wider-conditions tables (`benchmarks/table_split/dev_search_first_run2.json`; a list, outside

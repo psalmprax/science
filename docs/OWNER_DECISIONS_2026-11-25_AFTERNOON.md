@@ -140,3 +140,13 @@ lost, sign test 0.69; no inaccurate report. **Clean by all three conditions.** B
 processes are *proposed* as the default (`APEDP_SEARCH_PROCESSES=warm` as what the product does
 unless told otherwise); the owner decides and nothing has been changed. Measured saving: 6.9
 machine-hours against 8.0 for the 120 readings, 203 seconds a reading at the median against 231.
+
+## The dashboard's 30 seconds, measured, 25 November, 18:35 UTC
+
+The rung the correction above said was missing has been run
+(`benchmarks/budget_ladder/dev_run2_cold_30.json`): on the ladder's 40 tables the route reported
+8 laws with 30 seconds a search and 12 with 90, none inaccurate; table by table the longer search
+gained 5 and lost 1 (sign test 0.22, which chance could produce). On the 20 tables at 1 % noise
+the whole ladder now reads 2, 4, 9 and 12 laws at 30 seconds, 90 seconds, 15 minutes and 2 hours.
+No rule was written for this rung and nothing is proposed on it alone: it says the switch's 30
+seconds is the bottom of a ladder that keeps rising, which is the same thing the 2-hour rung said.
