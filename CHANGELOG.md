@@ -46,6 +46,13 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **The build's test job was failing for a second reason, and the new status showed it
+  (2026-11-25).** `scripts/run_real_tables_blind.py` uses `datetime.UTC`, which Python 3.10 does
+  not have, and `tests/test_minimum_python_version.py` fails on it. The file is frozen by
+  `DIGEST-REAL-TABLES.json` and ran once on Python 3.12, so it is not edited: the test now lists
+  it as a known exception tied to that digest, with exactly that one line, and a second test
+  fails if the file is ever no longer frozen. The failure had been hidden behind runs cancelled
+  as superseded; "Everything except the trustees' signature" was red because of it.
 - **RESULT-REAL-TABLES-2026-11: the small-table reading on real measurements is not proposed
   (2026-11-25).** Run once (GitHub run 45486849433). A1 missed: the known law counted on 2 of
   the 5 readable real tables where 3 were needed, the third hanging on the judgement of one law

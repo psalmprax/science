@@ -148,13 +148,36 @@ def test_every_source_file_parses_under_the_minimum_grammar() -> None:
     assert not failures, f"not valid Python 3.{minimum}:\n" + "\n".join(failures)
 
 
+#: A frozen file that uses a newer name and may not be edited: its path, the digest that freezes it, and exactly
+#: the uses that are known. The file stays listed here only while that digest still lists it.
+FROZEN_AS_RUN: dict[str, tuple[str, list[str]]] = {
+    # The runner of PREREG-REAL-TABLES-2026-11. It ran once, on GitHub under Python 3.12, its only use, and its
+    # result is recorded. On Python 3.10 its `real` command would stop at this line; nothing imports the script.
+    "scripts/run_real_tables_blind.py": ("preregistration/DIGEST-REAL-TABLES.json",
+                                         ["line 1022: datetime.UTC (3.11+)"]),
+}
+
+
 def test_no_unguarded_standard_library_name_newer_than_the_minimum() -> None:
     minimum = declared_minimum()
     failures = []
     for path in source_files():
         tree = ast.parse(path.read_text(encoding="utf-8"))
-        failures += [f"{path.relative_to(ROOT)}: {use}" for use in too_new(tree, minimum)]
+        name = path.relative_to(ROOT).as_posix()
+        uses = too_new(tree, minimum)
+        if name in FROZEN_AS_RUN and uses == FROZEN_AS_RUN[name][1]:
+            continue                            # known, and the file cannot be edited: see FROZEN_AS_RUN
+        failures += [f"{name}: {use}" for use in uses]
     assert not failures, f"needs a Python newer than 3.{minimum}:\n" + "\n".join(failures)
+
+
+def test_a_frozen_exception_is_a_file_a_digest_still_freezes() -> None:
+    """The exception is for files that may not be edited. One that is no longer frozen has to be fixed instead."""
+    import json
+
+    for name, (digest, _uses) in FROZEN_AS_RUN.items():
+        frozen = json.loads((ROOT / digest).read_text(encoding="utf-8"))["sha256"]
+        assert name in frozen, f"{name} is no longer frozen by {digest}: fix its newer names and drop the exception"
 
 
 @pytest.mark.parametrize(
