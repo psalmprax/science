@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The recursion with the four searches on: no rise (2026-11-25, development, not a result).**
+  `benchmarks/recursion/dev_search_run2.json` (run 45493901958, 38.8 CPU-hours). No wrong law in
+  any measurement. The current searcher solved 9, 3, 2 and 2 of 48 fresh problems in generations
+  0, 2, 3 and 4; the starting searcher, on the same problems, 9, 3, 4 and 3. Generations 2 to 4
+  together: 7 against 10 of 144, with 4 problems gained and 7 lost, which chance can give. The
+  improvement steps halved the search's time (90 s to 45 s), widened the library (6 to 9), learned
+  eight laws and found two building blocks; no code was varied (no coding model). Level 2 ran one
+  round with two of three ways, both "not shown". Two jobs stopped for ever on a search process
+  and ended at their five-hour limits (half of generation 1's measurement, and one way of Level 2,
+  so its second round did not run): the run used members that leave hard, before the bounded wait.
 - **The table route beyond its measured conditions: two full runs (2026-11-25, development, not a
   result).** `benchmarks/wider_conditions/dev_run3.json` and `dev_run4.json`: the product's
   reading on 30 invented laws with three, four and five inputs at noise 1, 5, 10 and 20 %, the
