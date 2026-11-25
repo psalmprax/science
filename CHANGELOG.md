@@ -68,6 +68,29 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The referee test of the ranked proposer is held back by its independent review; an earlier
+  result gets an erratum (2026-11-25, AGENTS.md 1.6).** A separate reviewer checked the draft plan
+  against its runner before freezing: `docs/REVIEW_PREREG_RANKED_MEMORY_2026-11-25.md`, verdict
+  **not to be frozen as it stands**. Every number the plan quotes reproduces, the expectations are
+  coded as written, both arms get the same candidates, and nothing leaks. What is wrong is what
+  the run could show: with the plan's exclusions about 2 laws of 100 have one input, where all of
+  the learned order's measured gain lies (14 to 28 problems; none on two or three inputs); on
+  three inputs and without noise the stage, with its gate, adds nothing; the two arms would be
+  given the same list in about 170 of 200 runs; and the reviewer's replay of the stage on 72
+  recorded units changed no outcome (49 right laws against 49). That finding is the owner's to
+  decide; nothing is frozen and no law is drawn. **Faults of the agent's that the review found
+  and that are repaired:** the plan said the order "was written before any list of the second set
+  was read" and was "the better of two looks"; neither is so (no second-set list entered its fit,
+  and it is the best of three scored); a test drew the run's first eight laws in memory on every
+  run of its file (none printed or stored; the test now draws other laws and the run's seed is
+  changed). **Not yet repaired, and listed in the review's record:** a crash of the ranked arm
+  erases the other arm's row, the frozen list is incomplete, `collect` does not refuse missing or
+  doubled rows, and the rows do not say what the gate left out. **An earlier record:**
+  RESULT-MEMORY-2026-11 said "the memory's laws were the law itself in 26 of the 80 runs"; its
+  runner had counted every candidate of the stage as the memory's. Recounted from that run's rows:
+  the searches' own candidates held the law in 17 of the 26, and it came only with the memory in
+  9 (`preregistration/ERRATUM-RESULT-MEMORY-2026-11.md`). The result's expectations rest on other
+  counts and stand.
 - **The split search on laws it was not shaped on, and the dashboard's 30 seconds measured
   (2026-11-25, development).** *Second set* (`benchmarks/table_split/dev_search_second_run1.json`):
   30 laws drawn after the shape reading was fixed, read by the proposer as it stood after its one

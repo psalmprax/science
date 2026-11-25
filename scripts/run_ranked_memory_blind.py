@@ -75,7 +75,8 @@ FROZEN = (
     "apedp_dyn/discovery_l2/report_share.py", "apedp_dyn/ode/extended_route.py", "apedp_dyn/recursion/mdl.py",
     "specifications/discovery_checks_v1.json",
 )
-LAW_SEED = 20261125
+LAW_SEED = 2026112699                    # changed on 25 November: a test had drawn the first eight laws of the first seed
+#                                          (20261125) in memory on every run of its file; no law of this seed has been drawn
 LAW_COUNT = 100
 ARMS = ("in force", "ranked")
 NOISE_LEVELS = (0.0, 0.01)

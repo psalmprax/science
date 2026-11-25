@@ -118,9 +118,13 @@ def test_a_unit_that_crashes_counts_for_nothing_in_either_arm(run) -> None:
     assert summary["ranked|all"]["errors"] == 1 and summary["ranked|all"]["reported"] == 1 and summary["in force|all"]["runs"] == 2
 
 
+NOT_THE_RUN_S_SEED = 314159          # a test must never draw a law of the run, not even in memory: these eight are other laws
+
+
 def test_the_laws_of_the_run_are_new_to_every_earlier_set(run) -> None:
     grammar = _load("build_invented_laws")
-    record = run.build_laws(count=8, seed=run.LAW_SEED)
+    assert NOT_THE_RUN_S_SEED != run.LAW_SEED
+    record = run.build_laws(count=8, seed=NOT_THE_RUN_S_SEED)
     met = run._structures_seen_before()
     in_benchmark = set(json.loads(grammar.FINGERPRINTS.read_text(encoding="utf-8"))["fingerprints"])
     assert len(record["laws"]) == 8 and len({law["text"] for law in record["laws"]}) == 8
@@ -131,5 +135,5 @@ def test_the_laws_of_the_run_are_new_to_every_earlier_set(run) -> None:
     assert all(grammar.structure(sp.sympify(law["text"])) in met for law in memory_laws)           # the memory's own test laws
     rehearsal = run.rehearsal_entries(4)
     assert all(grammar.structure(sp.sympify(entry["formula"])) in met for entry in rehearsal.values())  # development laws only
-    if run.LAWS_FILE.exists():                            # once the plan is frozen: the file is what the generator gives
-        assert json.loads(run.LAWS_FILE.read_text(encoding="utf-8")) == run.build_laws()
+    # Whether the frozen laws file is what the generator gives is checked by `laws --check` in the workflow, which
+    # prints nothing of it; a test that drew the run's laws could print one in a failing assertion.

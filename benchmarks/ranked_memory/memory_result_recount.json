@@ -1,0 +1,642 @@
+[
+ {
+  "problem": "memory_4000",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4010",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4020",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4030",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4000",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4010",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4020",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4030",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4001",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4011",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4021",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4031",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4001",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4011",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4021",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4031",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4002",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4012",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4022",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4032",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4002",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4012",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4022",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4032",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4003",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4013",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4023",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4033",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4003",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4013",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4023",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4033",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4004",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4014",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4024",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4034",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4004",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4014",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4024",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4034",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4005",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4015",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4025",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4035",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4005",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4015",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4025",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4035",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4006",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4016",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4026",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4036",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4006",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4016",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4026",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4036",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4007",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4017",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4027",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4037",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4007",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4017",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4027",
+  "noise": 0.01,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4037",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4008",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4018",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4028",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4038",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4008",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4018",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4028",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4038",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4009",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4019",
+  "noise": 0.0,
+  "recorded": true,
+  "among_the_searches_own": true,
+  "among_the_stage_candidates_recount": true,
+  "recovered": true
+ },
+ {
+  "problem": "memory_4029",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4039",
+  "noise": 0.0,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4009",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4019",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4029",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ },
+ {
+  "problem": "memory_4039",
+  "noise": 0.01,
+  "recorded": false,
+  "among_the_searches_own": false,
+  "among_the_stage_candidates_recount": false,
+  "recovered": false
+ }
+]

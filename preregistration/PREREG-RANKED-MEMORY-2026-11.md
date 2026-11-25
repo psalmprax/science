@@ -1,9 +1,18 @@
 # PREREG-RANKED-MEMORY-2026-11: does the memory's list in a learned order, beside the memory in force, make the table route report more right laws?
 
-**Status:** DRAFT, not frozen. It is frozen by `preregistration/DIGEST-RANKED-MEMORY.json` after an
-independent review (AGENTS.md 1.6) and after its laws are drawn. It then runs once, on GitHub
-Actions (`.github/workflows/ranked-memory.yml`), started by the first branch named
-`ranked-memory-run-*` whose shards start.
+**Status:** DRAFT, not frozen, and **held back from freezing by its independent review** of 25
+November (`docs/REVIEW_PREREG_RANKED_MEMORY_2026-11-25.md`). The review's first finding is the
+owner's to decide: with the laws this draw will give (about 2 of 100 with one input, where all of
+the order's measured gain lies) and the stage as it now stands (which adds nothing without noise
+and nothing on three inputs), the two arms would be given the same list of candidates in about
+170 of 200 runs, so the run could hardly show a gain or the absence of one. Nothing below is
+frozen, no law is drawn, and the review's other findings are not all acted on yet. The text below
+is the draft as reviewed, with the statements the review found wrong corrected in place and marked.
+
+If it is frozen, it is frozen by `preregistration/DIGEST-RANKED-MEMORY.json` after the review's
+findings are answered and after its laws are drawn. It then runs once, on GitHub Actions
+(`.github/workflows/ranked-memory.yml`), started by the first branch named `ranked-memory-run-*`
+whose shards start.
 
 Asked for by the owner on 25 November 2026 (`docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md`, 1).
 
@@ -41,7 +50,10 @@ the development rows by more than 1.25 times what the best candidate of the stag
 left out (`ranked_stage.GATE`; root mean square on the development rows the proposers were given,
 no pool row). This rule was added after the dress rehearsal and because of it (see "Disclosed
 before freezing"): a candidate that fits far worse than what the searches already hold can take a
-place and cannot be the law.
+place and, on noisy rows, cannot be the law. *(The review's reading of the gate: without noise it
+has let nothing in, since the stage's best then fits almost exactly; on three-input tables the
+memory's list holds at most four candidates and none has passed it; an added candidate was within
+it in about half the noisy runs on one and two inputs.)*
 
 **A candidate added is a candidate displaced.** The path confirms at most ten candidates of a
 stage, and the searches alone handed over ten in every one of the 160 runs of
@@ -53,13 +65,18 @@ is a larger cost, and this run counts it: for every run it records whether a dis
 was the law.
 
 **The order** is a dozen weights learned on the first set of curriculum problems (300 problems)
-from the lists of a memory taught 80 curriculum laws, built as the ranked proposer builds them. It
-was written before any list of the second set was read. **It was chosen over a second order on
-development data, and that is said here:** an order learned the same way on the lists of the
-memory in force itself (`benchmarks/order_score/learned_order_in_force.json`) brought the law
-among the first three on 37 of the second set's problems, this one on 42, and this one left the
-law by form in first place on all 4 lists that held it, the other on 2. The 42 is therefore the
-better of two looks at the second set and flatters the order by that much. The curriculum
+from the lists of a memory taught 80 curriculum laws, built as the ranked proposer builds them.
+No list of the second set entered its fit. *(Corrected after the review: the draft said it "was
+written before any list of the second set was read". It was not: the file replaced an earlier
+order at a time when second-set lists already existed, and the study script reads them before it
+writes the order.)* **It was chosen on development data, and that is said here:** the record
+scores three orders on the second set's lists of the memory in force, which brought the law among
+the first three on 37, 37 and 42 problems; this is the one with 42, and it left the law by form in
+first place on all 4 lists that held it, where the order learned on the in-force memory's own
+lists left it first on 2. *(Corrected after the review: the draft said "the better of two
+looks".)* The 42 is the best of three looks and flatters the order by that much. **Where that gain
+lies, which the draft did not say:** by number of inputs the 28 to 42 is 14 to 28 on one-input
+problems, 14 to 14 on two-input problems and none to none on three. The curriculum
 (`recursion/curriculum.py`) and the grammar the laws of this run are drawn from
 (`scripts/build_invented_laws.py`) are two generators over the same family of building blocks.
 
@@ -68,8 +85,13 @@ better of two looks at the second set and flatters the order by that much. The c
 **Laws.** `benchmarks/ranked_memory_blind_laws.json`: 100 laws drawn by
 `scripts/run_ranked_memory_blind.py laws` from the invented-law grammar (one to three inputs on
 (1, 5), building blocks joined by sums, differences, products and quotients, constants from a list
-of unround numbers), with seed 20261125, **after** the ranked proposer, its stage and the order
-file were written. A draw is left out if its structure is in the invented-laws benchmark (by
+of unround numbers), with seed 2026112699, **after** the ranked proposer, its stage and the order
+file were written. *(The seed was 20261125 until the review found that a test drew the first eight
+laws of that seed in memory on every run of its file; none was printed or stored, the test now
+draws other laws, and the run's seed was changed so that no law of the run has been drawn by
+anything.)* With the exclusions below, draws with other seeds give about 2 laws of one input, 55
+of two and 43 of three in a hundred: nearly every one-input structure of this grammar has been met
+by an earlier set. A draw is left out if its structure is in the invented-laws benchmark (by
 fingerprint; no held-back law is read), among the 80 laws the memory proposer was developed on,
 among the 40 laws of PREREG-MEMORY-2026-11, or among the 820 curriculum problems the order was
 learned and scored on.
@@ -113,6 +135,11 @@ A run that crashes or exceeds 1,800 seconds counts as reporting nothing, in both
    it left out as fitting worse, in how many runs it added the law itself and displaced the law
    itself; laws reported that are accurate without being the law; the path's actions; what the
    checks held back; errors, timeouts and time.
+
+*(The review found the forecast below unsupported: by the development rates and the make-up of the
+draw the added candidates would hold a solved candidate the first three lack in 3 to 4 runs of
+200, not 15, and a replay of the present stage on 72 recorded units of PREREG-MEMORY changed no
+outcome. It is left as written, as the record of what the author expected before the review.)*
 
 **The author's own expectations**, recorded so that they can be wrong, and no criterion. The arm
 in force reports about 135 laws in 200 runs, nearly all of them right and about 55 of them the law
