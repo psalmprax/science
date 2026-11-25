@@ -95,6 +95,18 @@ def test_the_runner_draws_teaching_laws_apart_from_the_test_problems() -> None:
     assert script.memory_of("taught-5", tests).laws == 5
 
 
+def test_every_arm_a_workflow_names_is_an_arm_of_the_script_and_the_in_force_arms_share_one_memory() -> None:
+    import re
+
+    script = _script()
+    workflow = (ROOT / ".github" / "workflows" / "order-score.yml").read_text(encoding="utf-8")
+    named = set(re.findall(r'"((?:taught|split)-[a-z0-9-]+|in-force)"', workflow))
+    assert named and named <= set(script.ARMS)                   # a shard is refused if its arm is not one of these
+    assert "split-in-force" in named
+    tests = script.test_problems(5)
+    assert script.memory_of("split-in-force", tests).as_dict() == script.memory_of("in-force", tests).as_dict()
+
+
 def test_the_second_set_shares_no_structure_with_the_first_set_or_with_any_law_taught() -> None:
     script = _script()
     from apedp_dyn.recursion.curriculum import structure

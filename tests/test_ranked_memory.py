@@ -81,6 +81,8 @@ def test_an_order_is_loaded_from_its_record_or_from_a_record_that_holds_it(tmp_p
 
 
 def test_nothing_in_force_builds_it() -> None:
-    users = [path for path in (ROOT / "apedp_dyn").rglob("*.py")
-             if path.name != "ranked_memory.py" and "ranked_memory" in path.read_text(encoding="utf-8")]
-    assert users == []                                           # a study script and these tests are its only callers
+    """One module of the package builds on it, the stage of the referee test (``ranked_stage.py``), which nothing builds."""
+    sources = {path.relative_to(ROOT).as_posix(): path.read_text(encoding="utf-8") for path in (ROOT / "apedp_dyn").rglob("*.py")}
+    users = sorted(name for name, text in sources.items() if "ranked_memory" in text and not name.endswith("/ranked_memory.py"))
+    assert users == ["apedp_dyn/discovery_l2/ranked_stage.py"]
+    assert [name for name, text in sources.items() if "ranked_stage" in text and not name.endswith("/ranked_stage.py")] == []

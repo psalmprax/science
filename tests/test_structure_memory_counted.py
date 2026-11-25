@@ -84,7 +84,8 @@ def test_nothing_in_force_uses_the_counted_memory() -> None:
     """It is a proposal: the reading and the routes keep the timed growth their frozen plans name.
 
     One module of the package builds on it: the memory's list in a learned order (``ranked_memory.py``), itself a
-    proposal that nothing in the package builds. So nothing in force reaches the counted memory through it either.
+    proposal. That one is built only by the stage of its referee test (``ranked_stage.py``), which nothing in the
+    package builds. So nothing in force reaches the counted memory through either.
     """
     from pathlib import Path
 
@@ -95,7 +96,9 @@ def test_nothing_in_force_uses_the_counted_memory() -> None:
                    if "structure_memory_counted" in text and not name.endswith("/structure_memory_counted.py"))
     assert users == ["apedp_dyn/proposers/ranked_memory.py"]
     assert [name for name, text in sources.items()
-            if "ranked_memory" in text and not name.endswith("/ranked_memory.py")] == []
+            if "ranked_memory" in text and not name.endswith("/ranked_memory.py")] == ["apedp_dyn/discovery_l2/ranked_stage.py"]
+    assert [name for name, text in sources.items()
+            if "ranked_stage" in text and not name.endswith("/ranked_stage.py")] == []
 
 
 @pytest.mark.parametrize("name", ["GROW_FITS", "WHOLE_FITS"])

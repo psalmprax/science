@@ -68,6 +68,17 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The referee test of the ranked proposer: its stage, runner and workflow, not yet frozen
+  (2026-11-25, decision 1).** New `apedp_dyn/discovery_l2/ranked_stage.py`: a stage's candidates
+  as they are, and after them up to three of the ranked proposer's whose shape the stage did not
+  hand over; because the path confirms ten of a stage and the stage in force hands over ten, the
+  added ones take the place of its last ones, and `last_run` says which.
+  `scripts/run_ranked_memory_blind.py` and `.github/workflows/ranked-memory.yml`: both arms through
+  the table route with its last checks, given the same candidates of the stage in force; smoke,
+  dress rehearsal on development laws, and the one run. `tests/test_ranked_stage.py` (6),
+  `tests/test_ranked_memory_blind.py` (5). **A fault of mine, repaired:** the arm `split-in-force`
+  was missing from the order-score script's list, so the two runs started for it were refused in
+  their first minute; a test now holds every arm a workflow names against the script's list.
 - **Carrying out the four decisions, first steps (2026-11-25, development).**
   `.github/workflows/wider-conditions.yml` runs the 120 tables with kept search processes from a
   branch `wider-conditions-warm-run-*` (decision 2). `scripts/measure_order_score.py` gains the

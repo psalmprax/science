@@ -60,7 +60,7 @@ PROBLEMS = 300
 FRESH = 200                     # a second set, from another seed; level 1 has no more than 40 laws left unused
 TAUGHT = (0, 5, 20, 80, 320)
 SPLIT = (80,)                   # the same memory, its list built as a proposer can build it (ranked_memory.split_pool)
-ARMS = (*(f"taught-{n}" for n in TAUGHT), "in-force", *(f"split-{n}" for n in SPLIT))
+ARMS = (*(f"taught-{n}" for n in TAUGHT), "in-force", *(f"split-{n}" for n in SPLIT), "split-in-force")
 POOL = 40                       # candidates kept for a problem, best BIC first; the product hands the referee the first 3
 HANDED = 3
 
