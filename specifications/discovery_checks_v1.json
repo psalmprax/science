@@ -23,7 +23,28 @@
    ],
    "meaning": "The family level at which the last checks' tests refuse a law; the second version runs two tests at half of it each.",
    "value": 0.01
+  },
+  "REPORTED_WRONG_SHARE_BOUND_CONFIDENCE": {
+   "defined_before_as": [
+    "the 95 % of the upper bounds reported beside earlier results, with no criterion attached"
+   ],
+   "meaning": "The confidence of the one-sided exact (Clopper-Pearson) upper bound on the share of wrong laws among those reported.",
+   "value": 0.95
+  },
+  "REPORTED_WRONG_SHARE_BOUND_MAX": {
+   "defined_before_as": [
+    "nothing: until 2026-11-25 a share inside REPORTED_WRONG_SHARE_MAX passed whatever its upper bound (2 wrong of 44 passed with a bound of 13.6 %)"
+   ],
+   "meaning": "The upper bound on the share of wrong laws among those reported must be at most this before the share counts as shown. With the share inside REPORTED_WRONG_SHARE_MAX and the bound above this, the test decides nothing on the point.",
+   "value": 0.1
+  },
+  "REPORTED_WRONG_SHARE_MAX": {
+   "defined_before_as": [
+    "canonical REFEREE_MAX_FPR, a referee's allowed share of false positives, borrowed by five plans up to PREREG-REAL-TABLES-2026-11"
+   ],
+   "meaning": "Of the laws a method reports in a test, at most this share may be wrong, that is, not accurate by DISCOVERY_ACCURACY_R2. A larger share misses.",
+   "value": 0.05
   }
  },
- "what": "Thresholds of the discovery routes' last checks and of their benchmarks, each named by what it means. Until 2026-11-23 the accuracy line was a bare literal in three files and the checks' level and power were borrowed from canonical-spec entries defined for other tests. The values are unchanged; only their names and their pin are new. Loaded by apedp_dyn/conf/discovery_checks.py, which checks this file's SHA-256. Not covered by the signed governance manifest until the trustees sign it."
+ "what": "Thresholds of the discovery routes' last checks and of their benchmarks, each named by what it means. Until 2026-11-23 the accuracy line was a bare literal in three files and the checks' level and power were borrowed from canonical-spec entries defined for other tests; those values are unchanged. On 2026-11-25, by the owner's decision, the limit on the share of wrong laws among those reported was named here (it had been borrowed from the referee's allowed share of false positives, with the same value) and a second condition was added for plans frozen from that date: the upper bound of that share. Loaded by apedp_dyn/conf/discovery_checks.py, which checks this file's SHA-256. Not covered by the signed governance manifest until the trustees sign it."
 }

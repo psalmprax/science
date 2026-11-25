@@ -46,6 +46,24 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **Six decisions of the owner, 2026-11-25 ("yes to all"), carried out in this and the next
+  entries.** (1) **The second version of the last checks is kept.** Asked for an explicit yes or
+  no with its limits stated, the owner said to keep it; it is in force by that decision
+  (`preregistration/REVIEW-VOUCHING-V2-2026-11.md`). (4) **The share of wrong laws among those
+  reported has its own named limit**, `REPORTED_WRONG_SHARE_MAX` = 0.05 in
+  `specifications/discovery_checks_v1.json` (the value five plans had borrowed from
+  `REFEREE_MAX_FPR`), **and a second condition**: its one-sided exact upper bound at
+  `REPORTED_WRONG_SHARE_BOUND_CONFIDENCE` = 0.95 must be at most
+  `REPORTED_WRONG_SHARE_BOUND_MAX` = 0.10 before the share counts as shown
+  (`apedp_dyn/discovery_l2/report_share.py`: held, missed or not shown). New pin
+  `60eabf58…b220d0` (was `81ae13eb…232c0`). For plans frozen from this date; no recorded result
+  is judged again. (3) **The trustees sign once for both specifications.** The manifest can list
+  further sealed files (`also_sealed`) and the signature is then over one message binding all of
+  them (`governance.combined_digest`); a one-file manifest is signed and verified exactly as
+  before. `scripts/governance_ceremony.py` prints the message and assembles the manifest from the
+  trustees' signatures; it never signs. The check in CI now requires both files to be sealed.
+  `docs/GOVERNANCE_RESIGNING_REQUEST.md`, section 8, is what a trustee reads. **Nothing is
+  signed: that needs two of the three trustees.**
 - **The build's test job was failing for a second reason, and the new status showed it
   (2026-11-25).** `scripts/run_real_tables_blind.py` uses `datetime.UTC`, which Python 3.10 does
   not have, and `tests/test_minimum_python_version.py` fails on it. The file is frozen by

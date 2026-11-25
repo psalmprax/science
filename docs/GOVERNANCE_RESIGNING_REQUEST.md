@@ -4,6 +4,11 @@
 **Status:** OPEN — blocked on the registered trustees. This is the only step in
 FLAW-01 that repository code and CI cannot perform.
 
+**Read section 8 first.** On 2026-11-25 the owner decided that the trustees sign
+once for two files. Section 8 gives the one message to sign and replaces the
+message of section 3 and the assembly of section 4. Sections 1, 2, 5 and 6 still
+hold.
+
 ## 1. What is wrong
 
 The canonical specification and the signed governance manifest cover different
@@ -184,20 +189,85 @@ must still be `a8177b25…` after the ceremony.
 - Generating keys inside this repository or CI.
 - Committing a manifest with placeholder or agent-generated signatures.
 
-## 7. Checked again on 2026-11-24, and what the signature does not cover
+## 7. Checked again on 2026-11-24
 
-The request above is still exact. The specification on disk and its pin are both
-`a8177b25…f37329`, the manifest still seals `a6d026f3…3f6d47`, and the message each
-trustee signs is unchanged. Two signatures over the 64 hex characters in section 3
-close FLAW-01. Nothing else is needed from the trustees for it.
+The request was checked against the tree: the specification on disk and its pin
+are both `a8177b25…f37329`, the manifest still seals `a6d026f3…3f6d47`. The second
+specification, `specifications/discovery_checks_v1.json`, held the thresholds
+that decide whether a found law is reported and was pinned by hash in code only.
+Whether the trustees should seal it too was put to the owner.
 
-One thing the ceremony does not do. The second specification,
-`specifications/discovery_checks_v1.json` (SHA-256
-`81ae13eb0dd9bd061f246026178d405a4fd7f41a825a7abfa7d90085796232c0`), holds the
-thresholds that decide whether a found law is reported. It is pinned by hash in
-`apedp_dyn/conf/discovery_checks.py` and nowhere in the manifest: a change to it needs
-a new pin and a CHANGELOG entry, and no trustee's signature. Whether the trustees
-should seal it too is the owner's decision. If yes, the manifest format needs a
-second sealed digest (today it holds one `spec_sha256`), which is a code change to
-`apedp_dyn/epistemic/governance.py` to make before the ceremony, so that the
-trustees sign once for both.
+## 8. The ceremony as decided on 2026-11-25: one signature for both files
+
+The owner decided: the trustees sign once, for both specifications.
+
+**What is sealed.**
+
+| File | SHA-256 |
+|---|---|
+| `specifications/canonical_preregistered_spec_v1.json` | `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329` |
+| `specifications/discovery_checks_v1.json` | `60eabf58a23c9f2d366d45875e427999bb34c4086cb74107caf9dabd7bb220d0` |
+
+The second file changed on 2026-11-25, before this ceremony and by the same
+decision: the limit on the share of wrong laws among those reported got its own
+name there, with a second condition (see `CHANGELOG.md`). The digest above is the
+file with that change.
+
+**The message each trustee signs** is these 64 characters, as ASCII text:
+
+```
+2c3f7268c1698e71bede3417e4180e845c1fbc7b32f61b87dd32cea148ab73bb
+```
+
+It is the SHA-256 of a fixed text naming both files and their digests
+(`apedp_dyn.epistemic.governance.combined_digest`). Anyone can print it again
+from the tree, and should before signing:
+
+```bash
+python scripts/governance_ceremony.py message
+```
+
+If either file changes before the ceremony, the message changes and this section
+must be rewritten; a test fails until it is
+(`tests/test_governance_two_files.py`).
+
+**How a trustee signs**, on their own machine, with their own key:
+
+```bash
+python -c "from apedp_dyn.epistemic.governance import sign_spec_sha256; print(sign_spec_sha256(input('private key hex: ').strip(), '2c3f7268c1698e71bede3417e4180e845c1fbc7b32f61b87dd32cea148ab73bb'))"
+```
+
+They send back three things and nothing else: their trustee id, the 128 hex
+characters printed, and the time of signing (ISO-8601, UTC). The private key is
+never sent, never pasted into this repository, and never given to an agent.
+
+**How the manifest is assembled**, once two of the three have signed:
+
+```bash
+python scripts/governance_ceremony.py assemble \
+    --signature referee_lead_01:<128 hex>:<signed at> \
+    --signature referee_stat_02:<128 hex>:<signed at>
+```
+
+The script keeps the trustees and the quorum as they are, appends to the
+transparency log without rewriting it, checks every signature against its
+trustee's registered public key over the message above, and writes the manifest
+only if the whole of it verifies. It cannot sign and cannot make a key. An agent
+may run it with signatures the trustees supply.
+
+**After it**, all of these pass on the commit that carries the new manifest, and
+the `--deselect` of the governance test in `.github/workflows/test.yml` is removed:
+
+```bash
+python scripts/check_governance_manifest_drift.py --check
+python -m pytest tests/test_dyn_governance.py tests/test_governance_two_files.py -q
+```
+
+**What is still out of scope:** everything in section 6. The old signatures over
+`a6d026f3…` are not signatures over this message and cannot be reused; a test
+checks that they do not verify over it.
+
+**One thing to know before signing.** If the proposal for signed evidence
+receipts (`docs/PROPOSAL_EVIDENCE_RECEIPTS_2026-11-24.md`, approved in principle
+on 2026-11-25, not built) is built later, it adds a public key to the canonical
+specification, which changes its digest and needs this ceremony again.

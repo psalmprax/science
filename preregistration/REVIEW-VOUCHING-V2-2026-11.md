@@ -1,5 +1,12 @@
 # Review of RESULT-VOUCHING-V2-2026-11
 
+**The owner's decision, 2026-11-25: the second version of the last checks is kept.** Asked for an
+explicit yes or no, with the limits below in front of them (tested up to 5 % noise, on tables of
+1,000 rows, with traps from the development generator; a law with a pole can still pass), the owner
+said to keep it. It is in force by that decision from this date, and no longer only by a consequence
+an agent applied. `APEDP_TABLE_VOUCHING=off` still gives the route without it. Finding 1 below is
+closed by this; the other findings stand as descriptions of what the result does and does not show.
+
 **An independent review was completed on 2026-11-24** (the section after this one). Its verdict:
 every number in the record matches the raw rows and all five verdicts are right by the plan's
 definitions; what is wrong is what the record claims, stresses and leaves out. The earlier
