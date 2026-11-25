@@ -37,6 +37,32 @@ The reviewer also asks that, if the runner is changed for findings 3 to 6, the r
 once more with the runner that will be frozen, and that nothing in the stage changes after the
 second rehearsal is read unless the plan says what did. Both are accepted.
 
+## 1a. The second rehearsal, read after the review
+
+The second rehearsal (run 45670861301, the stage with its gate, the same sixteen development laws,
+32 runs an arm; not the run) finished after the report was returned. Read against the list the
+reviewer asked for (`benchmarks/ranked_memory/rehearsal2_results.json`, `rehearsal2_runs.jsonl.gz`):
+
+1. 64 rows, each unit once an arm, no error and no timeout.
+2. The same ten candidates of the stage in both rows of all 32 units; in every unit with nothing
+   added the two rows have the same outcome.
+3. A candidate was added in 10 of 32 runs, 25 candidates in all, 225 left out as fitting worse.
+   **None without noise (0 of 16) and none on three inputs (0 of 8)**; at 1 % noise in 7 of 7 runs
+   with one input and 3 of 5 with two. This is what the reviewer said it would be.
+4. `rehearsal_10` and `rehearsal_13` at 1 % are no longer lost; `rehearsal_8` at 1 % is still
+   gained (the law itself, on a one-input law whose structure is among those the order was learned
+   on). Reports 24 against 23, none wrong; recovered 14 against 13; run for run one gained, none
+   lost. The searches were run afresh, so this is a development reading and not a comparison with
+   the first rehearsal.
+5. The core count and the stage's own record are not in the rows (finding 6 is not acted on yet).
+6. The longest unit took 627 seconds, both arms together, against a limit of 1,800.
+7. By number of inputs the one gain is on one input. Seven of the sixteen laws have one input; the
+   run would have about two in a hundred.
+8. Nothing in the stage was changed after this rehearsal was read.
+
+It bears out finding 1: the stage now does what it was changed to do, and on the laws the run would
+draw it would seldom do anything.
+
 ## 2. The reviewer's report, as returned
 
 > `/tmp/review_ranked_memory/findings.md` was not written: the harness refuses report files from

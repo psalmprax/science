@@ -1,0 +1,195 @@
+{
+ "frozen": null,
+ "preregistration": "PREREG-RANKED-MEMORY-2026-11",
+ "rows": 64,
+ "summary": {
+  "expectations": {
+   "1_holds": false,
+   "1_share_of_reported_laws_wrong": {
+    "in force": {
+     "reported": 23,
+     "share": 0.0,
+     "share_allowed": 0.05,
+     "upper_bound": 0.12212338890652302,
+     "upper_bound_allowed": 0.1,
+     "upper_bound_confidence": 0.95,
+     "verdict": "not shown",
+     "wrong": 0
+    },
+    "ranked": {
+     "reported": 24,
+     "share": 0.0,
+     "share_allowed": 0.05,
+     "upper_bound": 0.11734615615494873,
+     "upper_bound_allowed": 0.1,
+     "upper_bound_confidence": 0.95,
+     "verdict": "not shown",
+     "wrong": 0
+    }
+   },
+   "2_holds": true,
+   "2_right_in_force": {
+    "0.0": 12,
+    "0.01": 11,
+    "all": 23
+   },
+   "2_right_ranked": {
+    "0.0": 12,
+    "0.01": 12,
+    "all": 24
+   },
+   "3_holds": true,
+   "3_recovered_in_force": 13,
+   "3_recovered_ranked": 14
+  },
+  "in force|0.0": {
+   "errors": 0,
+   "median_seconds": 325.875,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_candidates_added": 0,
+   "ranked_candidates_left_out_as_fitting_worse": 0,
+   "ranked_displaced_the_law": 0,
+   "recovered": 9,
+   "reported": 12,
+   "reported_accurate_not_the_law": 3,
+   "right": 12,
+   "runs": 16,
+   "tentative": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "in force|0.01": {
+   "errors": 0,
+   "median_seconds": 360.92,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_candidates_added": 0,
+   "ranked_candidates_left_out_as_fitting_worse": 0,
+   "ranked_displaced_the_law": 0,
+   "recovered": 4,
+   "reported": 11,
+   "reported_accurate_not_the_law": 7,
+   "right": 11,
+   "runs": 16,
+   "tentative": 2,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "in force|all": {
+   "errors": 0,
+   "median_seconds": 345.735,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_candidates_added": 0,
+   "ranked_candidates_left_out_as_fitting_worse": 0,
+   "ranked_displaced_the_law": 0,
+   "recovered": 13,
+   "reported": 23,
+   "reported_accurate_not_the_law": 10,
+   "right": 23,
+   "runs": 32,
+   "tentative": 2,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "ranked|0.0": {
+   "errors": 0,
+   "median_seconds": 25.814999999999998,
+   "ranked_added_a_candidate": 0,
+   "ranked_added_the_law": 0,
+   "ranked_candidates_added": 0,
+   "ranked_candidates_left_out_as_fitting_worse": 149,
+   "ranked_displaced_the_law": 0,
+   "recovered": 9,
+   "reported": 12,
+   "reported_accurate_not_the_law": 3,
+   "right": 12,
+   "runs": 16,
+   "tentative": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "ranked|0.01": {
+   "errors": 0,
+   "median_seconds": 26.165,
+   "ranked_added_a_candidate": 10,
+   "ranked_added_the_law": 4,
+   "ranked_candidates_added": 25,
+   "ranked_candidates_left_out_as_fitting_worse": 76,
+   "ranked_displaced_the_law": 1,
+   "recovered": 5,
+   "reported": 12,
+   "reported_accurate_not_the_law": 7,
+   "right": 12,
+   "runs": 16,
+   "tentative": 1,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "ranked|all": {
+   "errors": 0,
+   "median_seconds": 25.814999999999998,
+   "ranked_added_a_candidate": 10,
+   "ranked_added_the_law": 4,
+   "ranked_candidates_added": 25,
+   "ranked_candidates_left_out_as_fitting_worse": 225,
+   "ranked_displaced_the_law": 1,
+   "recovered": 14,
+   "reported": 24,
+   "reported_accurate_not_the_law": 10,
+   "right": 24,
+   "runs": 32,
+   "tentative": 1,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "run_for_run": {
+   "recovered|0.0": {
+    "gained": 0,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "recovered|0.01": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "recovered|all": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "reported|0.0": {
+    "gained": 0,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "reported|0.01": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "reported|all": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "right|0.0": {
+    "gained": 0,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "right|0.01": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   },
+   "right|all": {
+    "gained": 1,
+    "lost": 0,
+    "sign_test_p": 1.0
+   }
+  }
+ }
+}
