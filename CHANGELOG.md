@@ -68,6 +68,23 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Ideas from outside, set against what the system measures in itself (2026-11-25, asked for by
+  the owner).** `docs/IDEAS_FROM_OUTSIDE_2026-11-25.md`: twenty ideas from papers, textbooks and
+  talks (two of them built this week), each with the measured weakness it answers, a test and a
+  pass mark; what the system already has; what the sources themselves say not to expect; a
+  proposed order. It says what was read (papers, two interview transcripts, notes on four talks)
+  and that two years of YouTube were not mined. Proposals only.
+- **A language model shown the nearest solved cases: first run, no gain (2026-11-25, development).**
+  `benchmarks/llm_retrieval/dev_run1.json` (run 45596576459; 120 calls, 60 problems): a candidate
+  the judge counts solved was on the list for 13 problems with the model alone, 7 with the model
+  shown the cases, 10 with the cases refitted and no model. The three lists solve different
+  problems (19 of 60 by at least one). The study now keeps every list's fitted laws.
+- **A second set of problems for the order score, and a look at the ladder before it ends
+  (2026-11-25, development).** `scripts/measure_order_score.py --set fresh` draws 200 problems
+  that share no structure with the first set or with any law taught;
+  `scripts/study_learned_order.py --fresh` scores an order learned on the first set against them;
+  `.github/workflows/order-score.yml` runs the second set from a branch `order-score-fresh-run-*`.
+  `.github/workflows/ladder-peek.yml` prints what a budget-ladder run has measured so far.
 - **What the system solved before, found again by what a table looks like; and a language model
   shown it (2026-11-25, asked for by the owner; development, not in force).** New
   `apedp_dyn/proposers/experience.py`: a store of solved cases, each a law beside a signature of

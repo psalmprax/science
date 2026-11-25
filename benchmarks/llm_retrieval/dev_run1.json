@@ -1,0 +1,3347 @@
+{
+ "against": {
+  "model with cases against cases alone": {
+   "accurate_place": {
+    "earlier": 5,
+    "found_p": 0.021271,
+    "gained": 3,
+    "interval_95": [
+     -0.2247,
+     -0.045
+    ],
+    "later": 17,
+    "lost": 13,
+    "mean_reciprocal_difference": -0.1353,
+    "problems": 60,
+    "same": 38,
+    "sign_test_p": 0.016901,
+    "what": "accurate_place"
+   },
+   "form_place": {
+    "earlier": 2,
+    "found_p": 0.5,
+    "gained": 2,
+    "interval_95": [
+     0.0,
+     0.0287
+    ],
+    "later": 0,
+    "lost": 0,
+    "mean_reciprocal_difference": 0.0102,
+    "problems": 60,
+    "same": 58,
+    "sign_test_p": 0.5,
+    "what": "form_place"
+   },
+   "solved_place": {
+    "earlier": 2,
+    "found_p": 0.375,
+    "gained": 1,
+    "interval_95": [
+     -0.0999,
+     0.0018
+    ],
+    "later": 7,
+    "lost": 4,
+    "mean_reciprocal_difference": -0.0448,
+    "problems": 60,
+    "same": 51,
+    "sign_test_p": 0.179688,
+    "what": "solved_place"
+   }
+  },
+  "model with cases against model alone": {
+   "accurate_place": {
+    "earlier": 10,
+    "found_p": 0.387695,
+    "gained": 4,
+    "interval_95": [
+     -0.0461,
+     0.0744
+    ],
+    "later": 10,
+    "lost": 8,
+    "mean_reciprocal_difference": 0.0096,
+    "problems": 60,
+    "same": 40,
+    "sign_test_p": 1.0,
+    "what": "accurate_place"
+   },
+   "form_place": {
+    "earlier": 1,
+    "found_p": 1.0,
+    "gained": 1,
+    "interval_95": [
+     -0.0306,
+     0.0037
+    ],
+    "later": 2,
+    "lost": 1,
+    "mean_reciprocal_difference": -0.0093,
+    "problems": 60,
+    "same": 57,
+    "sign_test_p": 1.0,
+    "what": "form_place"
+   },
+   "solved_place": {
+    "earlier": 5,
+    "found_p": 0.109375,
+    "gained": 2,
+    "interval_95": [
+     -0.1039,
+     0.0011
+    ],
+    "later": 10,
+    "lost": 8,
+    "mean_reciprocal_difference": -0.0486,
+    "problems": 60,
+    "same": 45,
+    "sign_test_p": 0.301758,
+    "what": "solved_place"
+   }
+  }
+ },
+ "arms": {
+  "cases alone": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 6,
+      "found": 9,
+      "mean_reciprocal_place": 0.5833,
+      "problems": 12,
+      "share_found": 0.75,
+      "within_3": 7
+     },
+     "2": {
+      "first": 4,
+      "found": 9,
+      "mean_reciprocal_place": 0.4063,
+      "problems": 12,
+      "share_found": 0.75,
+      "within_3": 4
+     },
+     "3": {
+      "first": 2,
+      "found": 3,
+      "mean_reciprocal_place": 0.1786,
+      "problems": 12,
+      "share_found": 0.25,
+      "within_3": 2
+     },
+     "4": {
+      "first": 1,
+      "found": 2,
+      "mean_reciprocal_place": 0.1111,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 2
+     },
+     "5": {
+      "first": 1,
+      "found": 3,
+      "mean_reciprocal_place": 0.1458,
+      "problems": 12,
+      "share_found": 0.25,
+      "within_3": 2
+     }
+    },
+    "first": 14,
+    "found": 26,
+    "mean_reciprocal_place": 0.285,
+    "problems": 60,
+    "share_found": 0.4333,
+    "what": "accurate_place",
+    "within_3": 17
+   },
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "2": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 0,
+    "found": 0,
+    "mean_reciprocal_place": 0.0,
+    "problems": 60,
+    "share_found": 0.0,
+    "what": "form_place",
+    "within_3": 0
+   },
+   "problems": 60,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 2,
+      "found": 4,
+      "mean_reciprocal_place": 0.1952,
+      "problems": 12,
+      "share_found": 0.3333,
+      "within_3": 2
+     },
+     "2": {
+      "first": 0,
+      "found": 2,
+      "mean_reciprocal_place": 0.0833,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 2
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0278,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 1
+     },
+     "5": {
+      "first": 1,
+      "found": 3,
+      "mean_reciprocal_place": 0.1458,
+      "problems": 12,
+      "share_found": 0.25,
+      "within_3": 2
+     }
+    },
+    "first": 3,
+    "found": 10,
+    "mean_reciprocal_place": 0.0904,
+    "problems": 60,
+    "share_found": 0.1667,
+    "what": "solved_place",
+    "within_3": 7
+   }
+  },
+  "model alone": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 3,
+      "found": 9,
+      "mean_reciprocal_place": 0.3639,
+      "problems": 12,
+      "share_found": 0.75,
+      "within_3": 4
+     },
+     "2": {
+      "first": 1,
+      "found": 5,
+      "mean_reciprocal_place": 0.1736,
+      "problems": 12,
+      "share_found": 0.4167,
+      "within_3": 3
+     },
+     "3": {
+      "first": 0,
+      "found": 3,
+      "mean_reciprocal_place": 0.066,
+      "problems": 12,
+      "share_found": 0.25,
+      "within_3": 2
+     },
+     "4": {
+      "first": 0,
+      "found": 2,
+      "mean_reciprocal_place": 0.0694,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 2
+     },
+     "5": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0278,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 1
+     }
+    },
+    "first": 4,
+    "found": 20,
+    "mean_reciprocal_place": 0.1401,
+    "problems": 60,
+    "share_found": 0.3333,
+    "what": "accurate_place",
+    "within_3": 12
+   },
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "2": {
+      "first": 1,
+      "found": 2,
+      "mean_reciprocal_place": 0.0972,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 1
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 1,
+    "found": 2,
+    "mean_reciprocal_place": 0.0194,
+    "problems": 60,
+    "share_found": 0.0333,
+    "what": "form_place",
+    "within_3": 1
+   },
+   "problems": 60,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 2,
+      "found": 7,
+      "mean_reciprocal_place": 0.2667,
+      "problems": 12,
+      "share_found": 0.5833,
+      "within_3": 3
+     },
+     "2": {
+      "first": 1,
+      "found": 3,
+      "mean_reciprocal_place": 0.1319,
+      "problems": 12,
+      "share_found": 0.25,
+      "within_3": 2
+     },
+     "3": {
+      "first": 0,
+      "found": 2,
+      "mean_reciprocal_place": 0.0444,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 1
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0278,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 1
+     }
+    },
+    "first": 3,
+    "found": 13,
+    "mean_reciprocal_place": 0.0942,
+    "problems": 60,
+    "share_found": 0.2167,
+    "what": "solved_place",
+    "within_3": 7
+   }
+  },
+  "model with cases": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 3,
+      "found": 9,
+      "mean_reciprocal_place": 0.4036,
+      "problems": 12,
+      "share_found": 0.75,
+      "within_3": 7
+     },
+     "2": {
+      "first": 3,
+      "found": 4,
+      "mean_reciprocal_place": 0.2619,
+      "problems": 12,
+      "share_found": 0.3333,
+      "within_3": 3
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0278,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 1
+     },
+     "5": {
+      "first": 0,
+      "found": 2,
+      "mean_reciprocal_place": 0.0556,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 1
+     }
+    },
+    "first": 6,
+    "found": 16,
+    "mean_reciprocal_place": 0.1498,
+    "problems": 60,
+    "share_found": 0.2667,
+    "what": "accurate_place",
+    "within_3": 12
+   },
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0093,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 0
+     },
+     "2": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0417,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 1
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 0,
+    "found": 2,
+    "mean_reciprocal_place": 0.0102,
+    "problems": 60,
+    "share_found": 0.0333,
+    "what": "form_place",
+    "within_3": 1
+   },
+   "problems": 60,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 1,
+      "found": 4,
+      "mean_reciprocal_place": 0.1308,
+      "problems": 12,
+      "share_found": 0.3333,
+      "within_3": 2
+     },
+     "2": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0417,
+      "problems": 12,
+      "share_found": 0.0833,
+      "within_3": 1
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 12,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 2,
+      "mean_reciprocal_place": 0.0556,
+      "problems": 12,
+      "share_found": 0.1667,
+      "within_3": 1
+     }
+    },
+    "first": 1,
+    "found": 7,
+    "mean_reciprocal_place": 0.0456,
+    "problems": 60,
+    "share_found": 0.1167,
+    "what": "solved_place",
+    "within_3": 4
+   }
+  }
+ },
+ "calls": 120,
+ "cases_in_the_store": 320,
+ "cases_shown": 8,
+ "development": true,
+ "laws_asked_for": 10,
+ "max_calls": 200,
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "problems": 60,
+ "rows": [
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 4,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 5.45,
+     "solved_place": 4,
+     "unread": 1
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.02,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|280|800",
+    "2026112502|order score, teaching|85|207",
+    "2026112502|order score, teaching|180|460",
+    "2026112502|order score, teaching|285|814",
+    "2026112502|order score, teaching|205|532",
+    "2026112502|order score, teaching|185|467",
+    "2026112502|order score, teaching|115|292",
+    "2026112502|order score, teaching|150|379"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|0|1",
+   "level": 1,
+   "noise": 0.0,
+   "text": "0.7*log(2.9*x0 + 1)*tanh(0.7*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 2,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.59,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.46,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|296|853",
+    "2026112502|order score, teaching|51|120",
+    "2026112502|order score, teaching|156|398",
+    "2026112502|order score, teaching|121|303",
+    "2026112502|order score, teaching|187|473",
+    "2026112502|order score, teaching|182|463",
+    "2026112502|order score, teaching|6|9",
+    "2026112502|order score, teaching|101|252"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|1|3",
+   "level": 2,
+   "noise": 0.01,
+   "text": "3.7*x0**2*log(3.7*x1 + 1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 8,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.95,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.55,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|187|473",
+    "2026112502|order score, teaching|162|409",
+    "2026112502|order score, teaching|121|303",
+    "2026112502|order score, teaching|66|165",
+    "2026112502|order score, teaching|157|399",
+    "2026112502|order score, teaching|296|853",
+    "2026112502|order score, teaching|51|120",
+    "2026112502|order score, teaching|196|497"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|2|4",
+   "level": 3,
+   "noise": 0.0,
+   "text": "0.3*x0*x1**2 + 0.3*x1"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 2.59,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.5,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|179|450",
+    "2026112502|order score, teaching|254|710",
+    "2026112502|order score, teaching|58|143",
+    "2026112502|order score, teaching|23|60",
+    "2026112502|order score, teaching|263|756",
+    "2026112502|order score, teaching|234|647",
+    "2026112502|order score, teaching|224|589",
+    "2026112502|order score, teaching|93|225"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|3|5",
+   "level": 4,
+   "noise": 0.01,
+   "text": "0.7*x0*exp(-0.3*x2) - 0.7*exp(-1.7*x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.65,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 11.73,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|48|110",
+    "2026112502|order score, teaching|28|67",
+    "2026112502|order score, teaching|29|68",
+    "2026112502|order score, teaching|188|474",
+    "2026112502|order score, teaching|159|403",
+    "2026112502|order score, teaching|23|60",
+    "2026112502|order score, teaching|233|644",
+    "2026112502|order score, teaching|119|298"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|4|6",
+   "level": 5,
+   "noise": 0.0,
+   "text": "(-1.3*sqrt(x1 + 1.3) + 1.3*sin(3.7*x0) - 3.7/x1)*sin(3.7*x2)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.6,
+     "solved_place": 1,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.44,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|65|162",
+    "2026112502|order score, teaching|220|584",
+    "2026112502|order score, teaching|160|404",
+    "2026112502|order score, teaching|225|612",
+    "2026112502|order score, teaching|140|345",
+    "2026112502|order score, teaching|190|479",
+    "2026112502|order score, teaching|50|118",
+    "2026112502|order score, teaching|35|79"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|5|7",
+   "level": 1,
+   "noise": 0.01,
+   "text": "0.45*x0*exp(-2.9*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 2,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.43,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.05,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|42|94",
+    "2026112502|order score, teaching|216|574",
+    "2026112502|order score, teaching|77|192",
+    "2026112502|order score, teaching|177|446",
+    "2026112502|order score, teaching|302|873",
+    "2026112502|order score, teaching|172|439",
+    "2026112502|order score, teaching|22|55",
+    "2026112502|order score, teaching|306|885"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|6|8",
+   "level": 2,
+   "noise": 0.0,
+   "text": "0.45*sin(1.3*x0)/(log(1.7*x1 + 1) + 0.3)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.46,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.93,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|132|322",
+    "2026112502|order score, teaching|146|371",
+    "2026112502|order score, teaching|232|643",
+    "2026112502|order score, teaching|81|198",
+    "2026112502|order score, teaching|247|681",
+    "2026112502|order score, teaching|306|885",
+    "2026112502|order score, teaching|151|380",
+    "2026112502|order score, teaching|251|707"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|7|10",
+   "level": 3,
+   "noise": 0.01,
+   "text": "2.3*tanh(0.3*x0)/((x1/(x1 + 1.3) + 2.3)*(log(1.7*x1 + 1) + 0.7))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 7.01,
+     "solved_place": null,
+     "unread": 1
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 6,
+     "seconds": 4.88,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|84|202",
+    "2026112502|order score, teaching|88|215",
+    "2026112502|order score, teaching|149|375",
+    "2026112502|order score, teaching|203|519",
+    "2026112502|order score, teaching|253|709",
+    "2026112502|order score, teaching|238|652",
+    "2026112502|order score, teaching|89|217",
+    "2026112502|order score, teaching|234|647"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|8|11",
+   "level": 4,
+   "noise": 0.0,
+   "text": "3.7*tanh(0.45*x0)/(x1*x2)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 4,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 4,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 41.35,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 6,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 13.7,
+     "solved_place": 6,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|84|202",
+    "2026112502|order score, teaching|264|758",
+    "2026112502|order score, teaching|253|709",
+    "2026112502|order score, teaching|74|186",
+    "2026112502|order score, teaching|88|215",
+    "2026112502|order score, teaching|203|519",
+    "2026112502|order score, teaching|238|652",
+    "2026112502|order score, teaching|149|375"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|9|15",
+   "level": 5,
+   "noise": 0.01,
+   "text": "0.45/(x1*(sqrt(x2 + 2.9) + 1.3)*(log(1.3*x0 + 1) + 2.9)*(log(0.45*x2 + 1) + 0.3))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.91,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 9.99,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|55|129",
+    "2026112502|order score, teaching|250|701",
+    "2026112502|order score, teaching|170|435",
+    "2026112502|order score, teaching|200|515",
+    "2026112502|order score, teaching|260|747",
+    "2026112502|order score, teaching|230|631",
+    "2026112502|order score, teaching|130|317",
+    "2026112502|order score, teaching|235|649"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|10|16",
+   "level": 1,
+   "noise": 0.0,
+   "text": "2.3*sin(2.3*x0)*tanh(0.45*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 5,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.02,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.31,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|151|380",
+    "2026112502|order score, teaching|247|681",
+    "2026112502|order score, teaching|56|135",
+    "2026112502|order score, teaching|191|482",
+    "2026112502|order score, teaching|132|322",
+    "2026112502|order score, teaching|57|142",
+    "2026112502|order score, teaching|92|224",
+    "2026112502|order score, teaching|87|212"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|11|17",
+   "level": 2,
+   "noise": 0.01,
+   "text": "0.3*log(1.3*x0 + 1)/(sqrt(x1 + 3.7) + 0.45)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.24,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.31,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|296|853",
+    "2026112502|order score, teaching|156|398",
+    "2026112502|order score, teaching|51|120",
+    "2026112502|order score, teaching|121|303",
+    "2026112502|order score, teaching|6|9",
+    "2026112502|order score, teaching|187|473",
+    "2026112502|order score, teaching|101|252",
+    "2026112502|order score, teaching|182|463"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|12|18",
+   "level": 3,
+   "noise": 0.0,
+   "text": "2.3*x0**2*x1/(x1 + 1.3) + 1.3*x1"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.0,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 9.78,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|168|429",
+    "2026112502|order score, teaching|204|523",
+    "2026112502|order score, teaching|294|840",
+    "2026112502|order score, teaching|178|448",
+    "2026112502|order score, teaching|139|344",
+    "2026112502|order score, teaching|124|309",
+    "2026112502|order score, teaching|223|588",
+    "2026112502|order score, teaching|49|111"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|13|19",
+   "level": 4,
+   "noise": 0.01,
+   "text": "0.3*sqrt(x1 + 2.3)*log(0.3*x0 + 1) + 1.7*sin(0.3*x2)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.72,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.08,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|254|710",
+    "2026112502|order score, teaching|279|795",
+    "2026112502|order score, teaching|58|143",
+    "2026112502|order score, teaching|179|450",
+    "2026112502|order score, teaching|298|859",
+    "2026112502|order score, teaching|208|537",
+    "2026112502|order score, teaching|193|486",
+    "2026112502|order score, teaching|113|288"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|14|23",
+   "level": 5,
+   "noise": 0.0,
+   "text": "1.7*x1**2/x2 - 1.3*x2 + 2.3*sqrt(x0 + 2.9)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 4,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.05,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.87,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|35|79",
+    "2026112502|order score, teaching|270|769",
+    "2026112502|order score, teaching|60|154",
+    "2026112502|order score, teaching|310|894",
+    "2026112502|order score, teaching|225|612",
+    "2026112502|order score, teaching|5|8",
+    "2026112502|order score, teaching|80|197",
+    "2026112502|order score, teaching|0|0"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|15|25",
+   "level": 1,
+   "noise": 0.01,
+   "text": "2.9/(x0*(x0 + 2.3))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 6,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.52,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.27,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|17|44",
+    "2026112502|order score, teaching|136|340",
+    "2026112502|order score, teaching|126|313",
+    "2026112502|order score, teaching|96|235",
+    "2026112502|order score, teaching|227|619",
+    "2026112502|order score, teaching|112|287",
+    "2026112502|order score, teaching|161|406",
+    "2026112502|order score, teaching|171|437"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|16|27",
+   "level": 2,
+   "noise": 0.0,
+   "text": "1.3*sqrt(x1 + 1.7) - 2.9*sin(2.3*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.85,
+     "solved_place": 5,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.95,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|101|252",
+    "2026112502|order score, teaching|6|9",
+    "2026112502|order score, teaching|156|398",
+    "2026112502|order score, teaching|296|853",
+    "2026112502|order score, teaching|51|120",
+    "2026112502|order score, teaching|217|578",
+    "2026112502|order score, teaching|111|286",
+    "2026112502|order score, teaching|256|721"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|17|28",
+   "level": 3,
+   "noise": 0.01,
+   "text": "0.3*x1*log(3.7*x1 + 1) + 0.45*log(0.3*x0 + 1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.42,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.25,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|183|464",
+    "2026112502|order score, teaching|68|168",
+    "2026112502|order score, teaching|219|582",
+    "2026112502|order score, teaching|53|124",
+    "2026112502|order score, teaching|244|672",
+    "2026112502|order score, teaching|39|88",
+    "2026112502|order score, teaching|73|184",
+    "2026112502|order score, teaching|94|230"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|18|29",
+   "level": 4,
+   "noise": 0.0,
+   "text": "2.9*x1/(x1 + 3.7) - 1.3*sqrt(x2 + 0.7) + 0.3/x0"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 1,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 4.3,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.92,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|99|243",
+    "2026112502|order score, teaching|38|87",
+    "2026112502|order score, teaching|3|5",
+    "2026112502|order score, teaching|63|158",
+    "2026112502|order score, teaching|229|628",
+    "2026112502|order score, teaching|209|541",
+    "2026112502|order score, teaching|198|501",
+    "2026112502|order score, teaching|274|776"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|19|30",
+   "level": 5,
+   "noise": 0.01,
+   "text": "3.7*sqrt(x0 + 2.9)*log(0.45*x1 + 1)*log(2.9*x2 + 1)/(0.45 + 1/x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.39,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 5,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.13,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|170|435",
+    "2026112502|order score, teaching|250|701",
+    "2026112502|order score, teaching|55|129",
+    "2026112502|order score, teaching|235|649",
+    "2026112502|order score, teaching|200|515",
+    "2026112502|order score, teaching|95|232",
+    "2026112502|order score, teaching|240|661",
+    "2026112502|order score, teaching|85|207"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|20|31",
+   "level": 1,
+   "noise": 0.0,
+   "text": "2.9*exp(-2.9*x0)*sin(3.7*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 6,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 6,
+     "error": null,
+     "form_place": 6,
+     "proposals": 10,
+     "seconds": 5.83,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 7.27,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|12|29",
+    "2026112502|order score, teaching|261|753",
+    "2026112502|order score, teaching|71|181",
+    "2026112502|order score, teaching|236|650",
+    "2026112502|order score, teaching|281|803",
+    "2026112502|order score, teaching|317|933",
+    "2026112502|order score, teaching|16|43",
+    "2026112502|order score, teaching|117|295"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|21|32",
+   "level": 2,
+   "noise": 0.01,
+   "text": "3.7*x0*exp(-1.7*x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.22,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 5.44,
+     "solved_place": null,
+     "unread": 1
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|97|240",
+    "2026112502|order score, teaching|201|516",
+    "2026112502|order score, teaching|36|84",
+    "2026112502|order score, teaching|116|294",
+    "2026112502|order score, teaching|266|761",
+    "2026112502|order score, teaching|241|665",
+    "2026112502|order score, teaching|262|754",
+    "2026112502|order score, teaching|62|157"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|22|33",
+   "level": 3,
+   "noise": 0.0,
+   "text": "(1.7*log(1.7*x0 + 1) - 2.3*exp(-0.45*x1))/(0.45 + 1/x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 10.16,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 13.37,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|308|891",
+    "2026112502|order score, teaching|79|195",
+    "2026112502|order score, teaching|184|466",
+    "2026112502|order score, teaching|178|448",
+    "2026112502|order score, teaching|139|344",
+    "2026112502|order score, teaching|223|588",
+    "2026112502|order score, teaching|49|111",
+    "2026112502|order score, teaching|224|589"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|23|34",
+   "level": 4,
+   "noise": 0.01,
+   "text": "2.3*sin(0.3*x1)/((1.7 + 1/x0)*(x2/(x2 + 3.7) + 0.3))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 45.13,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.64,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|273|775",
+    "2026112502|order score, teaching|148|373",
+    "2026112502|order score, teaching|74|186",
+    "2026112502|order score, teaching|238|652",
+    "2026112502|order score, teaching|253|709",
+    "2026112502|order score, teaching|18|45",
+    "2026112502|order score, teaching|194|487",
+    "2026112502|order score, teaching|234|647"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|24|36",
+   "level": 5,
+   "noise": 0.0,
+   "text": "(0.7*x0/(x0 + 2.9) + 0.45*log(0.3*x1 + 1) + 0.7/x1)*exp(-0.45*x2)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 1,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 6,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.95,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 2,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.24,
+     "solved_place": 9,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|25|63",
+    "2026112502|order score, teaching|100|248",
+    "2026112502|order score, teaching|20|52",
+    "2026112502|order score, teaching|50|118",
+    "2026112502|order score, teaching|130|317",
+    "2026112502|order score, teaching|270|769",
+    "2026112502|order score, teaching|120|302",
+    "2026112502|order score, teaching|35|79"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|25|38",
+   "level": 1,
+   "noise": 0.01,
+   "text": "0.3*log(0.7*x0 + 1) - 0.7*tanh(0.45*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 7,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.88,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 7,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.65,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|211|562",
+    "2026112502|order score, teaching|67|166",
+    "2026112502|order score, teaching|37|85",
+    "2026112502|order score, teaching|61|156",
+    "2026112502|order score, teaching|207|534",
+    "2026112502|order score, teaching|147|372",
+    "2026112502|order score, teaching|82|199",
+    "2026112502|order score, teaching|257|723"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|26|40",
+   "level": 2,
+   "noise": 0.0,
+   "text": "-3.7*sqrt(x0 + 1.3) + 3.7*exp(-0.45*x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.08,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 10.01,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|292|838",
+    "2026112502|order score, teaching|252|708",
+    "2026112502|order score, teaching|142|348",
+    "2026112502|order score, teaching|151|380",
+    "2026112502|order score, teaching|191|482",
+    "2026112502|order score, teaching|247|681",
+    "2026112502|order score, teaching|56|135",
+    "2026112502|order score, teaching|57|142"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|27|43",
+   "level": 3,
+   "noise": 0.01,
+   "text": "-1.7*x0/(x0 + 1.3) + 0.45*exp(-0.7*x1) - 3.7/x1"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.1,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.58,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|253|709",
+    "2026112502|order score, teaching|148|373",
+    "2026112502|order score, teaching|74|186",
+    "2026112502|order score, teaching|89|217",
+    "2026112502|order score, teaching|18|45",
+    "2026112502|order score, teaching|228|620",
+    "2026112502|order score, teaching|293|839",
+    "2026112502|order score, teaching|273|775"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|28|45",
+   "level": 4,
+   "noise": 0.0,
+   "text": "(1.7*x1/(x1 + 0.7) + 2.3/x0)/(x2**2 + 0.3)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.39,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 25.47,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|174|441",
+    "2026112502|order score, teaching|188|474",
+    "2026112502|order score, teaching|28|67",
+    "2026112502|order score, teaching|48|110",
+    "2026112502|order score, teaching|303|875",
+    "2026112502|order score, teaching|159|403",
+    "2026112502|order score, teaching|29|68",
+    "2026112502|order score, teaching|129|316"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|29|47",
+   "level": 5,
+   "noise": 0.01,
+   "text": "(-0.45*x2/(x2 + 0.45) + 0.45*x2/(x0*(x2 + 0.45)))/(sin(2.9*x1) + 0.7)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 7,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 4,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.04,
+     "solved_place": 4,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": 9,
+     "proposals": 10,
+     "seconds": 5.15,
+     "solved_place": 3,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|310|894",
+    "2026112502|order score, teaching|35|79",
+    "2026112502|order score, teaching|5|8",
+    "2026112502|order score, teaching|0|0",
+    "2026112502|order score, teaching|60|154",
+    "2026112502|order score, teaching|80|197",
+    "2026112502|order score, teaching|270|769",
+    "2026112502|order score, teaching|90|219"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|30|48",
+   "level": 1,
+   "noise": 0.0,
+   "text": "2.9*sqrt(x0 + 0.45)/(x0**2 + 1.3)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.46,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 12.29,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|116|294",
+    "2026112502|order score, teaching|241|665",
+    "2026112502|order score, teaching|226|618",
+    "2026112502|order score, teaching|107|265",
+    "2026112502|order score, teaching|62|157",
+    "2026112502|order score, teaching|237|651",
+    "2026112502|order score, teaching|307|887",
+    "2026112502|order score, teaching|262|754"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|31|49",
+   "level": 2,
+   "noise": 0.01,
+   "text": "0.3*log(1.7*x1 + 1) - 0.45*exp(-1.3*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 5.87,
+     "solved_place": 3,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 9.52,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|12|29",
+    "2026112502|order score, teaching|261|753",
+    "2026112502|order score, teaching|71|181",
+    "2026112502|order score, teaching|281|803",
+    "2026112502|order score, teaching|16|43",
+    "2026112502|order score, teaching|117|295",
+    "2026112502|order score, teaching|317|933",
+    "2026112502|order score, teaching|46|108"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|32|51",
+   "level": 3,
+   "noise": 0.0,
+   "text": "3.7*exp(-1.7*x1)*tanh(0.45*x0)/(log(1.7*x1 + 1) + 0.7)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 2,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 12.23,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.1,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|133|329",
+    "2026112502|order score, teaching|319|944",
+    "2026112502|order score, teaching|244|672",
+    "2026112502|order score, teaching|43|96",
+    "2026112502|order score, teaching|289|823",
+    "2026112502|order score, teaching|119|298",
+    "2026112502|order score, teaching|288|821",
+    "2026112502|order score, teaching|14|31"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|33|53",
+   "level": 4,
+   "noise": 0.01,
+   "text": "-2.9*sqrt(x2 + 3.7) - 1.7*log(2.3*x1 + 1) + 0.45/x0"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 6.92,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 10.06,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|259|726",
+    "2026112502|order score, teaching|89|217",
+    "2026112502|order score, teaching|254|710",
+    "2026112502|order score, teaching|13|30",
+    "2026112502|order score, teaching|163|411",
+    "2026112502|order score, teaching|279|795",
+    "2026112502|order score, teaching|293|839",
+    "2026112502|order score, teaching|218|579"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|34|56",
+   "level": 5,
+   "noise": 0.0,
+   "text": "3.7*x2**2*sqrt(x0 + 2.3)/x1**2"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 4,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 10,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.82,
+     "solved_place": 10,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 7,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 11.22,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|175|443",
+    "2026112502|order score, teaching|135|337",
+    "2026112502|order score, teaching|240|661",
+    "2026112502|order score, teaching|285|814",
+    "2026112502|order score, teaching|280|800",
+    "2026112502|order score, teaching|180|460",
+    "2026112502|order score, teaching|115|292",
+    "2026112502|order score, teaching|85|207"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|35|58",
+   "level": 1,
+   "noise": 0.01,
+   "text": "2.9*x0/(x0 + 0.45) + 1.7*sin(0.45*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 5,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.49,
+     "solved_place": 3,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.53,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|221|585",
+    "2026112502|order score, teaching|127|314",
+    "2026112502|order score, teaching|171|437",
+    "2026112502|order score, teaching|302|873",
+    "2026112502|order score, teaching|172|439",
+    "2026112502|order score, teaching|72|183",
+    "2026112502|order score, teaching|176|444",
+    "2026112502|order score, teaching|22|55"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|36|61",
+   "level": 2,
+   "noise": 0.0,
+   "text": "-0.7*x0 + 0.7*tanh(0.45*x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.54,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 11.31,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|267|762",
+    "2026112502|order score, teaching|1|1",
+    "2026112502|order score, teaching|287|819",
+    "2026112502|order score, teaching|231|640",
+    "2026112502|order score, teaching|291|837",
+    "2026112502|order score, teaching|301|871",
+    "2026112502|order score, teaching|242|666",
+    "2026112502|order score, teaching|117|295"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|37|63",
+   "level": 3,
+   "noise": 0.01,
+   "text": "(-2.3*x0/(x0 + 3.7) + 0.7*sqrt(x0 + 2.3))/(tanh(1.3*x1) + 1.7)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 2.51,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 14.38,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|308|891",
+    "2026112502|order score, teaching|178|448",
+    "2026112502|order score, teaching|139|344",
+    "2026112502|order score, teaching|189|477",
+    "2026112502|order score, teaching|318|935",
+    "2026112502|order score, teaching|79|195",
+    "2026112502|order score, teaching|223|588",
+    "2026112502|order score, teaching|143|350"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|38|64",
+   "level": 4,
+   "noise": 0.0,
+   "text": "2.9*log(0.45*x0 + 1) + 0.7/x2 - 0.45/x1"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 2,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 2,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.79,
+     "solved_place": 3,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 2,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.77,
+     "solved_place": 2,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|178|448",
+    "2026112502|order score, teaching|139|344",
+    "2026112502|order score, teaching|223|588",
+    "2026112502|order score, teaching|204|523",
+    "2026112502|order score, teaching|49|111",
+    "2026112502|order score, teaching|308|891",
+    "2026112502|order score, teaching|168|429",
+    "2026112502|order score, teaching|184|466"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|39|66",
+   "level": 5,
+   "noise": 0.01,
+   "text": "-2.3*x2/(x2 + 2.3) + 1.7*sqrt(x0 + 0.3) + 0.45*sqrt(x2 + 0.45) + 2.9*log(1.7*x1 + 1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 10,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.57,
+     "solved_place": 10,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 7.41,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|305|883",
+    "2026112502|order score, teaching|215|572",
+    "2026112502|order score, teaching|105|261",
+    "2026112502|order score, teaching|315|929",
+    "2026112502|order score, teaching|245|679",
+    "2026112502|order score, teaching|70|180",
+    "2026112502|order score, teaching|15|38",
+    "2026112502|order score, teaching|30|69"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|40|67",
+   "level": 1,
+   "noise": 0.0,
+   "text": "0.3*x0/((x0 + 2.3)*(sin(0.7*x0) + 2.3))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.83,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.71,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|76|190",
+    "2026112502|order score, teaching|286|818",
+    "2026112502|order score, teaching|106|264",
+    "2026112502|order score, teaching|242|666",
+    "2026112502|order score, teaching|16|43",
+    "2026112502|order score, teaching|117|295",
+    "2026112502|order score, teaching|306|885",
+    "2026112502|order score, teaching|47|109"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|41|69",
+   "level": 2,
+   "noise": 0.01,
+   "text": "0.45*tanh(1.3*x0) - 0.3*tanh(0.45*x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 7,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 2.47,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.3,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|7|11",
+    "2026112502|order score, teaching|251|707",
+    "2026112502|order score, teaching|76|190",
+    "2026112502|order score, teaching|317|933",
+    "2026112502|order score, teaching|106|264",
+    "2026112502|order score, teaching|306|885",
+    "2026112502|order score, teaching|232|643",
+    "2026112502|order score, teaching|146|371"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|42|71",
+   "level": 3,
+   "noise": 0.0,
+   "text": "0.7*sqrt(x1 + 0.7)*log(0.45*x0 + 1)/x1"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 3,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 3,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.26,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.8,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|173|440",
+    "2026112502|order score, teaching|93|225",
+    "2026112502|order score, teaching|263|756",
+    "2026112502|order score, teaching|318|935",
+    "2026112502|order score, teaching|9|18",
+    "2026112502|order score, teaching|179|450",
+    "2026112502|order score, teaching|114|289",
+    "2026112502|order score, teaching|189|477"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|43|72",
+   "level": 4,
+   "noise": 0.01,
+   "text": "3.7*x0/(x1/(x1 + 1.7) + 0.3) + 2.3*x2/(x2 + 0.45)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.01,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 10.91,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|43|96",
+    "2026112502|order score, teaching|14|31",
+    "2026112502|order score, teaching|164|413",
+    "2026112502|order score, teaching|244|672",
+    "2026112502|order score, teaching|183|464",
+    "2026112502|order score, teaching|119|298",
+    "2026112502|order score, teaching|319|944",
+    "2026112502|order score, teaching|73|184"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|44|73",
+   "level": 5,
+   "noise": 0.0,
+   "text": "(0.45*x2 - 0.3*sqrt(x1 + 0.45))/(sqrt(x1 + 0.45) + 1.7) - 1.7*tanh(0.45*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 1,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 2,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.48,
+     "solved_place": 2,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.14,
+     "solved_place": 1,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|195|495",
+    "2026112502|order score, teaching|255|712",
+    "2026112502|order score, teaching|185|467",
+    "2026112502|order score, teaching|205|532",
+    "2026112502|order score, teaching|75|189",
+    "2026112502|order score, teaching|10|19",
+    "2026112502|order score, teaching|110|285",
+    "2026112502|order score, teaching|150|379"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|45|74",
+   "level": 1,
+   "noise": 0.01,
+   "text": "-0.7*x0/(x0 + 3.7) + 0.7*log(0.7*x0 + 1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.24,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.57,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|132|322",
+    "2026112502|order score, teaching|247|681",
+    "2026112502|order score, teaching|151|380",
+    "2026112502|order score, teaching|146|371",
+    "2026112502|order score, teaching|232|643",
+    "2026112502|order score, teaching|81|198",
+    "2026112502|order score, teaching|142|348",
+    "2026112502|order score, teaching|56|135"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|46|76",
+   "level": 2,
+   "noise": 0.0,
+   "text": "0.45*x0/((x0 + 0.7)*(x1/(x1 + 1.3) + 0.7))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.18,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.33,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|226|618",
+    "2026112502|order score, teaching|116|294",
+    "2026112502|order score, teaching|237|651",
+    "2026112502|order score, teaching|107|265",
+    "2026112502|order score, teaching|307|887",
+    "2026112502|order score, teaching|141|347",
+    "2026112502|order score, teaching|62|157",
+    "2026112502|order score, teaching|262|754"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|47|77",
+   "level": 3,
+   "noise": 0.01,
+   "text": "0.3*x1*sin(0.7*x0)/(x1 + 1.7) + 0.7*log(1.3*x1 + 1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.79,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 9.43,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|274|776",
+    "2026112502|order score, teaching|179|450",
+    "2026112502|order score, teaching|229|628",
+    "2026112502|order score, teaching|38|87",
+    "2026112502|order score, teaching|3|5",
+    "2026112502|order score, teaching|99|243",
+    "2026112502|order score, teaching|248|682",
+    "2026112502|order score, teaching|263|756"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|48|80",
+   "level": 4,
+   "noise": 0.0,
+   "text": "1.7*x0/(x0 + 0.3) + 2.9*sqrt(x1 + 2.3) + 1.3*sin(3.7*x2)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 33.14,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.58,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|199|505",
+    "2026112502|order score, teaching|118|296",
+    "2026112502|order score, teaching|69|169",
+    "2026112502|order score, teaching|268|766",
+    "2026112502|order score, teaching|193|486",
+    "2026112502|order score, teaching|214|568",
+    "2026112502|order score, teaching|8|15",
+    "2026112502|order score, teaching|298|859"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|49|82",
+   "level": 5,
+   "noise": 0.01,
+   "text": "(1.7*x0**2/(3.7 + 1/x0) - 2.3*tanh(0.7*x2))*tanh(0.45*x1)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 2,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.67,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 3.09,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|90|219",
+    "2026112502|order score, teaching|5|8",
+    "2026112502|order score, teaching|0|0",
+    "2026112502|order score, teaching|80|197",
+    "2026112502|order score, teaching|310|894",
+    "2026112502|order score, teaching|270|769",
+    "2026112502|order score, teaching|35|79",
+    "2026112502|order score, teaching|60|154"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|50|84",
+   "level": 1,
+   "noise": 0.0,
+   "text": "2.9*exp(-0.45*x0)*tanh(0.7*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 4,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 3.21,
+     "solved_place": 4,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 5.03,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|76|190",
+    "2026112502|order score, teaching|306|885",
+    "2026112502|order score, teaching|251|707",
+    "2026112502|order score, teaching|106|264",
+    "2026112502|order score, teaching|81|198",
+    "2026112502|order score, teaching|7|11",
+    "2026112502|order score, teaching|146|371",
+    "2026112502|order score, teaching|317|933"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|51|86",
+   "level": 2,
+   "noise": 0.01,
+   "text": "2.3*log(0.3*x0 + 1) + 2.9/x1"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.49,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 6.2,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|96|235",
+    "2026112502|order score, teaching|126|313",
+    "2026112502|order score, teaching|171|437",
+    "2026112502|order score, teaching|136|340",
+    "2026112502|order score, teaching|17|44",
+    "2026112502|order score, teaching|72|183",
+    "2026112502|order score, teaching|227|619",
+    "2026112502|order score, teaching|2|4"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|52|91",
+   "level": 3,
+   "noise": 0.0,
+   "text": "1.3*log(2.9*x0 + 1)*sin(2.9*x0)/(sin(3.7*x1) + 3.7)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 18.41,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 8.83,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|308|891",
+    "2026112502|order score, teaching|189|477",
+    "2026112502|order score, teaching|143|350",
+    "2026112502|order score, teaching|139|344",
+    "2026112502|order score, teaching|318|935",
+    "2026112502|order score, teaching|178|448",
+    "2026112502|order score, teaching|223|588",
+    "2026112502|order score, teaching|79|195"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|53|92",
+   "level": 4,
+   "noise": 0.01,
+   "text": "(1.7*log(1.7*x0 + 1) + 0.3*log(0.3*x1 + 1))/(sqrt(x2 + 0.45) + 2.3)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 11.14,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.01,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|174|441",
+    "2026112502|order score, teaching|249|688",
+    "2026112502|order score, teaching|219|582",
+    "2026112502|order score, teaching|48|110",
+    "2026112502|order score, teaching|128|315",
+    "2026112502|order score, teaching|123|306",
+    "2026112502|order score, teaching|28|67",
+    "2026112502|order score, teaching|263|756"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|54|94",
+   "level": 5,
+   "noise": 0.0,
+   "text": "(0.7*x0 - 1.7*log(1.3*x2 + 1))/(x1*(x2 + 2.3))"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": 5,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 9,
+     "seconds": 5.42,
+     "solved_place": 1,
+     "unread": 1
+    },
+    "model with cases": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 4.26,
+     "solved_place": 8,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|30|69",
+    "2026112502|order score, teaching|70|180",
+    "2026112502|order score, teaching|245|679",
+    "2026112502|order score, teaching|15|38",
+    "2026112502|order score, teaching|315|929",
+    "2026112502|order score, teaching|290|836",
+    "2026112502|order score, teaching|215|572",
+    "2026112502|order score, teaching|265|759"
+   ],
+   "inputs": 1,
+   "key": "2026112501|order score, test|55|98",
+   "level": 1,
+   "noise": 0.01,
+   "text": "1.7*x0**3*tanh(0.7*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": 1,
+     "proposals": 10,
+     "seconds": 6.52,
+     "solved_place": 1,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": 1,
+     "error": null,
+     "form_place": 2,
+     "proposals": 10,
+     "seconds": 5.22,
+     "solved_place": 2,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|251|707",
+    "2026112502|order score, teaching|7|11",
+    "2026112502|order score, teaching|317|933",
+    "2026112502|order score, teaching|106|264",
+    "2026112502|order score, teaching|76|190",
+    "2026112502|order score, teaching|286|818",
+    "2026112502|order score, teaching|306|885",
+    "2026112502|order score, teaching|242|666"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|56|99",
+   "level": 2,
+   "noise": 0.0,
+   "text": "2.3*x1/x0"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 10.74,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 9.64,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|96|235",
+    "2026112502|order score, teaching|126|313",
+    "2026112502|order score, teaching|72|183",
+    "2026112502|order score, teaching|171|437",
+    "2026112502|order score, teaching|136|340",
+    "2026112502|order score, teaching|227|619",
+    "2026112502|order score, teaching|17|44",
+    "2026112502|order score, teaching|202|517"
+   ],
+   "inputs": 2,
+   "key": "2026112501|order score, test|57|101",
+   "level": 3,
+   "noise": 0.01,
+   "text": "(1.3*sqrt(x0 + 3.7) + 0.7*sin(1.3*x1))*sin(2.3*x0)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 7.92,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 9.23,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|93|225",
+    "2026112502|order score, teaching|318|935",
+    "2026112502|order score, teaching|79|195",
+    "2026112502|order score, teaching|98|241",
+    "2026112502|order score, teaching|58|143",
+    "2026112502|order score, teaching|44|97",
+    "2026112502|order score, teaching|114|289",
+    "2026112502|order score, teaching|234|647"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|58|106",
+   "level": 4,
+   "noise": 0.0,
+   "text": "0.7*x2/(x2 + 0.45) + 1.3*exp(-1.7*x1)/(tanh(0.45*x0) + 0.45)"
+  },
+  {
+   "arms": {
+    "cases alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 8,
+     "seconds": null,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model alone": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 3.71,
+     "solved_place": null,
+     "unread": 0
+    },
+    "model with cases": {
+     "accurate_place": null,
+     "error": null,
+     "form_place": null,
+     "proposals": 10,
+     "seconds": 11.18,
+     "solved_place": null,
+     "unread": 0
+    }
+   },
+   "cases": [
+    "2026112502|order score, teaching|254|710",
+    "2026112502|order score, teaching|58|143",
+    "2026112502|order score, teaching|144|351",
+    "2026112502|order score, teaching|313|899",
+    "2026112502|order score, teaching|113|288",
+    "2026112502|order score, teaching|9|18",
+    "2026112502|order score, teaching|298|859",
+    "2026112502|order score, teaching|179|450"
+   ],
+   "inputs": 3,
+   "key": "2026112501|order score, test|59|107",
+   "level": 5,
+   "noise": 0.01,
+   "text": "sqrt(x2 + 3.7)*(1.3*x0**2*exp(-1.7*x2) + 2.3*x1/(x1 + 1.7))"
+  }
+ ],
+ "stopped": null,
+ "tag": "DEV-LLM-RETRIEVAL-2026-11",
+ "what": "development: a language model's proposals with and without the laws of solved tables that looked like this one; one model, one run; not a result"
+}

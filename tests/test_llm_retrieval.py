@@ -59,6 +59,8 @@ def test_a_model_that_names_the_law_puts_it_first_and_cases_alone_need_no_model(
     assert len(calls) == 2 and "Laws that held" not in calls[0] and "Laws that held" in calls[1]
     assert row["arms"]["model alone"]["solved_place"] == 2 and row["arms"]["model with cases"]["form_place"] == 2
     assert row["arms"]["cases alone"]["solved_place"] == 1      # the nearest case has the law's own shape here
+    kept = row["arms"]["model alone"]["candidates"]              # the fitted laws are kept, for joining lists afterwards
+    assert len(kept) == 2 and kept[1]["solved"] and not kept[0]["solved"] and "x0" in kept[1]["text"]
     without = study.one(PROBLEMS[0], _store(), None)
     assert set(without["arms"]) == {"cases alone"}
 

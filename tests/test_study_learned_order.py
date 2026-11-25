@@ -24,7 +24,7 @@ def study():
     return module
 
 
-def _pools(path: Path, problems: int = 60, seed: int = 0) -> Path:
+def _pools(path: Path, problems: int = 60, seed: int = 0, prefix: str = "p") -> Path:
     """Lists as the memory hands them: over-fitted long laws first, the short law that would count solved further down."""
     rng = np.random.default_rng(seed)
     rows = []
@@ -41,7 +41,7 @@ def _pools(path: Path, problems: int = 60, seed: int = 0) -> Path:
                                  0.999999, 0.9990 + 0.0005 * float(rng.random()), 1, 0, 0])
             if number % 10 == 9:
                 pool = [item for index, item in enumerate(pool) if index != where]      # some lists do not hold the law at all
-            rows.append([arm, f"p{number:03d}", 1 + number % 5, 1 + number % 3, 0.01, 40.0, pool])
+            rows.append([arm, f"{prefix}{number:03d}", 1 + number % 5, 1 + number % 3, 0.01, 40.0, pool])
     with gzip.open(path, "wt", encoding="utf-8") as handle:
         json.dump({"fields": list(FIELDS), "rows": rows}, handle)
     return path
@@ -76,3 +76,20 @@ def test_an_order_moves_candidates_and_adds_none(study, tmp_path, monkeypatch) -
     assert carried["learned_on"] == "taught-80" and carried["problems_trained_on"] == 40
     assert carried["on"]["taught-20"]["learned"]["within_3"] == carried["on"]["taught-20"]["as_handed"]["found"] == 18
     assert carried["model"]["features"] == record["features"]
+
+
+def test_an_order_learned_on_the_first_set_is_scored_on_a_second_set_that_shares_no_problem(study, tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(study, "HELD_APART", 20)
+    monkeypatch.setattr(study, "CURVE", (5,))
+    monkeypatch.setattr(study, "REPEATS", 2)
+    first = _pools(tmp_path / "first.json.gz")
+    second = _pools(tmp_path / "second.json.gz", problems=30, seed=1, prefix="q")
+    out = tmp_path / "learned.json"
+    assert study.main(["--pools", str(first), "--fresh", str(second), "--out", str(out)]) == 0
+    block = json.loads(out.read_text())["on_the_second_set"]
+    for arm in ("taught-20", "taught-80"):
+        assert block[arm]["trained_on"]["problems"] == 60 and block[arm]["as_handed"]["problems"] == 30
+        assert block[arm]["as_handed"]["within_3"] == 0 and block[arm]["learned"]["within_3"] == block[arm]["as_handed"]["found"] == 27
+        assert block[arm]["model"]["features"] == list(study.learned_order.FEATURES)
+    with pytest.raises(ValueError, match="not a second set"):
+        study.main(["--pools", str(first), "--fresh", str(first), "--out", str(out)])

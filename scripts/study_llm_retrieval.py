@@ -20,6 +20,10 @@ is among them, so a list can hold the law only by composing parts, not by readin
 teaching laws are the generator's own: an upper bound on what the same number of laws confirmed by
 the referee would give.
 
+Every list is kept with its fitted laws and what the judge made of each, so that lists can be
+joined or ordered otherwise afterwards without another call (the first run, of 25 November, kept
+only the places).
+
 Two calls a problem; ``--max-calls`` is a hard ceiling. The key is read from the environment
 (``NVIDIA_API_KEY`` or ``CODING_MODEL_API_KEY``) and is written nowhere.
 
@@ -170,7 +174,9 @@ def one(problem: Problem, store: experience.Experience, client: Callable[[str], 
     for arm, (laws, unread, seconds, error) in lists.items():
         row = order_score.measure(problem, laws)
         out["arms"][arm] = {"proposals": row["proposals"], "unread": unread, "seconds": seconds, "error": error,
-                            **{what: row[what] for what in order_score.PLACES}}
+                            **{what: row[what] for what in order_score.PLACES},
+                            "candidates": [{key: item[key] for key in ("text", "r2", "bits", "accurate", "solved", "same_form")}
+                                           for item in row["candidates"]]}
     return out
 
 

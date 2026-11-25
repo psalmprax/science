@@ -1,25 +1,48 @@
 # Where the true law lands in the memory's proposals, as the memory is taught more laws
 # (scripts/measure_order_score.py; the measurement is apedp_dyn/recursion/order_score.py).
 # Development only: nothing was fixed beforehand, no held-back law is read, no search engine is run.
-#   push to order-score-run-*  -> every arm on its shards, then one record.
+#   push to order-score-run-*        -> every arm on its shards over the 300 test problems, then one record.
+#   push to order-score-fresh-run-*  -> three arms over the second set: 200 problems drawn after the first run was read,
+#                                       none with the structure of a problem of the first set or of a law taught.
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 name: Order score of the memory's proposals (development)
 
 on:
   push:
-    branches: ['order-score-run-*']
+    branches: ['order-score-run-*', 'order-score-fresh-run-*']
 
 permissions:
   contents: read
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      set: ${{ steps.pick.outputs.set }}
+      arms: ${{ steps.pick.outputs.arms }}
+    steps:
+      - id: pick
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          case "$BRANCH" in
+            order-score-fresh-run-*)
+              echo 'set=fresh' >> "$GITHUB_OUTPUT"
+              echo 'arms=["taught-20","taught-80","taught-320"]' >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo 'set=test' >> "$GITHUB_OUTPUT"
+              echo 'arms=["taught-0","taught-5","taught-20","taught-80","taught-320","in-force"]' >> "$GITHUB_OUTPUT" ;;
+          esac
+
   run:
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        arm: [taught-0, taught-5, taught-20, taught-80, taught-320, in-force]
+        arm: ${{ fromJSON(needs.plan.outputs.arms) }}
         shard: [0, 1]
     steps:
       - uses: actions/checkout@v7
@@ -35,7 +58,8 @@ jobs:
         env:
           ARM: ${{ matrix.arm }}
           SHARD: ${{ matrix.shard }}
-        run: python scripts/measure_order_score.py run --out out --arm "$ARM" --shard "$SHARD" --shards 2
+          PROBLEM_SET: ${{ needs.plan.outputs.set }}
+        run: python scripts/measure_order_score.py run --out out --arm "$ARM" --shard "$SHARD" --shards 2 --set "$PROBLEM_SET"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -43,7 +67,7 @@ jobs:
           path: out
 
   collect:
-    needs: run
+    needs: [plan, run]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -63,7 +87,9 @@ jobs:
           path: got
           merge-multiple: true
       - name: Collect
-        run: python scripts/measure_order_score.py collect --out got
+        env:
+          PROBLEM_SET: ${{ needs.plan.outputs.set }}
+        run: python scripts/measure_order_score.py collect --out got --set "${PROBLEM_SET:-test}"
       - name: Print the record
         if: always()
         run: |

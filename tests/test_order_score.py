@@ -95,6 +95,18 @@ def test_the_runner_draws_teaching_laws_apart_from_the_test_problems() -> None:
     assert script.memory_of("taught-5", tests).laws == 5
 
 
+def test_the_second_set_shares_no_structure_with_the_first_set_or_with_any_law_taught() -> None:
+    script = _script()
+    from apedp_dyn.recursion.curriculum import structure
+
+    first = script.test_problems(script.PROBLEMS)
+    taught = script.teaching_problems(max(script.TAUGHT), first)
+    second = script.fresh_problems(25)
+    assert len(second) == 25 and {p.level for p in second} == {1, 2, 3, 4, 5}
+    assert not {structure(p.truth) for p in second} & {structure(p.truth) for p in [*first, *taught]}
+    assert not {p.key for p in second} & {p.key for p in first}
+
+
 def test_the_runner_s_pools_keep_numbers_only_and_its_summary_reads_them() -> None:
     script = _script()
     candidate = {"bic": -10.0, "law_bits": 40.0, "constants": 2, "small_constants": 0, "large_constants": 0, "operations": 3,

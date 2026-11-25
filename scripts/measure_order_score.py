@@ -19,6 +19,9 @@ For every problem the whole list is kept with what each candidate was (accurate,
 and a few cheap features, so that other orders of the same candidates can be scored afterwards
 without running anything again.
 
+``--set fresh`` reads a second set of 200 problems drawn afterwards, none with the structure of a
+problem of the first set or of a law taught; the memories are the same as for the first set.
+
     python scripts/measure_order_score.py run --out DIR --arm taught-80 --shard 0 --shards 8
     python scripts/measure_order_score.py collect --out DIR
 """
@@ -57,8 +60,9 @@ from apedp_dyn.recursion.curriculum import (  # noqa: E402
 )
 
 TAG = "DEV-ORDER-SCORE-2026-11"
-TEST_SEED, TEACH_SEED = 2026112501, 2026112502
+TEST_SEED, TEACH_SEED, FRESH_SEED = 2026112501, 2026112502, 2026112503
 PROBLEMS = 300
+FRESH = 200                     # a second set, drawn after the first run was read; level 1 has no more than 40 unused laws
 TAUGHT = (0, 5, 20, 80, 320)
 ARMS = (*(f"taught-{n}" for n in TAUGHT), "in-force")
 POOL = 40                       # candidates kept for a problem, best BIC first; the product hands the referee the first 3
@@ -80,6 +84,14 @@ def teaching_problems(count: int, tests: list[Problem]) -> list[Problem]:
 
 def teaching_laws(count: int, tests: list[Problem]) -> list[str]:
     return [problem.text for problem in teaching_problems(count, tests)]
+
+
+def fresh_problems(count: int = FRESH) -> list[Problem]:
+    """A second set of problems: none with the structure of a test problem of the first set or of any law taught."""
+    tests = test_problems(PROBLEMS)
+    drawer = Curriculum(FRESH_SEED)
+    drawer.seen |= {structure(problem.truth) for problem in [*tests, *teaching_problems(max(TAUGHT), tests)]}
+    return drawer.measurement(count, "order score, fresh")
 
 
 def memory_of(arm: str, tests: list[Problem]) -> Memory:
@@ -181,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--arm", choices=ARMS)
     parser.add_argument("--problems", type=int, default=PROBLEMS)
+    parser.add_argument("--set", choices=("test", "fresh"), default="test",
+                        help="fresh: the second set, drawn apart from the first set and from every law taught")
     parser.add_argument("--shard", type=int, default=0)
     parser.add_argument("--shards", type=int, default=1)
     parser.add_argument("--processes", type=int, default=0)
@@ -192,7 +206,7 @@ def main(argv: list[str] | None = None) -> int:
                   "what": "development: the place of the true law in the memory's proposals as the memory is taught more laws; "
                           "not a result, nothing was fixed beforehand",
                   "problems": len({row["key"] for row in rows}), "pool": POOL, "handed_to_the_referee": HANDED,
-                  "seeds": {"test": TEST_SEED, "teaching": TEACH_SEED}, **summary(rows)}
+                  "set": args.set, "seeds": {"test": TEST_SEED, "teaching": TEACH_SEED, "fresh": FRESH_SEED}, **summary(rows)}
         (args.out / "order_score.json").write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
         with gzip.open(args.out / "order_score_rows.jsonl.gz", "wt", encoding="utf-8") as handle:
             for row in sorted(rows, key=lambda r: (r["arm"], r["key"])):
@@ -202,13 +216,13 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({arm: {k: v for k, v in block["solved_place"].items() if k != "by_level"}
                           for arm, block in record["arms"].items()}, indent=1))
         return 0
-    tests = test_problems(args.problems)
+    tests = fresh_problems(min(args.problems, FRESH)) if args.set == "fresh" else test_problems(args.problems)
     if args.command == "plan":
         print(json.dumps({"problems": len(tests), "levels": sorted({p.level for p in tests}), "arms": list(ARMS)}))
         return 0
     if args.arm is None:
         parser.error("run needs --arm")
-    memory = memory_of(args.arm, tests).as_dict()
+    memory = memory_of(args.arm, test_problems(PROBLEMS) if args.set == "fresh" else tests).as_dict()
     jobs = [(args.arm, memory, problem.as_dict()) for problem in tests[args.shard::args.shards]]
     processes = args.processes or min(multiprocessing.cpu_count(), 4)
     path = args.out / f"rows_{args.arm}_{args.shard}.jsonl"

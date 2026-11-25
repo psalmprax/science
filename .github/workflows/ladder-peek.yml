@@ -1,0 +1,81 @@
+# What the budget ladder has measured so far: reads the shards that have finished in a run of
+# .github/workflows/budget-ladder.yml and prints one record for each rung, without waiting for the 2-hour rung.
+#   push to ladder-peek-run-<n>-of-<run id>  -> the records of that run, as far as its shards have got.
+# Reads artifacts of this repository's own runs and nothing else. Development only.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Budget ladder, what is in so far (development)
+
+on:
+  push:
+    branches: ['ladder-peek-run-*']
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  peek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Which run
+        id: which
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          run="${BRANCH##*-of-}"
+          case "$run" in
+            ''|*[!0-9]*) echo "::error::the branch name must end in -of-<run id>"; exit 1 ;;
+          esac
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: ladder-cold-90-*
+          path: got/cold-90
+          merge-multiple: true
+          run-id: ${{ steps.which.outputs.run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: ladder-warm-90-*
+          path: got/warm-90
+          merge-multiple: true
+          run-id: ${{ steps.which.outputs.run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: ladder-cold-900-*
+          path: got/cold-900
+          merge-multiple: true
+          run-id: ${{ steps.which.outputs.run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: ladder-cold-7200-*
+          path: got/cold-7200
+          merge-multiple: true
+          run-id: ${{ steps.which.outputs.run }}
+          github-token: ${{ github.token }}
+      - name: Collect and print each rung
+        run: |
+          for rung in cold-90 warm-90 cold-900 cold-7200; do
+            mkdir -p "got/$rung"
+            ls "got/$rung" | head -20
+            python scripts/run_wider_conditions.py collect --out "got/$rung" > /dev/null || true
+            echo "=====BEGIN ladder $rung====="
+            if [ -f "got/$rung/wider_conditions.json" ]; then gzip -9c "got/$rung/wider_conditions.json" | base64 -w 60000; echo; fi
+            echo "=====END ladder $rung====="
+          done
