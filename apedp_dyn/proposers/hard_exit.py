@@ -23,6 +23,17 @@ edited; this stage is built from their own parts.
 ran 24 searches in a row; no search process was told to stop while leaving, and none was left
 over. With the frozen stage 10 of 27 searches had stopped their job for ever.
 
+**A second way to stop for ever, and its cure** (2026-11-25). With the members above, the second
+recursion run still lost a job: after 15 searches in half an hour one search never came back, and
+the job sat for five hours (run 45493901958, "Level 2, round 1, way 1"). Leaving hard only helps a
+process that has reached Python's exit hooks. One that is told to stop earlier (still searching at
+the deadline, or between its answer and its exit) is stopped by a signal that Julia handles itself,
+and Julia's own exit can wait for ever. Nothing inside such a process can be relied on, so
+:class:`BoundedPortfolio` bounds the wait from outside: a search process that is still there
+``STOP_GRACE_S`` seconds after the portfolio's deadline, by which time every answer has been taken
+or given up on, is killed, and the kill is printed. No answer can be lost that way, and the
+searches themselves are unchanged.
+
 **Not in force.** The routes and the product still build ``search_stage.default_search_stage``.
 Using this stage there is the owner's decision (AGENTS.md 1.5). The product's reading can be asked
 for it: ``APEDP_SEARCH_PROCESSES=leave_hard`` (``apedp_dyn/ui/route_endpoint.py``); without that
@@ -35,6 +46,7 @@ import multiprocessing
 import multiprocessing.util
 import os
 import sys
+import threading
 from collections.abc import Sequence
 from typing import Any
 
@@ -46,6 +58,7 @@ from apedp_dyn.proposers.portfolio import MemberFactory, PortfolioProposer
 
 ENVIRONMENT_VARIABLE = "APEDP_SEARCH_PROCESSES"
 LEAVE_HARD = "leave_hard"
+STOP_GRACE_S = 60.0     # how long after the portfolio's deadline a search process may still be there
 
 _armed = False
 
@@ -121,6 +134,76 @@ class HardExit:
         return _LeavesHard(self._factory())
 
 
+def _has_ended(pid: int) -> bool:
+    """Whether a child process has ended, asked without collecting it (the portfolio's own wait must still find it)."""
+    waitid = getattr(os, "waitid", None)
+    if waitid is None:
+        return False
+    try:
+        ended = waitid(os.P_PID, pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None
+    except OSError:      # no such child any more: it was collected in the meantime
+        return True
+    return ended
+
+
+class _Reaper(threading.Thread):
+    """Kills, once ``after`` seconds have passed, every child process that was not there before, until told to stop."""
+
+    def __init__(self, known: set[int | None], after: float) -> None:
+        super().__init__(name="search-process-reaper", daemon=True)
+        self._known, self._after, self._stopped = known, after, threading.Event()
+        self.killed: list[int] = []
+
+    def stop(self) -> None:
+        self._stopped.set()
+
+    def run(self) -> None:
+        if self._stopped.wait(self._after):
+            return
+        while not self._stopped.is_set():
+            # the processes are read from multiprocessing's own list and not through active_children(), which
+            # would collect a finished process from under the portfolio's own wait for it
+            for process in list(getattr(multiprocessing.process, "_children", ())):
+                pid = process.pid
+                if pid is None or pid in self._known or pid in self.killed or _has_ended(pid):
+                    continue
+                try:
+                    process.kill()
+                except (OSError, ValueError, AttributeError):
+                    continue
+                self.killed.append(pid)
+                print(f"search process {pid} was still there {STOP_GRACE_S:g} s after the searches' deadline and was killed",
+                      file=sys.stderr, flush=True)
+            self._stopped.wait(1.0)
+
+
+class BoundedPortfolio(PortfolioProposer):
+    """The portfolio as frozen, except that its wait for the search processes to go has an end.
+
+    The frozen ``_run_members`` takes each answer or gives up on it by ``timeout`` (and at most a
+    second a member later), tells the processes to stop and waits for them. Here a watcher kills
+    whatever search process is still there ``STOP_GRACE_S`` seconds after that point, so the wait
+    returns. By then nothing more is taken from any process, so what the portfolio proposes cannot
+    change; ``killed_processes`` says which processes it was done to.
+    """
+
+    killed_processes: list[int]
+
+    def _run_members(self, columns: dict[str, list[float]], target: str, guesses: Sequence[str] | None) -> list[list[str]]:
+        self.killed_processes = []
+        if not self._parallel or len(self._members) == 1:
+            return super()._run_members(columns, target, guesses)
+        known: set[int | None] = {process.pid for process in multiprocessing.active_children()}
+        reaper = _Reaper(known, after=self._timeout + len(self._members) + STOP_GRACE_S)
+        reaper.start()
+        try:
+            return super()._run_members(columns, target, guesses)
+        finally:
+            reaper.stop()
+            reaper.join(timeout=5.0)
+            self.killed_processes = list(reaper.killed)
+
+
 def search_stage_that_cannot_hang(budget_seconds: float, *, cores: int | None = None, seed: int = 0) -> tuple[Any, str]:
     """``search_stage.default_search_stage`` with members that leave hard; the same searches and description.
 
@@ -132,8 +215,8 @@ def search_stage_that_cannot_hang(budget_seconds: float, *, cores: int | None = 
         frozen: tuple[Any, str] = search_stage.default_search_stage(budget_seconds, cores=free, seed=seed)
         return frozen
     members = [HardExit(member) for member in mixed_members(budget_seconds, seed)]
-    stage = PortfolioProposer(members, max_proposals=search_stage.MAX_PROPOSALS, parallel=True,
-                              timeout=budget_seconds + search_stage.MEMBER_GRACE_S)
+    stage = BoundedPortfolio(members, max_proposals=search_stage.MAX_PROPOSALS, parallel=True,
+                             timeout=budget_seconds + search_stage.MEMBER_GRACE_S)
     return (FitGuardProposer(stage),
             f"four searches side by side (PREREG-PORTFOLIO-SEARCH), {budget_seconds:g} s; search processes leave hard")
 

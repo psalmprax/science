@@ -17,6 +17,7 @@ left out by fingerprint, as everywhere, and no held-back law is read.
 from __future__ import annotations
 
 import argparse
+import faulthandler
 import hashlib
 import json
 import sys
@@ -41,6 +42,7 @@ INPUTS = (3, 4, 5)
 NOISES = (0.01, 0.05, 0.10, 0.20)
 LAWS_PER_INPUTS = 10
 ROWS, TEST_ROWS = 1000, 500
+STALL_REPORT_S = 1800.0
 
 
 def draw(rng: np.random.Generator, inputs: int) -> sp.Expr:
@@ -96,8 +98,13 @@ def one(job: dict[str, Any], searches: float) -> dict[str, Any]:
     clean = np.asarray(sp.lambdify(symbols, truth, "numpy")(*X.T), dtype=float) * np.ones(len(X))
     y = clean[:ROWS] + job["noise"] * float(np.sqrt(np.mean(clean[:ROWS] ** 2))) * rng.standard_normal(ROWS)
     started = time.perf_counter()
-    got = route_endpoint.route_reading({n: X[:ROWS, i] for i, n in enumerate(names)}, y, noise="absolute",
-                                       search_seconds=searches, seed=job["index"])
+    # a reading that takes this long has stopped somewhere: say where, in the job's log, every STALL_REPORT_S seconds
+    faulthandler.dump_traceback_later(STALL_REPORT_S, repeat=True, file=sys.stderr)
+    try:
+        got = route_endpoint.route_reading({n: X[:ROWS, i] for i, n in enumerate(names)}, y, noise="absolute",
+                                           search_seconds=searches, seed=job["index"])
+    finally:
+        faulthandler.cancel_dump_traceback_later()
     row: dict[str, Any] = {k: job[k] for k in ("index", "law", "inputs", "noise")}
     row.update({"action": got.get("action"), "reported": bool(got.get("reported")), "tentative": bool(got.get("tentative")),
                 "range": (got.get("measured_range") or {}).get("state"), "vouched": bool((got.get("vouching") or {}).get("applied")),

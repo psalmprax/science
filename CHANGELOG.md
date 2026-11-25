@@ -46,6 +46,19 @@ inferred releases.
   on the second campaign's worlds is dropped. The record is not edited;
   `preregistration/REVIEW-VOUCHING-V2-2026-11.md` now carries the review and the narrower claim
   that follows from it.
+- **Search processes: a second way to stop for ever, and a wait that is bounded from outside
+  (2026-11-25).** With `hard_exit`'s members the second recursion run (45493901958) finished 15 of
+  its first 16 jobs, where the first run had finished none; the sixteenth sat for five hours after a
+  search that never came back. Leaving hard only helps a process that has reached Python's exit
+  hooks: one told to stop earlier is stopped by a signal Julia handles itself, and Julia's exit can
+  wait for ever. New `hard_exit.BoundedPortfolio` (the frozen portfolio, not edited, with one
+  addition): a search process still there `STOP_GRACE_S` = 60 s after the portfolio's deadline is
+  killed and the kill is printed. Every answer has been taken or given up on by then, so the
+  proposals cannot change. `search_stage_that_cannot_hang` builds it. Three new tests (10 in
+  `tests/test_hard_exit.py`), one with a process that ignores being told to stop: the frozen
+  portfolio would wait for it for ever. `scripts/run_wider_conditions.py` now prints where a
+  reading is if it takes more than half an hour. Not in force; the product's default waits, by the
+  owner's decision, for a run that finishes clean.
 - **What the "published 51" for GF(2^12) multiplication is, and the 42 that was already in print
   (2026-11-25, the owner's decision 5; development, nothing in force).** The 51 that MMLM-POC-001
   and the roadmap's first experiment took as the incumbent is the Toffoli count of one circuit

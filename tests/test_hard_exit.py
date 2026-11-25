@@ -2,8 +2,12 @@
 from __future__ import annotations
 
 import multiprocessing
+import signal
+import threading
 import time
+from collections.abc import Sequence
 from functools import partial
+from typing import Any
 
 import pandas as pd
 
@@ -12,6 +16,16 @@ from apedp_dyn.proposers import hard_exit
 from apedp_dyn.proposers.portfolio import FixedFormulasProposer, PortfolioProposer
 
 FRAME = pd.DataFrame({"x0": [1.0, 2.0, 3.0, 4.0], "target": [2.0, 4.0, 6.0, 8.0]})
+
+
+class _WillNotGo(FixedFormulasProposer):
+    """A member standing for a search process caught in Julia's exit: it ignores being told to stop and never answers."""
+
+    def fit_and_propose(self, train_data: Any, target_col: str | None = None, guesses: Sequence[str] | None = None,
+                        **kwargs: Any) -> Any:
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        time.sleep(3600.0)
+        return super().fit_and_propose(train_data, target_col=target_col, guesses=guesses, **kwargs)
 
 
 def _formulas(proposer: PortfolioProposer) -> list[str]:
@@ -69,12 +83,38 @@ def test_a_worker_leaves_at_once_and_skips_an_exit_hook_registered_before_its_se
             process.join()
 
 
+def test_a_search_process_that_will_not_go_is_killed_and_the_other_answers_are_kept(monkeypatch, capfd) -> None:  # type: ignore[no-untyped-def]
+    """The frozen portfolio would wait for this process for ever; the bounded one ends the wait from outside."""
+    monkeypatch.setattr(hard_exit, "STOP_GRACE_S", 2.0)
+    members = [partial(FixedFormulasProposer, ["2*x0"]), partial(_WillNotGo, ["x0**2"])]
+    portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=6.0)
+    started = time.monotonic()
+    assert _formulas(portfolio) == ["2*x0"]                      # the member that answered is kept
+    assert time.monotonic() - started < 90.0                     # and the wait has an end
+    assert portfolio.failures == ["member 1: no answer within 6 s"]
+    assert len(portfolio.killed_processes) == 1                  # only the process that was still there
+    assert "was still there 2 s after the searches' deadline and was killed" in capfd.readouterr().err
+    assert not [thread for thread in threading.enumerate() if thread.name == "search-process-reaper"]
+    assert not multiprocessing.active_children()
+
+
+def test_the_bounded_portfolio_kills_nothing_when_every_process_goes() -> None:
+    members = [partial(FixedFormulasProposer, ["2*x0"]), partial(FixedFormulasProposer, ["x0**2"])]
+    plain = _formulas(PortfolioProposer(members, parallel=True, timeout=120.0))
+    bounded = hard_exit.BoundedPortfolio([hard_exit.HardExit(m) for m in members], parallel=True, timeout=120.0)
+    assert _formulas(bounded) == plain == ["2*x0", "x0**2"]
+    assert bounded.killed_processes == [] and bounded.failures == []
+    assert not [thread for thread in threading.enumerate() if thread.name == "search-process-reaper"]
+    in_this_process = hard_exit.BoundedPortfolio(members, parallel=False)
+    assert _formulas(in_this_process) == plain and in_this_process.killed_processes == []
+
+
 def test_the_stage_is_the_stage_in_force_with_wrapped_members() -> None:
     stage, described = hard_exit.search_stage_that_cannot_hang(90.0, cores=4, seed=3)
     reference, reference_described = search_stage.default_search_stage(90.0, cores=4, seed=3)
     assert described.startswith(reference_described) and described.endswith("search processes leave hard")
     portfolio, frozen = stage._inner, reference._inner
-    assert isinstance(portfolio, PortfolioProposer) and isinstance(frozen, PortfolioProposer)
+    assert isinstance(portfolio, hard_exit.BoundedPortfolio) and type(frozen) is PortfolioProposer
     assert len(portfolio._members) == len(frozen._members) == 4
     assert all(isinstance(member, hard_exit.HardExit) for member in portfolio._members)
     assert (portfolio._timeout, portfolio._max, portfolio._parallel) == (frozen._timeout, frozen._max, frozen._parallel)
