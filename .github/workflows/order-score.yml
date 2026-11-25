@@ -1,0 +1,83 @@
+# Where the true law lands in the memory's proposals, as the memory is taught more laws
+# (scripts/measure_order_score.py; the measurement is apedp_dyn/recursion/order_score.py).
+# Development only: nothing was fixed beforehand, no held-back law is read, no search engine is run.
+#   push to order-score-run-*  -> every arm on its shards, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: Order score of the memory's proposals (development)
+
+on:
+  push:
+    branches: ['order-score-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [taught-0, taught-5, taught-20, taught-80, taught-320, in-force]
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: ${{ matrix.arm }}, shard ${{ matrix.shard }} of 2
+        env:
+          ARM: ${{ matrix.arm }}
+          SHARD: ${{ matrix.shard }}
+        run: python scripts/measure_order_score.py run --out out --arm "$ARM" --shard "$SHARD" --shards 2
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: order-score-${{ matrix.arm }}-${{ matrix.shard }}
+          path: out
+
+  collect:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: order-score-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/measure_order_score.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN order score====="
+          if [ -f got/order_score.json ]; then gzip -9c got/order_score.json | base64 -w 60000; echo; fi
+          echo "=====END order score====="
+          echo "=====BEGIN order score pools====="
+          if [ -f got/order_score_pools.json.gz ]; then base64 -w 60000 got/order_score_pools.json.gz; echo; fi
+          echo "=====END order score pools====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: order-score-record
+          path: |
+            got/order_score.json
+            got/order_score_rows.jsonl.gz
+            got/order_score_pools.json.gz

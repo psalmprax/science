@@ -68,6 +68,18 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **A measurement that can see a small gain: the order score (2026-11-25, asked for by the owner;
+  development).** The recursion chose between searchers on ten problems with nought to three
+  solved. New `apedp_dyn/recursion/order_score.py`: on curriculum problems, each candidate of a
+  proposer's ordered list is judged with the judge's own rule and the place of the first one
+  counted solved is read off (also the first of the true form, and the first accurate one);
+  `compare` sets two proposers side by side problem by problem, and `power` says by simulation how
+  large a gain a number of problems can show. `scripts/measure_order_score.py` measures the memory
+  of confirmed laws as it is taught 0 to 320 laws and keeps every candidate list;
+  `.github/workflows/order-score.yml` runs it. `tests/test_order_score.py` (8). First look, five
+  problems: an accurate candidate was first on every list, but the first one no longer than the
+  true law stood at places 1, 24 and 38, and on two lists nowhere: the memory's parts are there,
+  its order (best fit first) puts over-fitted laws ahead of the law.
 - **The recursion with the four searches on: no rise (2026-11-25, development, not a result).**
   `benchmarks/recursion/dev_search_run2.json` (run 45493901958, 38.8 CPU-hours). No wrong law in
   any measurement. The current searcher solved 9, 3, 2 and 2 of 48 fresh problems in generations
