@@ -148,6 +148,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--searches", type=float, default=90.0)
     parser.add_argument("--shard", type=int, default=0)
     parser.add_argument("--shards", type=int, default=1)
+    parser.add_argument("--inputs", default="", help="only tables with these numbers of inputs, e.g. 3,4 (default: all)")
+    parser.add_argument("--noises", default="", help="only tables at these noise levels, e.g. 0.01,0.05 (default: all)")
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
     if args.command == "collect":
@@ -159,6 +161,9 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(record["cells"], indent=1))
         return 0
     jobs = draw_laws()
+    only_inputs = {int(value) for value in args.inputs.split(",") if value.strip()}
+    only_noises = {float(value) for value in args.noises.split(",") if value.strip()}
+    jobs = [job for job in jobs if (not only_inputs or job["inputs"] in only_inputs) and (not only_noises or job["noise"] in only_noises)]
     if args.command == "laws":
         print(json.dumps([{k: j[k] for k in ("index", "inputs", "noise")} for j in jobs]))
         return 0

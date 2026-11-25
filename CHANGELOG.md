@@ -68,6 +68,24 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **A real budget for the search: kept processes and a ladder of budgets (2026-11-25, asked for by
+  the owner; development, nothing in force).** Each search of the stage in force is one core for
+  90 seconds in a process started for that table. New `apedp_dyn/proposers/warm_pool.py`: one
+  process for each member, started once and kept, so Julia is loaded and the search compiled once;
+  a search that has not answered by the deadline is killed and replaced, and at shutdown the kept
+  processes are killed (no exit path of Julia is run). The product's reading builds it only where
+  `APEDP_SEARCH_PROCESSES=warm`; `tests/test_warm_pool.py` (9). `.github/workflows/budget-ladder.yml`
+  reads the wider-conditions tables with three and four inputs at 90 seconds (cold and warm), 15
+  minutes and 2 hours a search; `scripts/run_wider_conditions.py` takes `--inputs` and `--noises`.
+  The reading's ceiling of 300 s a search stands for a web request; a measurement raises it for
+  its own process with `APEDP_UI_MAX_SEARCH_SECONDS`.
+- **An order of candidates that is learned (2026-11-25, asked for by the owner; development, not in
+  force).** New `apedp_dyn/proposers/learned_order.py`: a logistic model of "the judge would count
+  this candidate solved", from how a candidate looks beside the others on its list, trained on
+  curriculum problems (whose true law is known) and used to hand candidates over most likely
+  first; beside it the rule that needs no learning, the shortest within a tolerance of the best fit
+  on unseen rows. `tests/test_learned_order.py` (6). Measured with the order score once the
+  candidate lists of `order-score-run-1` are in.
 - **A measurement that can see a small gain: the order score (2026-11-25, asked for by the owner;
   development).** The recursion chose between searchers on ten problems with nought to three
   solved. New `apedp_dyn/recursion/order_score.py`: on curriculum problems, each candidate of a

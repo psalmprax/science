@@ -60,6 +60,7 @@ from apedp_dyn.ui.helpers import _audit, _json_obj, _require_api_key
 
 SEARCH_SECONDS_VARIABLE = "APEDP_UI_SEARCH_SECONDS"
 MAX_SEARCH_SECONDS = 300.0
+MAX_SEARCH_SECONDS_VARIABLE = "APEDP_UI_MAX_SEARCH_SECONDS"
 POOL_SHARE = 0.3
 MIN_ROWS = 24
 
@@ -70,7 +71,20 @@ def _search_budget(requested: float | None) -> float:
             requested = float(os.environ.get(SEARCH_SECONDS_VARIABLE, "0") or 0.0)
         except ValueError:
             requested = 0.0
-    return float(min(max(requested, 0.0), MAX_SEARCH_SECONDS))
+    return float(min(max(requested, 0.0), _ceiling()))
+
+
+def _ceiling() -> float:
+    """The most seconds a reading's searches may be given: ``MAX_SEARCH_SECONDS``, unless the environment raises it.
+
+    The ceiling protects a web request. A measurement of what longer searches find (the budget ladder) sets
+    ``APEDP_UI_MAX_SEARCH_SECONDS`` for its own process; nothing else does.
+    """
+    try:
+        asked = float(os.environ.get(MAX_SEARCH_SECONDS_VARIABLE, "") or MAX_SEARCH_SECONDS)
+    except ValueError:
+        asked = MAX_SEARCH_SECONDS
+    return max(asked, 0.0)
 
 
 def _proposer(budget: float) -> tuple[Any, str]:
@@ -84,8 +98,13 @@ def _proposer(budget: float) -> tuple[Any, str]:
     except Exception as exc:  # noqa: BLE001 - a missing package and a failed Julia start are the same answer here
         return None, f"unavailable: PySR could not be loaded ({type(exc).__name__}); first pass alone"
     from apedp_dyn.discovery_l2 import stage_in_force
-    from apedp_dyn.proposers import hard_exit
+    from apedp_dyn.proposers import hard_exit, warm_pool
 
+    if warm_pool.asked_for():
+        # the same searches in processes kept from one table to the next; only where the environment asks
+        # (APEDP_SEARCH_PROCESSES=warm). Development: whether it finds more is being measured.
+        kept: tuple[Any, str] = warm_pool.stage_in_force_warm(budget)
+        return kept
     if hard_exit.in_force():
         # the same searches, with search processes that cannot stop a reading for ever: the default by the owner's
         # decision of 2026-11-25 (hard_exit.DECISION). APEDP_SEARCH_PROCESSES=wait builds the stage as frozen.
@@ -97,11 +116,14 @@ def _proposer(budget: float) -> tuple[Any, str]:
 
 def _search_processes() -> dict[str, Any]:
     """How the search stage's processes are stopped, for the status block: what is in force, by whose word, and the switch."""
-    from apedp_dyn.proposers import hard_exit
+    from apedp_dyn.proposers import hard_exit, warm_pool
 
     bounded = hard_exit.in_force()
-    return {"in_force": ("leave at once after their answer; one that has not gone 20 s after it was told to is killed"
-                         if bounded else "as frozen: the search stage waits for them however long they take"),
+    how = ("leave at once after their answer; one that has not gone 20 s after it was told to is killed"
+           if bounded else "as frozen: the search stage waits for them however long they take")
+    if warm_pool.asked_for():
+        how = "kept from one table to the next (asked for by the environment; development, not the default)"
+    return {"in_force": how,
             "decision": hard_exit.DECISION,
             "measured": ("wider-conditions run 4, development: 120 readings, none stopped; of 80 search processes sent the "
                          "stop signal while alive, those that never went were killed about 20 s later "
