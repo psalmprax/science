@@ -68,6 +68,18 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The split search with the rows choosing each part's law: shorter wholes, as accurate, and
+  still almost never the law itself (2026-11-25, development).** Second run on the 120
+  wider-conditions tables (`benchmarks/table_split/dev_search_first_run2.json`; a list, outside
+  the route). On the 80 tables of four and five inputs an accurate proposal for 36, where the
+  route in force had an accurate law for 13 and reported 7; accurate for the split search alone
+  on 24 tables, for the route alone on 1. The whole proposed first is now a quarter as long (27
+  nodes against 98 at the median). **The law itself: 1 of 120, a law of three inputs; none of
+  four or five.** The parts' laws show what is missing: a part that is a square, a root, a
+  reciprocal or a sine is found; a part made of two terms or of a quotient is not, in the seconds
+  it gets, and the rows cannot tell its stand-in from it at 1 % noise. So the reading and the
+  putting together work, and the search of a single input is now the weak step. Not measured yet:
+  what the route would report with these candidates in its stage.
 - **The referee test's dress rehearsal, and the stage changed because of it before anything is
   frozen (2026-11-25, decision 1).** The rehearsal (run 45658660944: sixteen laws the memory
   proposer was developed on, 32 runs an arm, not the run) ran the runner end to end. With the
