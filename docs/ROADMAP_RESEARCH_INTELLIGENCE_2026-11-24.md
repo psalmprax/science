@@ -36,8 +36,10 @@ Each is an experiment with a pass mark, or a small piece one of them needs.
    Toffoli count of one circuit, and the literature's bound on the number of products is 42, which
    is now in the repository and checked exactly
    (`docs/GF2_12_MULTIPLICATION_RECORD_2026-11-25.md`). Beating 51 is therefore not a discovery.
-   **Proposed, for the owner to decide:** the target becomes 41 products or fewer, starting from
-   the verified 42; the first gate (reproduce the reference exactly) is cleared with the 42.
+   **Decided by the owner on 25 November** (`docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md`, 4):
+   the target is 41 products or fewer, starting from the verified 42; the first gate (reproduce
+   the reference exactly) is cleared with the 42. First a baseline with no language model: what
+   the existing search reaches on GitHub's machines, which any model then has to beat.
    **Pass mark, proposed (fixed when the plan is frozen):** the language-model arm ends with fewer
    wrong entries than the heuristic on more starts than the other way round, by a sign test fixed
    beforehand, at equal cost.

@@ -68,6 +68,14 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Four decisions of the owner, 2026-11-25, afternoon ("yes to all").**
+  `docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md` records them as put: the learned order is tested
+  through the referee beside the memory in force, in one preregistered run with a separate
+  reviewer; the default search budget stays 90 seconds, and the rule for changing it was written
+  before the ladder's 2-hour rung was read; the ideas from outside are taken in the order split
+  wide tables, failed searches teach the order, laws about laws, with no paid GPU; the first
+  GF(2^12) experiment aims at 41 products or fewer, after a baseline with no language model.
+  Nothing in force changes; no specification is edited.
 - **The learned order on a second set, from the rows a proposer has; and the ladder's first three
   rungs (2026-11-25, development).** A second set of 200 problems sharing no structure with the
   first; every order learned on the first set and not changed afterwards

@@ -87,6 +87,9 @@ The CNOT counts here are not minimised, and the published circuit was tuned for 
 1. **Change the first experiment's target.** "Below 51, starting from 54" becomes "41 or fewer,
    starting from the verified 42". Its first gate (reproduce the reference exactly) can now be
    cleared, with the 42. Before any claim, the literature is searched again.
+   **Decided by the owner on 25 November, afternoon: yes**, with a baseline first: what the
+   existing search reaches with no language model
+   (`docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md`, 4). Proposals 2 and 3 stay open.
 2. **Correct the specification.** Section 4.1 of `specifications/APEDP_QUANTUM_DISCOVERY_V1.md`
    is out of date in the three places above. It was not edited: its objective is the owner's.
 3. **Put the 42 into the decoder benchmark and measure it.** This is the one place where a known
