@@ -81,14 +81,21 @@ def test_the_proposer_gives_the_same_proposals_twice_and_finds_a_remembered_form
 
 
 def test_nothing_in_force_uses_the_counted_memory() -> None:
-    """It is a proposal: the reading and the routes keep the timed growth their frozen plans name."""
+    """It is a proposal: the reading and the routes keep the timed growth their frozen plans name.
+
+    One module of the package builds on it: the memory's list in a learned order (``ranked_memory.py``), itself a
+    proposal that nothing in the package builds. So nothing in force reaches the counted memory through it either.
+    """
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    users = [path.relative_to(root).as_posix() for path in (root / "apedp_dyn").rglob("*.py")
-             if "structure_memory_counted" in path.read_text(encoding="utf-8")
-             and path.name != "structure_memory_counted.py"]
-    assert users == []
+    sources = {path.relative_to(root).as_posix(): path.read_text(encoding="utf-8")
+               for path in (root / "apedp_dyn").rglob("*.py")}
+    users = sorted(name for name, text in sources.items()
+                   if "structure_memory_counted" in text and not name.endswith("/structure_memory_counted.py"))
+    assert users == ["apedp_dyn/proposers/ranked_memory.py"]
+    assert [name for name, text in sources.items()
+            if "ranked_memory" in text and not name.endswith("/ranked_memory.py")] == []
 
 
 @pytest.mark.parametrize("name", ["GROW_FITS", "WHOLE_FITS"])

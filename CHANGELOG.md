@@ -68,6 +68,27 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The learned order on a second set, from the rows a proposer has; and the ladder's first three
+  rungs (2026-11-25, development).** A second set of 200 problems sharing no structure with the
+  first; every order learned on the first set and not changed afterwards
+  (`benchmarks/order_score/dev_learned_order.json`). With the list built as a proposer builds it
+  (fitted on four fifths of the rows, read on the fifth; `dev_split_fresh1.json`, run
+  45605633369), the law is among the first three on 55 problems against 34 as handed, of 62 on
+  the list (35 earlier, 9 later, sign test 0.0001); a fixed rule gives 46. With the first
+  measurement's lists (`dev_fresh1.json`, run 45603387577): 48 against 30 (memory taught 20
+  laws), 54 against 32 (taught 80), 65 against 42 (taught 320). `dev_split_first1.json` (run
+  45606433485) is the first set with the proposer-built list, which the order now saved in
+  `learned_order_model.json` was learned from. `dev_run1.json` is now the full record: the memory
+  taught 320 laws read 281 of 300 problems before its 120-minute limit.
+  `benchmarks/budget_ladder/dev_run1_{cold_90,warm_90,cold_900}.json` (run 45594673695, the
+  2-hour rung still running): 12, 14 and 18 laws reported on the same 40 tables, none inaccurate,
+  none by form; 15 minutes against 90 seconds 9 gained and 3 lost; kept processes save 55 of 249
+  seconds a reading.
+- **The build went red on a guard I did not run, and is repaired (2026-11-25).**
+  `tests/test_structure_memory_counted.py` holds that nothing in `apedp_dyn` uses the counted
+  memory; the new `ranked_memory.py` builds on it, and the stage build of 2afb6dd failed there.
+  The guard now names that one module and also holds that nothing in the package builds it, so
+  nothing in force reaches the counted memory through it either.
 - **The order score, first run: the law is on the list far more often than among the first three,
   and an order learned from the system's own problems brings it forward (2026-11-25, development).**
   `benchmarks/order_score/dev_run1.json` (run 45591697503; five of six arms, the sixth still

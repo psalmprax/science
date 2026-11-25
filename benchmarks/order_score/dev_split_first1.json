@@ -1,0 +1,406 @@
+{
+ "arms": {
+  "split-80": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 59,
+      "found": 60,
+      "mean_reciprocal_place": 0.9889,
+      "problems": 60,
+      "share_found": 1.0,
+      "within_3": 60
+     },
+     "2": {
+      "first": 56,
+      "found": 56,
+      "mean_reciprocal_place": 0.9333,
+      "problems": 60,
+      "share_found": 0.9333,
+      "within_3": 56
+     },
+     "3": {
+      "first": 47,
+      "found": 47,
+      "mean_reciprocal_place": 0.7833,
+      "problems": 60,
+      "share_found": 0.7833,
+      "within_3": 47
+     },
+     "4": {
+      "first": 26,
+      "found": 26,
+      "mean_reciprocal_place": 0.4333,
+      "problems": 60,
+      "share_found": 0.4333,
+      "within_3": 26
+     },
+     "5": {
+      "first": 12,
+      "found": 12,
+      "mean_reciprocal_place": 0.2,
+      "problems": 60,
+      "share_found": 0.2,
+      "within_3": 12
+     }
+    },
+    "first": 200,
+    "found": 201,
+    "mean_reciprocal_place": 0.6678,
+    "problems": 300,
+    "share_found": 0.67,
+    "what": "accurate_place",
+    "within_3": 201
+   },
+   "an_accurate_candidate_but_none_counted_solved": 99,
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 6,
+      "found": 6,
+      "mean_reciprocal_place": 0.1,
+      "problems": 60,
+      "share_found": 0.1,
+      "within_3": 6
+     },
+     "2": {
+      "first": 5,
+      "found": 5,
+      "mean_reciprocal_place": 0.0833,
+      "problems": 60,
+      "share_found": 0.0833,
+      "within_3": 5
+     },
+     "3": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.0167,
+      "problems": 60,
+      "share_found": 0.0167,
+      "within_3": 1
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 60,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 60,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 12,
+    "found": 12,
+    "mean_reciprocal_place": 0.04,
+    "problems": 300,
+    "share_found": 0.04,
+    "what": "form_place",
+    "within_3": 12
+   },
+   "motifs": 58,
+   "problems": 300,
+   "seconds_a_problem_median": 125.8,
+   "solved_among_the_first_3": 53,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 15,
+      "found": 45,
+      "mean_reciprocal_place": 0.2813,
+      "problems": 60,
+      "share_found": 0.75,
+      "within_3": 16
+     },
+     "2": {
+      "first": 15,
+      "found": 26,
+      "mean_reciprocal_place": 0.2909,
+      "problems": 60,
+      "share_found": 0.4333,
+      "within_3": 18
+     },
+     "3": {
+      "first": 7,
+      "found": 23,
+      "mean_reciprocal_place": 0.1764,
+      "problems": 60,
+      "share_found": 0.3833,
+      "within_3": 12
+     },
+     "4": {
+      "first": 4,
+      "found": 4,
+      "mean_reciprocal_place": 0.0667,
+      "problems": 60,
+      "share_found": 0.0667,
+      "within_3": 4
+     },
+     "5": {
+      "first": 3,
+      "found": 4,
+      "mean_reciprocal_place": 0.0542,
+      "problems": 60,
+      "share_found": 0.0667,
+      "within_3": 3
+     }
+    },
+    "first": 44,
+    "found": 102,
+    "mean_reciprocal_place": 0.1739,
+    "problems": 300,
+    "share_found": 0.34,
+    "what": "solved_place",
+    "within_3": 53
+   }
+  }
+ },
+ "development": true,
+ "handed_to_the_referee": 3,
+ "pool": 40,
+ "problems": 300,
+ "seeds": {
+  "fresh": 2026112503,
+  "teaching": 2026112502,
+  "test": 2026112501
+ },
+ "set": "test",
+ "steps": {},
+ "tag": "DEV-ORDER-SCORE-2026-11",
+ "what": "development: the place of the true law in the memory's proposals as the memory is taught more laws; not a result, nothing was fixed beforehand",
+ "what_can_be_seen": {
+  "by_problems": {
+   "10": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.0,
+      "1": 0.0,
+      "1.5": 0.234,
+      "2": 0.498
+     },
+     "problems": 10,
+     "smallest_visible_gain": null,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.0,
+      "1": 0.0,
+      "1.5": 0.149,
+      "2": 0.347
+     },
+     "problems": 10,
+     "smallest_visible_gain": null,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.0,
+      "1": 0.0,
+      "1.5": 0.073,
+      "2": 0.19
+     },
+     "problems": 10,
+     "smallest_visible_gain": null,
+     "wanted_power": 0.8
+    }
+   },
+   "100": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.298,
+      "0.2": 0.908,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 100,
+     "smallest_visible_gain": 0.2,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.005,
+      "0.2": 0.13,
+      "0.3": 0.849,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 100,
+     "smallest_visible_gain": 0.3,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.001,
+      "0.3": 0.221,
+      "0.5": 0.998,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 100,
+     "smallest_visible_gain": 0.5,
+     "wanted_power": 0.8
+    }
+   },
+   "300": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.182,
+      "0.1": 1.0,
+      "0.15": 1.0,
+      "0.2": 1.0,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 300,
+     "smallest_visible_gain": 0.1,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.086,
+      "0.15": 0.983,
+      "0.2": 1.0,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 300,
+     "smallest_visible_gain": 0.15,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.107,
+      "0.2": 0.978,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 300,
+     "smallest_visible_gain": 0.2,
+     "wanted_power": 0.8
+    }
+   },
+   "48": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.253,
+      "0.5": 0.959,
+      "0.75": 0.997,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 48,
+     "smallest_visible_gain": 0.5,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.048,
+      "0.5": 0.737,
+      "0.75": 0.988,
+      "1": 0.999,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 48,
+     "smallest_visible_gain": 0.75,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.003,
+      "0.5": 0.324,
+      "0.75": 0.936,
+      "1": 0.997,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 48,
+     "smallest_visible_gain": 0.75,
+     "wanted_power": 0.8
+    }
+   }
+  },
+  "measured_on": "taught-80"
+ }
+}

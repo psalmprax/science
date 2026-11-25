@@ -1,0 +1,759 @@
+{
+ "arms": {
+  "taught-20": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 38,
+      "found": 38,
+      "mean_reciprocal_place": 0.95,
+      "problems": 40,
+      "share_found": 0.95,
+      "within_3": 38
+     },
+     "2": {
+      "first": 36,
+      "found": 36,
+      "mean_reciprocal_place": 0.9,
+      "problems": 40,
+      "share_found": 0.9,
+      "within_3": 36
+     },
+     "3": {
+      "first": 29,
+      "found": 29,
+      "mean_reciprocal_place": 0.725,
+      "problems": 40,
+      "share_found": 0.725,
+      "within_3": 29
+     },
+     "4": {
+      "first": 10,
+      "found": 10,
+      "mean_reciprocal_place": 0.25,
+      "problems": 40,
+      "share_found": 0.25,
+      "within_3": 10
+     },
+     "5": {
+      "first": 5,
+      "found": 5,
+      "mean_reciprocal_place": 0.125,
+      "problems": 40,
+      "share_found": 0.125,
+      "within_3": 5
+     }
+    },
+    "first": 118,
+    "found": 118,
+    "mean_reciprocal_place": 0.59,
+    "problems": 200,
+    "share_found": 0.59,
+    "what": "accurate_place",
+    "within_3": 118
+   },
+   "an_accurate_candidate_but_none_counted_solved": 65,
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 2,
+      "found": 2,
+      "mean_reciprocal_place": 0.05,
+      "problems": 40,
+      "share_found": 0.05,
+      "within_3": 2
+     },
+     "2": {
+      "first": 5,
+      "found": 5,
+      "mean_reciprocal_place": 0.125,
+      "problems": 40,
+      "share_found": 0.125,
+      "within_3": 5
+     },
+     "3": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 7,
+    "found": 7,
+    "mean_reciprocal_place": 0.035,
+    "problems": 200,
+    "share_found": 0.035,
+    "what": "form_place",
+    "within_3": 7
+   },
+   "motifs": 26,
+   "problems": 200,
+   "seconds_a_problem_median": 49.3,
+   "solved_among_the_first_3": 30,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 7,
+      "found": 24,
+      "mean_reciprocal_place": 0.2209,
+      "problems": 40,
+      "share_found": 0.6,
+      "within_3": 9
+     },
+     "2": {
+      "first": 8,
+      "found": 11,
+      "mean_reciprocal_place": 0.2186,
+      "problems": 40,
+      "share_found": 0.275,
+      "within_3": 9
+     },
+     "3": {
+      "first": 9,
+      "found": 16,
+      "mean_reciprocal_place": 0.2557,
+      "problems": 40,
+      "share_found": 0.4,
+      "within_3": 10
+     },
+     "4": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.025,
+      "problems": 40,
+      "share_found": 0.025,
+      "within_3": 1
+     },
+     "5": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.025,
+      "problems": 40,
+      "share_found": 0.025,
+      "within_3": 1
+     }
+    },
+    "first": 26,
+    "found": 53,
+    "mean_reciprocal_place": 0.1491,
+    "problems": 200,
+    "share_found": 0.265,
+    "what": "solved_place",
+    "within_3": 30
+   }
+  },
+  "taught-320": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 39,
+      "found": 39,
+      "mean_reciprocal_place": 0.975,
+      "problems": 40,
+      "share_found": 0.975,
+      "within_3": 39
+     },
+     "2": {
+      "first": 38,
+      "found": 38,
+      "mean_reciprocal_place": 0.95,
+      "problems": 40,
+      "share_found": 0.95,
+      "within_3": 38
+     },
+     "3": {
+      "first": 33,
+      "found": 33,
+      "mean_reciprocal_place": 0.825,
+      "problems": 40,
+      "share_found": 0.825,
+      "within_3": 33
+     },
+     "4": {
+      "first": 6,
+      "found": 6,
+      "mean_reciprocal_place": 0.15,
+      "problems": 40,
+      "share_found": 0.15,
+      "within_3": 6
+     },
+     "5": {
+      "first": 5,
+      "found": 5,
+      "mean_reciprocal_place": 0.125,
+      "problems": 40,
+      "share_found": 0.125,
+      "within_3": 5
+     }
+    },
+    "first": 121,
+    "found": 121,
+    "mean_reciprocal_place": 0.605,
+    "problems": 200,
+    "share_found": 0.605,
+    "what": "accurate_place",
+    "within_3": 121
+   },
+   "an_accurate_candidate_but_none_counted_solved": 54,
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 2,
+      "found": 2,
+      "mean_reciprocal_place": 0.05,
+      "problems": 40,
+      "share_found": 0.05,
+      "within_3": 2
+     },
+     "2": {
+      "first": 5,
+      "found": 5,
+      "mean_reciprocal_place": 0.125,
+      "problems": 40,
+      "share_found": 0.125,
+      "within_3": 5
+     },
+     "3": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.025,
+      "problems": 40,
+      "share_found": 0.025,
+      "within_3": 1
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 8,
+    "found": 8,
+    "mean_reciprocal_place": 0.04,
+    "problems": 200,
+    "share_found": 0.04,
+    "what": "form_place",
+    "within_3": 8
+   },
+   "motifs": 131,
+   "problems": 200,
+   "seconds_a_problem_median": 87.9,
+   "solved_among_the_first_3": 42,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 10,
+      "found": 30,
+      "mean_reciprocal_place": 0.3267,
+      "problems": 40,
+      "share_found": 0.75,
+      "within_3": 14
+     },
+     "2": {
+      "first": 12,
+      "found": 15,
+      "mean_reciprocal_place": 0.3147,
+      "problems": 40,
+      "share_found": 0.375,
+      "within_3": 13
+     },
+     "3": {
+      "first": 7,
+      "found": 17,
+      "mean_reciprocal_place": 0.2277,
+      "problems": 40,
+      "share_found": 0.425,
+      "within_3": 10
+     },
+     "4": {
+      "first": 0,
+      "found": 1,
+      "mean_reciprocal_place": 0.0125,
+      "problems": 40,
+      "share_found": 0.025,
+      "within_3": 1
+     },
+     "5": {
+      "first": 4,
+      "found": 4,
+      "mean_reciprocal_place": 0.1,
+      "problems": 40,
+      "share_found": 0.1,
+      "within_3": 4
+     }
+    },
+    "first": 33,
+    "found": 67,
+    "mean_reciprocal_place": 0.1963,
+    "problems": 200,
+    "share_found": 0.335,
+    "what": "solved_place",
+    "within_3": 42
+   }
+  },
+  "taught-80": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 38,
+      "found": 39,
+      "mean_reciprocal_place": 0.9625,
+      "problems": 40,
+      "share_found": 0.975,
+      "within_3": 39
+     },
+     "2": {
+      "first": 37,
+      "found": 37,
+      "mean_reciprocal_place": 0.925,
+      "problems": 40,
+      "share_found": 0.925,
+      "within_3": 37
+     },
+     "3": {
+      "first": 32,
+      "found": 32,
+      "mean_reciprocal_place": 0.8,
+      "problems": 40,
+      "share_found": 0.8,
+      "within_3": 32
+     },
+     "4": {
+      "first": 6,
+      "found": 6,
+      "mean_reciprocal_place": 0.15,
+      "problems": 40,
+      "share_found": 0.15,
+      "within_3": 6
+     },
+     "5": {
+      "first": 4,
+      "found": 4,
+      "mean_reciprocal_place": 0.1,
+      "problems": 40,
+      "share_found": 0.1,
+      "within_3": 4
+     }
+    },
+    "first": 117,
+    "found": 118,
+    "mean_reciprocal_place": 0.5875,
+    "problems": 200,
+    "share_found": 0.59,
+    "what": "accurate_place",
+    "within_3": 118
+   },
+   "an_accurate_candidate_but_none_counted_solved": 57,
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 2,
+      "found": 2,
+      "mean_reciprocal_place": 0.05,
+      "problems": 40,
+      "share_found": 0.05,
+      "within_3": 2
+     },
+     "2": {
+      "first": 4,
+      "found": 4,
+      "mean_reciprocal_place": 0.1,
+      "problems": 40,
+      "share_found": 0.1,
+      "within_3": 4
+     },
+     "3": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.025,
+      "problems": 40,
+      "share_found": 0.025,
+      "within_3": 1
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 7,
+    "found": 7,
+    "mean_reciprocal_place": 0.035,
+    "problems": 200,
+    "share_found": 0.035,
+    "what": "form_place",
+    "within_3": 7
+   },
+   "motifs": 58,
+   "problems": 200,
+   "seconds_a_problem_median": 130.9,
+   "solved_among_the_first_3": 32,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 7,
+      "found": 30,
+      "mean_reciprocal_place": 0.2216,
+      "problems": 40,
+      "share_found": 0.75,
+      "within_3": 8
+     },
+     "2": {
+      "first": 7,
+      "found": 10,
+      "mean_reciprocal_place": 0.1979,
+      "problems": 40,
+      "share_found": 0.25,
+      "within_3": 9
+     },
+     "3": {
+      "first": 10,
+      "found": 20,
+      "mean_reciprocal_place": 0.314,
+      "problems": 40,
+      "share_found": 0.5,
+      "within_3": 14
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 40,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.025,
+      "problems": 40,
+      "share_found": 0.025,
+      "within_3": 1
+     }
+    },
+    "first": 25,
+    "found": 61,
+    "mean_reciprocal_place": 0.1517,
+    "problems": 200,
+    "share_found": 0.305,
+    "what": "solved_place",
+    "within_3": 32
+   }
+  }
+ },
+ "development": true,
+ "handed_to_the_referee": 3,
+ "pool": 40,
+ "problems": 200,
+ "seeds": {
+  "fresh": 2026112503,
+  "teaching": 2026112502,
+  "test": 2026112501
+ },
+ "set": "fresh",
+ "steps": {
+  "taught-320 against taught-80": {
+   "earlier": 38,
+   "found_p": 0.237885,
+   "gained": 12,
+   "interval_95": [
+    0.0042,
+    0.084
+   ],
+   "later": 15,
+   "lost": 6,
+   "mean_reciprocal_difference": 0.0446,
+   "problems": 200,
+   "same": 147,
+   "sign_test_p": 0.00219,
+   "what": "solved_place"
+  },
+  "taught-80 against taught-20": {
+   "earlier": 32,
+   "found_p": 0.15159,
+   "gained": 16,
+   "interval_95": [
+    -0.0342,
+    0.0411
+   ],
+   "later": 17,
+   "lost": 8,
+   "mean_reciprocal_difference": 0.0026,
+   "problems": 200,
+   "same": 151,
+   "sign_test_p": 0.044384,
+   "what": "solved_place"
+  }
+ },
+ "tag": "DEV-ORDER-SCORE-2026-11",
+ "what": "development: the place of the true law in the memory's proposals as the memory is taught more laws; not a result, nothing was fixed beforehand",
+ "what_can_be_seen": {
+  "by_problems": {
+   "10": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.0,
+      "1": 0.0,
+      "1.5": 0.204,
+      "2": 0.467
+     },
+     "problems": 10,
+     "smallest_visible_gain": null,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.0,
+      "1": 0.0,
+      "1.5": 0.14,
+      "2": 0.319
+     },
+     "problems": 10,
+     "smallest_visible_gain": null,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.0,
+      "1": 0.0,
+      "1.5": 0.061,
+      "2": 0.169
+     },
+     "problems": 10,
+     "smallest_visible_gain": null,
+     "wanted_power": 0.8
+    }
+   },
+   "100": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.1,
+      "0.2": 0.742,
+      "0.3": 0.999,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 100,
+     "smallest_visible_gain": 0.3,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.005,
+      "0.2": 0.077,
+      "0.3": 0.73,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 100,
+     "smallest_visible_gain": 0.5,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.001,
+      "0.3": 0.123,
+      "0.5": 0.984,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 100,
+     "smallest_visible_gain": 0.5,
+     "wanted_power": 0.8
+    }
+   },
+   "300": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.015,
+      "0.1": 1.0,
+      "0.15": 1.0,
+      "0.2": 1.0,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 300,
+     "smallest_visible_gain": 0.1,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.049,
+      "0.15": 0.925,
+      "0.2": 1.0,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 300,
+     "smallest_visible_gain": 0.15,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.038,
+      "0.2": 0.9,
+      "0.3": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 300,
+     "smallest_visible_gain": 0.2,
+     "wanted_power": 0.8
+    }
+   },
+   "48": {
+    "churn 0": {
+     "churn": 0.0,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.114,
+      "0.5": 0.908,
+      "0.75": 0.991,
+      "1": 1.0,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 48,
+     "smallest_visible_gain": 0.5,
+     "wanted_power": 0.8
+    },
+    "churn 0.1": {
+     "churn": 0.1,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.017,
+      "0.5": 0.6,
+      "0.75": 0.971,
+      "1": 0.996,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 48,
+     "smallest_visible_gain": 0.75,
+     "wanted_power": 0.8
+    },
+    "churn 0.25": {
+     "churn": 0.25,
+     "power_by_gain": {
+      "0.05": 0.0,
+      "0.1": 0.0,
+      "0.15": 0.0,
+      "0.2": 0.0,
+      "0.3": 0.0,
+      "0.5": 0.204,
+      "0.75": 0.873,
+      "1": 0.987,
+      "1.5": 1.0,
+      "2": 1.0
+     },
+     "problems": 48,
+     "smallest_visible_gain": 0.75,
+     "wanted_power": 0.8
+    }
+   }
+  },
+  "measured_on": "taught-80"
+ }
+}

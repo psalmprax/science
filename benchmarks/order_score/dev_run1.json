@@ -480,6 +480,166 @@
     "within_3": 43
    }
   },
+  "taught-320": {
+   "accurate_place": {
+    "by_level": {
+     "1": {
+      "first": 57,
+      "found": 57,
+      "mean_reciprocal_place": 1.0,
+      "problems": 57,
+      "share_found": 1.0,
+      "within_3": 57
+     },
+     "2": {
+      "first": 55,
+      "found": 55,
+      "mean_reciprocal_place": 0.9821,
+      "problems": 56,
+      "share_found": 0.9821,
+      "within_3": 55
+     },
+     "3": {
+      "first": 45,
+      "found": 45,
+      "mean_reciprocal_place": 0.8036,
+      "problems": 56,
+      "share_found": 0.8036,
+      "within_3": 45
+     },
+     "4": {
+      "first": 18,
+      "found": 18,
+      "mean_reciprocal_place": 0.3214,
+      "problems": 56,
+      "share_found": 0.3214,
+      "within_3": 18
+     },
+     "5": {
+      "first": 4,
+      "found": 4,
+      "mean_reciprocal_place": 0.0714,
+      "problems": 56,
+      "share_found": 0.0714,
+      "within_3": 4
+     }
+    },
+    "first": 179,
+    "found": 179,
+    "mean_reciprocal_place": 0.637,
+    "problems": 281,
+    "share_found": 0.637,
+    "what": "accurate_place",
+    "within_3": 179
+   },
+   "an_accurate_candidate_but_none_counted_solved": 77,
+   "form_place": {
+    "by_level": {
+     "1": {
+      "first": 10,
+      "found": 11,
+      "mean_reciprocal_place": 0.1842,
+      "problems": 57,
+      "share_found": 0.193,
+      "within_3": 11
+     },
+     "2": {
+      "first": 7,
+      "found": 7,
+      "mean_reciprocal_place": 0.125,
+      "problems": 56,
+      "share_found": 0.125,
+      "within_3": 7
+     },
+     "3": {
+      "first": 1,
+      "found": 1,
+      "mean_reciprocal_place": 0.0179,
+      "problems": 56,
+      "share_found": 0.0179,
+      "within_3": 1
+     },
+     "4": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 56,
+      "share_found": 0.0,
+      "within_3": 0
+     },
+     "5": {
+      "first": 0,
+      "found": 0,
+      "mean_reciprocal_place": 0.0,
+      "problems": 56,
+      "share_found": 0.0,
+      "within_3": 0
+     }
+    },
+    "first": 18,
+    "found": 19,
+    "mean_reciprocal_place": 0.0658,
+    "problems": 281,
+    "share_found": 0.0676,
+    "what": "form_place",
+    "within_3": 19
+   },
+   "motifs": 131,
+   "problems": 281,
+   "seconds_a_problem_median": 159.3,
+   "solved_among_the_first_3": 68,
+   "solved_place": {
+    "by_level": {
+     "1": {
+      "first": 22,
+      "found": 47,
+      "mean_reciprocal_place": 0.4362,
+      "problems": 57,
+      "share_found": 0.8246,
+      "within_3": 25
+     },
+     "2": {
+      "first": 21,
+      "found": 27,
+      "mean_reciprocal_place": 0.3916,
+      "problems": 56,
+      "share_found": 0.4821,
+      "within_3": 21
+     },
+     "3": {
+      "first": 14,
+      "found": 22,
+      "mean_reciprocal_place": 0.2778,
+      "problems": 56,
+      "share_found": 0.3929,
+      "within_3": 16
+     },
+     "4": {
+      "first": 1,
+      "found": 2,
+      "mean_reciprocal_place": 0.0268,
+      "problems": 56,
+      "share_found": 0.0357,
+      "within_3": 2
+     },
+     "5": {
+      "first": 3,
+      "found": 4,
+      "mean_reciprocal_place": 0.0625,
+      "problems": 56,
+      "share_found": 0.0714,
+      "within_3": 4
+     }
+    },
+    "first": 61,
+    "found": 102,
+    "mean_reciprocal_place": 0.2397,
+    "problems": 281,
+    "share_found": 0.363,
+    "what": "solved_place",
+    "within_3": 68
+   }
+  },
   "taught-5": {
    "accurate_place": {
     "by_level": {
@@ -806,11 +966,9 @@
  "pool": 40,
  "problems": 300,
  "seeds": {
-  "fresh": 2026112503,
   "teaching": 2026112502,
   "test": 2026112501
  },
- "set": "test",
  "steps": {
   "taught-20 against taught-5": {
    "earlier": 59,
@@ -826,6 +984,22 @@
    "problems": 300,
    "same": 224,
    "sign_test_p": 1e-06,
+   "what": "solved_place"
+  },
+  "taught-320 against taught-80": {
+   "earlier": 46,
+   "found_p": 0.596615,
+   "gained": 18,
+   "interval_95": [
+    0.007,
+    0.0874
+   ],
+   "later": 31,
+   "lost": 14,
+   "mean_reciprocal_difference": 0.0479,
+   "problems": 281,
+   "same": 204,
+   "sign_test_p": 0.110016,
    "what": "solved_place"
   },
   "taught-5 against taught-0": {
