@@ -88,11 +88,40 @@ def test_an_order_learned_on_the_first_set_is_scored_on_a_second_set_that_shares
     assert study.main(["--pools", str(first), "--fresh", str(second), "--out", str(out)]) == 0
     block = json.loads(out.read_text())["on_the_second_set"]
     for arm in ("taught-20", "taught-80"):
-        assert block[arm]["trained_on"]["problems"] == 60 and block[arm]["as_handed"]["problems"] == 30
-        assert block[arm]["as_handed"]["within_3"] == 0 and block[arm]["learned"]["within_3"] == block[arm]["as_handed"]["found"] == 27
-        assert block[arm]["model"]["features"] == list(study.learned_order.FEATURES)
+        scored = block[arm]["learned_on"][arm]                    # the order learned on the same arm of the first set
+        assert scored["trained_on"]["problems"] == 60 and block[arm]["as_handed"]["problems"] == 30
+        assert block[arm]["as_handed"]["within_3"] == 0 and scored["learned"]["within_3"] == block[arm]["as_handed"]["found"] == 27
+        assert scored["model"]["features"] == list(study.learned_order.FEATURES)
     with pytest.raises(ValueError, match="not a second set"):
         study.main(["--pools", str(first), "--fresh", str(first), "--out", str(out)])
+
+
+def test_a_list_built_as_a_proposer_builds_it_is_scored_with_both_orders_that_could_serve_it(study, tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(study, "HELD_APART", 20)
+    monkeypatch.setattr(study, "CURVE", (5,))
+    monkeypatch.setattr(study, "REPEATS", 2)
+
+    def renamed(source: Path, target: Path, old: str, new: str, keep: str) -> Path:
+        with gzip.open(source, "rt", encoding="utf-8") as handle:
+            packed = json.load(handle)
+        packed["rows"] = [[new if row[0] == old else row[0], *row[1:]] for row in packed["rows"] if row[0] in (old, keep)]
+        with gzip.open(target, "wt", encoding="utf-8") as handle:
+            json.dump(packed, handle)
+        return target
+
+    first = _pools(tmp_path / "first.json.gz")
+    first_split = renamed(first, tmp_path / "first_split.json.gz", "taught-20", "split-80", "none")
+    second = renamed(_pools(tmp_path / "second_all.json.gz", problems=30, seed=1, prefix="q"), tmp_path / "second.json.gz",
+                     "taught-20", "split-80", "none")
+    out = tmp_path / "learned.json"
+    assert study.main(["--pools", str(first), str(first_split), "--fresh", str(second), "--out", str(out),
+                       "--model-out", str(tmp_path / "model.json"), "--model-arm", "split-80"]) == 0
+    record = json.loads(out.read_text())
+    assert set(record["arms"]) == {"taught-20", "taught-80", "split-80"} and len(record["pools"]) == 2
+    block = record["on_the_second_set"]["split-80"]
+    assert set(block["learned_on"]) == {"split-80", "taught-80"}                       # its own first-set lists, and its memory's
+    assert all(scored["learned"]["within_3"] == 27 for scored in block["learned_on"].values())
+    assert json.loads((tmp_path / "model.json").read_text())["learned_on"]["arm"] == "split-80"
 
 
 def test_the_order_of_the_reference_arm_is_written_where_a_proposer_can_load_it(study, tmp_path, monkeypatch) -> None:

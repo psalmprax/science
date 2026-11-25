@@ -129,40 +129,52 @@ def carried(arms: dict[str, list[dict[str, Any]]], source: str) -> dict[str, Any
 
 
 def on_fresh(arms: dict[str, list[dict[str, Any]]], fresh: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
-    """An order learned on all of an arm's lists of the first set, scored on that arm's lists of the second set."""
+    """Orders learned on all of an arm's lists of the first set, scored on an arm's lists of the second set.
+
+    A second-set arm is scored with the order learned on the same arm of the first set where there is one, and, for a
+    list built as a proposer builds it (``split-80``), also with the order learned on the first measurement's lists of
+    the same memory (``taught-80``): whether an order learned one way carries to lists built the other way.
+    """
     out: dict[str, Any] = {}
     for arm, found in fresh.items():
-        source = arm if arm in arms else arm.replace("split-", "taught-")      # "split-80" is the memory of "taught-80"
-        if source not in arms or not any(row["candidates"] for row in found):
+        sources = [name for name in dict.fromkeys([arm, arm.replace("split-", "taught-")]) if name in arms]
+        if not sources or not any(row["candidates"] for row in found):
             continue
-        shared = {row["key"] for row in arms[source]} & {row["key"] for row in found}
-        if shared:
-            raise ValueError(f"{len(shared)} problems of the second set are in the first: it is not a second set")
-        model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[source]])
-        learned = learned_order.reorder(found, model)
         rules = {f"tolerance {tolerance:g}": learned_order.reorder(found, tolerance=tolerance) for tolerance in TOLERANCES}
-        out[arm] = {"learned_on_the_first_set_s": source, "trained_on": dict(model.trained_on), "model": model.as_dict(),
-                    "as_handed": brief(found),
-                    "rule": {name: brief(rows) for name, rows in rules.items()}, "learned": brief(learned),
-                    "true_form_as_handed": brief(found, "form_place"), "true_form_learned": brief(learned, "form_place"),
-                    "learned_against_as_handed": order_score.compare(found, learned),
-                    "learned_against_the_rule": {name: order_score.compare(rows, learned) for name, rows in rules.items()}}
+        block: dict[str, Any] = {"as_handed": brief(found), "true_form_as_handed": brief(found, "form_place"),
+                                 "rule": {name: brief(rows) for name, rows in rules.items()}, "learned_on": {}}
+        for source in sources:
+            shared = {row["key"] for row in arms[source]} & {row["key"] for row in found}
+            if shared:
+                raise ValueError(f"{len(shared)} problems of the second set are in the first: it is not a second set")
+            model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[source]])
+            learned = learned_order.reorder(found, model)
+            block["learned_on"][source] = {
+                "trained_on": dict(model.trained_on), "model": model.as_dict(), "learned": brief(learned),
+                "true_form_learned": brief(learned, "form_place"),
+                "learned_against_as_handed": order_score.compare(found, learned),
+                "learned_against_the_rule": {name: order_score.compare(rows, learned) for name, rows in rules.items()}}
+        out[arm] = block
     return out
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--pools", type=Path, required=True)
+    parser.add_argument("--pools", type=Path, nargs="+", required=True, help="pools of the first set, one file or several")
     parser.add_argument("--fresh", type=Path, nargs="+", help="pools of the second set (measure_order_score.py --set fresh)")
-    parser.add_argument("--model-out", type=Path, help="write the order learned on all of the reference arm's lists")
+    parser.add_argument("--model-out", type=Path, help="write the order learned on all of one arm's lists of the first set")
+    parser.add_argument("--model-arm", help="the arm whose order is written (default: the reference arm)")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
-    arms = read(args.pools)
+    arms: dict[str, list[dict[str, Any]]] = {}
+    for path in args.pools:
+        arms.update(read(path))
     reference = REFERENCE if REFERENCE in arms else max(arms, key=lambda arm: len(arms[arm]))
     record = {"tag": TAG, "development": True,
               "what": "development: other orders of the candidate lists the memory handed over, scored by the place of the "
                       "first candidate the judge counts solved; not a result, nothing was fixed beforehand",
-              "pools": str(args.pools), "handed_to_the_referee": HANDED, "features": list(learned_order.FEATURES),
+              "pools": [str(path) for path in args.pools], "handed_to_the_referee": HANDED,
+              "features": list(learned_order.FEATURES),
               "arms": {arm: arm_study(rows) for arm, rows in arms.items() if any(row["candidates"] for row in rows)},
               "learning_curve": {"arm": reference, **learning_curve(arms[reference])},
               "carried_to_other_arms": carried(arms, reference)}
@@ -172,13 +184,15 @@ def main(argv: list[str] | None = None) -> int:
             second.update(read(path))
         record["on_the_second_set"] = {"pools": [str(path) for path in args.fresh], **on_fresh(arms, second)}
     if args.model_out is not None:
-        model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[reference]])
+        chosen = args.model_arm or reference
+        model = learned_order.LearnedOrder().fit([row["candidates"] for row in arms[chosen]])
         args.model_out.parent.mkdir(parents=True, exist_ok=True)
         args.model_out.write_text(json.dumps({
             "tag": TAG, "development": True,
             "what": "an order of the memory's candidates learned on every list of one arm of the order-score run; development, "
                     "not in force; read by apedp_dyn.proposers.ranked_memory.load_order",
-            "learned_on": {"pools": str(args.pools), "arm": reference}, "model": model.as_dict()}, indent=1, sort_keys=True) + "\n",
+            "learned_on": {"pools": [str(path) for path in args.pools], "arm": chosen}, "model": model.as_dict()},
+            indent=1, sort_keys=True) + "\n",
             encoding="utf-8")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
@@ -187,10 +201,12 @@ def main(argv: list[str] | None = None) -> int:
               f"learned {study['learned']['within_3']:3d} of {study['as_handed']['found']} found in {study['as_handed']['problems']} "
               f"(sign test p {study['learned_against_as_handed']['sign_test_p']})")
     for arm, block in record.get("on_the_second_set", {}).items():
-        if isinstance(block, dict):
-            print(f"second set, {arm:11s} within 3: as handed {block['as_handed']['within_3']:3d}, learned "
-                  f"{block['learned']['within_3']:3d} of {block['as_handed']['found']} found in {block['as_handed']['problems']} "
-                  f"(sign test p {block['learned_against_as_handed']['sign_test_p']})")
+        if not isinstance(block, dict):
+            continue
+        for source, scored in block["learned_on"].items():
+            print(f"second set, {arm:11s} (order learned on {source}) within 3: as handed {block['as_handed']['within_3']:3d}, "
+                  f"learned {scored['learned']['within_3']:3d} of {block['as_handed']['found']} found in "
+                  f"{block['as_handed']['problems']} (sign test p {scored['learned_against_as_handed']['sign_test_p']})")
     return 0
 
 
