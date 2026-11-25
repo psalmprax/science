@@ -68,6 +68,21 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) multiplication, a flip-graph search with no language model, built (2026-11-25,
+  development; decision 4, owner's word "go ahead and build it").** `apedp_dyn/quantum/flip_search.py`
+  walks between decompositions of the same length by flips (Kauers and Moosbauer), shortens them by
+  three exact reductions (a zero factor; two products sharing two factors; products sharing one
+  factor whose second factors are linearly dependent) and leaves a dead end by plus transitions
+  (Arai, Ichikawa and Hukushima). Every move is an identity; nothing returned counts until it
+  reproduces every entry of the tensor. The verified 42 shares no factor between any two products,
+  so no flip leaves it: a walk from it starts with a plus transition. On small fields from the
+  schoolbook, locally, it reaches the published least counts of GF(2^2) to GF(2^6) (3, 6, 9, 13, 15)
+  within seconds, and in short trials falls short at GF(2^7) and GF(2^8) (24 and 34 against the 22
+  and 26 a published search of the same kind reached, arXiv:2602.15285); the GitHub run
+  (`scripts/search_gf2_mul_flip.py`, `.github/workflows/gf2-flip-search.yml`) calibrates on GF(2^7) to
+  GF(2^10) before its GF(2^12) walks are read. `field_tensor_search.search_flip_graph`, an older
+  function whose moves change the tensor, is left as it is. `tests/test_flip_search.py` (10),
+  `tests/test_search_gf2_mul_flip.py` (3).
 - **GF(2^12) multiplication, the baseline with no language model: the 42 has no shorter
   neighbour of the kind the existing search looks for (2026-11-25, development; decision 4).**
   `benchmarks/gf2_multiplication/rank_search_from_42.json` (run 45661808260). From the verified 42

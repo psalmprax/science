@@ -1,0 +1,85 @@
+name: GF(2^12) multiplication, a flip-graph search with no language model (development)
+
+# Development, not a result: scripts/search_gf2_mul_flip.py walks the flip graph (apedp_dyn/quantum/flip_search.py)
+# with no model in it. Calibration jobs on GF(2^7) to GF(2^10) stop at the published counts of a search of the same
+# kind; GF(2^12) jobs start from the verified 42, the composed 54 and the schoolbook 144 and keep the shortest exact
+# decomposition reached. Owner's word of 25 November ("go ahead and build it"). Every decomposition is checked exactly.
+#   push to gf2-flip-search-run-*  -> every job, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf2-flip-search-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: 'cal7', args: '--field 7 --start schoolbook --seeds 0 1 2 3 --seconds 7200'}
+          - {name: 'cal8', args: '--field 8 --start schoolbook --seeds 0 1 2 3 --seconds 7200'}
+          - {name: 'cal9', args: '--field 9 --start schoolbook --seeds 0 1 2 3 --seconds 7200'}
+          - {name: 'cal10', args: '--field 10 --start schoolbook --seeds 0 1 2 3 --seconds 7200'}
+          - {name: 'f12-42-slack2', args: '--field 12 --start tower42 --slack 2 --seeds 0 1 2 3 --seconds 18000'}
+          - {name: 'f12-42-slack3', args: '--field 12 --start tower42 --slack 3 --seeds 20 21 22 23 --seconds 18000'}
+          - {name: 'f12-42-slack4', args: '--field 12 --start tower42 --slack 4 --seeds 10 11 12 13 --seconds 18000'}
+          - {name: 'f12-54-slack2', args: '--field 12 --start karatsuba54 --slack 2 --seeds 0 1 2 3 --seconds 18000'}
+          - {name: 'f12-54-slack4', args: '--field 12 --start karatsuba54 --slack 4 --seeds 10 11 12 13 --seconds 18000'}
+          - {name: 'f12-144-slack2', args: '--field 12 --start schoolbook --slack 2 --seeds 0 1 2 3 --seconds 18000'}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The search's own tests
+        run: python -m pytest tests/test_flip_search.py tests/test_search_gf2_mul_flip.py tests/test_tower_reference.py -q
+      - name: Walk ${{ matrix.name }}
+        timeout-minutes: 320
+        env:
+          ARGS: ${{ matrix.args }}
+        run: python scripts/search_gf2_mul_flip.py run $ARGS --processes 4 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf2-flip-${{ matrix.name }}
+          path: out
+
+  collect:
+    needs: walk
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf2-flip-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/search_gf2_mul_flip.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf2 flip search====="
+          if [ -f got/flip_search.json ]; then gzip -9c got/flip_search.json | base64 -w 60000; echo; fi
+          echo "=====END gf2 flip search====="
