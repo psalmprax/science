@@ -45,6 +45,7 @@ from apedp_dyn.recursion import order_score  # noqa: E402
 
 TAG = "DEV-LEARNED-ORDER-2026-11"
 REFERENCE = "taught-80"
+REFERENCE_AS_A_PROPOSER = "split-80"        # the order saved first; scored on every proposer-built list of the second set
 HELD_APART = 100                 # problems of the reference arm never trained on in the learning curve
 CURVE = (5, 10, 25, 50, 100, 200)
 REPEATS = 20
@@ -132,12 +133,15 @@ def on_fresh(arms: dict[str, list[dict[str, Any]]], fresh: dict[str, list[dict[s
     """Orders learned on all of an arm's lists of the first set, scored on an arm's lists of the second set.
 
     A second-set arm is scored with the order learned on the same arm of the first set where there is one, and, for a
-    list built as a proposer builds it (``split-80``), also with the order learned on the first measurement's lists of
-    the same memory (``taught-80``): whether an order learned one way carries to lists built the other way.
+    list built as a proposer builds it (``split-80``, ``split-in-force``), also with the order learned on the first
+    measurement's lists of the same memory (``taught-80``, ``in-force``) and with the order learned on ``split-80``:
+    whether an order learned one way, or on another memory's lists, carries.
     """
     out: dict[str, Any] = {}
     for arm, found in fresh.items():
-        sources = [name for name in dict.fromkeys([arm, arm.replace("split-", "taught-")]) if name in arms]
+        twins = {"split-in-force": "in-force"}.get(arm, arm.replace("split-", "taught-"))
+        sources = [name for name in dict.fromkeys([arm, twins, *([REFERENCE_AS_A_PROPOSER] if arm.startswith("split-") else [])])
+                   if name in arms]
         if not sources or not any(row["candidates"] for row in found):
             continue
         rules = {f"tolerance {tolerance:g}": learned_order.reorder(found, tolerance=tolerance) for tolerance in TOLERANCES}

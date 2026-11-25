@@ -3,11 +3,13 @@ name: Wider conditions for the table route (development)
 # Development, not a result: scripts/run_wider_conditions.py runs the product's own table reading, with
 # the search stage in force, on invented laws of three, four and five inputs at noise of 1 to 20 %.
 # The route's reports were measured up to three inputs and 5 % noise; this counts what it does beyond.
-# Started by pushing a branch wider-conditions-run-*.
+# Started by pushing a branch wider-conditions-run-*, or wider-conditions-warm-run-* for the same 120 tables with
+# kept search processes (apedp_dyn/proposers/warm_pool.py): the full run the owner's decision 2 of 25 November asks
+# for before kept processes are proposed as the default (docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md).
 
 on:
   push:
-    branches: ['wider-conditions-run-*']
+    branches: ['wider-conditions-run-*', 'wider-conditions-warm-run-*']
 
 permissions:
   contents: read
@@ -38,7 +40,7 @@ jobs:
           # The same searches, with search processes that cannot hang while leaving and a wait for them that
           # is bounded from outside. The first run of this workflow (45444150935) stopped for ever in every
           # shard after one to four searches.
-          APEDP_SEARCH_PROCESSES: leave_hard
+          APEDP_SEARCH_PROCESSES: ${{ startsWith(github.ref_name, 'wider-conditions-warm-run-') && 'warm' || 'leave_hard' }}
         run: python scripts/run_wider_conditions.py run --out out --searches 90 --shard "$SHARD" --shards 8
       - uses: actions/upload-artifact@v7
         if: always()

@@ -7,12 +7,17 @@
 #   push to order-score-split-run-*  -> the second set again, the list built as a proposer can build it
 #                                       (fitted on four fifths of the rows, read on the fifth set aside).
 #   push to order-score-split-first-run-*  -> the first set with the list built that way, to learn an order from.
+#   push to order-score-in-force-first-run-* / order-score-in-force-fresh-run-*  -> the memory in force for tables
+#                                       listed as a proposer can list it, on the first set (to learn its order from)
+#                                       and on the second (to score that order), for the referee test of the ranked
+#                                       proposer (docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md, 1).
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 name: Order score of the memory's proposals (development)
 
 on:
   push:
-    branches: ['order-score-run-*', 'order-score-fresh-run-*', 'order-score-split-run-*', 'order-score-split-first-run-*']
+    branches: ['order-score-run-*', 'order-score-fresh-run-*', 'order-score-split-run-*', 'order-score-split-first-run-*',
+               'order-score-in-force-first-run-*', 'order-score-in-force-fresh-run-*']
 
 permissions:
   contents: read
@@ -36,6 +41,12 @@ jobs:
             order-score-split-first-run-*)
               echo 'set=test' >> "$GITHUB_OUTPUT"
               echo 'arms=["split-80"]' >> "$GITHUB_OUTPUT" ;;
+            order-score-in-force-first-run-*)
+              echo 'set=test' >> "$GITHUB_OUTPUT"
+              echo 'arms=["split-in-force"]' >> "$GITHUB_OUTPUT" ;;
+            order-score-in-force-fresh-run-*)
+              echo 'set=fresh' >> "$GITHUB_OUTPUT"
+              echo 'arms=["in-force","split-in-force"]' >> "$GITHUB_OUTPUT" ;;
             order-score-split-run-*)
               echo 'set=fresh' >> "$GITHUB_OUTPUT"
               echo 'arms=["split-80"]' >> "$GITHUB_OUTPUT" ;;

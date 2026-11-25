@@ -68,6 +68,13 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Carrying out the four decisions, first steps (2026-11-25, development).**
+  `.github/workflows/wider-conditions.yml` runs the 120 tables with kept search processes from a
+  branch `wider-conditions-warm-run-*` (decision 2). `scripts/measure_order_score.py` gains the
+  arm `split-in-force`, the memory in force for tables listed as a proposer can list it, and
+  `scripts/study_learned_order.py` scores a proposer-built list with every order that could serve
+  it (decision 1: the order the ranked proposer will use for the memory in force is learned from
+  these lists, before any law of the referee test is drawn).
 - **Four decisions of the owner, 2026-11-25, afternoon ("yes to all").**
   `docs/OWNER_DECISIONS_2026-11-25_AFTERNOON.md` records them as put: the learned order is tested
   through the referee beside the memory in force, in one preregistered run with a separate

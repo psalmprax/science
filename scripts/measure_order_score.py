@@ -12,7 +12,8 @@ same table and memory give the same list on any machine.
 Arms: the memory taught 0, 5, 20, 80 and 320 laws of a teaching set drawn apart from the test
 problems (no test problem's structure is in it), and the memory in force for tables
 (``memory_stage.recorded_memory``). ``split-80`` is the memory taught 80 laws with its list built
-as a proposer can build it: fitted on four fifths of the rows, read on the fifth set aside. A memory "taught" a law here is given the generator's own law:
+as a proposer can build it: fitted on four fifths of the rows, read on the fifth set aside;
+``split-in-force`` is the memory in force listed that way. A memory "taught" a law here is given the generator's own law:
 that is an upper bound on what the same number of laws confirmed by the referee would teach, and it
 says whether the learner has room to learn at all.
 
@@ -90,7 +91,7 @@ def fresh_problems(count: int = FRESH) -> list[Problem]:
 
 
 def memory_of(arm: str, tests: list[Problem]) -> Memory:
-    if arm == "in-force":
+    if arm in ("in-force", "split-in-force"):                      # the memory in force for tables, either way of listing
         from apedp_dyn.discovery_l2 import memory_stage
 
         return memory_stage.recorded_memory()
@@ -156,9 +157,9 @@ def summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     order = [arm for arm in ARMS if arm in by_arm and arm.startswith("taught-")]
     steps = {f"{second} against {first}": order_score.compare(by_arm[first], by_arm[second])
              for first, second in itertools.pairwise(order)}
-    for n in SPLIT:                 # the same memory, its list built from the rows a proposer has
-        if f"taught-{n}" in by_arm and f"split-{n}" in by_arm:
-            steps[f"split-{n} against taught-{n}"] = order_score.compare(by_arm[f"taught-{n}"], by_arm[f"split-{n}"])
+    for whole, split in (*((f"taught-{n}", f"split-{n}") for n in SPLIT), ("in-force", "split-in-force")):
+        if whole in by_arm and split in by_arm:        # the same memory, its list built from the rows a proposer has
+            steps[f"{split} against {whole}"] = order_score.compare(by_arm[whole], by_arm[split])
     reference = by_arm.get("taught-80") or next(iter(by_arm.values()), [])
     seen = {str(n): {f"churn {churn:g}": order_score.smallest_visible_gain(reference, n, churn=churn)
                      for churn in (0.0, 0.1, 0.25)} for n in (10, 48, 100, 300)} if reference else {}
