@@ -51,6 +51,10 @@ TARGET = 41
 GF4_CHOICES = [[103, 131, 138, 195, 1], [122, 130, 884, 1970, 678], [127, 197, 884, 1970, 678],
                [166, 131, 822, 2036, 459], [303, 197, 138, 195, 1], [495, 130, 822, 2036, 459]]
 GF4_LABELS = [406, 403, 402, 402, 401]
+#: choices of orbits of GF(8) forms (x -> x^64, labels 802 802 802 801) giving seven GF(8) products, 42 over GF(2): the first
+#: 20 of the 288 the invariant search finds (``prepare-mixed --families 8 --step 6``, ``run-mixed --budget 42``)
+GF8_CHOICES = [[2, 76, 123, 458], [2, 76, 642, 458], [2, 123, 642, 458], [3, 4, 30, 459], [3, 4, 561, 459], [3, 30, 561, 459], [4, 30, 561, 459], [5, 16, 239, 396], [5, 16, 340, 396], [5, 239, 340, 396], [6, 56, 124, 131], [6, 56, 544, 131], [6, 124, 544, 131], [7, 14, 263, 70], [7, 14, 293, 70], [7, 263, 293, 70], [8, 246, 479, 459], [8, 246, 584, 459], [8, 479, 584, 459], [9, 47, 97, 1]]
+GF8_LABELS = [802, 802, 802, 801]
 
 
 @cache
@@ -74,13 +78,18 @@ def invariant(triples: list[tuple[int, int, int]], n: int, step: int) -> bool:
 
 
 def start(field: int, step: int, spec: str) -> list[tuple[int, int, int]]:
-    """``gf4:K`` (GF(2^12)), ``normal`` (the schoolbook in a normal basis, invariant under every step) or
+    """``gf4:K`` and ``gf8:K`` (GF(2^12): GF(4)-type 42s invariant under x -> x^4, GF(8)-type 42s under x -> x^64), ``normal`` (the schoolbook in a normal basis, invariant under every step) or
     ``tower-inv:k`` (the first tower over GF(2^k) invariant under the step)."""
     kind, _, arg = spec.partition(":")
     if kind == "gf4":
         if field != 12:
             raise ValueError("the GF(4) starts are for GF(2^12)")
         triples, _ = inv.extract_mixed(2, GF4_LABELS, GF4_CHOICES[int(arg)])
+        return [tuple(t) for t in triples]                     # type: ignore[misc]
+    if kind == "gf8":
+        if field != 12:
+            raise ValueError("the GF(8) starts are for GF(2^12)")
+        triples, _ = inv.extract_mixed(6, GF8_LABELS, GF8_CHOICES[int(arg)])
         return [tuple(t) for t in triples]                     # type: ignore[misc]
     if kind == "normal":
         return normal_schoolbook(field)

@@ -68,6 +68,13 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12): new symmetric starts for the symmetric walk (2026-11-26, development).** The mixed invariant
+  search finds 288 decompositions of seven GF(8) products invariant under x -> x^64 (42 over GF(2), exact) and
+  15 of five GF(16) products invariant under x -> x^16 (45, exact; over GF(2) they are not invariant, since a
+  class fixed up to a cube root of unity is written with a decomposition of GF(16) that the root does not
+  permute). `scripts/search_gf2_orbit_walk.py` takes the first 20 GF(8) ones as starts `gf8:K` (step 6).
+  Locally in 90 seconds: from them 42 stays 42; GF(2^10) under x -> x^4 from the normal-basis schoolbook (100)
+  reaches 65 to 75 (best known 33), so the quick success on GF(2^8) does not carry to GF(2^10).
 - **GF(2^12), the C flip walk's GitHub run recorded: nothing below 42 in 274 core-hours (2026-11-26,
   development).** `benchmarks/gf2_multiplication/flip_walk_c.json` (run 1 of `.github/workflows/gf2-flip-walk-c.yml`):
   52 walks for GF(2^12) and 6.35 million million flips. From the repository's 42 and 39 GF(8) towers of 42:
