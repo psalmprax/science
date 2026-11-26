@@ -44,7 +44,11 @@ INDEX_REPO = "vLAR/PhysInOne"
 INDEX_FILE = "Utils/scripts/download_lists/repo_assignment.txt"
 MAP_FILE = "Utils/scripts/download_lists/repo_map.json"
 PHENOMENON = {"free_fall": "VerticalFall", "throw": "ObliqueProjectile", "roll": "RollDownSlope",
-              "bounce": "ElasticFall", "pendulum": "SimplePendulum", "collision": "MovingHitsMoving"}
+              "bounce": "VerticalFall", "pendulum": "SimplePendulum", "collision": "MovingHitsMoving"}
+#: Bounces are rigid (owner's word, 27 November 00:07): fall and throw scenes whose simulated path rebounds.
+BOUNCE_SOURCES = ("VerticalFall", "ObliqueProjectile")
+REBOUND_SHARE = 0.05   #: the rise after the lowest point, as a share of the fall, that counts as a rebound
+SIDE_VIEW_RATIO = 1.25  #: collisions: an object whose size changes more than this is not seen from the side
 OBJECTS = {"collision": 2}
 SCENE = re.compile(r"/Scenes/Train/SinglePhysics/(?P<scene>(?P<ph>[A-Za-z]+)__bg(?P<bg>\d+)__[A-Za-z0-9]+)\.")
 
@@ -59,12 +63,12 @@ def select(kind: str, count: int, seed: int, pool: str) -> list[tuple[str, str]]
     _, download = _hub()
     index = Path(download(INDEX_REPO, INDEX_FILE, repo_type="dataset")).read_text().splitlines()
     repo_map = json.loads(Path(download(INDEX_REPO, MAP_FILE, repo_type="dataset")).read_text())
-    want = PHENOMENON[kind]
+    want = set(BOUNCE_SOURCES) if kind == "bounce" else {PHENOMENON[kind]}
     found = []
     for line in index:
         path, _, part = line.partition("\t")
         m = SCENE.search(path)
-        if not m or m["ph"] != want:
+        if not m or m["ph"] not in want:
             continue
         blind = int(m["bg"]) % 5 == 0
         if (pool == "blind") != blind:
@@ -72,8 +76,8 @@ def select(kind: str, count: int, seed: int, pool: str) -> list[tuple[str, str]]
         found.append((m["scene"], repo_map[part.strip()]))
     found.sort()
     rng = np.random.default_rng(seed)
-    pick = rng.choice(len(found), size=min(count, len(found)), replace=False) if found else []
-    return [found[i] for i in sorted(pick)]
+    pick = rng.permutation(len(found)) if found else []
+    return [found[i] for i in pick]
 
 
 def _first_array(blob: bytes) -> np.ndarray:
@@ -210,14 +214,52 @@ def _to_tracks(clip: dict, kind: str) -> tuple[list[Track], dict]:
     return tracks, {"cadence_phase": phase, "cadence_strength": round(strength, 2), "samples": int(keep.size)}
 
 
+def rebounds(actors: list[dict]) -> bool:
+    """Whether a solid actor's simulated height falls, reaches a lowest point and rises again.
+
+    Heights are the third world coordinate (up in Unreal Engine). Selection on the simulation's truth, not
+    on anything the judge computes.
+    """
+    for actor in actors:
+        z = np.array([p[2][2] for p in actor["path"] if p[2] and p[2][2] is not None], dtype=float)
+        if z.size < 5:
+            continue
+        low = int(np.argmin(z[: max(2, z.size - 1)]))
+        drop = float(z[:low + 1].max() - z[low])
+        if drop > 0 and low < z.size - 1 and float(z[low + 1:].max() - z[low]) >= REBOUND_SHARE * drop:
+            return True
+    return False
+
+
+def side_view(tracks: list[Track]) -> bool:
+    """Collisions from the side only (owner's word, 27 November 00:07): sizes steady within SIDE_VIEW_RATIO."""
+    for tr in tracks:
+        if tr.size is None:
+            return False
+        s = tr.size[np.isfinite(tr.size)]
+        if s.size < 5:
+            return False
+        smooth = np.array([np.median(s[max(0, k - 2):k + 3]) for k in range(s.size)])
+        if float(smooth.max() / smooth.min()) > SIDE_VIEW_RATIO:
+            return False
+    return True
+
+
 def cmd_fetch(args: argparse.Namespace) -> None:
     picked = select(args.kind, args.count, args.seed, args.pool)
-    clips = []
+    clips: list[dict] = []
+    tried = 0
     for scene, repo in picked:
+        if sum("error" not in c for c in clips) >= args.count or tried >= 4 * args.count:
+            break
+        tried += 1
         start = time.time()
         try:
             clip = tracks_from_scene(scene, repo)
             clip["seconds"] = round(time.time() - start, 1)
+            if args.kind == "bounce" and not rebounds(clip.get("actors", [])):
+                print(f"{scene}: no rebound in the simulated path, skipped", flush=True)
+                continue
             clips.append(clip)
             print(f"{scene}: {clip['frames']} frames, {len(clip['objects'])} objects, {clip['seconds']} s", flush=True)
         except (OSError, RuntimeError, ValueError, KeyError, zipfile.BadZipFile) as exc:  # recorded, not hidden
@@ -241,6 +283,11 @@ def cmd_judge(args: argparse.Namespace) -> None:
                          "reasons": [f"{len(clip['objects'])} moving objects in the masks"]})
             continue
         tracks, adapter = _to_tracks(clip, kind)
+        if kind == "collision" and not side_view(tracks):
+            rows.append({"scene": clip["scene"], "variant": "true", "outcome": "excluded",
+                         "reasons": ["not seen from the side: an object's size changes by more than a quarter"],
+                         "adapter": adapter})
+            continue
         v = judge(kind, tracks)
         rows.append({"scene": clip["scene"], "variant": "true", "outcome": v.outcome, "reasons": v.reasons,
                      "stats": v.stats, "adapter": adapter})

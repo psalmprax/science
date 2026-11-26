@@ -28,6 +28,15 @@ inferred releases.
   `proposers/llm_https.py` refuses any address that is not https; the frozen file is unchanged and
   its finding is listed in `scripts/bandit_baseline.json`, which the scan reads and a test pins.
 
+### Changed
+
+- **Physics-first video plan: the owner's three choices (2026-11-27, 00:07, "Yes").** Bounces are rigid
+  (fall and throw scenes whose simulated path rebounds), not PhysInOne's soft-body ElasticFall; collisions
+  are judged from side views only and stay out of gate J until they pass in development; PhysInOne
+  (CC BY-NC-SA) only tests the judge, and the adapter of step 1c trains on clips simulated and rendered here.
+  Gate J's proposed numbers stay as they are. `docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md`,
+  `scripts/run_physics_judge_dev.py`.
+
 ### Added
 
 - **The physics judge's first development run on PhysInOne (2026-11-26).** `benchmarks/physics_judge/dev_run_1.json`

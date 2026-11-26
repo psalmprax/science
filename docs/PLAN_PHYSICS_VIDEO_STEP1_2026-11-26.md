@@ -48,9 +48,13 @@ So the judge is built and tested first.
 
 **Validation data.**
 
-- True physics: PhysInOne clips of the six phenomena (a published synthetic set of 2 million physics videos;
-  its licence is checked before anything is downloaded). A development set and a separate blind set, split
-  by scene.
+- True physics: PhysInOne clips (a published synthetic set of 2 million physics videos, licensed
+  CC BY-NC-SA 4.0: used here only to test the judge, never to train anything). A development set and a
+  separate blind set, split by scene (blind: backgrounds whose number is a multiple of five). Bounces are
+  rigid ones, from fall and throw scenes whose simulated path rebounds, not the soft-body ElasticFall scenes
+  (owner's word, 27 November 00:07). Collisions are tested from side views only: a clip in which either
+  object's size changes by more than a quarter (it moves toward or away from the camera) is left out, and the
+  test prompts of 1b ask for side views.
 - Broken physics, made from the same clips: time reversal of clips that lose energy, a jump of the object
   between two frames, frames held still, the vertical motion reversed for part of a clip. For the blind set,
   the independent reviewer also writes perturbations the judge was not developed against, and keeps them
@@ -59,9 +63,11 @@ So the judge is built and tested first.
   laws the judge covers; if those videos are not released with the labels, VideoPhy-2's released
   human-labelled videos instead.
 
-**Gate J (proposed numbers).** On the blind set: at least 80% of true-physics clips pass; at most 10% of
-broken clips pass, counted separately for every kind of breakage (the reviewer's unseen kinds included);
-and on the human-labelled videos, agreement with the human majority of at least Cohen's kappa 0.3.
+**Gate J (proposed numbers; the owner has said to keep them, 27 November 00:07).** On the blind set, for
+falls, throws, rolls, bounces and pendulums (collisions join only after they pass in development): at least
+80% of true-physics clips pass; at most 10% of broken clips pass, counted separately for every kind of
+breakage (the reviewer's unseen kinds included); and on the human-labelled videos, agreement with the human
+majority of at least Cohen's kappa 0.3.
 
 **Stop rule.** If the judge fails gate J, step 1 stops there and the result is recorded; 1b and 1c do not
 run until a revised judge passes a fresh blind set.
@@ -86,8 +92,10 @@ scores); and prompt adherence (a text-video similarity score). The same three ar
 
 ## 1c. The adapters, and gate 1 (GPU)
 
-**Training data.** About 2,000 PhysInOne clips of the six phenomena with their captions, from scenes that
-appear in neither the judge's blind set nor the prompts.
+**Training data.** About 2,000 clips of the scene kinds that we simulate and render ourselves, so that the
+adapter is the owner's to use (owner's word, 27 November 00:07; an open generator such as Kubric is the first
+candidate, its licence to be confirmed before use). Not PhysInOne, whose licence forbids commercial use of
+anything made from it.
 
 **Arms.** All trained for the same number of steps on the same clips in the same order; each arm's learning
 rate is chosen from three values by the flow-matching loss on held-back training clips (no generation, no
@@ -173,12 +181,13 @@ development run (`benchmarks/physics_judge/dev_run_1.json`) showed, and what was
   ("no segment shows a downward acceleration" on 10 of 30 falls). The second development run takes the most
   nearly level static camera, as generated clips are usually framed.
 - **The phenomenon chosen for bounces, ElasticFall, is a soft body**: its contacts last several frames and
-  push upward, where the judge assumes rigid contacts. The owner may prefer rigid bounces instead (from
-  VerticalFall or SpringboardRebound scenes).
+  push upward, where the judge assumes rigid contacts. On the owner's word (27 November 00:07) bounces are now
+  rigid ones, from fall and throw scenes whose simulated path rebounds.
 - **Collisions are seen in three dimensions**: MovingHitsMoving objects move in depth and hide each other,
-  and judging their momentum from the image alone failed on nearly every true clip. A judge that lifts the
-  tracks to three dimensions (PhysInOne's depth maps for validation, a monocular depth model for generated
-  clips) is the likely fix; it is a change to the plan and waits for the owner.
+  and judging their momentum from the image alone failed on nearly every true clip. On the owner's word
+  (27 November 00:07): side views only for now (in validation and in the prompts), and collisions stay out of
+  gate J until they pass in development; lifting the tracks to three dimensions with depth comes only if side
+  views still fail.
 - **Time reversal of a gradual slowdown is not caught**: contact rules see only abrupt changes. A check that
   speed is gained only by descending (depth taken out with the object's size) was tried and dropped: it failed
   most true rolls.
