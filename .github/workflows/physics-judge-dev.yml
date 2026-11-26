@@ -1,7 +1,7 @@
 name: Physics judge, development runs on PhysInOne
 
 # docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md, part 1a, on the owner's word of 26 November ("so, build").
-# One runner per scene kind: scripts/run_physics_judge_dev.py reads the masks of 30 development scenes of
+# One runner per scene kind: scripts/run_physics_judge_dev.py reads the masks of 30 development scenes (60 for collisions, most are not side views) of
 # the kind's phenomenon from PhysInOne on the Hugging Face Hub (range requests, nothing kept), makes the
 # object tracks, and prints the judge's verdicts on the true clips and on four development perturbations,
 # with the tracks, between markers in the log. Development pool only: the blind pool (backgrounds that are
@@ -38,7 +38,9 @@ jobs:
         timeout-minutes: 35
         env:
           KIND: ${{ matrix.kind }}
-        run: python scripts/run_physics_judge_dev.py fetch --kind "$KIND" --count 30 --seed 0 --pool dev --out "tracks_$KIND.json"
+        run: |
+          COUNT=30; if [ "$KIND" = collision ]; then COUNT=60; fi
+          python scripts/run_physics_judge_dev.py fetch --kind "$KIND" --count "$COUNT" --seed 0 --pool dev --out "tracks_$KIND.json"
       - name: Judge ${{ matrix.kind }}
         timeout-minutes: 20
         env:

@@ -106,8 +106,8 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
             if doc is None:
                 continue
             frames0 = (json.loads(archive.read(doc)) or {}).get("frames") or []
-            if frames0:
-                c2w = np.asarray(frames0[0], dtype=float).reshape(4, 4)
+            c2w = _matrix(frames0[0]) if frames0 else None
+            if c2w is not None:
                 forward = -c2w[:3, 2]
                 pitches[d] = float(np.degrees(np.arcsin(np.clip(forward[2] / np.linalg.norm(forward), -1, 1))))
         chosen = min(pitches, key=lambda d: abs(pitches[d])) if pitches else static[0]
@@ -118,7 +118,7 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
         if traj:
             doc = json.loads(archive.read(traj)) or {}
             info = doc.get("sequence_info") or {}
-            fps = float(info.get("fps") or fps)
+            fps = _rate(info.get("fps"), fps)
             actors = _actor_paths(doc)
         frames = sorted(n for n in names if n.startswith(chosen + "/seg/") and n.endswith(".npz"))
         per_id: dict[int, dict[int, tuple[float, float, float]]] = defaultdict(dict)
@@ -152,6 +152,36 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
             "shape": list(shape) if shape else None, "objects": objects, "actors": actors}
 
 
+def _matrix(entry: object) -> np.ndarray | None:
+    """A 4 x 4 camera-to-world matrix from a frame entry: the matrix itself, or a record holding it."""
+    candidates = [entry]
+    if isinstance(entry, dict):
+        candidates = [entry.get(k) for k in ("transform_matrix", "c2w", "matrix", "transform")] + list(entry.values())
+    for c in candidates:
+        try:
+            m = np.asarray(c, dtype=float)
+        except (TypeError, ValueError):
+            continue
+        if m.size == 16:
+            return m.reshape(4, 4)
+    return None
+
+
+def _rate(value: object, default: float) -> float:
+    """A frame rate given as a number, a string, or a {numerator, denominator} record."""
+    if isinstance(value, dict):
+        num = value.get("numerator") or value.get("Numerator")
+        den = value.get("denominator") or value.get("Denominator") or 1
+        try:
+            return float(num) / float(den) if num else default
+        except (TypeError, ValueError):
+            return default
+    try:
+        return float(value) if value else default
+    except (TypeError, ValueError):
+        return default
+
+
 def _actor_paths(doc: dict) -> list[dict]:
     """World positions per frame of the trajectory file's solid actors (development diagnostics only)."""
     out = []
@@ -167,10 +197,12 @@ def _actor_paths(doc: dict) -> list[dict]:
             entries = first.get("transform_data") or [] if isinstance(first, dict) else []
         path = []
         for e in entries:
-            loc = (e.get("transform") or {}).get("location")
+            loc = (e.get("transform") or {}).get("location") if isinstance(e, dict) else None
             if isinstance(loc, dict):
-                loc = [loc.get("x"), loc.get("y"), loc.get("z")]
-            path.append([e.get("frame"), e.get("time_seconds"), loc])
+                loc = [loc.get("x", loc.get("X")), loc.get("y", loc.get("Y")), loc.get("z", loc.get("Z"))]
+            if not (isinstance(loc, list) and len(loc) == 3):
+                loc = None
+            path.append([e.get("frame"), e.get("time_seconds"), loc] if isinstance(e, dict) else [None, None, None])
         out.append({"name": str(name), "type": actor.get("actor_type"), "path": path[:120]})
     return out[:4]
 
@@ -262,7 +294,7 @@ def cmd_fetch(args: argparse.Namespace) -> None:
                 continue
             clips.append(clip)
             print(f"{scene}: {clip['frames']} frames, {len(clip['objects'])} objects, {clip['seconds']} s", flush=True)
-        except (OSError, RuntimeError, ValueError, KeyError, zipfile.BadZipFile) as exc:  # recorded, not hidden
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, zipfile.BadZipFile) as exc:  # recorded, not hidden
             clips.append({"scene": scene, "error": f"{type(exc).__name__}: {exc}"})
             print(f"{scene}: {type(exc).__name__}: {exc}", flush=True)
     Path(args.out).write_text(json.dumps({"kind": args.kind, "pool": args.pool, "seed": args.seed,

@@ -40,12 +40,12 @@ Categories:
 | **AND gates instead of products** (`scripts/gf2_and_walk.c`) | — | Reaches the known counts up to GF(2^6), stops at 27 for GF(2^7) (22 known), 42 for GF(2^12); and it counts AND gates, not the bilinear products of the target. `and_walk.json` |
 | **A walk over GF(4) toward 13 products** (`scripts/gf4_flip_walk.c`) | — | GF(4^5) reaches the published 11; GF(4^6) stays at 14 in 178 core-hours. `gf4_flip_walk.json` |
 | **The 719 OpenAI mathematics manuscripts** | — | none applies directly; one lesson on process taken |
+| **A quantum-inspired byte model** (MMLM-QI; `RESULT-MMLM-QI-2026-11`; the plan's proposal, for your word) | mixed byte by byte with Kneser-Ney counting | Preregistered run, 45 minutes per model: the best, `pure-complex-64`, 2.61 bits per byte, against 1.82 for four bytes of counting and 2.40 to 2.42 for a 1,024-state hidden Markov model; it lost to the hidden Markov model of its state's size at both sizes (by 0.27 and 0.35 on three seeds), and mixed with counting it got weight 0 in every run, so the hybrid adds nothing. Complex amplitudes beat real ones by 0.45 and 0.85 at the larger sizes (the real models trained worse as they grew); a mixed state did not help |
 
 ## D. Waiting for results
 
 | Solution | Hybrids in the test | Rehearsal so far | Where its result goes |
 | :--- | :--- | :--- | :--- |
-| **A quantum-inspired byte model** (MMLM-QI: pure and mixed states, complex and real; `PREREG-MMLM-QI-2026-11`) | mixed byte by byte with Kneser-Ney counting (expectation 7) | Best 2.77 bits per byte against a hidden Markov model's 2.50 and counting's 1.85 (10 minutes of training) | the plan's table: an expert in MMLM-CM's mixture only if the hybrid gains more than an automaton of its size would; otherwise not developed |
 | **JetFlow against plain flow matching and MeanFlow** (`PREREG-VIDEO-FLOW-2026-11`) | MeanFlow on JetFlow's network; JetFlow's sampler on the UNet; the Jet2 step on MeanFlow's velocity | JetFlow's sampler lost to plain flow matching at four calls on all three data sets (2 minutes of training). Its Jet2 step was found to have its curvature reversed since 6 November; fixed on your word, so the run scores the fixed step (no recorded result had used the reversed one) | the plan's consequences: JetFlow kept only if it (or its corrected step) beats flow matching on real footage and a toy world; a hybrid only if it beats what it would replace |
 
 ## E. Planned, not built

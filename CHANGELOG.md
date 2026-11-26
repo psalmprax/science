@@ -39,6 +39,12 @@ inferred releases.
 
 ### Added
 
+- **PREREG-MMLM-QI-2026-11 recorded (2026-11-27).** `preregistration/RESULT-MMLM-QI-2026-11.md`: all 25 arms ran on
+  the frozen commit. The best quantum-inspired byte model costs 2.61 bits per byte against 1.82 for four
+  bytes of counting; it loses to a hidden Markov model of its state's size at both sizes and gets weight 0
+  when mixed with counting. Expectations 1 and 5 held, 2, 3, 4, 6 and 7 missed. Proposal, for the owner:
+  do not develop quantum-inspired language models in MMLM. The independent check's seven findings were
+  addressed before recording; the solutions register moves the model to "Do not add".
 - **The physics judge's first development run on PhysInOne (2026-11-26).** `benchmarks/physics_judge/dev_run_1.json`
   and the plan's new last section: PhysInOne's rigid scenes move on a three-frame cadence (tracks are now
   taken every third frame), the first static camera often looks steeply down (the next run takes the most

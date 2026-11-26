@@ -1,0 +1,2963 @@
+{
+ "preregistration": "PREREG-MMLM-QI-2026-11",
+ "mode": "final",
+ "missing_arms": [],
+ "arms": {
+  "pure-complex-16": {
+   "arm": "pure-complex-16",
+   "model": "pure-complex-16",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 131104,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.3212,
+     "bytes_seen": 26763264
+    },
+    "0.01": {
+     "selection_bpb": 3.2213,
+     "bytes_seen": 26525696
+    },
+    "0.03": {
+     "selection_bpb": 3.0959,
+     "bytes_seen": 26779648
+    },
+    "0.1": {
+     "selection_bpb": 3.4175,
+     "bytes_seen": 26886144
+    },
+    "0.3": {
+     "selection_bpb": 3.336,
+     "bytes_seen": 29016064
+    },
+    "1.0": {
+     "selection_bpb": 3.3062,
+     "bytes_seen": 27926528
+    },
+    "3.0": {
+     "selection_bpb": 3.4999,
+     "bytes_seen": 28950528
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2700.6,
+   "steps": 61848,
+   "bytes_seen": 506658816,
+   "selection_bpb": 3.1248,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.1115,
+   "scoring_bytes_per_second": 561954,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-32": {
+   "arm": "pure-complex-32",
+   "model": "pure-complex-32",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 524352,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.4437,
+     "bytes_seen": 11771904
+    },
+    "0.01": {
+     "selection_bpb": 3.2464,
+     "bytes_seen": 11755520
+    },
+    "0.03": {
+     "selection_bpb": 3.2784,
+     "bytes_seen": 11706368
+    },
+    "0.1": {
+     "selection_bpb": 2.9481,
+     "bytes_seen": 11730944
+    },
+    "0.3": {
+     "selection_bpb": 3.4395,
+     "bytes_seen": 11460608
+    },
+    "1.0": {
+     "selection_bpb": 3.2098,
+     "bytes_seen": 11542528
+    },
+    "3.0": {
+     "selection_bpb": 2.9395,
+     "bytes_seen": 11517952
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2701.2,
+   "steps": 25466,
+   "bytes_seen": 208617472,
+   "selection_bpb": 2.7359,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.7211,
+   "scoring_bytes_per_second": 250348,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-64": {
+   "arm": "pure-complex-64",
+   "model": "pure-complex-64",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 2097280,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.6708,
+     "bytes_seen": 5136384
+    },
+    "0.01": {
+     "selection_bpb": 3.2616,
+     "bytes_seen": 5095424
+    },
+    "0.03": {
+     "selection_bpb": 3.0488,
+     "bytes_seen": 5087232
+    },
+    "0.1": {
+     "selection_bpb": 3.4028,
+     "bytes_seen": 5128192
+    },
+    "0.3": {
+     "selection_bpb": 3.0342,
+     "bytes_seen": 5054464
+    },
+    "1.0": {
+     "selection_bpb": 2.8863,
+     "bytes_seen": 5128192
+    },
+    "3.0": {
+     "selection_bpb": 2.8333,
+     "bytes_seen": 5120000
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2701.7,
+   "steps": 11302,
+   "bytes_seen": 92585984,
+   "selection_bpb": 2.6238,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.6065,
+   "scoring_bytes_per_second": 180563,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6975P-C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-real-16": {
+   "arm": "pure-real-16",
+   "model": "pure-real-16",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 65552,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.8385,
+     "bytes_seen": 22642688
+    },
+    "0.01": {
+     "selection_bpb": 4.246,
+     "bytes_seen": 22282240
+    },
+    "0.03": {
+     "selection_bpb": 4.4729,
+     "bytes_seen": 22470656
+    },
+    "0.1": {
+     "selection_bpb": 4.6014,
+     "bytes_seen": 22110208
+    },
+    "0.3": {
+     "selection_bpb": 4.9517,
+     "bytes_seen": 22691840
+    },
+    "1.0": {
+     "selection_bpb": 5.0725,
+     "bytes_seen": 22700032
+    },
+    "3.0": {
+     "selection_bpb": 5.4466,
+     "bytes_seen": 22831104
+    }
+   },
+   "rate": 0.01,
+   "seconds": 2700.8,
+   "steps": 48899,
+   "bytes_seen": 400580608,
+   "selection_bpb": 3.3799,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.3713,
+   "scoring_bytes_per_second": 395409,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-real-32": {
+   "arm": "pure-real-32",
+   "model": "pure-real-32",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 262176,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.7998,
+     "bytes_seen": 12304384
+    },
+    "0.01": {
+     "selection_bpb": 4.1317,
+     "bytes_seen": 12337152
+    },
+    "0.03": {
+     "selection_bpb": 4.0247,
+     "bytes_seen": 12541952
+    },
+    "0.1": {
+     "selection_bpb": 5.1012,
+     "bytes_seen": 12476416
+    },
+    "0.3": {
+     "selection_bpb": 4.7769,
+     "bytes_seen": 12451840
+    },
+    "1.0": {
+     "selection_bpb": 5.0964,
+     "bytes_seen": 12419072
+    },
+    "3.0": {
+     "selection_bpb": 5.4484,
+     "bytes_seen": 12451840
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2701.0,
+   "steps": 27109,
+   "bytes_seen": 222076928,
+   "selection_bpb": 3.3993,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.3837,
+   "scoring_bytes_per_second": 338754,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-real-64": {
+   "arm": "pure-real-64",
+   "model": "pure-real-64",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 1048640,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.2863,
+     "bytes_seen": 7397376
+    },
+    "0.01": {
+     "selection_bpb": 4.5887,
+     "bytes_seen": 7471104
+    },
+    "0.03": {
+     "selection_bpb": 4.5131,
+     "bytes_seen": 7487488
+    },
+    "0.1": {
+     "selection_bpb": 4.7554,
+     "bytes_seen": 7454720
+    },
+    "0.3": {
+     "selection_bpb": 5.8069,
+     "bytes_seen": 7438336
+    },
+    "1.0": {
+     "selection_bpb": 5.7225,
+     "bytes_seen": 7405568
+    },
+    "3.0": {
+     "selection_bpb": 5.9334,
+     "bytes_seen": 7471104
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2701.8,
+   "steps": 16315,
+   "bytes_seen": 133652480,
+   "selection_bpb": 3.4163,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.4085,
+   "scoring_bytes_per_second": 183987,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-real-23": {
+   "arm": "pure-real-23",
+   "model": "pure-real-23",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 135447,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.4365,
+     "bytes_seen": 22839296
+    },
+    "0.01": {
+     "selection_bpb": 4.1205,
+     "bytes_seen": 23273472
+    },
+    "0.03": {
+     "selection_bpb": 4.4411,
+     "bytes_seen": 22945792
+    },
+    "0.1": {
+     "selection_bpb": 4.6944,
+     "bytes_seen": 22241280
+    },
+    "0.3": {
+     "selection_bpb": 4.9202,
+     "bytes_seen": 22618112
+    },
+    "1.0": {
+     "selection_bpb": 5.2008,
+     "bytes_seen": 22437888
+    },
+    "3.0": {
+     "selection_bpb": 5.3721,
+     "bytes_seen": 23044096
+    }
+   },
+   "rate": 0.01,
+   "seconds": 2700.6,
+   "steps": 50001,
+   "bytes_seen": 409608192,
+   "selection_bpb": 3.1454,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.1271,
+   "scoring_bytes_per_second": 585385,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6975P-C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-real-45": {
+   "arm": "pure-real-45",
+   "model": "pure-real-45",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 518445,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.7763,
+     "bytes_seen": 11993088
+    },
+    "0.01": {
+     "selection_bpb": 4.3633,
+     "bytes_seen": 11960320
+    },
+    "0.03": {
+     "selection_bpb": 4.5666,
+     "bytes_seen": 12025856
+    },
+    "0.1": {
+     "selection_bpb": 5.2968,
+     "bytes_seen": 12001280
+    },
+    "0.3": {
+     "selection_bpb": 5.7317,
+     "bytes_seen": 12025856
+    },
+    "1.0": {
+     "selection_bpb": 5.5376,
+     "bytes_seen": 11943936
+    },
+    "3.0": {
+     "selection_bpb": 4.9458,
+     "bytes_seen": 12066816
+    }
+   },
+   "rate": 0.01,
+   "seconds": 2701.3,
+   "steps": 26315,
+   "bytes_seen": 215572480,
+   "selection_bpb": 3.1876,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.1748,
+   "scoring_bytes_per_second": 256420,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-real-90": {
+   "arm": "pure-real-90",
+   "model": "pure-real-90",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 2073690,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.9035,
+     "bytes_seen": 4440064
+    },
+    "0.01": {
+     "selection_bpb": 4.8559,
+     "bytes_seen": 4268032
+    },
+    "0.03": {
+     "selection_bpb": 4.8359,
+     "bytes_seen": 4284416
+    },
+    "0.1": {
+     "selection_bpb": 5.3751,
+     "bytes_seen": 4325376
+    },
+    "0.3": {
+     "selection_bpb": 5.3379,
+     "bytes_seen": 4358144
+    },
+    "1.0": {
+     "selection_bpb": 5.7134,
+     "bytes_seen": 4349952
+    },
+    "3.0": {
+     "selection_bpb": 5.7512,
+     "bytes_seen": 4390912
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2702.6,
+   "steps": 9475,
+   "bytes_seen": 77619200,
+   "selection_bpb": 3.4713,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.4585,
+   "scoring_bytes_per_second": 119971,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "mixed-complex-16-2": {
+   "arm": "mixed-complex-16-2",
+   "model": "mixed-complex-16-2",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 262176,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.9721,
+     "bytes_seen": 4923392
+    },
+    "0.01": {
+     "selection_bpb": 3.413,
+     "bytes_seen": 4939776
+    },
+    "0.03": {
+     "selection_bpb": 3.5628,
+     "bytes_seen": 4980736
+    },
+    "0.1": {
+     "selection_bpb": 3.3109,
+     "bytes_seen": 5021696
+    },
+    "0.3": {
+     "selection_bpb": 3.3224,
+     "bytes_seen": 4939776
+    },
+    "1.0": {
+     "selection_bpb": 3.2893,
+     "bytes_seen": 4931584
+    },
+    "3.0": {
+     "selection_bpb": 3.1294,
+     "bytes_seen": 4939776
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2704.0,
+   "steps": 10826,
+   "bytes_seen": 88686592,
+   "selection_bpb": 3.1132,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.1018,
+   "scoring_bytes_per_second": 77297,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "mixed-complex-32-2": {
+   "arm": "mixed-complex-32-2",
+   "model": "mixed-complex-32-2",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 1048640,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.0024,
+     "bytes_seen": 2449408
+    },
+    "0.01": {
+     "selection_bpb": 3.4131,
+     "bytes_seen": 2473984
+    },
+    "0.03": {
+     "selection_bpb": 3.7054,
+     "bytes_seen": 2506752
+    },
+    "0.1": {
+     "selection_bpb": 3.2488,
+     "bytes_seen": 2473984
+    },
+    "0.3": {
+     "selection_bpb": 3.2148,
+     "bytes_seen": 2490368
+    },
+    "1.0": {
+     "selection_bpb": 3.0854,
+     "bytes_seen": 2457600
+    },
+    "3.0": {
+     "selection_bpb": 3.1133,
+     "bytes_seen": 2473984
+    }
+   },
+   "rate": 1.0,
+   "seconds": 2708.4,
+   "steps": 5323,
+   "bytes_seen": 43606016,
+   "selection_bpb": 2.8739,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.8601,
+   "scoring_bytes_per_second": 36326,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "mixed-real-16-2": {
+   "arm": "mixed-real-16-2",
+   "model": "mixed-real-16-2",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 131088,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.9707,
+     "bytes_seen": 5906432
+    },
+    "0.01": {
+     "selection_bpb": 3.6095,
+     "bytes_seen": 5939200
+    },
+    "0.03": {
+     "selection_bpb": 3.472,
+     "bytes_seen": 5955584
+    },
+    "0.1": {
+     "selection_bpb": 3.3723,
+     "bytes_seen": 5873664
+    },
+    "0.3": {
+     "selection_bpb": 3.3001,
+     "bytes_seen": 5963776
+    },
+    "1.0": {
+     "selection_bpb": 3.3443,
+     "bytes_seen": 5947392
+    },
+    "3.0": {
+     "selection_bpb": 3.2132,
+     "bytes_seen": 5931008
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2704.2,
+   "steps": 12775,
+   "bytes_seen": 104652800,
+   "selection_bpb": 3.1374,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.1315,
+   "scoring_bytes_per_second": 73266,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "mixed-real-32-2": {
+   "arm": "mixed-real-32-2",
+   "model": "mixed-real-32-2",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 524320,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.7999,
+     "bytes_seen": 4579328
+    },
+    "0.01": {
+     "selection_bpb": 3.3754,
+     "bytes_seen": 4505600
+    },
+    "0.03": {
+     "selection_bpb": 3.0195,
+     "bytes_seen": 4513792
+    },
+    "0.1": {
+     "selection_bpb": 3.2142,
+     "bytes_seen": 4497408
+    },
+    "0.3": {
+     "selection_bpb": 3.1045,
+     "bytes_seen": 4571136
+    },
+    "1.0": {
+     "selection_bpb": 3.1367,
+     "bytes_seen": 4513792
+    },
+    "3.0": {
+     "selection_bpb": 3.0181,
+     "bytes_seen": 4538368
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2705.3,
+   "steps": 9644,
+   "bytes_seen": 79003648,
+   "selection_bpb": 2.8948,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.8842,
+   "scoring_bytes_per_second": 57494,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "hmm-256": {
+   "arm": "hmm-256",
+   "model": "hmm-256",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 131328,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.2402,
+     "bytes_seen": 14180352
+    },
+    "0.01": {
+     "selection_bpb": 3.7857,
+     "bytes_seen": 14393344
+    },
+    "0.03": {
+     "selection_bpb": 3.63,
+     "bytes_seen": 14090240
+    },
+    "0.1": {
+     "selection_bpb": 3.1675,
+     "bytes_seen": 14393344
+    },
+    "0.3": {
+     "selection_bpb": 3.088,
+     "bytes_seen": 13754368
+    },
+    "1.0": {
+     "selection_bpb": 3.1693,
+     "bytes_seen": 14467072
+    },
+    "3.0": {
+     "selection_bpb": null,
+     "bytes_seen": 13934592
+    }
+   },
+   "rate": 0.3,
+   "seconds": 2701.3,
+   "steps": 30794,
+   "bytes_seen": 252264448,
+   "selection_bpb": 2.9898,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.9713,
+   "scoring_bytes_per_second": 234827,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "hmm-1024": {
+   "arm": "hmm-1024",
+   "model": "hmm-1024",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 1311744,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.5757,
+     "bytes_seen": 3276800
+    },
+    "0.01": {
+     "selection_bpb": 4.6174,
+     "bytes_seen": 3129344
+    },
+    "0.03": {
+     "selection_bpb": 3.1348,
+     "bytes_seen": 3383296
+    },
+    "0.1": {
+     "selection_bpb": 2.9872,
+     "bytes_seen": 3284992
+    },
+    "0.3": {
+     "selection_bpb": 2.5914,
+     "bytes_seen": 3325952
+    },
+    "1.0": {
+     "selection_bpb": 2.9667,
+     "bytes_seen": 3342336
+    },
+    "3.0": {
+     "selection_bpb": 3.3242,
+     "bytes_seen": 3284992
+    }
+   },
+   "rate": 0.3,
+   "seconds": 2704.7,
+   "steps": 7030,
+   "bytes_seen": 57589760,
+   "selection_bpb": 2.4386,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.4217,
+   "scoring_bytes_per_second": 65600,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-23": {
+   "arm": "pure-complex-23",
+   "model": "pure-complex-23",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 270894,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.399,
+     "bytes_seen": 15515648
+    },
+    "0.01": {
+     "selection_bpb": 3.1653,
+     "bytes_seen": 15794176
+    },
+    "0.03": {
+     "selection_bpb": 3.1819,
+     "bytes_seen": 15605760
+    },
+    "0.1": {
+     "selection_bpb": 3.0969,
+     "bytes_seen": 15663104
+    },
+    "0.3": {
+     "selection_bpb": 3.2723,
+     "bytes_seen": 15679488
+    },
+    "1.0": {
+     "selection_bpb": 3.2945,
+     "bytes_seen": 15630336
+    },
+    "3.0": {
+     "selection_bpb": 3.2695,
+     "bytes_seen": 15507456
+    }
+   },
+   "rate": 0.1,
+   "seconds": 2701.0,
+   "steps": 33717,
+   "bytes_seen": 276209664,
+   "selection_bpb": 2.8848,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.8766,
+   "scoring_bytes_per_second": 321364,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-45": {
+   "arm": "pure-complex-45",
+   "model": "pure-complex-45",
+   "seed": 0,
+   "mode": "final",
+   "parameters": 1036890,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.5047,
+     "bytes_seen": 8077312
+    },
+    "0.01": {
+     "selection_bpb": 3.1501,
+     "bytes_seen": 8028160
+    },
+    "0.03": {
+     "selection_bpb": 2.8824,
+     "bytes_seen": 8044544
+    },
+    "0.1": {
+     "selection_bpb": 3.0465,
+     "bytes_seen": 8069120
+    },
+    "0.3": {
+     "selection_bpb": 3.0119,
+     "bytes_seen": 8085504
+    },
+    "1.0": {
+     "selection_bpb": 3.4129,
+     "bytes_seen": 8044544
+    },
+    "3.0": {
+     "selection_bpb": 2.9475,
+     "bytes_seen": 8052736
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2701.7,
+   "steps": 17521,
+   "bytes_seen": 143532032,
+   "selection_bpb": 2.7395,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.7239,
+   "scoring_bytes_per_second": 187119,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-16@1": {
+   "arm": "pure-complex-16@1",
+   "model": "pure-complex-16",
+   "seed": 1,
+   "mode": "final",
+   "parameters": 131104,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.4714,
+     "bytes_seen": 17227776
+    },
+    "0.01": {
+     "selection_bpb": 3.3947,
+     "bytes_seen": 17072128
+    },
+    "0.03": {
+     "selection_bpb": 3.1594,
+     "bytes_seen": 17096704
+    },
+    "0.1": {
+     "selection_bpb": 3.4082,
+     "bytes_seen": 17293312
+    },
+    "0.3": {
+     "selection_bpb": 3.3726,
+     "bytes_seen": 17309696
+    },
+    "1.0": {
+     "selection_bpb": 3.4507,
+     "bytes_seen": 17219584
+    },
+    "3.0": {
+     "selection_bpb": 3.2941,
+     "bytes_seen": 17088512
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2701.0,
+   "steps": 37427,
+   "bytes_seen": 306601984,
+   "selection_bpb": 3.0641,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.0528,
+   "scoring_bytes_per_second": 301832,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-16@2": {
+   "arm": "pure-complex-16@2",
+   "model": "pure-complex-16",
+   "seed": 2,
+   "mode": "final",
+   "parameters": 131104,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.6296,
+     "bytes_seen": 12132352
+    },
+    "0.01": {
+     "selection_bpb": 3.7502,
+     "bytes_seen": 11894784
+    },
+    "0.03": {
+     "selection_bpb": 3.1787,
+     "bytes_seen": 11984896
+    },
+    "0.1": {
+     "selection_bpb": 3.5028,
+     "bytes_seen": 11771904
+    },
+    "0.3": {
+     "selection_bpb": 3.3906,
+     "bytes_seen": 12017664
+    },
+    "1.0": {
+     "selection_bpb": 3.364,
+     "bytes_seen": 11812864
+    },
+    "3.0": {
+     "selection_bpb": 3.1764,
+     "bytes_seen": 11722752
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2701.3,
+   "steps": 24755,
+   "bytes_seen": 202792960,
+   "selection_bpb": 3.1365,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 3.1251,
+   "scoring_bytes_per_second": 238375,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-32@1": {
+   "arm": "pure-complex-32@1",
+   "model": "pure-complex-32",
+   "seed": 1,
+   "mode": "final",
+   "parameters": 524352,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.5129,
+     "bytes_seen": 8658944
+    },
+    "0.01": {
+     "selection_bpb": 3.2431,
+     "bytes_seen": 8716288
+    },
+    "0.03": {
+     "selection_bpb": 2.9924,
+     "bytes_seen": 8675328
+    },
+    "0.1": {
+     "selection_bpb": 3.0127,
+     "bytes_seen": 8814592
+    },
+    "0.3": {
+     "selection_bpb": 3.6363,
+     "bytes_seen": 8626176
+    },
+    "1.0": {
+     "selection_bpb": 3.5464,
+     "bytes_seen": 8683520
+    },
+    "3.0": {
+     "selection_bpb": 3.1393,
+     "bytes_seen": 8552448
+    }
+   },
+   "rate": 0.03,
+   "seconds": 2701.9,
+   "steps": 18822,
+   "bytes_seen": 154189824,
+   "selection_bpb": 2.8363,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.8264,
+   "scoring_bytes_per_second": 168999,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "pure-complex-32@2": {
+   "arm": "pure-complex-32@2",
+   "model": "pure-complex-32",
+   "seed": 2,
+   "mode": "final",
+   "parameters": 524352,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.422,
+     "bytes_seen": 11993088
+    },
+    "0.01": {
+     "selection_bpb": 3.1051,
+     "bytes_seen": 11993088
+    },
+    "0.03": {
+     "selection_bpb": 3.0503,
+     "bytes_seen": 12025856
+    },
+    "0.1": {
+     "selection_bpb": 3.1186,
+     "bytes_seen": 11935744
+    },
+    "0.3": {
+     "selection_bpb": 3.4974,
+     "bytes_seen": 12025856
+    },
+    "1.0": {
+     "selection_bpb": 3.2236,
+     "bytes_seen": 12181504
+    },
+    "3.0": {
+     "selection_bpb": 2.9441,
+     "bytes_seen": 12288000
+    }
+   },
+   "rate": 3.0,
+   "seconds": 2700.9,
+   "steps": 26603,
+   "bytes_seen": 217931776,
+   "selection_bpb": 2.7574,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.7465,
+   "scoring_bytes_per_second": 362162,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6973P-C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "hmm-256@1": {
+   "arm": "hmm-256@1",
+   "model": "hmm-256",
+   "seed": 1,
+   "mode": "final",
+   "parameters": 131328,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.2786,
+     "bytes_seen": 14352384
+    },
+    "0.01": {
+     "selection_bpb": 3.7577,
+     "bytes_seen": 13983744
+    },
+    "0.03": {
+     "selection_bpb": 3.7438,
+     "bytes_seen": 14073856
+    },
+    "0.1": {
+     "selection_bpb": 3.0879,
+     "bytes_seen": 14139392
+    },
+    "0.3": {
+     "selection_bpb": 3.1467,
+     "bytes_seen": 14123008
+    },
+    "1.0": {
+     "selection_bpb": 3.2574,
+     "bytes_seen": 14262272
+    },
+    "3.0": {
+     "selection_bpb": 3.3965,
+     "bytes_seen": 13656064
+    }
+   },
+   "rate": 0.1,
+   "seconds": 2701.4,
+   "steps": 30603,
+   "bytes_seen": 250699776,
+   "selection_bpb": 2.7869,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.7765,
+   "scoring_bytes_per_second": 217102,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "hmm-256@2": {
+   "arm": "hmm-256@2",
+   "model": "hmm-256",
+   "seed": 2,
+   "mode": "final",
+   "parameters": 131328,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 3.8902,
+     "bytes_seen": 18874368
+    },
+    "0.01": {
+     "selection_bpb": 3.7584,
+     "bytes_seen": 18309120
+    },
+    "0.03": {
+     "selection_bpb": 3.6905,
+     "bytes_seen": 18333696
+    },
+    "0.1": {
+     "selection_bpb": 3.0839,
+     "bytes_seen": 18685952
+    },
+    "0.3": {
+     "selection_bpb": 3.1158,
+     "bytes_seen": 18530304
+    },
+    "1.0": {
+     "selection_bpb": 3.1939,
+     "bytes_seen": 18423808
+    },
+    "3.0": {
+     "selection_bpb": null,
+     "bytes_seen": 17465344
+    }
+   },
+   "rate": 0.1,
+   "seconds": 2701.0,
+   "steps": 40573,
+   "bytes_seen": 332374016,
+   "selection_bpb": 2.7523,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.7275,
+   "scoring_bytes_per_second": 307199,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "hmm-1024@1": {
+   "arm": "hmm-1024@1",
+   "model": "hmm-1024",
+   "seed": 1,
+   "mode": "final",
+   "parameters": 1311744,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.572,
+     "bytes_seen": 3284992
+    },
+    "0.01": {
+     "selection_bpb": 4.6225,
+     "bytes_seen": 3178496
+    },
+    "0.03": {
+     "selection_bpb": 3.1386,
+     "bytes_seen": 3219456
+    },
+    "0.1": {
+     "selection_bpb": 3.0186,
+     "bytes_seen": 3244032
+    },
+    "0.3": {
+     "selection_bpb": 2.5296,
+     "bytes_seen": 3252224
+    },
+    "1.0": {
+     "selection_bpb": 2.8739,
+     "bytes_seen": 3129344
+    },
+    "3.0": {
+     "selection_bpb": 3.2966,
+     "bytes_seen": 2957312
+    }
+   },
+   "rate": 0.3,
+   "seconds": 2705.2,
+   "steps": 6930,
+   "bytes_seen": 56770560,
+   "selection_bpb": 2.4204,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.4038,
+   "scoring_bytes_per_second": 63614,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  },
+  "hmm-1024@2": {
+   "arm": "hmm-1024@2",
+   "model": "hmm-1024",
+   "seed": 2,
+   "mode": "final",
+   "parameters": 1311744,
+   "sweep_seconds_each": 150.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.4137,
+     "bytes_seen": 3579904
+    },
+    "0.01": {
+     "selection_bpb": 4.4545,
+     "bytes_seen": 3555328
+    },
+    "0.03": {
+     "selection_bpb": 3.0384,
+     "bytes_seen": 3629056
+    },
+    "0.1": {
+     "selection_bpb": 3.0139,
+     "bytes_seen": 3588096
+    },
+    "0.3": {
+     "selection_bpb": 2.5645,
+     "bytes_seen": 3629056
+    },
+    "1.0": {
+     "selection_bpb": 2.9177,
+     "bytes_seen": 3104768
+    },
+    "3.0": {
+     "selection_bpb": 3.3853,
+     "bytes_seen": 679936
+    }
+   },
+   "rate": 0.3,
+   "seconds": 2704.1,
+   "steps": 7545,
+   "bytes_seen": 61808640,
+   "selection_bpb": 2.4388,
+   "scored_bytes": 1256449,
+   "bits_per_byte": 2.4214,
+   "scoring_bytes_per_second": 79890,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8225,
+    "counting_alone_same_bytes": 1.8225
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6973P-C",
+   "cpu_count": 4,
+   "commit": "c63e6752fb609dbe7fad968109bd917197fa8381",
+   "frozen": {
+    "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+    "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+    "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+    "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+    ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+    "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+   }
+  }
+ },
+ "curves": {
+  "pure-complex-16": [
+   [
+    300.0,
+    56008704,
+    3.1248
+   ],
+   [
+    600.5,
+    113254400,
+    3.2546
+   ],
+   [
+    901.1,
+    170475520,
+    3.826
+   ],
+   [
+    1201.7,
+    227008512,
+    3.2638
+   ],
+   [
+    1502.2,
+    283787264,
+    3.2358
+   ],
+   [
+    1802.8,
+    338919424,
+    3.2334
+   ],
+   [
+    2103.3,
+    394526720,
+    3.2317
+   ],
+   [
+    2403.9,
+    450371584,
+    3.2341
+   ],
+   [
+    2700.0,
+    506658816,
+    3.2268
+   ]
+  ],
+  "pure-complex-32": [
+   [
+    300.1,
+    22831104,
+    2.9561
+   ],
+   [
+    601.4,
+    46071808,
+    2.9278
+   ],
+   [
+    902.7,
+    69328896,
+    2.865
+   ],
+   [
+    1203.9,
+    92610560,
+    2.8462
+   ],
+   [
+    1505.2,
+    116228096,
+    2.8271
+   ],
+   [
+    1806.4,
+    139575296,
+    2.7619
+   ],
+   [
+    2107.7,
+    162889728,
+    2.8227
+   ],
+   [
+    2408.9,
+    186064896,
+    2.7423
+   ],
+   [
+    2700.0,
+    208617472,
+    2.7359
+   ]
+  ],
+  "pure-complex-64": [
+   [
+    300.1,
+    10223616,
+    3.0843
+   ],
+   [
+    601.6,
+    20439040,
+    2.7207
+   ],
+   [
+    903.3,
+    30695424,
+    2.7163
+   ],
+   [
+    1204.9,
+    41328640,
+    2.6464
+   ],
+   [
+    1506.5,
+    51724288,
+    2.742
+   ],
+   [
+    1808.3,
+    62177280,
+    2.6343
+   ],
+   [
+    2109.9,
+    72556544,
+    2.6238
+   ],
+   [
+    2411.6,
+    82968576,
+    2.6399
+   ],
+   [
+    2700.1,
+    92585984,
+    2.6922
+   ]
+  ],
+  "pure-real-16": [
+   [
+    300.0,
+    44728320,
+    4.4815
+   ],
+   [
+    600.8,
+    89554944,
+    3.7231
+   ],
+   [
+    901.7,
+    133537792,
+    3.7751
+   ],
+   [
+    1202.5,
+    178601984,
+    3.4607
+   ],
+   [
+    1503.2,
+    224296960,
+    3.3959
+   ],
+   [
+    1804.1,
+    269287424,
+    3.413
+   ],
+   [
+    2104.9,
+    313942016,
+    3.4084
+   ],
+   [
+    2405.7,
+    357269504,
+    3.6591
+   ],
+   [
+    2700.0,
+    400580608,
+    3.3799
+   ]
+  ],
+  "pure-real-32": [
+   [
+    300.1,
+    24657920,
+    3.8866
+   ],
+   [
+    601.0,
+    49348608,
+    3.6768
+   ],
+   [
+    901.8,
+    74481664,
+    3.7957
+   ],
+   [
+    1202.7,
+    99385344,
+    3.475
+   ],
+   [
+    1503.6,
+    124387328,
+    3.3993
+   ],
+   [
+    1804.5,
+    148865024,
+    3.5428
+   ],
+   [
+    2105.4,
+    173367296,
+    3.9062
+   ],
+   [
+    2406.4,
+    198262784,
+    3.4697
+   ],
+   [
+    2700.1,
+    222076928,
+    3.5249
+   ]
+  ],
+  "pure-real-64": [
+   [
+    300.0,
+    14950400,
+    4.2016
+   ],
+   [
+    601.7,
+    29908992,
+    4.3455
+   ],
+   [
+    903.4,
+    44859392,
+    3.8161
+   ],
+   [
+    1205.2,
+    59834368,
+    4.02
+   ],
+   [
+    1507.0,
+    74784768,
+    3.9453
+   ],
+   [
+    1808.8,
+    89604096,
+    3.8347
+   ],
+   [
+    2110.5,
+    104529920,
+    3.6628
+   ],
+   [
+    2412.3,
+    119480320,
+    3.5485
+   ],
+   [
+    2700.1,
+    133652480,
+    3.4163
+   ]
+  ],
+  "pure-real-23": [
+   [
+    300.1,
+    46358528,
+    3.8198
+   ],
+   [
+    600.6,
+    92766208,
+    3.8851
+   ],
+   [
+    901.2,
+    138108928,
+    3.5297
+   ],
+   [
+    1201.7,
+    182771712,
+    3.3045
+   ],
+   [
+    1502.3,
+    227721216,
+    3.2232
+   ],
+   [
+    1802.8,
+    273203200,
+    3.1454
+   ],
+   [
+    2103.4,
+    318627840,
+    3.1987
+   ],
+   [
+    2403.9,
+    364191744,
+    3.1559
+   ],
+   [
+    2700.0,
+    409608192,
+    3.3081
+   ]
+  ],
+  "pure-real-45": [
+   [
+    300.0,
+    24076288,
+    3.8807
+   ],
+   [
+    601.2,
+    48119808,
+    3.6696
+   ],
+   [
+    902.5,
+    72179712,
+    3.7171
+   ],
+   [
+    1203.7,
+    96280576,
+    3.5227
+   ],
+   [
+    1504.9,
+    120283136,
+    3.3045
+   ],
+   [
+    1806.2,
+    144302080,
+    3.1876
+   ],
+   [
+    2107.4,
+    168263680,
+    3.2689
+   ],
+   [
+    2408.6,
+    192372736,
+    3.6352
+   ],
+   [
+    2700.1,
+    215572480,
+    3.3271
+   ]
+  ],
+  "pure-real-90": [
+   [
+    300.0,
+    8634368,
+    4.3083
+   ],
+   [
+    602.6,
+    17154048,
+    3.9953
+   ],
+   [
+    905.4,
+    25796608,
+    3.993
+   ],
+   [
+    1208.2,
+    34603008,
+    3.8205
+   ],
+   [
+    1510.7,
+    43433984,
+    4.0171
+   ],
+   [
+    1813.3,
+    52207616,
+    3.6998
+   ],
+   [
+    2116.0,
+    60891136,
+    3.4713
+   ],
+   [
+    2418.6,
+    69615616,
+    3.8538
+   ],
+   [
+    2700.0,
+    77619200,
+    3.5782
+   ]
+  ],
+  "mixed-complex-16-2": [
+   [
+    300.0,
+    9945088,
+    3.1132
+   ],
+   [
+    604.0,
+    19873792,
+    3.262
+   ],
+   [
+    908.2,
+    29712384,
+    3.3353
+   ],
+   [
+    1212.1,
+    39682048,
+    3.3162
+   ],
+   [
+    1516.1,
+    49774592,
+    3.1589
+   ],
+   [
+    1820.1,
+    59908096,
+    3.215
+   ],
+   [
+    2124.2,
+    69771264,
+    3.2563
+   ],
+   [
+    2428.4,
+    79814656,
+    3.1682
+   ],
+   [
+    2700.0,
+    88686592,
+    3.2563
+   ]
+  ],
+  "mixed-complex-32-2": [
+   [
+    300.4,
+    4997120,
+    3.0303
+   ],
+   [
+    608.6,
+    9969664,
+    3.0046
+   ],
+   [
+    917.2,
+    14966784,
+    2.8739
+   ],
+   [
+    1225.7,
+    19922944,
+    3.3255
+   ],
+   [
+    1534.0,
+    24879104,
+    3.0541
+   ],
+   [
+    1843.6,
+    29868032,
+    2.9503
+   ],
+   [
+    2151.7,
+    34848768,
+    3.4177
+   ],
+   [
+    2460.2,
+    39780352,
+    3.0305
+   ],
+   [
+    2700.4,
+    43606016,
+    2.9606
+   ]
+  ],
+  "mixed-real-16-2": [
+   [
+    300.2,
+    11943936,
+    3.2392
+   ],
+   [
+    604.5,
+    23879680,
+    3.1833
+   ],
+   [
+    908.6,
+    35790848,
+    3.1374
+   ],
+   [
+    1212.8,
+    47742976,
+    3.1377
+   ],
+   [
+    1516.9,
+    59629568,
+    3.2291
+   ],
+   [
+    1821.0,
+    71344128,
+    3.1856
+   ],
+   [
+    2125.2,
+    82903040,
+    3.1558
+   ],
+   [
+    2429.4,
+    94470144,
+    3.1703
+   ],
+   [
+    2700.1,
+    104652800,
+    3.166
+   ]
+  ],
+  "mixed-real-32-2": [
+   [
+    300.2,
+    8912896,
+    2.898
+   ],
+   [
+    605.4,
+    17825792,
+    3.0467
+   ],
+   [
+    910.8,
+    26664960,
+    2.9115
+   ],
+   [
+    1216.1,
+    35610624,
+    2.8948
+   ],
+   [
+    1521.4,
+    44548096,
+    3.0145
+   ],
+   [
+    1826.6,
+    53477376,
+    3.2315
+   ],
+   [
+    2131.9,
+    62455808,
+    3.4676
+   ],
+   [
+    2437.2,
+    71368704,
+    2.971
+   ],
+   [
+    2700.1,
+    79003648,
+    2.9216
+   ]
+  ],
+  "hmm-256": [
+   [
+    300.0,
+    28794880,
+    3.0516
+   ],
+   [
+    601.4,
+    57114624,
+    3.0427
+   ],
+   [
+    902.8,
+    85082112,
+    3.0225
+   ],
+   [
+    1204.1,
+    112615424,
+    3.0122
+   ],
+   [
+    1505.5,
+    140328960,
+    2.9971
+   ],
+   [
+    1806.9,
+    168681472,
+    2.9898
+   ],
+   [
+    2108.2,
+    197017600,
+    2.9966
+   ],
+   [
+    2409.6,
+    225198080,
+    3.0005
+   ],
+   [
+    2700.0,
+    252264448,
+    2.9936
+   ]
+  ],
+  "hmm-1024": [
+   [
+    300.3,
+    6307840,
+    2.5156
+   ],
+   [
+    605.1,
+    12730368,
+    2.4667
+   ],
+   [
+    909.9,
+    19382272,
+    2.4611
+   ],
+   [
+    1214.9,
+    26124288,
+    2.4463
+   ],
+   [
+    1519.7,
+    32817152,
+    2.4527
+   ],
+   [
+    1825.2,
+    39059456,
+    2.4416
+   ],
+   [
+    2130.6,
+    45260800,
+    2.4386
+   ],
+   [
+    2435.6,
+    51896320,
+    2.4393
+   ],
+   [
+    2700.2,
+    57589760,
+    2.4427
+   ]
+  ],
+  "pure-complex-23": [
+   [
+    300.0,
+    30801920,
+    3.0624
+   ],
+   [
+    601.0,
+    62152704,
+    3.057
+   ],
+   [
+    902.0,
+    92725248,
+    2.9304
+   ],
+   [
+    1203.0,
+    123781120,
+    2.8848
+   ],
+   [
+    1503.9,
+    154451968,
+    2.9801
+   ],
+   [
+    1804.9,
+    185171968,
+    3.2353
+   ],
+   [
+    2105.9,
+    215654400,
+    3.0011
+   ],
+   [
+    2406.9,
+    246210560,
+    2.8953
+   ],
+   [
+    2700.0,
+    276209664,
+    2.8856
+   ]
+  ],
+  "pure-complex-45": [
+   [
+    300.1,
+    16138240,
+    2.7892
+   ],
+   [
+    601.9,
+    32276480,
+    3.0389
+   ],
+   [
+    903.6,
+    48406528,
+    2.7647
+   ],
+   [
+    1205.3,
+    64413696,
+    2.7395
+   ],
+   [
+    1506.9,
+    80412672,
+    2.8626
+   ],
+   [
+    1808.7,
+    96395264,
+    2.9518
+   ],
+   [
+    2110.4,
+    112369664,
+    2.7649
+   ],
+   [
+    2412.1,
+    128319488,
+    2.7414
+   ],
+   [
+    2700.1,
+    143532032,
+    2.8626
+   ]
+  ],
+  "pure-complex-16@1": [
+   [
+    300.1,
+    34299904,
+    3.5699
+   ],
+   [
+    601.0,
+    68476928,
+    3.0758
+   ],
+   [
+    902.0,
+    102440960,
+    3.0641
+   ],
+   [
+    1203.0,
+    137109504,
+    3.2727
+   ],
+   [
+    1504.1,
+    171360256,
+    3.2381
+   ],
+   [
+    1805.2,
+    205357056,
+    3.238
+   ],
+   [
+    2106.2,
+    238993408,
+    3.2333
+   ],
+   [
+    2407.2,
+    272924672,
+    3.22
+   ],
+   [
+    2700.0,
+    306601984,
+    3.213
+   ]
+  ],
+  "pure-complex-16@2": [
+   [
+    300.0,
+    23699456,
+    3.2378
+   ],
+   [
+    601.3,
+    46833664,
+    3.1757
+   ],
+   [
+    902.5,
+    69771264,
+    3.249
+   ],
+   [
+    1204.1,
+    91947008,
+    3.2051
+   ],
+   [
+    1505.4,
+    114114560,
+    3.1436
+   ],
+   [
+    1806.8,
+    136773632,
+    3.1365
+   ],
+   [
+    2108.2,
+    158842880,
+    3.1642
+   ],
+   [
+    2409.5,
+    180994048,
+    3.2048
+   ],
+   [
+    2700.0,
+    202792960,
+    3.1583
+   ]
+  ],
+  "pure-complex-32@1": [
+   [
+    300.1,
+    17301504,
+    3.0277
+   ],
+   [
+    601.9,
+    34684928,
+    2.9658
+   ],
+   [
+    903.9,
+    51765248,
+    3.0523
+   ],
+   [
+    1205.7,
+    68927488,
+    3.0235
+   ],
+   [
+    1507.6,
+    85991424,
+    3.0888
+   ],
+   [
+    1809.7,
+    102998016,
+    2.9791
+   ],
+   [
+    2111.6,
+    120152064,
+    3.0586
+   ],
+   [
+    2413.4,
+    137609216,
+    2.8582
+   ],
+   [
+    2700.1,
+    154189824,
+    2.8363
+   ]
+  ],
+  "pure-complex-32@2": [
+   [
+    300.1,
+    24412160,
+    3.6925
+   ],
+   [
+    601.0,
+    48406528,
+    2.9402
+   ],
+   [
+    901.9,
+    72982528,
+    3.4305
+   ],
+   [
+    1202.8,
+    97509376,
+    2.8208
+   ],
+   [
+    1503.7,
+    121888768,
+    2.7768
+   ],
+   [
+    1804.7,
+    145965056,
+    2.8043
+   ],
+   [
+    2105.6,
+    170278912,
+    2.7728
+   ],
+   [
+    2406.5,
+    194535424,
+    2.7739
+   ],
+   [
+    2700.1,
+    217931776,
+    2.7574
+   ]
+  ],
+  "hmm-256@1": [
+   [
+    300.1,
+    28147712,
+    2.9348
+   ],
+   [
+    601.4,
+    56410112,
+    2.8377
+   ],
+   [
+    902.8,
+    84328448,
+    2.8181
+   ],
+   [
+    1204.2,
+    112517120,
+    2.803
+   ],
+   [
+    1505.5,
+    139927552,
+    2.8014
+   ],
+   [
+    1806.9,
+    167976960,
+    2.7995
+   ],
+   [
+    2108.3,
+    195846144,
+    2.7937
+   ],
+   [
+    2409.7,
+    223707136,
+    2.7869
+   ],
+   [
+    2700.0,
+    250699776,
+    2.787
+   ]
+  ],
+  "hmm-256@2": [
+   [
+    300.0,
+    36839424,
+    2.9705
+   ],
+   [
+    601.0,
+    73736192,
+    2.8741
+   ],
+   [
+    902.0,
+    111534080,
+    2.8225
+   ],
+   [
+    1202.9,
+    148643840,
+    2.8009
+   ],
+   [
+    1503.9,
+    185729024,
+    2.787
+   ],
+   [
+    1804.9,
+    223617024,
+    2.7572
+   ],
+   [
+    2105.9,
+    260956160,
+    2.7548
+   ],
+   [
+    2406.8,
+    297074688,
+    2.7523
+   ],
+   [
+    2700.1,
+    332374016,
+    2.7555
+   ]
+  ],
+  "hmm-1024@1": [
+   [
+    300.4,
+    6119424,
+    2.4988
+   ],
+   [
+    605.8,
+    12288000,
+    2.4612
+   ],
+   [
+    910.9,
+    18604032,
+    2.4452
+   ],
+   [
+    1215.9,
+    24903680,
+    2.4363
+   ],
+   [
+    1520.8,
+    31522816,
+    2.443
+   ],
+   [
+    1825.4,
+    38264832,
+    2.4284
+   ],
+   [
+    2130.8,
+    44589056,
+    2.4368
+   ],
+   [
+    2435.5,
+    51134464,
+    2.4237
+   ],
+   [
+    2700.4,
+    56770560,
+    2.4204
+   ]
+  ],
+  "hmm-1024@2": [
+   [
+    300.1,
+    7184384,
+    2.5023
+   ],
+   [
+    604.1,
+    14426112,
+    2.4915
+   ],
+   [
+    907.9,
+    21561344,
+    2.4801
+   ],
+   [
+    1212.6,
+    28606464,
+    2.4734
+   ],
+   [
+    1516.6,
+    35651584,
+    2.4636
+   ],
+   [
+    1820.6,
+    42532864,
+    2.4645
+   ],
+   [
+    2124.4,
+    49389568,
+    2.4533
+   ],
+   [
+    2428.7,
+    56074240,
+    2.4388
+   ],
+   [
+    2700.3,
+    61808640,
+    2.4445
+   ]
+  ]
+ },
+ "kneser_ney": {
+  "Kneser-Ney, 0 bytes of history": 4.6242,
+  "Kneser-Ney, 1 bytes of history": 3.3705,
+  "Kneser-Ney, 2 bytes of history": 2.701,
+  "Kneser-Ney, 3 bytes of history": 2.1589,
+  "Kneser-Ney, 4 bytes of history": 1.8225
+ },
+ "references_from_RESULT-MMLM-CM-2026-11": {
+  "MMLM-CM, all experts": 1.45485,
+  "PPMd order 16, primed with the training text": 1.51287,
+  "MMLM-CM's LSTM expert alone": 1.7724,
+  "MMLM-CM's order-4 counts alone": 1.94505
+ },
+ "expectations": {
+  "best_quantum_inspired_arm": "pure-complex-64",
+  "chosen_on": "the selection slice",
+  "best_quantum_inspired_bpb": 2.6065,
+  "E1 learns more than three-byte statistics": {
+   "held": true,
+   "kneser_ney_2": 2.701
+  },
+  "E2 beats a hidden Markov model with D^2 states by 0.05": {
+   "held": false,
+   "margin_by_D_on_three_seed_means": {
+    "16": -0.2714,
+    "32": -0.349
+   },
+   "larger_seed_spread_by_D": {
+    "16": 0.2438,
+    "32": 0.1053
+   },
+   "margin_within_spread_by_D": {
+    "16": false,
+    "32": false
+   }
+  },
+  "E3 complex beats real of the same size by 0.02": {
+   "held": false,
+   "margin_by_D": {
+    "16": 0.0156,
+    "32": 0.4537,
+    "64": 0.852
+   },
+   "same_D_real_minus_complex": {
+    "16": 0.2598,
+    "32": 0.6626,
+    "64": 0.802
+   }
+  },
+  "E4 a mixed state beats a pure one of the same size by 0.02": {
+   "held": false,
+   "margin_by_D": {
+    "16": -0.2252,
+    "32": -0.1362
+   },
+   "same_D_pure_minus_mixed": {
+    "16": 0.0097,
+    "32": -0.139
+   },
+   "real_mixed_minus_complex_mixed": {
+    "16": 0.0297,
+    "32": 0.0241
+   }
+  },
+  "E5 better with a larger state": {
+   "held": true,
+   "pure_complex_16_32_64": [
+    3.1115,
+    2.7211,
+    2.6065
+   ]
+  },
+  "E6 beats the strongest Kneser-Ney": {
+   "held": false,
+   "kneser_ney_4": 1.8225
+  },
+  "E7 mixed with counting it adds what an automaton of its size does not": {
+   "held": false,
+   "counting_alone_minus_hybrid_by_D": {
+    "16": 0.0,
+    "32": 0.0
+   },
+   "hmm_hybrid_minus_hybrid_by_D": {
+    "16": 0.0,
+    "32": 0.0
+   },
+   "larger_seed_spread_by_D": {
+    "16": 0.0,
+    "32": 0.0
+   },
+   "hmm_margin_within_spread_by_D": {
+    "16": true,
+    "32": true
+   }
+  },
+  "hybrids_without_criterion": {
+   "pure-complex-16": 1.8225,
+   "pure-complex-32": 1.8225,
+   "pure-complex-64": 1.8225,
+   "pure-real-16": 1.8225,
+   "pure-real-32": 1.8225,
+   "pure-real-64": 1.8225,
+   "pure-real-23": 1.8225,
+   "pure-real-45": 1.8225,
+   "pure-real-90": 1.8225,
+   "mixed-complex-16-2": 1.8225,
+   "mixed-complex-32-2": 1.8225,
+   "mixed-real-16-2": 1.8225,
+   "mixed-real-32-2": 1.8225,
+   "hmm-256": 1.8225,
+   "hmm-1024": 1.8225,
+   "pure-complex-23": 1.8225,
+   "pure-complex-45": 1.8225
+  },
+  "references_without_criterion": {
+   "MMLM-CM, all experts": 1.1517,
+   "PPMd order 16, primed with the training text": 1.0936,
+   "MMLM-CM's LSTM expert alone": 0.8341,
+   "MMLM-CM's order-4 counts alone": 0.6615
+  }
+ },
+ "frozen": {
+  "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+  "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+  "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+  "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+  ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+  "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+ }
+}
