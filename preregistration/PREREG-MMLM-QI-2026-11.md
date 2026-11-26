@@ -1,9 +1,10 @@
 # PREREG-MMLM-QI-2026-11: trained quantum-inspired byte models against a classical automaton of their size
 
-**Status:** draft, not frozen. It will be frozen by `preregistration/DIGEST-MMLM-QI.json`, which pins this
-file, `scripts/run_prereg_mmlm_qi.py`, `apedp_mmlm/quantum_inspired.py`, `apedp_mmlm/text_corpus.py`,
-`.github/workflows/mmlm-qi.yml` and `tests/test_quantum_inspired_lm.py`, after the independent review below. Runs once, on GitHub, by pushing the
-frozen commit to a branch `mmlm-qi-run-1`; the runner checks the digest before it reads anything.
+**Status:** frozen on 26 November 2026 by `preregistration/DIGEST-MMLM-QI.json`, which pins this file,
+`scripts/run_prereg_mmlm_qi.py`, `apedp_mmlm/quantum_inspired.py`, `apedp_mmlm/text_corpus.py`,
+`.github/workflows/mmlm-qi.yml` and `tests/test_quantum_inspired_lm.py`, after the independent review below.
+Runs once, on GitHub, by pushing the frozen commit to a branch `mmlm-qi-run-1`; the runner checks the
+digest before it reads anything. Owner's word for the run: "yes set it up" (26 November, 18:27).
 
 ## Why
 
@@ -159,6 +160,14 @@ table says.
   missed; the seed spread covers the margin of 2 at D = 16 (0.03 against 0.23) but not at D = 32 (0.34).
   Every arm finished within 11 minutes of training and scoring; the final run's 45 minutes plus a
   17.5-minute sweep (seven rates) and its scoring fit the 120-minute step limit.
+- **Second rehearsal** of the 25 arms with the code after the review (run 45888292002, commit f0771d0;
+  sweeps of 20 seconds at each of the seven rates, 2 minutes of training;
+  `benchmarks/mmlm/mmlm_qi_rehearsal2.json`): every arm, the baselines and the collect job ran; no sweep
+  score was non-finite; the hybrid put weight 0 on every model (at 2 minutes none was near counting).
+  Rates chosen: most complex arms 3 (the top; short sweeps favour high rates), the hidden Markov models 1
+  or 0.3, the real arms 0.01 to 0.1. Runners: four cores each, AMD EPYC 7763, 9V45, 9V74 and Intel Xeon
+  6975P and 8573 models. The expectations code was changed after this rehearsal (its review's second
+  look) and is checked by the tests on this rehearsal's shape.
 - **Changes after the rehearsal, before freezing.** Expectation 4 compares at equal parameters (above).
   Expectation 7, the hybrid with counting, was added on the owner's word of 26 November (20:32: "test
   hybrid approach in all the suggested solutions"). Then, on the independent review (below): rates 1 and

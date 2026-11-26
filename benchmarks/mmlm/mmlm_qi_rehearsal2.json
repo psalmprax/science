@@ -1,0 +1,1877 @@
+{
+ "preregistration": "PREREG-MMLM-QI-2026-11",
+ "mode": "dev",
+ "missing_arms": [],
+ "arms": {
+  "pure-complex-16": {
+   "arm": "pure-complex-16",
+   "model": "pure-complex-16",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 131104,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.9607,
+     "bytes_seen": 1671168
+    },
+    "0.01": {
+     "selection_bpb": 4.5029,
+     "bytes_seen": 1556480
+    },
+    "0.03": {
+     "selection_bpb": 4.3889,
+     "bytes_seen": 1671168
+    },
+    "0.1": {
+     "selection_bpb": 4.3162,
+     "bytes_seen": 1671168
+    },
+    "0.3": {
+     "selection_bpb": 4.2552,
+     "bytes_seen": 1548288
+    },
+    "1.0": {
+     "selection_bpb": 4.236,
+     "bytes_seen": 1679360
+    },
+    "3.0": {
+     "selection_bpb": 3.4013,
+     "bytes_seen": 1671168
+    }
+   },
+   "rate": 3.0,
+   "seconds": 122.5,
+   "steps": 1170,
+   "bytes_seen": 9584640,
+   "selection_bpb": 3.2271,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.2216,
+   "scoring_bytes_per_second": 193647,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-32": {
+   "arm": "pure-complex-32",
+   "model": "pure-complex-32",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 524352,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.3675,
+     "bytes_seen": 1187840
+    },
+    "0.01": {
+     "selection_bpb": 4.2731,
+     "bytes_seen": 1212416
+    },
+    "0.03": {
+     "selection_bpb": 3.7122,
+     "bytes_seen": 1204224
+    },
+    "0.1": {
+     "selection_bpb": 3.8221,
+     "bytes_seen": 1105920
+    },
+    "0.3": {
+     "selection_bpb": 4.7036,
+     "bytes_seen": 1196032
+    },
+    "1.0": {
+     "selection_bpb": 4.6927,
+     "bytes_seen": 1204224
+    },
+    "3.0": {
+     "selection_bpb": 3.4145,
+     "bytes_seen": 1105920
+    }
+   },
+   "rate": 3.0,
+   "seconds": 121.9,
+   "steps": 836,
+   "bytes_seen": 6848512,
+   "selection_bpb": 3.0984,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1008,
+   "scoring_bytes_per_second": 164620,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-64": {
+   "arm": "pure-complex-64",
+   "model": "pure-complex-64",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 2097280,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.5387,
+     "bytes_seen": 491520
+    },
+    "0.01": {
+     "selection_bpb": 6.2522,
+     "bytes_seen": 466944
+    },
+    "0.03": {
+     "selection_bpb": 4.7164,
+     "bytes_seen": 507904
+    },
+    "0.1": {
+     "selection_bpb": 4.241,
+     "bytes_seen": 466944
+    },
+    "0.3": {
+     "selection_bpb": 4.0518,
+     "bytes_seen": 507904
+    },
+    "1.0": {
+     "selection_bpb": 4.1985,
+     "bytes_seen": 499712
+    },
+    "3.0": {
+     "selection_bpb": 3.4464,
+     "bytes_seen": 458752
+    }
+   },
+   "rate": 3.0,
+   "seconds": 123.6,
+   "steps": 345,
+   "bytes_seen": 2826240,
+   "selection_bpb": 3.117,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1172,
+   "scoring_bytes_per_second": 91437,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-real-16": {
+   "arm": "pure-real-16",
+   "model": "pure-real-16",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 65552,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.1213,
+     "bytes_seen": 3981312
+    },
+    "0.01": {
+     "selection_bpb": 4.8856,
+     "bytes_seen": 3964928
+    },
+    "0.03": {
+     "selection_bpb": 5.0497,
+     "bytes_seen": 3940352
+    },
+    "0.1": {
+     "selection_bpb": 4.9638,
+     "bytes_seen": 4046848
+    },
+    "0.3": {
+     "selection_bpb": 5.036,
+     "bytes_seen": 4169728
+    },
+    "1.0": {
+     "selection_bpb": 5.6397,
+     "bytes_seen": 4268032
+    },
+    "3.0": {
+     "selection_bpb": 5.1371,
+     "bytes_seen": 4440064
+    }
+   },
+   "rate": 0.01,
+   "seconds": 120.5,
+   "steps": 3188,
+   "bytes_seen": 26116096,
+   "selection_bpb": 4.1952,
+   "scored_bytes": 560495,
+   "bits_per_byte": 4.1831,
+   "scoring_bytes_per_second": 717154,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-real-32": {
+   "arm": "pure-real-32",
+   "model": "pure-real-32",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 262176,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.5851,
+     "bytes_seen": 2277376
+    },
+    "0.01": {
+     "selection_bpb": 5.0805,
+     "bytes_seen": 2318336
+    },
+    "0.03": {
+     "selection_bpb": 5.5849,
+     "bytes_seen": 2285568
+    },
+    "0.1": {
+     "selection_bpb": 5.5061,
+     "bytes_seen": 2236416
+    },
+    "0.3": {
+     "selection_bpb": 5.1959,
+     "bytes_seen": 2318336
+    },
+    "1.0": {
+     "selection_bpb": 5.1205,
+     "bytes_seen": 2326528
+    },
+    "3.0": {
+     "selection_bpb": 5.4129,
+     "bytes_seen": 2285568
+    }
+   },
+   "rate": 0.01,
+   "seconds": 121.0,
+   "steps": 1662,
+   "bytes_seen": 13615104,
+   "selection_bpb": 3.9947,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.9921,
+   "scoring_bytes_per_second": 327338,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-real-64": {
+   "arm": "pure-real-64",
+   "model": "pure-real-64",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 1048640,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.1093,
+     "bytes_seen": 1089536
+    },
+    "0.01": {
+     "selection_bpb": 5.993,
+     "bytes_seen": 1105920
+    },
+    "0.03": {
+     "selection_bpb": 5.0309,
+     "bytes_seen": 1097728
+    },
+    "0.1": {
+     "selection_bpb": 5.3075,
+     "bytes_seen": 1097728
+    },
+    "0.3": {
+     "selection_bpb": 5.1234,
+     "bytes_seen": 1105920
+    },
+    "1.0": {
+     "selection_bpb": 5.6722,
+     "bytes_seen": 1105920
+    },
+    "3.0": {
+     "selection_bpb": 6.2005,
+     "bytes_seen": 1097728
+    }
+   },
+   "rate": 0.03,
+   "seconds": 121.0,
+   "steps": 778,
+   "bytes_seen": 6373376,
+   "selection_bpb": 4.6839,
+   "scored_bytes": 560495,
+   "bits_per_byte": 4.681,
+   "scoring_bytes_per_second": 323936,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-real-23": {
+   "arm": "pure-real-23",
+   "model": "pure-real-23",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 135447,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.4517,
+     "bytes_seen": 2793472
+    },
+    "0.01": {
+     "selection_bpb": 5.1644,
+     "bytes_seen": 2809856
+    },
+    "0.03": {
+     "selection_bpb": 4.8879,
+     "bytes_seen": 2818048
+    },
+    "0.1": {
+     "selection_bpb": 4.8496,
+     "bytes_seen": 2826240
+    },
+    "0.3": {
+     "selection_bpb": 5.0011,
+     "bytes_seen": 2818048
+    },
+    "1.0": {
+     "selection_bpb": 6.2688,
+     "bytes_seen": 2842624
+    },
+    "3.0": {
+     "selection_bpb": 6.4602,
+     "bytes_seen": 2834432
+    }
+   },
+   "rate": 0.1,
+   "seconds": 120.8,
+   "steps": 2057,
+   "bytes_seen": 16850944,
+   "selection_bpb": 4.6209,
+   "scored_bytes": 560495,
+   "bits_per_byte": 4.6266,
+   "scoring_bytes_per_second": 368078,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-real-45": {
+   "arm": "pure-real-45",
+   "model": "pure-real-45",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 518445,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.8567,
+     "bytes_seen": 1581056
+    },
+    "0.01": {
+     "selection_bpb": 5.6164,
+     "bytes_seen": 1613824
+    },
+    "0.03": {
+     "selection_bpb": 5.5148,
+     "bytes_seen": 1613824
+    },
+    "0.1": {
+     "selection_bpb": 5.4089,
+     "bytes_seen": 1597440
+    },
+    "0.3": {
+     "selection_bpb": 5.7804,
+     "bytes_seen": 1572864
+    },
+    "1.0": {
+     "selection_bpb": 5.7656,
+     "bytes_seen": 1622016
+    },
+    "3.0": {
+     "selection_bpb": 5.8005,
+     "bytes_seen": 1597440
+    }
+   },
+   "rate": 0.1,
+   "seconds": 121.2,
+   "steps": 1162,
+   "bytes_seen": 9519104,
+   "selection_bpb": 5.126,
+   "scored_bytes": 560495,
+   "bits_per_byte": 5.1344,
+   "scoring_bytes_per_second": 254702,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-real-90": {
+   "arm": "pure-real-90",
+   "model": "pure-real-90",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 2073690,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.578,
+     "bytes_seen": 581632
+    },
+    "0.01": {
+     "selection_bpb": 6.623,
+     "bytes_seen": 573440
+    },
+    "0.03": {
+     "selection_bpb": 5.7313,
+     "bytes_seen": 573440
+    },
+    "0.1": {
+     "selection_bpb": 5.4955,
+     "bytes_seen": 573440
+    },
+    "0.3": {
+     "selection_bpb": 5.9725,
+     "bytes_seen": 557056
+    },
+    "1.0": {
+     "selection_bpb": 5.7254,
+     "bytes_seen": 573440
+    },
+    "3.0": {
+     "selection_bpb": 6.2221,
+     "bytes_seen": 548864
+    }
+   },
+   "rate": 0.1,
+   "seconds": 122.7,
+   "steps": 407,
+   "bytes_seen": 3334144,
+   "selection_bpb": 5.1945,
+   "scored_bytes": 560495,
+   "bits_per_byte": 5.1946,
+   "scoring_bytes_per_second": 121553,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "mixed-complex-16-2": {
+   "arm": "mixed-complex-16-2",
+   "model": "mixed-complex-16-2",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 262176,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.5938,
+     "bytes_seen": 835584
+    },
+    "0.01": {
+     "selection_bpb": 4.451,
+     "bytes_seen": 851968
+    },
+    "0.03": {
+     "selection_bpb": 3.7117,
+     "bytes_seen": 851968
+    },
+    "0.1": {
+     "selection_bpb": 4.1443,
+     "bytes_seen": 843776
+    },
+    "0.3": {
+     "selection_bpb": 3.8763,
+     "bytes_seen": 860160
+    },
+    "1.0": {
+     "selection_bpb": 4.0229,
+     "bytes_seen": 843776
+    },
+    "3.0": {
+     "selection_bpb": 3.4503,
+     "bytes_seen": 860160
+    }
+   },
+   "rate": 3.0,
+   "seconds": 123.8,
+   "steps": 598,
+   "bytes_seen": 4898816,
+   "selection_bpb": 3.1464,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1482,
+   "scoring_bytes_per_second": 78087,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "mixed-complex-32-2": {
+   "arm": "mixed-complex-32-2",
+   "model": "mixed-complex-32-2",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 1048640,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.404,
+     "bytes_seen": 409600
+    },
+    "0.01": {
+     "selection_bpb": 5.7877,
+     "bytes_seen": 409600
+    },
+    "0.03": {
+     "selection_bpb": 4.6809,
+     "bytes_seen": 417792
+    },
+    "0.1": {
+     "selection_bpb": 4.4411,
+     "bytes_seen": 425984
+    },
+    "0.3": {
+     "selection_bpb": 4.2583,
+     "bytes_seen": 425984
+    },
+    "1.0": {
+     "selection_bpb": 4.265,
+     "bytes_seen": 425984
+    },
+    "3.0": {
+     "selection_bpb": 3.6618,
+     "bytes_seen": 417792
+    }
+   },
+   "rate": 3.0,
+   "seconds": 125.9,
+   "steps": 295,
+   "bytes_seen": 2416640,
+   "selection_bpb": 3.2161,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.2119,
+   "scoring_bytes_per_second": 52829,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6975P-C",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "mixed-real-16-2": {
+   "arm": "mixed-real-16-2",
+   "model": "mixed-real-16-2",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 131088,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.5979,
+     "bytes_seen": 958464
+    },
+    "0.01": {
+     "selection_bpb": 4.8978,
+     "bytes_seen": 933888
+    },
+    "0.03": {
+     "selection_bpb": 3.8256,
+     "bytes_seen": 974848
+    },
+    "0.1": {
+     "selection_bpb": 4.1372,
+     "bytes_seen": 974848
+    },
+    "0.3": {
+     "selection_bpb": 3.7385,
+     "bytes_seen": 901120
+    },
+    "1.0": {
+     "selection_bpb": 3.7793,
+     "bytes_seen": 958464
+    },
+    "3.0": {
+     "selection_bpb": 3.7676,
+     "bytes_seen": 892928
+    }
+   },
+   "rate": 0.3,
+   "seconds": 124.0,
+   "steps": 667,
+   "bytes_seen": 5464064,
+   "selection_bpb": 3.3206,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.3222,
+   "scoring_bytes_per_second": 76151,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "mixed-real-32-2": {
+   "arm": "mixed-real-32-2",
+   "model": "mixed-real-32-2",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 524320,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.748,
+     "bytes_seen": 770048
+    },
+    "0.01": {
+     "selection_bpb": 4.808,
+     "bytes_seen": 786432
+    },
+    "0.03": {
+     "selection_bpb": 4.0942,
+     "bytes_seen": 794624
+    },
+    "0.1": {
+     "selection_bpb": 4.4151,
+     "bytes_seen": 778240
+    },
+    "0.3": {
+     "selection_bpb": 4.1151,
+     "bytes_seen": 786432
+    },
+    "1.0": {
+     "selection_bpb": 3.9174,
+     "bytes_seen": 778240
+    },
+    "3.0": {
+     "selection_bpb": 3.5177,
+     "bytes_seen": 786432
+    }
+   },
+   "rate": 3.0,
+   "seconds": 123.9,
+   "steps": 555,
+   "bytes_seen": 4546560,
+   "selection_bpb": 3.0723,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.0786,
+   "scoring_bytes_per_second": 79243,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "hmm-256": {
+   "arm": "hmm-256",
+   "model": "hmm-256",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 131328,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.411,
+     "bytes_seen": 1949696
+    },
+    "0.01": {
+     "selection_bpb": 4.8883,
+     "bytes_seen": 1990656
+    },
+    "0.03": {
+     "selection_bpb": 4.4911,
+     "bytes_seen": 1810432
+    },
+    "0.1": {
+     "selection_bpb": 3.4828,
+     "bytes_seen": 1998848
+    },
+    "0.3": {
+     "selection_bpb": 3.2913,
+     "bytes_seen": 1998848
+    },
+    "1.0": {
+     "selection_bpb": 3.1917,
+     "bytes_seen": 1794048
+    },
+    "3.0": {
+     "selection_bpb": 3.3339,
+     "bytes_seen": 1859584
+    }
+   },
+   "rate": 1.0,
+   "seconds": 121.3,
+   "steps": 1381,
+   "bytes_seen": 11313152,
+   "selection_bpb": 3.173,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1727,
+   "scoring_bytes_per_second": 230669,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "hmm-1024": {
+   "arm": "hmm-1024",
+   "model": "hmm-1024",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 1311744,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.7767,
+     "bytes_seen": 262144
+    },
+    "0.01": {
+     "selection_bpb": 7.2006,
+     "bytes_seen": 294912
+    },
+    "0.03": {
+     "selection_bpb": 6.0948,
+     "bytes_seen": 270336
+    },
+    "0.1": {
+     "selection_bpb": 4.7009,
+     "bytes_seen": 303104
+    },
+    "0.3": {
+     "selection_bpb": 4.4051,
+     "bytes_seen": 270336
+    },
+    "1.0": {
+     "selection_bpb": 3.1231,
+     "bytes_seen": 286720
+    },
+    "3.0": {
+     "selection_bpb": 3.3628,
+     "bytes_seen": 270336
+    }
+   },
+   "rate": 1.0,
+   "seconds": 127.7,
+   "steps": 187,
+   "bytes_seen": 1531904,
+   "selection_bpb": 2.9815,
+   "scored_bytes": 560495,
+   "bits_per_byte": 2.9611,
+   "scoring_bytes_per_second": 41856,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-23": {
+   "arm": "pure-complex-23",
+   "model": "pure-complex-23",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 270894,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.8065,
+     "bytes_seen": 1400832
+    },
+    "0.01": {
+     "selection_bpb": 4.0008,
+     "bytes_seen": 1556480
+    },
+    "0.03": {
+     "selection_bpb": 3.7663,
+     "bytes_seen": 1523712
+    },
+    "0.1": {
+     "selection_bpb": 3.3297,
+     "bytes_seen": 1417216
+    },
+    "0.3": {
+     "selection_bpb": 4.5585,
+     "bytes_seen": 1523712
+    },
+    "1.0": {
+     "selection_bpb": 4.6465,
+     "bytes_seen": 1392640
+    },
+    "3.0": {
+     "selection_bpb": 3.7152,
+     "bytes_seen": 1523712
+    }
+   },
+   "rate": 0.1,
+   "seconds": 121.6,
+   "steps": 1070,
+   "bytes_seen": 8765440,
+   "selection_bpb": 3.1922,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1937,
+   "scoring_bytes_per_second": 186293,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-45": {
+   "arm": "pure-complex-45",
+   "model": "pure-complex-45",
+   "seed": 0,
+   "mode": "dev",
+   "parameters": 1036890,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.9109,
+     "bytes_seen": 983040
+    },
+    "0.01": {
+     "selection_bpb": 4.2286,
+     "bytes_seen": 991232
+    },
+    "0.03": {
+     "selection_bpb": 3.5802,
+     "bytes_seen": 974848
+    },
+    "0.1": {
+     "selection_bpb": 3.4239,
+     "bytes_seen": 983040
+    },
+    "0.3": {
+     "selection_bpb": 4.8225,
+     "bytes_seen": 991232
+    },
+    "1.0": {
+     "selection_bpb": 4.8397,
+     "bytes_seen": 966656
+    },
+    "3.0": {
+     "selection_bpb": 3.3248,
+     "bytes_seen": 983040
+    }
+   },
+   "rate": 3.0,
+   "seconds": 121.3,
+   "steps": 707,
+   "bytes_seen": 5791744,
+   "selection_bpb": 3.0681,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.0783,
+   "scoring_bytes_per_second": 233174,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-16@1": {
+   "arm": "pure-complex-16@1",
+   "model": "pure-complex-16",
+   "seed": 1,
+   "mode": "dev",
+   "parameters": 131104,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.6642,
+     "bytes_seen": 2285568
+    },
+    "0.01": {
+     "selection_bpb": 3.899,
+     "bytes_seen": 2285568
+    },
+    "0.03": {
+     "selection_bpb": 4.2755,
+     "bytes_seen": 2236416
+    },
+    "0.1": {
+     "selection_bpb": 4.2673,
+     "bytes_seen": 2252800
+    },
+    "0.3": {
+     "selection_bpb": 4.1639,
+     "bytes_seen": 2269184
+    },
+    "1.0": {
+     "selection_bpb": 4.0242,
+     "bytes_seen": 2277376
+    },
+    "3.0": {
+     "selection_bpb": 4.1033,
+     "bytes_seen": 2269184
+    }
+   },
+   "rate": 0.01,
+   "seconds": 121.0,
+   "steps": 1646,
+   "bytes_seen": 13484032,
+   "selection_bpb": 3.3535,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.352,
+   "scoring_bytes_per_second": 302413,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-16@2": {
+   "arm": "pure-complex-16@2",
+   "model": "pure-complex-16",
+   "seed": 2,
+   "mode": "dev",
+   "parameters": 131104,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.1151,
+     "bytes_seen": 2351104
+    },
+    "0.01": {
+     "selection_bpb": 3.8603,
+     "bytes_seen": 2375680
+    },
+    "0.03": {
+     "selection_bpb": 3.5474,
+     "bytes_seen": 2359296
+    },
+    "0.1": {
+     "selection_bpb": 4.0793,
+     "bytes_seen": 2359296
+    },
+    "0.3": {
+     "selection_bpb": 3.955,
+     "bytes_seen": 2310144
+    },
+    "1.0": {
+     "selection_bpb": 3.9697,
+     "bytes_seen": 2334720
+    },
+    "3.0": {
+     "selection_bpb": 3.4494,
+     "bytes_seen": 2301952
+    }
+   },
+   "rate": 3.0,
+   "seconds": 121.0,
+   "steps": 1638,
+   "bytes_seen": 13418496,
+   "selection_bpb": 3.1441,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1421,
+   "scoring_bytes_per_second": 303942,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-32@1": {
+   "arm": "pure-complex-32@1",
+   "model": "pure-complex-32",
+   "seed": 1,
+   "mode": "dev",
+   "parameters": 524352,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.9327,
+     "bytes_seen": 1990656
+    },
+    "0.01": {
+     "selection_bpb": 3.674,
+     "bytes_seen": 2039808
+    },
+    "0.03": {
+     "selection_bpb": 3.355,
+     "bytes_seen": 2064384
+    },
+    "0.1": {
+     "selection_bpb": 3.8279,
+     "bytes_seen": 2015232
+    },
+    "0.3": {
+     "selection_bpb": 4.6306,
+     "bytes_seen": 2023424
+    },
+    "1.0": {
+     "selection_bpb": 4.5322,
+     "bytes_seen": 2023424
+    },
+    "3.0": {
+     "selection_bpb": 3.1589,
+     "bytes_seen": 2056192
+    }
+   },
+   "rate": 3.0,
+   "seconds": 120.7,
+   "steps": 1492,
+   "bytes_seen": 12222464,
+   "selection_bpb": 3.3865,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.382,
+   "scoring_bytes_per_second": 415856,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6975P-C",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "pure-complex-32@2": {
+   "arm": "pure-complex-32@2",
+   "model": "pure-complex-32",
+   "seed": 2,
+   "mode": "dev",
+   "parameters": 524352,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 4.77,
+     "bytes_seen": 2211840
+    },
+    "0.01": {
+     "selection_bpb": 4.1977,
+     "bytes_seen": 2252800
+    },
+    "0.03": {
+     "selection_bpb": 3.3436,
+     "bytes_seen": 2203648
+    },
+    "0.1": {
+     "selection_bpb": 3.525,
+     "bytes_seen": 2244608
+    },
+    "0.3": {
+     "selection_bpb": 4.3956,
+     "bytes_seen": 2244608
+    },
+    "1.0": {
+     "selection_bpb": 4.3035,
+     "bytes_seen": 2277376
+    },
+    "3.0": {
+     "selection_bpb": 3.9636,
+     "bytes_seen": 2277376
+    }
+   },
+   "rate": 0.03,
+   "seconds": 120.8,
+   "steps": 1589,
+   "bytes_seen": 13017088,
+   "selection_bpb": 3.138,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1375,
+   "scoring_bytes_per_second": 403808,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "hmm-256@1": {
+   "arm": "hmm-256@1",
+   "model": "hmm-256",
+   "seed": 1,
+   "mode": "dev",
+   "parameters": 131328,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 6.4372,
+     "bytes_seen": 1949696
+    },
+    "0.01": {
+     "selection_bpb": 4.8884,
+     "bytes_seen": 1982464
+    },
+    "0.03": {
+     "selection_bpb": 4.4274,
+     "bytes_seen": 1728512
+    },
+    "0.1": {
+     "selection_bpb": 3.4877,
+     "bytes_seen": 1875968
+    },
+    "0.3": {
+     "selection_bpb": 3.2517,
+     "bytes_seen": 1736704
+    },
+    "1.0": {
+     "selection_bpb": 3.2549,
+     "bytes_seen": 1966080
+    },
+    "3.0": {
+     "selection_bpb": 3.3343,
+     "bytes_seen": 1957888
+    }
+   },
+   "rate": 0.3,
+   "seconds": 121.3,
+   "steps": 1348,
+   "bytes_seen": 11042816,
+   "selection_bpb": 3.1485,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.1492,
+   "scoring_bytes_per_second": 231420,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 7763 64-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "hmm-256@2": {
+   "arm": "hmm-256@2",
+   "model": "hmm-256",
+   "seed": 2,
+   "mode": "dev",
+   "parameters": 131328,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 5.6664,
+     "bytes_seen": 3268608
+    },
+    "0.01": {
+     "selection_bpb": 4.5347,
+     "bytes_seen": 3440640
+    },
+    "0.03": {
+     "selection_bpb": 4.1332,
+     "bytes_seen": 3416064
+    },
+    "0.1": {
+     "selection_bpb": 3.3162,
+     "bytes_seen": 3293184
+    },
+    "0.3": {
+     "selection_bpb": 3.1966,
+     "bytes_seen": 3383296
+    },
+    "1.0": {
+     "selection_bpb": 3.1974,
+     "bytes_seen": 3424256
+    },
+    "3.0": {
+     "selection_bpb": 3.2975,
+     "bytes_seen": 1015808
+    }
+   },
+   "rate": 0.3,
+   "seconds": 120.7,
+   "steps": 2420,
+   "bytes_seen": 19824640,
+   "selection_bpb": 3.0943,
+   "scored_bytes": 560495,
+   "bits_per_byte": 3.0971,
+   "scoring_bytes_per_second": 437607,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "Intel(R) Xeon(R) 6975P-C",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "hmm-1024@1": {
+   "arm": "hmm-1024@1",
+   "model": "hmm-1024",
+   "seed": 1,
+   "mode": "dev",
+   "parameters": 1311744,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.7084,
+     "bytes_seen": 344064
+    },
+    "0.01": {
+     "selection_bpb": 7.0795,
+     "bytes_seen": 344064
+    },
+    "0.03": {
+     "selection_bpb": 5.7038,
+     "bytes_seen": 352256
+    },
+    "0.1": {
+     "selection_bpb": 4.6908,
+     "bytes_seen": 335872
+    },
+    "0.3": {
+     "selection_bpb": 3.9903,
+     "bytes_seen": 344064
+    },
+    "1.0": {
+     "selection_bpb": 3.0122,
+     "bytes_seen": 335872
+    },
+    "3.0": {
+     "selection_bpb": 3.3535,
+     "bytes_seen": 344064
+    }
+   },
+   "rate": 1.0,
+   "seconds": 126.4,
+   "steps": 233,
+   "bytes_seen": 1908736,
+   "selection_bpb": 2.8793,
+   "scored_bytes": 560495,
+   "bits_per_byte": 2.8744,
+   "scoring_bytes_per_second": 47927,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V74 80-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  },
+  "hmm-1024@2": {
+   "arm": "hmm-1024@2",
+   "model": "hmm-1024",
+   "seed": 2,
+   "mode": "dev",
+   "parameters": 1311744,
+   "sweep_seconds_each": 20.0,
+   "sweep": {
+    "0.003": {
+     "selection_bpb": 7.6609,
+     "bytes_seen": 401408
+    },
+    "0.01": {
+     "selection_bpb": 6.9429,
+     "bytes_seen": 401408
+    },
+    "0.03": {
+     "selection_bpb": 5.4108,
+     "bytes_seen": 425984
+    },
+    "0.1": {
+     "selection_bpb": 4.669,
+     "bytes_seen": 442368
+    },
+    "0.3": {
+     "selection_bpb": 3.3166,
+     "bytes_seen": 450560
+    },
+    "1.0": {
+     "selection_bpb": 3.0025,
+     "bytes_seen": 442368
+    },
+    "3.0": {
+     "selection_bpb": 3.5015,
+     "bytes_seen": 425984
+    }
+   },
+   "rate": 1.0,
+   "seconds": 124.9,
+   "steps": 298,
+   "bytes_seen": 2441216,
+   "selection_bpb": 2.9231,
+   "scored_bytes": 560495,
+   "bits_per_byte": 2.9148,
+   "scoring_bytes_per_second": 63544,
+   "hybrid_with_counts": {
+    "counting_model": "Kneser-Ney, 4 bytes of history",
+    "weight_on_model": 0.0,
+    "bits_per_byte": 1.8498,
+    "counting_alone_same_bytes": 1.8498
+   },
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16",
+   "cpu": "AMD EPYC 9V45 96-Core Processor",
+   "cpu_count": 4,
+   "commit": "f0771d0c4f048b2d1ae08ee5c22d2a8c43702fd0"
+  }
+ },
+ "curves": {
+  "pure-complex-16": [
+   [
+    60.2,
+    4816896,
+    3.5815
+   ],
+   [
+    120.1,
+    9584640,
+    3.2271
+   ]
+  ],
+  "pure-complex-32": [
+   [
+    60.1,
+    3473408,
+    4.1482
+   ],
+   [
+    120.1,
+    6848512,
+    3.0984
+   ]
+  ],
+  "pure-complex-64": [
+   [
+    60.0,
+    1433600,
+    3.117
+   ],
+   [
+    120.3,
+    2826240,
+    3.5919
+   ]
+  ],
+  "pure-real-16": [
+   [
+    60.0,
+    13213696,
+    4.8673
+   ],
+   [
+    120.0,
+    26116096,
+    4.1952
+   ]
+  ],
+  "pure-real-32": [
+   [
+    60.1,
+    6840320,
+    4.3804
+   ],
+   [
+    120.0,
+    13615104,
+    3.9947
+   ]
+  ],
+  "pure-real-64": [
+   [
+    60.1,
+    3227648,
+    4.9061
+   ],
+   [
+    120.1,
+    6373376,
+    4.6839
+   ]
+  ],
+  "pure-real-23": [
+   [
+    60.0,
+    8486912,
+    4.9247
+   ],
+   [
+    120.0,
+    16850944,
+    4.6209
+   ]
+  ],
+  "pure-real-45": [
+   [
+    60.0,
+    4800512,
+    5.3344
+   ],
+   [
+    120.0,
+    9519104,
+    5.126
+   ]
+  ],
+  "pure-real-90": [
+   [
+    60.1,
+    1679360,
+    5.9173
+   ],
+   [
+    120.2,
+    3334144,
+    5.1945
+   ]
+  ],
+  "mixed-complex-16-2": [
+   [
+    60.1,
+    2523136,
+    3.2083
+   ],
+   [
+    120.1,
+    4898816,
+    3.1464
+   ]
+  ],
+  "mixed-complex-32-2": [
+   [
+    60.3,
+    1269760,
+    3.3438
+   ],
+   [
+    120.3,
+    2416640,
+    3.2161
+   ]
+  ],
+  "mixed-real-16-2": [
+   [
+    60.0,
+    2826240,
+    3.3536
+   ],
+   [
+    120.1,
+    5464064,
+    3.3206
+   ]
+  ],
+  "mixed-real-32-2": [
+   [
+    60.0,
+    2318336,
+    3.3342
+   ],
+   [
+    120.1,
+    4546560,
+    3.0723
+   ]
+  ],
+  "hmm-256": [
+   [
+    60.0,
+    5627904,
+    3.1735
+   ],
+   [
+    120.0,
+    11313152,
+    3.173
+   ]
+  ],
+  "hmm-1024": [
+   [
+    60.5,
+    819200,
+    2.9954
+   ],
+   [
+    120.5,
+    1531904,
+    2.9815
+   ]
+  ],
+  "pure-complex-23": [
+   [
+    60.1,
+    4423680,
+    3.2468
+   ],
+   [
+    120.0,
+    8765440,
+    3.1922
+   ]
+  ],
+  "pure-complex-45": [
+   [
+    60.0,
+    2899968,
+    3.0681
+   ],
+   [
+    120.0,
+    5791744,
+    3.2657
+   ]
+  ],
+  "pure-complex-16@1": [
+   [
+    60.1,
+    6791168,
+    3.4097
+   ],
+   [
+    120.0,
+    13484032,
+    3.3535
+   ]
+  ],
+  "pure-complex-16@2": [
+   [
+    60.1,
+    6733824,
+    3.1441
+   ],
+   [
+    120.0,
+    13418496,
+    3.3145
+   ]
+  ],
+  "pure-complex-32@1": [
+   [
+    60.0,
+    6152192,
+    4.2731
+   ],
+   [
+    120.0,
+    12222464,
+    3.3865
+   ]
+  ],
+  "pure-complex-32@2": [
+   [
+    60.1,
+    6561792,
+    3.138
+   ],
+   [
+    120.1,
+    13017088,
+    3.2195
+   ]
+  ],
+  "hmm-256@1": [
+   [
+    60.0,
+    5488640,
+    3.1773
+   ],
+   [
+    120.0,
+    11042816,
+    3.1485
+   ]
+  ],
+  "hmm-256@2": [
+   [
+    60.0,
+    10149888,
+    3.1103
+   ],
+   [
+    120.0,
+    19824640,
+    3.0943
+   ]
+  ],
+  "hmm-1024@1": [
+   [
+    60.3,
+    1024000,
+    2.9061
+   ],
+   [
+    120.2,
+    1908736,
+    2.8793
+   ]
+  ],
+  "hmm-1024@2": [
+   [
+    60.3,
+    1277952,
+    2.9319
+   ],
+   [
+    120.1,
+    2441216,
+    2.9231
+   ]
+  ]
+ },
+ "kneser_ney": {
+  "Kneser-Ney, 0 bytes of history": 4.6213,
+  "Kneser-Ney, 1 bytes of history": 3.3851,
+  "Kneser-Ney, 2 bytes of history": 2.7179,
+  "Kneser-Ney, 3 bytes of history": 2.1791,
+  "Kneser-Ney, 4 bytes of history": 1.8498
+ },
+ "references_from_RESULT-MMLM-CM-2026-11": {
+  "MMLM-CM, all experts": 1.45485,
+  "PPMd order 16, primed with the training text": 1.51287,
+  "MMLM-CM's LSTM expert alone": 1.7724,
+  "MMLM-CM's order-4 counts alone": 1.94505
+ },
+ "expectations": {
+  "best_quantum_inspired_arm": "pure-complex-45",
+  "chosen_on": "the selection slice",
+  "best_quantum_inspired_bpb": 3.0783,
+  "E1 learns more than three-byte statistics": {
+   "held": false,
+   "kneser_ney_2": 2.7179
+  },
+  "E2 beats a hidden Markov model with D^2 states by 0.05": {
+   "held": false,
+   "margin_by_D_on_three_seed_means": {
+    "16": -0.0989,
+    "32": -0.29
+   },
+   "larger_seed_spread_by_D": {
+    "16": 0.2099,
+    "32": 0.2812
+   },
+   "margin_within_spread_by_D": {
+    "16": true,
+    "32": false
+   }
+  },
+  "E3 complex beats real of the same size by 0.02": {
+   "held": true,
+   "margin_by_D": {
+    "16": 1.405,
+    "32": 2.0336,
+    "64": 2.0774
+   },
+   "same_D_real_minus_complex": {
+    "16": 0.9615,
+    "32": 0.8913,
+    "64": 1.5638
+   }
+  },
+  "E4 a mixed state beats a pure one of the same size by 0.02": {
+   "held": false,
+   "margin_by_D": {
+    "16": 0.0455,
+    "32": -0.1336
+   },
+   "same_D_pure_minus_mixed": {
+    "16": 0.0734,
+    "32": -0.1111
+   },
+   "real_mixed_minus_complex_mixed": {
+    "16": 0.174,
+    "32": -0.1333
+   }
+  },
+  "E5 better with a larger state": {
+   "held": false,
+   "pure_complex_16_32_64": [
+    3.2216,
+    3.1008,
+    3.1172
+   ]
+  },
+  "E6 beats the strongest Kneser-Ney": {
+   "held": false,
+   "kneser_ney_4": 1.8498
+  },
+  "E7 mixed with counting it adds what an automaton of its size does not": {
+   "held": false,
+   "counting_alone_minus_hybrid_by_D": {
+    "16": 0.0,
+    "32": 0.0
+   },
+   "hmm_hybrid_minus_hybrid_by_D": {
+    "16": 0.0,
+    "32": 0.0
+   },
+   "larger_seed_spread_by_D": {
+    "16": 0.0,
+    "32": 0.0
+   }
+  },
+  "hybrids_without_criterion": {
+   "pure-complex-16": 1.8498,
+   "pure-complex-32": 1.8498,
+   "pure-complex-64": 1.8498,
+   "pure-real-16": 1.8498,
+   "pure-real-32": 1.8498,
+   "pure-real-64": 1.8498,
+   "pure-real-23": 1.8498,
+   "pure-real-45": 1.8498,
+   "pure-real-90": 1.8498,
+   "mixed-complex-16-2": 1.8498,
+   "mixed-complex-32-2": 1.8498,
+   "mixed-real-16-2": 1.8498,
+   "mixed-real-32-2": 1.8498,
+   "hmm-256": 1.8498,
+   "hmm-1024": 1.8498,
+   "pure-complex-23": 1.8498,
+   "pure-complex-45": 1.8498
+  },
+  "references_without_criterion": {
+   "MMLM-CM, all experts": 1.6235,
+   "PPMd order 16, primed with the training text": 1.5654,
+   "MMLM-CM's LSTM expert alone": 1.3059,
+   "MMLM-CM's order-4 counts alone": 1.1333
+  }
+ },
+ "rehearsal_of": "PREREG-MMLM-QI-2026-11 (draft, after its review), run 45888292002 on branch mmlm-qi-smoke-2 at commit f0771d0: development split, sweep 20 s at each of seven rates, 2 minutes of training; not a result"
+}

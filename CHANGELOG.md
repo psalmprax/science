@@ -68,6 +68,10 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **PREREG-MMLM-QI-2026-11 frozen and run (2026-11-26).** Frozen by `preregistration/DIGEST-MMLM-QI.json` after its
+  independent review (twelve findings, then four on a second look, each acted on and listed in the plan) and
+  a second rehearsal of all 25 arms (`benchmarks/mmlm/mmlm_qi_rehearsal2.json`). Run once on the branch
+  `mmlm-qi-run-1`. Nothing it finds goes in force without the owner's word.
 - **The video plan after its review's second look (2026-11-26, development).** The hybrid `meanflow-jetflow`
   now takes the gap through JetFlow's time embedding (a forward hook; the channel shift mixed it with each
   channel's mean), starting weights are seeded, four more package files are frozen and NumPy's and OpenCV's

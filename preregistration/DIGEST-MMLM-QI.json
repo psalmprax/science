@@ -1,0 +1,11 @@
+{
+ "preregistration": "PREREG-MMLM-QI-2026-11",
+ "sha256": {
+  "preregistration/PREREG-MMLM-QI-2026-11.md": "a9f3882736c00a907de333085f16c9685aaf5ff4c79e3e973e40f2dea14145a0",
+  "scripts/run_prereg_mmlm_qi.py": "fdd9c00ada39455b37bc3ed83b46d0395afccdc62dd64870d80aecb0e86e37b9",
+  "apedp_mmlm/quantum_inspired.py": "6af5b23dbcbece40e4bc6178e8098d2a1d189357673f85f25fd5bd07fdde1f49",
+  "apedp_mmlm/text_corpus.py": "0ed9e863e536675ed64e9264d56675b09aa05a9dde169fd0f174d9c282e05b40",
+  ".github/workflows/mmlm-qi.yml": "a904de6bb8719c15bdfdb4975aa8217e18ebd49663ab307adf8466b92841e269",
+  "tests/test_quantum_inspired_lm.py": "c04d247307c0b30ec116510bb597b6afcfb8ed2982bbabb640e3b092ae5bfb3e"
+ }
+}
