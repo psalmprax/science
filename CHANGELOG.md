@@ -68,6 +68,17 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12): flip walks that keep a Frobenius symmetry (2026-11-26, development; the second of the four
+  approaches the owner asked to build and test).** `scripts/gf2_orbit_walk.c`, `scripts/search_gf2_orbit_walk.py`,
+  `.github/workflows/gf2-orbit-walk.yml`: after Moosbauer and Poole (ISSAC 2025), decompositions invariant
+  under x -> x^(2^step) are walked as unions of orbits, each flip, merge, dependent group and plus
+  transition applied to whole orbits, with orbits collapsing when two factors of a representative are fixed
+  by a smaller power. The complete invariant searches covered only symmetric decompositions; this walks
+  the general ones. Starts: the six GF(4)-type 42s (invariant under x -> x^4) and the schoolbook in a normal
+  basis (invariant under every power). With the symmetry trivial the walk reaches 23 from the GF(2^7)
+  schoolbook in 8 seconds (the plain C walk 22 in 7); in 60 seconds from the GF(2^8) normal-basis schoolbook
+  it reaches 38 to 44 under x -> x^2, 32 under x -> x^4 and 31 to 32 under x -> x^16 (best known 24), and
+  from the GF(4)-type 42 under x -> x^4 it stays at 42. Tests `tests/test_search_gf2_orbit_walk.py` (5).
 - **GF(2^12): searches mixing subfields can run sharded, and the local ones are recorded (2026-11-26,
   development).** `scripts/gf2_invariant_search.py` has `prepare-mixed` and `run-mixed` (every profile of
   a GF(2) cost with a number of choices in a given range, one shard of the first orbit) and

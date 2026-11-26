@@ -1,0 +1,93 @@
+name: GF(2^12) below 42, the flip walk that keeps a Frobenius symmetry (development)
+
+# Development, not a result: scripts/search_gf2_orbit_walk.py runs scripts/gf2_orbit_walk.c, the flip walk restricted to
+# decompositions invariant under x -> x^(2^step) (every move applied to whole orbits, after Moosbauer and Poole), from the
+# six GF(4)-type 42s (invariant under x -> x^4) and from the schoolbook in a normal basis (invariant under every step);
+# GF(2^8) and GF(2^9) as calibration. Every decomposition is checked against every entry of its tensor and for invariance
+# before anything is counted. Owner's word of 26 November ("build and test all 4").
+#   push to gf2-orbit-walk-run-*  -> 12 jobs of four walks of 17000 seconds, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf2-orbit-walk-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: 'f12-s2-gf4-a', field: 12, step: 2, starts: 'gf4:0 gf4:1 gf4:2 gf4:3', seeds: '0 1 2 3'}
+          - {name: 'f12-s2-gf4-b', field: 12, step: 2, starts: 'gf4:4 gf4:5 gf4:0 gf4:3', seeds: '4 5 6 7'}
+          - {name: 'f12-s4-gf4', field: 12, step: 4, starts: 'gf4:0 gf4:1 gf4:4 gf4:5', seeds: '10 11 12 13'}
+          - {name: 'f12-s6-gf4', field: 12, step: 6, starts: 'gf4:0 gf4:2 gf4:3 gf4:5', seeds: '20 21 22 23'}
+          - {name: 'f12-s1-normal', field: 12, step: 1, starts: 'normal normal normal normal', seeds: '30 31 32 33'}
+          - {name: 'f12-s2-normal', field: 12, step: 2, starts: 'normal normal normal normal', seeds: '40 41 42 43'}
+          - {name: 'f12-s3-normal', field: 12, step: 3, starts: 'normal normal normal normal', seeds: '50 51 52 53'}
+          - {name: 'f12-s4-normal', field: 12, step: 4, starts: 'normal normal normal normal', seeds: '60 61 62 63'}
+          - {name: 'f12-s6-normal', field: 12, step: 6, starts: 'normal normal normal normal', seeds: '70 71 72 73'}
+          - {name: 'cal8-s2', field: 8, step: 2, starts: 'normal normal normal normal', seeds: '80 81 82 83'}
+          - {name: 'cal8-s4', field: 8, step: 4, starts: 'normal normal tower-inv:4 tower-inv:4', seeds: '84 85 86 87'}
+          - {name: 'cal9-s3', field: 9, step: 3, starts: 'normal normal normal normal', seeds: '90 91 92 93'}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The walk's own tests
+        run: python -m pytest tests/test_search_gf2_orbit_walk.py tests/test_gf2_invariant_search.py -q
+      - name: Walk ${{ matrix.name }}
+        timeout-minutes: 310
+        env:
+          FIELD: ${{ matrix.field }}
+          STEP: ${{ matrix.step }}
+          STARTS: ${{ matrix.starts }}
+          SEEDS: ${{ matrix.seeds }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/search_gf2_orbit_walk.py run --field "$FIELD" --step "$STEP" --starts $STARTS --seeds $SEEDS --slack 2 3 4 6 --seconds 17000 --processes 4 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf2-orbit-${{ matrix.name }}
+          path: out
+
+  collect:
+    needs: walk
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf2-orbit-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/search_gf2_orbit_walk.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf2 orbit walk====="
+          if [ -f got/orbit_walk.json ]; then gzip -9c got/orbit_walk.json | base64 -w 60000; echo; fi
+          echo "=====END gf2 orbit walk====="
