@@ -31,7 +31,11 @@ Categories:
 | **Complete searches of symmetric decompositions** (`scripts/gf2_invariant_search.*`) | mixed subfields | None at 41 or 42 invariant under a Frobenius power over GF(2); over GF(4) 14 products exist, 13 do not among 56 thousand million invariant choices | negative certificates for the record |
 | **The plain C flip walk** (`scripts/gf2_flip_walk.c`) | look-ahead; learned scorer; settings loop; then SAT | 42 stays 42 in 274 core-hours; the baseline everything else is measured against | the calibration baseline |
 
-## C. Do not add
+## C. Retired: did not meet their expectations
+
+Retired on your word of 27 November (00:41, "retire anything that does not meet our expectation"): marked
+`deprecated` in `docs/DOCUMENTATION.md`, run by nothing, kept only so their records can be replicated (frozen
+files are never edited or moved). Nothing in force used any of them.
 
 | Solution | Hybrids tried | Why not |
 | :--- | :--- | :--- |

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A language model rewrites a program that builds GF(2^n) multiplication decompositions; a fixed judge scores it.
 
-Status: audit-only
+Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record)
 
 **Development, not a result.** The fourth of the four approaches the owner asked on 26 November to build
 and test toward the GF(2^12) target (41 products or fewer): an AlphaEvolve-style loop (Novikov et al.,

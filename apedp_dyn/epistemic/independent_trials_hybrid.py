@@ -1,6 +1,6 @@
 """Hybrids of the ways of counting independent trials for the deflated Sharpe ratio (development).
 
-Status: experimental
+Status: deprecated (retired 27 Nov 2026 on the owner's word: no hybrid beat the cluster count, one was unsafe; kept to replicate its record)
 
 Not wired into the referee. ``apedp_dyn/epistemic/independent_trials.py`` deflates the best of many
 strategies three ways: against every trial (the referee's count today), against clusters of correlated

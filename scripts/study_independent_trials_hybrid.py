@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The independent-trials hybrids on the same simulated searches and real prices as the two earlier studies.
 
-Status: audit-only
+Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record)
 
 **Development, not a result.** Runs ``scripts/study_independent_trials.py``'s simulated worlds and
 ``scripts/study_independent_trials_real.py``'s strategies on real prices exactly as they ran (same seeds,

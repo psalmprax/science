@@ -1,4 +1,4 @@
-// Status: audit-only. Development, not a result: a flip walk over AND gates rather than bilinear products, driven by
+// Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record). Development, not a result: a flip walk over AND gates rather than bilinear products, driven by
 // scripts/search_gf2_and_walk.py; nothing it prints counts until the driver has checked it.
 //
 // Inputs z = (x, y), 2n bits (x in bits 0..n-1, y in bits n..2n-1). A gate (a, b, c) is the AND (a.z)(b.z), added

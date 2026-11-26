@@ -1,4 +1,4 @@
-// Status: audit-only. Development, not a result: the flip walk over GF(4), driven by scripts/search_gf4_mul_flip.py.
+// Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record). Development, not a result: the flip walk over GF(4), driven by scripts/search_gf4_mul_flip.py.
 // The moves of scripts/gf2_flip_walk.c with GF(4) scalars. Nothing it prints counts until the driver has checked it.
 // Flip-graph walk for bilinear decompositions over GF(4) (vectors of length n <= 8, 2 bits per coordinate).
 // Element encoding: b0 + 2*b1 means b0 + b1*w, w^2 = w + 1. Addition is XOR.

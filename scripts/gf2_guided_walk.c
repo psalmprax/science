@@ -1,4 +1,4 @@
-// Status: audit-only. Development, not a result: the flip walk of scripts/gf2_flip_walk.c with its moves chosen by
+// Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record). Development, not a result: the flip walk of scripts/gf2_flip_walk.c with its moves chosen by
 // look-ahead instead of at random, after the non-neural program search's studies (psalmprax/non-neural-program-search,
 // study 3: looking one step ahead through the interpreter was the largest single gain per candidate). Driven by
 // scripts/search_gf2_guided_walk.py; nothing it prints counts until the driver has checked it.

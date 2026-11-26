@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """GF(4^6) multiplication over GF(4) in 13 products or fewer: the flip walk over GF(4) (development).
 
-Status: audit-only
+Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record)
 
 **Development, not a result.** The owner asked on 26 November for the GF(2^12) target (41 products over
 GF(2) or fewer) to be pursued until it is solved. GF(2^12) is GF(4^6); a decomposition of its

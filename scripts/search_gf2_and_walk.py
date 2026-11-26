@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """GF(2^n) multiplication with few AND gates: a flip walk over quadratic circuits (development).
 
-Status: audit-only
+Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record)
 
 **Development, not a result, and not the bilinear target.** The owner asked on 26 November to build and
 test four unconventional approaches to the GF(2^12) target; this is the first: count AND gates rather than

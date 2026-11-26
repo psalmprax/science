@@ -28,6 +28,19 @@ inferred releases.
   `proposers/llm_https.py` refuses any address that is not https; the frozen file is unchanged and
   its finding is listed in `scripts/bandit_baseline.json`, which the scan reads and a test pins.
 
+### Deprecated
+
+- **Retired what did not meet its expectations (2026-11-27, owner's word, 00:41).** Marked `deprecated` in
+  `docs/DOCUMENTATION.md` and listed as retired in the solutions register: the quantum-inspired byte models
+  (`apedp_mmlm/quantum_inspired.py`, `scripts/run_prereg_mmlm_qi.py`, its workflow), the language model
+  evolving the GF(2^n) builder (`scripts/run_gf2_evolution.py`), the look-ahead and learned walk
+  (`scripts/gf2_guided_walk.c`, `scripts/search_gf2_guided_walk.py`), AND gates instead of products
+  (`scripts/gf2_and_walk.c`, `scripts/search_gf2_and_walk.py`, still imported by the SAT tool), the GF(4) walk
+  (`scripts/gf4_flip_walk.c`, `scripts/search_gf4_mul_flip.py`), and the hybrids of the independent-trials
+  count (`apedp_dyn/epistemic/independent_trials_hybrid.py` and its study). No file is moved; the frozen ones
+  (MMLM-QI's) stay byte for byte and keep their old tag, the others' status lines now say deprecated. None was
+  in force; their workflows run only on their own run branches.
+
 ### Changed
 
 - **Physics-first video plan: the owner's three choices (2026-11-27, 00:07, "Yes").** Bounces are rigid

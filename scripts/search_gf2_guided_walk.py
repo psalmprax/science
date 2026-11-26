@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The flip walk with look-ahead and a scorer it learns from its own descents (development).
 
-Status: audit-only
+Status: deprecated (retired 27 Nov 2026 on the owner's word; kept to replicate its record)
 
 **Development, not a result.** On 26 November the owner asked whether the loops of the non-neural
 program search (psalmprax/non-neural-program-search) can help the GF(2^n) searcher, which had not
