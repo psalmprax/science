@@ -68,6 +68,23 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The non-neural program search's loops tried on the GF(2^n) walk: nothing to learn from its moves
+  (2026-11-26, development; on the owner's question).** `scripts/gf2_guided_walk.c`,
+  `scripts/search_gf2_guided_walk.py`, `tests/test_search_gf2_guided_walk.py`. From
+  psalmprax/non-neural-program-search: look-ahead (each move chosen among K candidate flips by what it
+  would do one step ahead) and self-improvement (a conditional logit fitted to the steps that led to each
+  new best, the move taken against the moves passed over in the same state, offset by the walk's own
+  probabilities, and the next round walked with what was learned), checked on held-out walks. Locally on
+  GF(2^8), about 160,000 logged steps: only the last move before a new best is predictable, and it is a
+  merge by construction; two to eight moves before the held-out gain is 0.03 to 0.04 nats per step and
+  comes from the label, earlier 0.003; pairwise products of the features add nothing. The weights learned
+  are near zero, so the rounds have nothing to compound. At equal time from the schoolbook (30 s, four
+  seeds) the look-ahead walks make 1.5 to 5 times fewer moves and do no better on GF(2^8) and GF(2^9);
+  merge-greedy with four candidates is lower on GF(2^10) (72.75 against 77.5) while the plain walk is
+  still in its first descent. A loop one level up, learning which plateau and slack to spend time on,
+  settled on the default. Everything exact; nothing below a known count; no GitHub run (nothing here
+  suggests one would find 41). Records: `benchmarks/gf2_multiplication/guided_walk_local.json`,
+  `guided_walk_settings_local.json`.
 - **Counting independent trials, tried on real prices (2026-11-26, development; on the owner's word).**
   `scripts/study_independent_trials_real.py`, `benchmarks/referee_trials/independent_trials_real_dev.json`:
   56 rule-based strategies in four families on six real daily series of `data/market` (the finance audits'

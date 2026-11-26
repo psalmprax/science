@@ -1,0 +1,557 @@
+{
+ "tag": "DEV-GF2-GUIDED-WALK-2026-11",
+ "development_not_a_result": true,
+ "features": [
+  "zero",
+  "merge",
+  "already_held",
+  "sharing_lost",
+  "bits_change",
+  "log2_bucket"
+ ],
+ "train_field": 8,
+ "seconds": 30.0,
+ "candidates": 8,
+ "rounds": [
+  {
+   "round": 0,
+   "walked_with_weights": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "walks": [
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 1000,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "seconds": 30.0,
+     "best": 32,
+     "flips": 42287103,
+     "plus_transitions": 124358,
+     "resets": 135,
+     "exact": true
+    },
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 1001,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "seconds": 30.0,
+     "best": 33,
+     "flips": 42942463,
+     "plus_transitions": 135467,
+     "resets": 136,
+     "exact": true
+    },
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 1002,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "seconds": 30.0,
+     "best": 33,
+     "flips": 41278463,
+     "plus_transitions": 127797,
+     "resets": 131,
+     "exact": true
+    },
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 1003,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "seconds": 30.0,
+     "best": 33,
+     "flips": 42918911,
+     "plus_transitions": 163716,
+     "resets": 138,
+     "exact": true
+    }
+   ],
+   "steps_logged": 83339,
+   "held_out": {
+    "last move, six": {
+     "steps_fitted": 717,
+     "steps_held_out": 612,
+     "held_out_gain_nats_per_step": 1.4623,
+     "weights": [
+      0.0,
+      3.744,
+      0.885,
+      -0.074,
+      -0.001,
+      -0.025
+     ]
+    },
+    "last move, six and their products": {
+     "steps_fitted": 717,
+     "steps_held_out": 612,
+     "held_out_gain_nats_per_step": 1.4844,
+     "weights": null
+    },
+    "moves 2-8 before, six": {
+     "steps_fitted": 5005,
+     "steps_held_out": 4244,
+     "held_out_gain_nats_per_step": 0.0332,
+     "weights": [
+      0.0,
+      -2.048,
+      0.051,
+      -0.014,
+      0.011,
+      0.028
+     ]
+    },
+    "moves 2-8 before, six and their products": {
+     "steps_fitted": 5005,
+     "steps_held_out": 4244,
+     "held_out_gain_nats_per_step": 0.035,
+     "weights": null
+    },
+    "moves 9-64 before, six": {
+     "steps_fitted": 39541,
+     "steps_held_out": 33220,
+     "held_out_gain_nats_per_step": 0.0037,
+     "weights": [
+      0.0,
+      -1.431,
+      0.004,
+      0.009,
+      -0.003,
+      0.029
+     ]
+    },
+    "moves 9-64 before, six and their products": {
+     "steps_fitted": 39541,
+     "steps_held_out": 33220,
+     "held_out_gain_nats_per_step": 0.0038,
+     "weights": null
+    }
+   },
+   "learned_for_next_round": [
+    0.0,
+    0.202,
+    0.014,
+    0.004,
+    -0.002,
+    0.022
+   ]
+  },
+  {
+   "round": 1,
+   "walked_with_weights": [
+    0.0,
+    0.202,
+    0.014,
+    0.004,
+    -0.002,
+    0.022
+   ],
+   "walks": [
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 2000,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.20155419864399532,
+      0.013812961668086158,
+      0.003963613708951241,
+      -0.0015236783195391645,
+      0.022064669000633183
+     ],
+     "seconds": 30.0,
+     "best": 34,
+     "flips": 43327487,
+     "plus_transitions": 207116,
+     "resets": 138,
+     "exact": true
+    },
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 2001,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.20155419864399532,
+      0.013812961668086158,
+      0.003963613708951241,
+      -0.0015236783195391645,
+      0.022064669000633183
+     ],
+     "seconds": 30.0,
+     "best": 33,
+     "flips": 41102335,
+     "plus_transitions": 190117,
+     "resets": 131,
+     "exact": true
+    },
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 2002,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.20155419864399532,
+      0.013812961668086158,
+      0.003963613708951241,
+      -0.0015236783195391645,
+      0.022064669000633183
+     ],
+     "seconds": 30.0,
+     "best": 33,
+     "flips": 42805247,
+     "plus_transitions": 224042,
+     "resets": 135,
+     "exact": true
+    },
+    {
+     "field": 8,
+     "start": "schoolbook",
+     "seed": 2003,
+     "k": 8,
+     "temperature": 1.0,
+     "weights": [
+      0.0,
+      0.20155419864399532,
+      0.013812961668086158,
+      0.003963613708951241,
+      -0.0015236783195391645,
+      0.022064669000633183
+     ],
+     "seconds": 30.0,
+     "best": 33,
+     "flips": 40313855,
+     "plus_transitions": 175399,
+     "resets": 129,
+     "exact": true
+    }
+   ],
+   "steps_logged": 79318,
+   "held_out": {
+    "last move, six": {
+     "steps_fitted": 687,
+     "steps_held_out": 580,
+     "held_out_gain_nats_per_step": 1.3167,
+     "weights": [
+      0.0,
+      3.614,
+      0.767,
+      -0.019,
+      0.01,
+      -0.068
+     ]
+    },
+    "last move, six and their products": {
+     "steps_fitted": 687,
+     "steps_held_out": 580,
+     "held_out_gain_nats_per_step": 1.3379,
+     "weights": null
+    },
+    "moves 2-8 before, six": {
+     "steps_fitted": 4783,
+     "steps_held_out": 4043,
+     "held_out_gain_nats_per_step": 0.0405,
+     "weights": [
+      0.0,
+      -2.118,
+      -0.009,
+      -0.006,
+      0.001,
+      -0.029
+     ]
+    },
+    "moves 2-8 before, six and their products": {
+     "steps_fitted": 4783,
+     "steps_held_out": 4043,
+     "held_out_gain_nats_per_step": 0.0417,
+     "weights": null
+    },
+    "moves 9-64 before, six": {
+     "steps_fitted": 37657,
+     "steps_held_out": 31568,
+     "held_out_gain_nats_per_step": 0.0034,
+     "weights": [
+      0.0,
+      -1.413,
+      -0.003,
+      0.003,
+      -0.001,
+      0.033
+     ]
+    },
+    "moves 9-64 before, six and their products": {
+     "steps_fitted": 37657,
+     "steps_held_out": 31568,
+     "held_out_gain_nats_per_step": 0.0032,
+     "weights": null
+    }
+   },
+   "learned_for_next_round": [
+    0.0,
+    0.178,
+    0.011,
+    0.003,
+    0.0,
+    0.014
+   ]
+  }
+ ],
+ "equal_time": {
+  "seconds_each": 30.0,
+  "seeds": 4,
+  "by_field": {
+   "8": {
+    "plain": {
+     "best": [
+      33,
+      32,
+      32,
+      32
+     ],
+     "flips": [
+      217274367,
+      232496127,
+      229960703,
+      226529279
+     ],
+     "exact": true,
+     "mean_best": 32.25
+    },
+    "merge-greedy K=2": {
+     "best": [
+      32,
+      34,
+      32,
+      32
+     ],
+     "flips": [
+      156841983,
+      157139967,
+      138290134,
+      143077375
+     ],
+     "exact": true,
+     "mean_best": 32.5
+    },
+    "merge-greedy K=4": {
+     "best": [
+      32,
+      34,
+      35,
+      32
+     ],
+     "flips": [
+      89629695,
+      87135231,
+      84231167,
+      89220095
+     ],
+     "exact": true,
+     "mean_best": 33.25
+    },
+    "learned K=8": {
+     "best": [
+      32,
+      33,
+      33,
+      34
+     ],
+     "flips": [
+      47740927,
+      43606015,
+      43725823,
+      44719103
+     ],
+     "exact": true,
+     "mean_best": 33.0
+    },
+    "known": 24
+   },
+   "9": {
+    "plain": {
+     "best": [
+      53,
+      48,
+      49,
+      50
+     ],
+     "flips": [
+      222124031,
+      239211519,
+      233625599,
+      236938239
+     ],
+     "exact": true,
+     "mean_best": 50.0
+    },
+    "merge-greedy K=2": {
+     "best": [
+      53,
+      60,
+      51,
+      50
+     ],
+     "flips": [
+      147151871,
+      153905151,
+      142234623,
+      143362047
+     ],
+     "exact": true,
+     "mean_best": 53.5
+    },
+    "merge-greedy K=4": {
+     "best": [
+      51,
+      54,
+      53,
+      52
+     ],
+     "flips": [
+      88111103,
+      88997887,
+      88496127,
+      87611391
+     ],
+     "exact": true,
+     "mean_best": 52.5
+    },
+    "learned K=8": {
+     "best": [
+      50,
+      58,
+      57,
+      62
+     ],
+     "flips": [
+      45662207,
+      45191167,
+      45412351,
+      44760063
+     ],
+     "exact": true,
+     "mean_best": 56.75
+    },
+    "known": 30
+   },
+   "10": {
+    "plain": {
+     "best": [
+      75,
+      85,
+      78,
+      72
+     ],
+     "flips": [
+      220821503,
+      230396927,
+      228419583,
+      223352831
+     ],
+     "exact": true,
+     "mean_best": 77.5
+    },
+    "merge-greedy K=2": {
+     "best": [
+      69,
+      82,
+      70,
+      77
+     ],
+     "flips": [
+      148676607,
+      152444927,
+      140986367,
+      149242879
+     ],
+     "exact": true,
+     "mean_best": 74.5
+    },
+    "merge-greedy K=4": {
+     "best": [
+      71,
+      76,
+      71,
+      73
+     ],
+     "flips": [
+      90465279,
+      88691711,
+      86775807,
+      88170495
+     ],
+     "exact": true,
+     "mean_best": 72.75
+    },
+    "learned K=8": {
+     "best": [
+      80,
+      81,
+      81,
+      72
+     ],
+     "flips": [
+      45895679,
+      47871999,
+      48435199,
+      45232127
+     ],
+     "exact": true,
+     "mean_best": 78.5
+    },
+    "known": 33
+   }
+  }
+ },
+ "below_known_anywhere": false,
+ "machine": "local, two CPU cores, 26 November 2026",
+ "reading": "Held out, the only move the scorer can predict is the last one before a new best, which is a merge by construction (1.3 to 1.5 nats per step). Two to eight moves before, 0.03 to 0.04 nats per step, and that comes from merges being rarer there (weight about -2, an effect of the label, not a lead); nine to 64 moves before, 0.003. The pairwise products add nothing. The weights learned for the next round are near zero (merge 0.2), so round 1 walks almost as round 0 and there is nothing to compound. At equal time (30 s, 4 seeds, from the schoolbook) the look-ahead walks make 1.5 to 5 times fewer moves and are no better on GF(2^8) and GF(2^9); merge-greedy with 4 candidates is lower on GF(2^10) (72.75 against 77.5), where the plain walk is still in its first descent at 30 s. Every decomposition was checked exact; nothing is below a known count."
+}
