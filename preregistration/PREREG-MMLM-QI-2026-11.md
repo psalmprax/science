@@ -102,7 +102,10 @@ seed 0, the one best on the selection slice (not on the test split).
 
 Reported without a criterion: the gap from the best arm to each reference; bytes seen; scoring speed;
 the rates chosen; each runner's processor; and, for 2 and 7, the larger seed spread at each D (a margin
-no larger than it is reported as within the noise of the seeds, D by D). 3 and 4 rest on one seed per arm.
+no larger than it is reported as within the noise of the seeds, D by D; for 7 the margin compared is the
+one against the hidden Markov model's hybrid, since counting alone has no seed). 3 and 4 rest on one seed
+per arm. Expectations 2 and 7 need all three seeds of their arms, and 1 and 6 all 15 quantum-inspired arms;
+otherwise they are not read.
 
 A miss is reported as a miss. An arm that fails to run is reported as missing; each expectation that
 needs it is then marked not read, and the others are read.
@@ -115,9 +118,10 @@ they say what the model is like.
 | 7 (hybrid) | 2 (against the automaton) | 3 (complex) | Proposal |
 | :--- | :--- | :--- | :--- |
 | holds | holds | holds | develop the complex quantum-inspired model as one more expert in MMLM-CM's mixture, under its own preregistration |
-| holds | holds | fails | the same with the real model: the gain is the structure, not complex numbers (under this optimiser and budget) |
+| holds | holds | fails | a preregistration that tests both the real and the complex model as the expert: 2 and 7 were measured on the complex model only, and 3 failing at one D does not show the real one does as well |
 | holds | fails | either | an expert is still worth a preregistration of its own, but as a hybrid only: it adds to counting more than an automaton of its size does, though alone it does not beat that automaton |
-| fails | any | any | do not develop quantum-inspired language models in MMLM: mixed with counting, they add nothing a hidden Markov model with D^2 states (2.5 times the parameters at D = 32) does not |
+| fails | any | any | do not develop quantum-inspired language models in MMLM: mixed with counting, they gain less than 0.02 over counting alone, or no more than a hidden Markov model with D^2 states (2.5 times the parameters at D = 32) gains |
+| not read | | | no proposal: the run is incomplete; the owner decides whether to repeat the missing arms |
 
 6 is read on its own: if it fails, no claim is made that these models compete with counting, whatever the
 table says.
@@ -208,6 +212,15 @@ tests no check, so it has no trap arm, and says so.
 11. The data is the tokenised WikiText-2, not the raw. *Done:* the wording.
 12. The test file decides whether an arm runs but was not frozen, and its 6-second training test could
     fail on a slow runner. *Done:* frozen; 10 seconds.
+
+**Second look at the fixes (26 November), and what was done:** (1) a missing seed was averaged over and
+E1 and E6 read without all arms. *Done:* each needs all its arms or seeds, or is not read; tests pin it.
+(2) Row 2 of the table did not follow (3 can fail at one D; 2 and 7 were measured on the complex model
+only); row 4 covered half of 7; no row for "not read". *Done:* row 2 now proposes a test of both
+experts; row 4 covers both halves; a "not read" row. (3) E7 had no noise flag. *Done:* per D, on the
+margin against the hidden Markov model's hybrid. (4) A stale docstring. *Done.* The reviewer found the
+table otherwise consistent, the expectations' code matching the plan, the time limits met (about 65
+minutes for the slowest arms) and rates 1 and 3 finite on three models locally.
 
 The reviewer checked and found no fault in: the arms and parameter counts, the protocol against the
 runner and workflow, the arithmetic of every expectation, the rehearsal's numbers, and that nothing here

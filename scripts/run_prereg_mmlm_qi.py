@@ -4,7 +4,7 @@
 Status: audit-only
 
 ``arm`` trains one model of ``apedp_mmlm/quantum_inspired.py``: a short learning-rate sweep (the same
-five rates for every arm, each for ``--sweep-seconds``, the rate kept being the one best on a fixed
+seven rates for every arm, each for ``--sweep-seconds``, the rate kept being the one best on a fixed
 slice of the validation split), then a fresh model at that rate for ``--seconds``, keeping the
 parameters best on that slice, then scores the scored split. ``baselines`` scores interpolated
 Kneser-Ney with 0 to 4 bytes of history on it. ``collect`` reads every arm and the baselines, applies
@@ -158,10 +158,8 @@ THREE_SEEDS = ("pure-complex-16", "pure-complex-32", "hmm-256", "hmm-1024")   #:
 
 
 def _mean(values: dict[str, float], arm: str) -> float:
-    """An arm's mean over the seeds it was run with (E2's four arms have three)."""
-    runs = [values[a] for a in (arm, f"{arm}@1", f"{arm}@2") if a in values]
-    if not runs:
-        raise KeyError(arm)
+    """An arm's mean over seeds 0, 1 and 2; a missing seed makes the expectation not read."""
+    runs = [values[a] for a in (arm, f"{arm}@1", f"{arm}@2")]          # KeyError if one is missing
     return sum(runs) / len(runs)
 
 
@@ -184,10 +182,17 @@ def expectations(bpb: dict[str, float], kn: dict[str, float], hybrid: dict[str, 
     """The seven expectations of the preregistration, read from bits per byte on the scored split. ``hybrid`` is
     each arm mixed with Kneser-Ney (4 bytes of history), ``counting_alone`` that model on the same bytes;
     ``selection`` is each arm's score on the selection slice, which picks the best quantum-inspired arm."""
-    qi_arms = {a: v for a, v in bpb.items() if not a.startswith("hmm") and "@" not in a}
+    kn2, kn4 = kn["Kneser-Ney, 2 bytes of history"], kn["Kneser-Ney, 4 bytes of history"]
+    wanted = [a for a in ARMS if not a.startswith("hmm") and "@" not in a]
+    qi_arms = {a: bpb[a] for a in wanted if a in bpb}
+    complete = len(qi_arms) == len(wanted)                   # E1 and E6 need all 15 quantum-inspired arms
     best_arm = min(qi_arms, key=lambda a: selection.get(a, float("inf"))) if qi_arms else None
     best = qi_arms[best_arm] if best_arm else float("nan")
-    kn2, kn4 = kn["Kneser-Ney, 2 bytes of history"], kn["Kneser-Ney, 4 bytes of history"]
+
+    def best_arm_needed() -> float:
+        if not complete:
+            raise KeyError(", ".join(a for a in wanted if a not in qi_arms))
+        return best
 
     def e2() -> dict[str, Any]:
         margin = {d: round(_mean(bpb, f"hmm-{d * d}") - _mean(bpb, f"pure-complex-{d}"), 4) for d in (16, 32)}
@@ -217,16 +222,17 @@ def expectations(bpb: dict[str, float], kn: dict[str, float], hybrid: dict[str, 
         spread = {d: round(max(_spread(hybrid, f"hmm-{d * d}"), _spread(hybrid, f"pure-complex-{d}")), 4) for d in (16, 32)}
         return {"held": all(counts[d] >= 0.02 and versus[d] >= 0.02 for d in (16, 32)),
                 "counting_alone_minus_hybrid_by_D": counts, "hmm_hybrid_minus_hybrid_by_D": versus,
-                "larger_seed_spread_by_D": spread}
+                "larger_seed_spread_by_D": spread,
+                "hmm_margin_within_spread_by_D": {d: abs(versus[d]) <= spread[d] for d in (16, 32)}}
 
     return {
         "best_quantum_inspired_arm": best_arm, "chosen_on": "the selection slice", "best_quantum_inspired_bpb": best,
-        "E1 learns more than three-byte statistics": {"held": bool(best < kn2), "kneser_ney_2": kn2},
+        "E1 learns more than three-byte statistics": _read(lambda: {"held": bool(best_arm_needed() < kn2), "kneser_ney_2": kn2}),
         "E2 beats a hidden Markov model with D^2 states by 0.05": _read(e2),
         "E3 complex beats real of the same size by 0.02": _read(e3),
         "E4 a mixed state beats a pure one of the same size by 0.02": _read(e4),
         "E5 better with a larger state": _read(e5),
-        "E6 beats the strongest Kneser-Ney": {"held": bool(best < kn4), "kneser_ney_4": kn4},
+        "E6 beats the strongest Kneser-Ney": _read(lambda: {"held": bool(best_arm_needed() < kn4), "kneser_ney_4": kn4}),
         "E7 mixed with counting it adds what an automaton of its size does not": _read(e7),
         "hybrids_without_criterion": {a: h for a, h in hybrid.items() if "@" not in a},
         "references_without_criterion": {k: round(best - v, 4) for k, v in REFERENCES.items()},

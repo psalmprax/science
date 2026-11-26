@@ -125,6 +125,10 @@ def test_the_expectations_are_read_as_written() -> None:
     partial = run.expectations(bpb, kn, hybrid, counting_alone=1.85, selection=selection)
     assert partial["E3 complex beats real of the same size by 0.02"]["held"] is None
     assert partial["E2 beats a hidden Markov model with D^2 states by 0.05"]["held"] is not None
+    assert partial["E1 learns more than three-byte statistics"]["held"] is None        # needs all 15 arms
+    del bpb["hmm-256@2"]                                                     # a missing seed: E2 is not read
+    assert run.expectations(bpb, kn, hybrid, counting_alone=1.85, selection=selection)[
+        "E2 beats a hidden Markov model with D^2 states by 0.05"]["held"] is None
     e7 = e["E7 mixed with counting it adds what an automaton of its size does not"]
     assert e7["counting_alone_minus_hybrid_by_D"] == {16: 0.03, 32: 0.05}
     assert e7["hmm_hybrid_minus_hybrid_by_D"] == {16: 0.01, 32: 0.03}
