@@ -1,0 +1,88 @@
+name: GF(2^n) multiplication in few AND gates, the quadratic-circuit walk (development)
+
+# Development, not a result, and not the bilinear target: scripts/search_gf2_and_walk.py runs scripts/gf2_and_walk.c, a flip
+# walk over AND gates whose inputs may mix bits of both factors (2-forms, after Mirwald and Schnorr), from the
+# repository's 42, the GF(4)-type 42s, towers and the schoolbook; GF(2^4) to GF(2^7) as calibration against the bilinear
+# counts. Every result is checked as 2-forms and as a circuit before anything is counted. A count found here is AND gates,
+# not bilinear products. Owner's word of 26 November ("build and test all 4").
+#   push to gf2-and-walk-run-*  -> 8 jobs of four walks of 17000 seconds, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf2-and-walk-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: 'f12-ref', field: 12, starts: 'ref ref ref ref', seeds: '0 1 2 3'}
+          - {name: 'f12-gf4', field: 12, starts: 'gf4:0 gf4:1 gf4:2 gf4:3', seeds: '10 11 12 13'}
+          - {name: 'f12-t8', field: 12, starts: 'tower:3:0 tower:3:50 tower:3:100 tower:3:150', seeds: '20 21 22 23'}
+          - {name: 'f12-t16', field: 12, starts: 'tower:4:0 tower:4:10 tower:4:20 tower:4:30', seeds: '30 31 32 33'}
+          - {name: 'cal7', field: 7, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '70 71 72 73'}
+          - {name: 'cal6', field: 6, starts: 'tower:2:0 tower:3:0 schoolbook schoolbook', seeds: '60 61 62 63'}
+          - {name: 'cal5', field: 5, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '50 51 52 53'}
+          - {name: 'cal4', field: 4, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '40 41 42 43'}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The walk's own tests
+        run: python -m pytest tests/test_search_gf2_and_walk.py -q
+      - name: Walk ${{ matrix.name }}
+        timeout-minutes: 310
+        env:
+          FIELD: ${{ matrix.field }}
+          STARTS: ${{ matrix.starts }}
+          SEEDS: ${{ matrix.seeds }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/search_gf2_and_walk.py run --field "$FIELD" --starts $STARTS --seeds $SEEDS --slack 2 3 4 6 --seconds 17000 --processes 4 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf2-and-${{ matrix.name }}
+          path: out
+
+  collect:
+    needs: walk
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf2-and-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/search_gf2_and_walk.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf2 and walk====="
+          if [ -f got/and_walk.json ]; then gzip -9c got/and_walk.json | base64 -w 60000; echo; fi
+          echo "=====END gf2 and walk====="

@@ -68,6 +68,15 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^n) multiplication in few AND gates, a quadratic-circuit walk (2026-11-26, development; the first of the
+  four approaches; not the bilinear target).** `scripts/gf2_and_walk.c`, `scripts/search_gf2_and_walk.py`,
+  `.github/workflows/gf2-and-walk.yml`: gates (a.z)(b.z) whose inputs may mix bits of both factors, counted by
+  their 2-forms a ^ b (Mirwald and Schnorr); flips on a vector two gates' planes share and on a shared
+  output, merges, and plus transitions built so that no two new gates merge at once (the first form undid
+  itself). Checked as 2-forms and as circuits. Locally the walk is weaker than the bilinear walk from the
+  schoolbook (GF(2^5) 16 against 13, GF(2^6) 23 against 15, GF(2^7) 41 against 22 in 20 to 30 seconds) and
+  finds nothing below the bilinear 15 (GF(2^6)) or 42 (GF(2^12)) from them. A count found here is AND gates,
+  which does not meet decision 4 unless the owner says so. Tests `tests/test_search_gf2_and_walk.py` (5).
 - **GF(2^12): flip walks that keep a Frobenius symmetry (2026-11-26, development; the second of the four
   approaches the owner asked to build and test).** `scripts/gf2_orbit_walk.c`, `scripts/search_gf2_orbit_walk.py`,
   `.github/workflows/gf2-orbit-walk.yml`: after Moosbauer and Poole (ISSAC 2025), decompositions invariant
