@@ -92,16 +92,22 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
             cams = [c.strip() for c in archive.read(cams_file).decode().split() if c.strip()]
         seg_dirs = sorted({n.rsplit("/seg/", 1)[0] for n in names if "/seg/" in n and n.endswith(".npz")})
         static = [d for d in seg_dirs if not d.endswith("CineCamera_Moving")]
-        chosen = None
-        for c in cams:
-            hit = [d for d in static if d.endswith(c) or d.endswith(f"CineCamera_{c}")]
-            if hit:
-                chosen = hit[0]
-                break
-        if chosen is None and static:
-            chosen = static[0]
-        if chosen is None:
+        if not static:
             raise RuntimeError("no static camera with masks")
+        # The most nearly level static camera, as generated clips are usually framed.
+        pitches = {}
+        for d in static:
+            cam = d.rsplit("/", 1)[-1]
+            doc = next((n for n in names if n.endswith(f"blender_{cam}.json")), None)
+            if doc is None:
+                continue
+            frames0 = (json.loads(archive.read(doc)) or {}).get("frames") or []
+            if frames0:
+                c2w = np.asarray(frames0[0], dtype=float).reshape(4, 4)
+                forward = -c2w[:3, 2]
+                pitches[d] = float(np.degrees(np.arcsin(np.clip(forward[2] / np.linalg.norm(forward), -1, 1))))
+        chosen = min(pitches, key=lambda d: abs(pitches[d])) if pitches else static[0]
+        pitch = pitches.get(chosen)
         fps = 30.0
         actors: list[dict] = []
         traj = next((n for n in names if n.endswith("_trajectory.json") and "/" in n), None)
@@ -137,7 +143,8 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
                         "xy": [[round(a, 2), round(b, 2)] if np.isfinite(a) else None for a, b in xy],
                         "size": [round(float(v), 2) if np.isfinite(v) else None for v in size]})
     objects.sort(key=lambda o: -o["extent"])
-    return {"scene": scene, "camera": chosen.rsplit("/", 1)[-1], "fps": fps, "frames": n,
+    return {"scene": scene, "camera": chosen.rsplit("/", 1)[-1], "pitch": pitch, "static_cameras": len(static),
+            "listed_cameras": cams, "fps": fps, "frames": n,
             "shape": list(shape) if shape else None, "objects": objects, "actors": actors}
 
 
@@ -164,15 +171,41 @@ def _actor_paths(doc: dict) -> list[dict]:
     return out[:4]
 
 
-def _to_tracks(clip: dict, kind: str) -> list[Track]:
+CADENCE = 3  #: PhysInOne's rigid-body scenes move on a three-frame cadence (one large step in three)
+
+
+def cadence_phase(xy: np.ndarray, period: int = CADENCE) -> tuple[int, float]:
+    """The frame phase just after the cadence's large step, and how much larger that step is."""
+    steps = np.linalg.norm(np.diff(xy, axis=0), axis=1)
+    n = (steps.size // period) * period
+    blocks = steps[:n].reshape(-1, period)
+    good = np.all(np.isfinite(blocks), axis=1) & (np.nansum(blocks, axis=1) > 0)
+    if good.sum() < 3:
+        return 0, 1.0
+    mean = blocks[good].mean(axis=0)
+    big = int(np.argmax(mean))
+    others = float(np.delete(mean, big).mean())
+    return (big + 1) % period, float(mean[big] / max(others, 1e-9))
+
+
+def _to_tracks(clip: dict, kind: str) -> tuple[list[Track], dict]:
+    """The clip's tracks taken every third frame, at the phase just after the large step of the cadence.
+
+    The positions of PhysInOne's objects change on a three-frame cadence (a fixed simulation step against
+    the 30 frames per second of the render): consecutive frames are not equally spaced in the simulation's
+    time, every third frame is. The phase comes from the object that moves most; all objects share it.
+    """
     n = clip["frames"]
-    t = np.arange(n) / clip["fps"]
-    out = []
+    raw = []
     for obj in clip["objects"][:OBJECTS.get(kind, 1)]:
         xy = np.array([p if p is not None else [np.nan, np.nan] for p in obj["xy"]], dtype=float)
         size = np.array([s if s is not None else np.nan for s in obj["size"]], dtype=float)
-        out.append(Track(t, xy, size))
-    return out
+        raw.append((xy, size))
+    phase, strength = cadence_phase(raw[0][0])
+    keep = np.arange(phase, n, CADENCE)
+    t = keep / clip["fps"]
+    tracks = [Track(t, xy[keep], size[keep]) for xy, size in raw]
+    return tracks, {"cadence_phase": phase, "cadence_strength": round(strength, 2), "samples": int(keep.size)}
 
 
 def cmd_fetch(args: argparse.Namespace) -> None:
@@ -205,10 +238,10 @@ def cmd_judge(args: argparse.Namespace) -> None:
             rows.append({"scene": clip["scene"], "variant": "true", "outcome": "untestable",
                          "reasons": [f"{len(clip['objects'])} moving objects in the masks"]})
             continue
-        tracks = _to_tracks(clip, kind)
+        tracks, adapter = _to_tracks(clip, kind)
         v = judge(kind, tracks)
         rows.append({"scene": clip["scene"], "variant": "true", "outcome": v.outcome, "reasons": v.reasons,
-                     "stats": v.stats})
+                     "stats": v.stats, "adapter": adapter})
         for how in PERTURBATIONS:
             broken = perturb(kind, tracks, how, np.random.default_rng(1000 + i))
             if broken is None:

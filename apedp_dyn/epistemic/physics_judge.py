@@ -22,8 +22,9 @@ How:
 4. At each contact: the position must be continuous (no jump the motion cannot explain) and the speed must
    not grow (no energy from nowhere: an object at rest does not start moving by itself).
 5. Under gravity (falls, throws, bounces, rolls): no segment may accelerate upward against the clip's own
-   gravity, and the clip must show the law it is about (a fall must accelerate downward somewhere; a roll
-   must speed up somewhere).
+   gravity for longer than a contact lasts, and a fall, throw or bounce must accelerate downward somewhere.
+   (A roll seen receding from the camera can slow down in the image while it speeds up on the slope, so a
+   roll is held to the contact and gravity rules only.)
 6. A pendulum's bob must keep to one conic (a circle seen in projection), keep its velocity continuous,
    swing with a steady half-period and an amplitude that does not grow.
 7. A collision: both objects change velocity at the same moment, their changes point in opposite
@@ -74,23 +75,28 @@ class JudgeSettings:
     min_motion_sizes: float = 1.0
     min_motion_px: float = 8.0
     noise_floor_px: float = 0.25
+    noise_floor_size: float = 0.015
     min_segment: int = 2
-    contact_min_frames: int = 4
+    contact_min_seconds: float = 0.12
     jump_sigma: float = 6.0
+    jump_size_share: float = 0.25
     jump_speed_frames: float = 0.5
     speed_gain_tol: float = 0.5
     rebound_tol: float = 0.1
     stop_rising_share: float = 0.5
     rest_share: float = 0.05
+    launch_share: float = 0.2
     speed_noise_sigma: float = 4.0
     accel_z: float = 4.0
-    min_accel_frames: int = 6
+    min_accel_seconds: float = 0.2
+    min_upward_seconds: float = 0.33
+    rising_share: float = 0.25
     upward_accel_share: float = 0.25
     upward_accel_sizes: float = 2.0
     area_jump_ratio: float = 1.5
     pendulum_conic_sigma: float = 6.0
     pendulum_velocity_jump: float = 0.35
-    pendulum_window: int = 6
+    pendulum_window_seconds: float = 0.2
     period_tol: float = 0.2
     amplitude_growth_tol: float = 0.15
     turning_prominence: float = 0.2
@@ -102,6 +108,11 @@ class JudgeSettings:
 
 
 DEVELOPMENT = JudgeSettings()
+
+
+def _frames(seconds: float, dt: float, least: int) -> int:
+    """A duration in frames at this clip's frame interval, never fewer than ``least``."""
+    return max(least, math.ceil(seconds / dt - 1e-9))
 
 
 @dataclass
@@ -367,7 +378,10 @@ def _preflight(track: Track, settings: JudgeSettings, kind: str) -> tuple[Verdic
     if extent < need:
         return Verdict(kind, UNTESTABLE, [f"object moves {extent:.1f} px, less than {need:.1f}"],
                        {"visible": visible, "extent": extent}), info
-    sigma = _noise(xy, settings.noise_floor_px)
+    floor = settings.noise_floor_px
+    if size is not None:
+        floor = max(floor, settings.noise_floor_size * size_med)
+    sigma = _noise(xy, floor)
     info.update(sigma=sigma, size_med=size_med, extent=extent, visible=visible,
                 dt=float(np.median(np.diff(t))))
     return None, info
@@ -383,6 +397,7 @@ class _Event:
     v_after: np.ndarray
     v_noise: float
     rest_speed: float
+    top_speed: float
 
     @property
     def dv(self) -> np.ndarray:
@@ -399,7 +414,7 @@ def _max_speed(t: np.ndarray, segments: list[_Segment]) -> float:
 
 
 def _events(t: np.ndarray, segments: list[_Segment], sigma: float, dt: float,
-            settings: JudgeSettings) -> list[_Event]:
+            settings: JudgeSettings, size: float = float("nan")) -> list[_Event]:
     """Contacts between consecutive segments, each at the moment the two segments' motions meet.
 
     At a real contact both models pass through the contact point at the contact time, so their distance
@@ -408,7 +423,8 @@ def _events(t: np.ndarray, segments: list[_Segment], sigma: float, dt: float,
     events = []
     top = _max_speed(t, segments)
     # Segments shorter than a contact's frames are part of the contact between their long neighbours.
-    long = [seg for seg in segments if seg.stop - seg.start + 1 >= settings.contact_min_frames]
+    shortest = _frames(settings.contact_min_seconds, dt, 3)
+    long = [seg for seg in segments if seg.stop - seg.start + 1 >= shortest]
     for a, b in itertools.pairwise(long):
         grid = np.linspace(t[a.stop] - 0.5 * dt, t[b.start] + 0.5 * dt, 41)
         d = np.linalg.norm(a.pos(grid) - b.pos(grid), axis=1)
@@ -419,9 +435,11 @@ def _events(t: np.ndarray, segments: list[_Segment], sigma: float, dt: float,
         v_se = 3.0 * sigma / dt * math.sqrt(12.0 / max(n * (n * n - 1.0), 6.0))
         speed = max(float(np.linalg.norm(va)), float(np.linalg.norm(vb)))
         allowed = settings.jump_sigma * sigma + settings.jump_speed_frames * speed * dt
+        if math.isfinite(size):
+            allowed = max(allowed, settings.jump_size_share * size + settings.jump_speed_frames * speed * dt)
         v_noise = settings.speed_noise_sigma * v_se
         events.append(_Event(b.start, tc, float(d[k]), float(allowed), va, vb, v_noise,
-                             v_noise + settings.rest_share * top))
+                             v_noise + settings.rest_share * top, top))
     return events
 
 
@@ -465,16 +483,19 @@ def _contact_reasons(events: list[_Event], settings: JudgeSettings,
             continue
         before = float(np.linalg.norm(e.v_before))
         after = float(np.linalg.norm(e.v_after))
-        if before <= e.rest_speed and after > e.rest_speed + e.v_noise:
+        launch = max(e.rest_speed, settings.launch_share * e.top_speed)
+        if before <= e.rest_speed and after > launch:
             reasons.append(f"starts moving from rest by itself at frame {e.frame} ({after:.1f} px/s)")
-        elif before > e.rest_speed and after > (1.0 + settings.speed_gain_tol) * before + e.v_noise:
+        elif (before > max(e.rest_speed, settings.launch_share * e.top_speed)
+              and after > (1.0 + settings.speed_gain_tol) * before + e.v_noise):
             reasons.append(f"speed grows at a contact at frame {e.frame}: {before:.1f} -> {after:.1f} px/s")
         if not gravity:
             continue
         vy0, vy1 = float(e.v_before[1]), float(e.v_after[1])
         if vy0 > e.rest_speed and vy1 < -e.v_noise and -vy1 > (1.0 + settings.rebound_tol) * vy0 + e.v_noise:
             reasons.append(f"rebounds faster than it fell at frame {e.frame}: {vy0:.1f} -> {-vy1:.1f} px/s")
-        if vy0 < -e.rest_speed and vy1 - vy0 > max(settings.stop_rising_share * -vy0, e.v_noise):
+        rising = max(e.rest_speed, settings.rising_share * e.top_speed)
+        if vy0 < -rising and vy1 - vy0 > max(settings.stop_rising_share * -vy0, e.v_noise):
             reasons.append(f"stops rising abruptly at frame {e.frame} ({-vy0:.1f} px/s up before)")
     return reasons
 
@@ -493,13 +514,15 @@ def _judge_gravity(track: Track, kind: str, settings: JudgeSettings) -> Verdict:
     segments = _partition(t, xy, sigma, settings.min_segment)
     if not segments:
         return Verdict(kind, FAIL, ["no segment of constant-acceleration motion fits"], {"sigma": sigma})
-    events = _events(t, segments, sigma, dt, settings)
+    events = _events(t, segments, sigma, dt, settings, size_med)
     reasons = _contact_reasons(events, settings, gravity=True)
 
     accels = []
+    least = _frames(settings.min_accel_seconds, dt, 4)
+    upward_least = _frames(settings.min_upward_seconds, dt, 4)
     for seg in segments:
         n = seg.stop - seg.start + 1
-        if n < settings.min_accel_frames:
+        if n < least:
             continue
         tt, yy = t[seg.start:seg.stop + 1], xy[seg.start:seg.stop + 1]
         a, se = _vertical_accel(tt, yy[:, 1], sigma)
@@ -510,12 +533,12 @@ def _judge_gravity(track: Track, kind: str, settings: JudgeSettings) -> Verdict:
     limit = (settings.upward_accel_share * a_ref if a_ref is not None
              else settings.upward_accel_sizes * (size_med if math.isfinite(size_med) else 10.0))
     for seg, a, se, _, _ in accels:
+        if seg.stop - seg.start + 1 < upward_least:
+            continue
         if a < -settings.accel_z * se and -a > limit:
             reasons.append(f"accelerates upward ({a:.0f} px/s^2) over frames {seg.start}-{seg.stop}")
     if kind in ("free_fall", "throw", "bounce") and not down:
         reasons.append("no segment shows a downward acceleration")
-    if kind == "roll" and not any(al > settings.accel_z * ase for _, _, _, al, ase in accels):
-        reasons.append("no segment speeds up along its path")
     stats = {"sigma": round(sigma, 3), "segments": [[s.start, s.stop] for s in segments],
              "events": [_event_summary(e) for e in events],
              "accels": [[s.start, s.stop, round(a, 1), round(se, 1)] for s, a, se, _, _ in accels],
@@ -588,7 +611,7 @@ def _judge_pendulum(track: Track, settings: JudgeSettings) -> Verdict:
     conic = _conic_residual(xy)
     if conic > settings.pendulum_conic_sigma * sigma:
         reasons.append(f"the bob leaves its arc: {conic:.2f} px off the best conic (noise {sigma:.2f})")
-    breaks = _local_breaks(t, xy, sigma, settings.pendulum_window)
+    breaks = _local_breaks(t, xy, sigma, _frames(settings.pendulum_window_seconds, dt, 4))
     for b in breaks:
         if b["dp"] > settings.jump_sigma * b["sp"] + settings.jump_speed_frames * b["speed"] * dt:
             reasons.append(f"position jumps {b['dp']:.1f} px at frame {b['frame']}")
@@ -598,7 +621,7 @@ def _judge_pendulum(track: Track, settings: JudgeSettings) -> Verdict:
             reasons.append(f"velocity jumps at frame {b['frame']}: {b['dv']:.1f} px/s")
             break
     segments = _partition(t, xy, sigma, settings.min_segment)
-    events = _events(t, segments, sigma, dt, settings)
+    events = _events(t, segments, sigma, dt, settings, info["size_med"])
     # Swing along the principal axis: steady half-period, amplitude that does not grow.
     centred = xy - xy.mean(axis=0)
     _, _, vt = np.linalg.svd(centred, full_matrices=False)
@@ -658,7 +681,10 @@ def _judge_collision(a: Track, b: Track, settings: JudgeSettings) -> Verdict:
             return Verdict(kind, UNTESTABLE, [f"object {name}: {r}" for r in early.reasons], early.stats)
         if early is not None:  # an object at rest until hit is fine; it must still be seen
             t, xy, size, _ = _clean(tr, settings)
-            info = {"t": t, "xy": xy, "size": size, "sigma": _noise(xy, settings.noise_floor_px),
+            floor = settings.noise_floor_px
+            if size is not None:
+                floor = max(floor, settings.noise_floor_size * float(np.median(size)))
+            info = {"t": t, "xy": xy, "size": size, "sigma": _noise(xy, floor),
                     "dt": float(np.median(np.diff(t))),
                     "size_med": float(np.median(size)) if size is not None else float("nan")}
         parts.append(info)
@@ -668,7 +694,7 @@ def _judge_collision(a: Track, b: Track, settings: JudgeSettings) -> Verdict:
         segs = _partition(info["t"], info["xy"], info["sigma"], settings.min_segment)
         if not segs:
             return Verdict(kind, FAIL, [f"object {name}: no segment of constant-acceleration motion fits"], {})
-        per.append((segs, _events(info["t"], segs, info["sigma"], info["dt"], settings)))
+        per.append((segs, _events(info["t"], segs, info["sigma"], info["dt"], settings, info["size_med"])))
     dt = min(parts[0]["dt"], parts[1]["dt"])
     max_speed = []
     for segs, _ in per:

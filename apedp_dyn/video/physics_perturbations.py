@@ -48,7 +48,7 @@ def _size(track: Track) -> float:
     return float(np.median(s)) if s.size else 10.0
 
 
-def _moving_frame(track: Track, rng: np.random.Generator, lo: float = 0.2, hi: float = 0.7,
+def _moving_frame(track: Track, rng: np.random.Generator, lo: float = 0.1, hi: float = 0.8,
                   vertical: bool = False) -> int | None:
     sp = _speed(track)
     if vertical:
@@ -121,7 +121,7 @@ def freeze(track: Track, rng: np.random.Generator) -> Track | None:
 
 
 def vertical_reversal(track: Track, rng: np.random.Generator) -> Track | None:
-    k = _moving_frame(track, rng, 0.1, 0.6, vertical=True)
+    k = _moving_frame(track, rng, 0.05, 0.7, vertical=True)
     if k is None:
         return None
     n = track.t.size
