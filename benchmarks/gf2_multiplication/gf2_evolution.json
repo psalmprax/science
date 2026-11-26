@@ -1,0 +1,65 @@
+{
+ "tag": "DEV-GF2-12-EVOLUTION-2026-11",
+ "development_not_a_result": true,
+ "mode": "evolve",
+ "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+ "model_calls": 118,
+ "steps": 40,
+ "seconds_per_field": 15.0,
+ "versions": 77,
+ "versions_that_ran": 2,
+ "seed": {
+  "5": 14,
+  "6": 23,
+  "7": 29,
+  "8": 49,
+  "9": 63,
+  "10": 82,
+  "12": 131
+ },
+ "best": {
+  "id": 0,
+  "counts": {
+   "5": 14,
+   "6": 23,
+   "7": 29,
+   "8": 49,
+   "9": 63,
+   "10": 82,
+   "12": 131
+  },
+  "score": [
+   0.0,
+   -212.0,
+   -131.0
+  ],
+  "thought": ""
+ },
+ "fields_below_the_best_known": [],
+ "target_met": false,
+ "loop": {
+  "versions": 77,
+  "ran": 2,
+  "refused_or_failed": 75,
+  "by_model": 76,
+  "repaired": 0,
+  "best": {
+   "id": 0,
+   "origin": "seed",
+   "score": [
+    0.0,
+    -212.0,
+    -131.0
+   ],
+   "summary": "5:14, 6:23, 7:29, 8:49, 9:63, 10:82, 12:131 | met 0, excess 212",
+   "sha256": "25f1fbcf077de25b39607fc0d3b9ab92f75063b101ac832122cd76805918acc0"
+  },
+  "seed_score": [
+   0.0,
+   -212.0,
+   -131.0
+  ]
+ },
+ "wall_seconds": 3527.9,
+ "note": "Written beside the run's output (run 45781855077): 75 of the 77 versions the model wrote were refused by the check or failed to run, and none of the repairs worked; why is in the run's ledger (ledger.jsonl), which is only in the run's artifact, and the proxy here refuses that download. The champion is the seed."
+}

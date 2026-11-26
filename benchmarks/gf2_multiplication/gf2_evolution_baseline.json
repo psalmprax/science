@@ -1,0 +1,64 @@
+{
+ "tag": "DEV-GF2-12-EVOLUTION-2026-11",
+ "development_not_a_result": true,
+ "mode": "baseline",
+ "model": "none",
+ "model_calls": 0,
+ "steps": 0,
+ "seconds_per_field": 15.0,
+ "versions": 1,
+ "versions_that_ran": 1,
+ "seed": {
+  "5": 14,
+  "6": 23,
+  "7": 29,
+  "8": 49,
+  "9": 63,
+  "10": 82,
+  "12": 131
+ },
+ "best": {
+  "id": 0,
+  "counts": {
+   "5": 14,
+   "6": 23,
+   "7": 29,
+   "8": 49,
+   "9": 63,
+   "10": 82,
+   "12": 131
+  },
+  "score": [
+   0.0,
+   -212.0,
+   -131.0
+  ],
+  "thought": ""
+ },
+ "fields_below_the_best_known": [],
+ "target_met": false,
+ "loop": {
+  "versions": 1,
+  "ran": 1,
+  "refused_or_failed": 0,
+  "by_model": 0,
+  "repaired": 0,
+  "best": {
+   "id": 0,
+   "origin": "seed",
+   "score": [
+    0.0,
+    -212.0,
+    -131.0
+   ],
+   "summary": "5:14, 6:23, 7:29, 8:49, 9:63, 10:82, 12:131 | met 0, excess 212",
+   "sha256": "25f1fbcf077de25b39607fc0d3b9ab92f75063b101ac832122cd76805918acc0"
+  },
+  "seed_score": [
+   0.0,
+   -212.0,
+   -131.0
+  ]
+ },
+ "wall_seconds": 16.7
+}

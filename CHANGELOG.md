@@ -68,6 +68,15 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12), two more of the four approaches recorded (2026-11-26, development).** The AND-gate walk
+  (run 45779331737, 151 core-hours, `benchmarks/gf2_multiplication/and_walk.json`; it counts AND gates,
+  not bilinear products): GF(2^4) to GF(2^6) reach the known 9, 13 and 15, GF(2^7) stops at 27 (22
+  known), GF(2^12) 42 in every walk. The language model evolving the builder (run 45781855077,
+  `gf2_evolution.json`): nemotron-3.5-lightning, 118 calls of 120, 77 versions of which 75 were refused or
+  failed to run and none was repaired, so the champion is the seed (GF(2^12) 131 in 15 s). Why they
+  failed is in the run's ledger, only in its artifact, which cannot be downloaded from here. The SAT
+  neighbourhood run's collect job was still queued; every neighbourhood its jobs printed last was
+  refused (unsat).
 - **GF(2^12), the symmetric flip walk's GitHub run recorded: nothing below 42 (2026-11-26, development; the
   second of the four approaches).** Run 45778256979 (12 jobs, 48 walks, 209 core-hours), assembled from
   the walk jobs' logs while the collect job was queued (`benchmarks/gf2_multiplication/orbit_walk.json`,
