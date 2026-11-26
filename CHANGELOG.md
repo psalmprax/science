@@ -68,6 +68,17 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12): mixed subfields, and GF(4) walks from 14 (2026-11-26, development).**
+  `scripts/gf2_invariant_search.py` now reads its Frobenius step as a power of the absolute Frobenius
+  (x -> x^(2^step); the GF(4) classes of the first run, x -> x^4 and x -> x^16, are steps 2 and 4) and
+  can mix subfields in one search (`prepare_mixed`, `mixed_profiles`: forms over GF(2), GF(4), GF(8),
+  GF(16) or GF(64), each costing its subfield's products over GF(2)), for decompositions such as six
+  GF(8) products and five GF(2) products (41). Locally: no decomposition of seven GF(8) products
+  invariant under x -> x^8 exists (580 choices), so the GF(8) tower is not in that class. The walk over
+  GF(4) (flips with a scalar, three reductions, plus transitions) from a decomposition of 14 GF(4)
+  products ran two walks of five minutes without finding 13. The GF(2) rank of multiplication modulo
+  (x^2+x+1)^2 (GF(4)[t]/t^2, the cost of a derivative evaluation in the GF(4) construction) is 9 by
+  the walk, as the literature has it: with 8 the construction would give 41.
 - **GF(2^12), the Python flip walk's GitHub run recorded (2026-11-26, development).**
   `benchmarks/gf2_multiplication/flip_search.json`: twelve walks of five hours from the 42 (slack 2 to
   4) stayed at 42; eight from the composed 54 reached 51; four from the schoolbook 112 to 120. The

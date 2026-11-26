@@ -23,7 +23,7 @@ def test_orbits_cover_the_field_and_the_kernel_has_the_orbit_s_dimension() -> No
     assert sum(d for _, d in orbs) == 63
     assert all(len(inv.kernel(field, lam, d, 1)) == d for lam, d in orbs)
     four = inv.Field(12, 4)
-    assert sum(d for _, d in inv.orbits(four, 1)) == 4095 // 3
+    assert sum(d for _, d in inv.orbits(four, 2)) == 4095 // 3
 
 
 def test_profiles_and_leaves_count_the_choices() -> None:
@@ -60,11 +60,11 @@ def test_gf2_7_has_none_of_22_in_the_class(tmp_path: Path) -> None:
 
 def test_a_gf4_decomposition_of_14_gives_42_exact_products() -> None:
     field = inv.Field(12, 4)
-    triples, products = inv.extract(field, 1, [103, 131, 138, 195, 1])
+    triples, products = inv.extract(field, 2, [103, 131, 138, 195, 1])
     from apedp_dyn.quantum import flip_search
     assert products == 14 and len(triples) == 42 and flip_search.verified(triples)
 
 
 def test_extract_refuses_orbits_that_do_not_reach_the_multiplication() -> None:
     with pytest.raises(ValueError):
-        inv.extract(inv.Field(12, 4), 1, [103, 131])
+        inv.extract(inv.Field(12, 4), 2, [103, 131])

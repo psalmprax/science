@@ -37,8 +37,8 @@ jobs:
         run: python -m pytest tests/test_gf2_invariant_search.py tests/test_gf2_towers.py -q
       - name: Orbits
         run: |
-          python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 2 --out x16.bin
-          python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 1 --out x4.bin
+          python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 4 --out x16.bin
+          python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 2 --out x4.bin
       - name: Shards of group ${{ matrix.group }}
         timeout-minutes: 220
         env:
@@ -47,13 +47,13 @@ jobs:
           for i in 0 1 2 3; do
             shard=$((GROUP * 4 + i))
             ( for rank in 13 12; do
-                python scripts/gf2_invariant_search.py run --file x16.bin --over 4 --step 2 --rank "$rank" --shard "$shard" --shards 64 --out out
+                python scripts/gf2_invariant_search.py run --file x16.bin --over 4 --step 4 --rank "$rank" --shard "$shard" --shards 64 --out out
               done ) &
           done
           wait
           if [ "$GROUP" = "0" ]; then
             for rank in 14 13 12; do
-              python scripts/gf2_invariant_search.py run --file x4.bin --over 4 --step 1 --rank "$rank" --out out
+              python scripts/gf2_invariant_search.py run --file x4.bin --over 4 --step 2 --rank "$rank" --out out
             done
           fi
       - uses: actions/upload-artifact@v7

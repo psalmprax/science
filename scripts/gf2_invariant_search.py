@@ -7,7 +7,7 @@ Status: audit-only
 26 November to pursue it by any means). A symmetric decomposition writes ``xy = sum_t Tr(lam_t x) Tr(lam_t y) c_t``.
 Over GF(2) the trace is to GF(2) and each term is one product; over GF(4) (``--over 4``, GF(2^12) as GF(4^6)) the
 trace is to GF(4), each term is one GF(4) product, three over GF(2), and forms are taken up to GF(4)* scaling.
-If the decomposition is invariant under ``phi = x -> x^(q^step)``, its forms fall into phi-orbits and each orbit's
+If the decomposition is invariant under ``phi = x -> x^(2^step)``, its forms fall into phi-orbits and each orbit's
 outputs are fixed by one output ``c`` in a small subspace; given the orbits, the outputs follow by linear algebra.
 So the decompositions of such a class can be enumerated completely: choose the orbits (``gf2_invariant_search.c``),
 ask whether the multiplication lies in the span of what they can produce, and, where it does, solve for the
@@ -18,9 +18,9 @@ GF(2^8) at 24 (the best known counts) and none for GF(2^7) at 22, GF(2^9) at 30,
 or 42. Over GF(4) with x -> x^4, GF(4^6) has decompositions of 14 GF(4) products (42 over GF(2), each checked
 exactly) and none of 13 or 12. The class invariant under x -> x^16 is larger; its search at 13 is the run.
 
-    python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 2 --out orb.bin
-    python scripts/gf2_invariant_search.py run --file orb.bin --over 4 --rank 13 --shard 0 --shards 60 --out DIR
-    python scripts/gf2_invariant_search.py extract --field 12 --over 4 --step 1 --reps 103 131 138 195 1
+    python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 4 --out orb.bin
+    python scripts/gf2_invariant_search.py run --file orb.bin --over 4 --step 4 --rank 13 --shard 0 --shards 60 --out DIR
+    python scripts/gf2_invariant_search.py extract --field 12 --over 4 --step 2 --reps 103 131 138 195 1
     python scripts/gf2_invariant_search.py collect --out DIR
 """
 from __future__ import annotations
@@ -47,17 +47,20 @@ gf_mul = towers.gf_mul
 
 
 class Field:
-    """GF(2^n) with the modulus of ``gf2_towers.MODULI``, seen over GF(q) for q = 2 or 4."""
+    """GF(2^n) with the modulus of ``gf2_towers.MODULI``, seen over its subfield GF(q), q = 2^k with k dividing n."""
 
     def __init__(self, n: int, q: int) -> None:
-        if q not in (2, 4) or n % (q // 2 if q == 4 else 1) or (q == 4 and n % 2):
-            raise ValueError("q must be 2, or 4 with n even")
+        k = q.bit_length() - 1
+        if q != 1 << k or k < 1 or n % k:
+            raise ValueError("q must be 2^k with k dividing n")
         self.n, self.q, self.mod = n, q, towers.MODULI[n]
         size = (1 << n) - 1
         prim = towers.primitive_elements(n)[0]
+        g = self.pow(prim, size // (q - 1))
+        self.scalars = [self.pow(g, e) for e in range(q - 1)]          # GF(q)*
         self.omega = self.pow(prim, size // 3) if q == 4 else 1
-        self.scalars = [1] if q == 2 else [1, self.omega, gf_mul(self.omega, self.omega, self.mod)]
-        self.degree = n if q == 2 else n // 2           # degree over GF(q)
+        self.degree = n // k                                             # degree over GF(q)
+        self.cost = {2: 1, 4: 3, 8: 6, 16: 9, 64: 15}[q]                 # GF(2) products of one GF(q) product
 
     def pow(self, a: int, e: int) -> int:
         return towers.gpow(a, e, self.mod)
@@ -65,9 +68,9 @@ class Field:
     def mul(self, a: int, b: int) -> int:
         return gf_mul(a, b, self.mod)
 
-    def frob(self, a: int, k: int) -> int:                # x -> x^(q^k)
-        for _ in range(k):
-            a = self.pow(a, self.q)
+    def frob(self, a: int, k: int) -> int:                # x -> x^(2^k), a power of the absolute Frobenius
+        for _ in range(k % self.n):
+            a = self.mul(a, a)
         return a
 
     def trace(self, a: int) -> int:                       # to GF(q)
@@ -166,6 +169,57 @@ def prepare(field: Field, step: int, out: Path) -> dict[int, int]:
                 f.write(pack(contribution(field, lam, d, step, e)))
             counts[d] = counts.get(d, 0) + 1
     return counts
+
+
+def prepare_mixed(n: int, families: list[int], step: int, out: Path) -> dict[int, int]:
+    """One orbit file for several subfields at once: an orbit's label is q * 100 + its size (q the subfield)."""
+    words = (len(pairs(n)) * n + 63) // 64
+
+    def pack(value: int) -> bytes:
+        return struct.pack(f"<{words}Q", *[(value >> (64 * w)) & ((1 << 64) - 1) for w in range(words)])
+
+    counts: dict[int, int] = {}
+    entries = []
+    for q in families:
+        field = Field(n, q)
+        for lam, d in orbits(field, step):
+            basis = kernel(field, lam, d, step)
+            entries.append((q * 100 + d, lam, [contribution(field, lam, d, step, e) for e in basis]))
+            counts[q * 100 + d] = counts.get(q * 100 + d, 0) + 1
+    entries.sort(key=lambda e: (-e[0], e[1]))
+    with out.open("wb") as f:
+        f.write(struct.pack("<iiii", n, len(entries), words, len(pairs(n))))
+        f.write(pack(target(Field(n, 2))))
+        for label, lam, vecs in entries:
+            f.write(struct.pack("<iii", lam, label, len(vecs)))
+            for v in vecs:
+                f.write(pack(v))
+    return counts
+
+
+def mixed_profiles(counts: dict[int, int], budget: int, max_leaves: int) -> list[tuple[list[int], int]]:
+    """Multisets of labels whose GF(2) cost (cost of the subfield times the orbit size) is exactly ``budget``."""
+    costs = {2: 1, 4: 3, 8: 6, 16: 9, 64: 15}
+    labels = sorted(counts, key=lambda lab: -costs[lab // 100] * (lab % 100))
+    out: list[tuple[list[int], int]] = []
+
+    def rec(left: int, i: int, acc: list[int]) -> None:
+        if left == 0:
+            n_leaves = 1
+            for lab in set(acc):
+                n_leaves *= comb(counts[lab], acc.count(lab))
+            if n_leaves <= max_leaves:
+                out.append((acc, n_leaves))
+            return
+        if i == len(labels):
+            return
+        lab = labels[i]
+        unit = costs[lab // 100] * (lab % 100)
+        for k in range(min(left // unit, counts[lab]), -1, -1):
+            rec(left - k * unit, i + 1, acc + [lab] * k)
+
+    rec(budget, 0, [])
+    return out
 
 
 def read_counts(path: Path) -> dict[int, int]:
