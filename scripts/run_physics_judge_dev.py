@@ -103,10 +103,13 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
         if chosen is None:
             raise RuntimeError("no static camera with masks")
         fps = 30.0
+        actors: list[dict] = []
         traj = next((n for n in names if n.endswith("_trajectory.json") and "/" in n), None)
         if traj:
-            info = json.loads(archive.read(traj)).get("sequence_info", {})
-            fps = float(info.get("fps", fps))
+            doc = json.loads(archive.read(traj)) or {}
+            info = doc.get("sequence_info") or {}
+            fps = float(info.get("fps") or fps)
+            actors = _actor_paths(doc)
         frames = sorted(n for n in names if n.startswith(chosen + "/seg/") and n.endswith(".npz"))
         per_id: dict[int, dict[int, tuple[float, float, float]]] = defaultdict(dict)
         shape = None
@@ -135,7 +138,30 @@ def tracks_from_scene(scene: str, repo: str) -> dict:
                         "size": [round(float(v), 2) if np.isfinite(v) else None for v in size]})
     objects.sort(key=lambda o: -o["extent"])
     return {"scene": scene, "camera": chosen.rsplit("/", 1)[-1], "fps": fps, "frames": n,
-            "shape": list(shape) if shape else None, "objects": objects}
+            "shape": list(shape) if shape else None, "objects": objects, "actors": actors}
+
+
+def _actor_paths(doc: dict) -> list[dict]:
+    """World positions per frame of the trajectory file's solid actors (development diagnostics only)."""
+    out = []
+    raw = doc.get("actors") or {}
+    items = raw.items() if isinstance(raw, dict) else enumerate(raw)
+    for name, actor in items:
+        if not isinstance(actor, dict):
+            continue
+        entries = actor.get("transform_data") or []
+        if not entries:
+            comps = actor.get("components") or {}
+            first = next(iter(comps.values()), {}) if isinstance(comps, dict) else {}
+            entries = first.get("transform_data") or [] if isinstance(first, dict) else []
+        path = []
+        for e in entries:
+            loc = (e.get("transform") or {}).get("location")
+            if isinstance(loc, dict):
+                loc = [loc.get("x"), loc.get("y"), loc.get("z")]
+            path.append([e.get("frame"), e.get("time_seconds"), loc])
+        out.append({"name": str(name), "type": actor.get("actor_type"), "path": path[:120]})
+    return out[:4]
 
 
 def _to_tracks(clip: dict, kind: str) -> list[Track]:
