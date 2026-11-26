@@ -1,0 +1,92 @@
+name: GF(2^12) by GF(4), exhaustive invariant search (development)
+
+# Development, not a result: scripts/gf2_invariant_search.py enumerates every symmetric decomposition of GF(4^6)
+# = GF(2^12) over GF(4) that is invariant under x -> x^16, at 13 and 12 GF(4) products (39 and 36 over GF(2)),
+# and, as calibration, under x -> x^4 at 14, 13 and 12 (14 exists: 42 over GF(2)). Anything found is solved for
+# its outputs, written over GF(2) and checked against every entry of the tensor in the collect job. Owner's word of
+# 26 November ("look for the solution even if it is not conventional ... do not stop until you solve the problem").
+#   push to gf2-invariant-search-run-*  -> 16 jobs of four shards each (64 shards), then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf2-invariant-search-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The search's own tests
+        run: python -m pytest tests/test_gf2_invariant_search.py tests/test_gf2_towers.py -q
+      - name: Orbits
+        run: |
+          python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 2 --out x16.bin
+          python scripts/gf2_invariant_search.py prepare --field 12 --over 4 --step 1 --out x4.bin
+      - name: Shards of group ${{ matrix.group }}
+        timeout-minutes: 220
+        env:
+          GROUP: ${{ matrix.group }}
+        run: |
+          for i in 0 1 2 3; do
+            shard=$((GROUP * 4 + i))
+            ( for rank in 13 12; do
+                python scripts/gf2_invariant_search.py run --file x16.bin --over 4 --step 2 --rank "$rank" --shard "$shard" --shards 64 --out out
+              done ) &
+          done
+          wait
+          if [ "$GROUP" = "0" ]; then
+            for rank in 14 13 12; do
+              python scripts/gf2_invariant_search.py run --file x4.bin --over 4 --step 1 --rank "$rank" --out out
+            done
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf2-invariant-${{ matrix.group }}
+          path: out
+
+  collect:
+    needs: search
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf2-invariant-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/gf2_invariant_search.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf2 invariant search====="
+          if [ -f got/invariant_search.json ]; then gzip -9c got/invariant_search.json | base64 -w 60000; echo; fi
+          echo "=====END gf2 invariant search====="

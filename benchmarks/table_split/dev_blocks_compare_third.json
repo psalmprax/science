@@ -1,0 +1,50 @@
+{
+ "set": "third",
+ "a": "pysr",
+ "b": "blocks",
+ "tables": 120,
+ "a_proposal_the_law": {
+  "a": 0,
+  "b": 1,
+  "both": 0,
+  "only_a": 0,
+  "only_b": 1,
+  "sign_test_p": 1.0,
+  "by_inputs": {
+   "3": {
+    "a": 0,
+    "b": 1
+   },
+   "4": {
+    "a": 0,
+    "b": 0
+   },
+   "5": {
+    "a": 0,
+    "b": 0
+   }
+  }
+ },
+ "a_proposal_accurate": {
+  "a": 60,
+  "b": 63,
+  "both": 55,
+  "only_a": 5,
+  "only_b": 8,
+  "sign_test_p": 0.5810546875,
+  "by_inputs": {
+   "3": {
+    "a": 19,
+    "b": 22
+   },
+   "4": {
+    "a": 24,
+    "b": 25
+   },
+   "5": {
+    "a": 17,
+    "b": 16
+   }
+  }
+ }
+}

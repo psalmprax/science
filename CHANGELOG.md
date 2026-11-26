@@ -68,6 +68,32 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The block search beside PySR for the parts of wide tables: a little more often accurate, never
+  more often the law (2026-11-26, development).** Run 2 of `.github/workflows/table-split-blocks.yml`
+  (run 1 stopped at a test that counted a docstring mention as building the split search). On the
+  same 120 tables and the same seconds, PySR alone against the block search first with PySR in the
+  seconds left: on a fresh set of the development grammar (in-distribution for the block search) a
+  proposal was accurate for 60 and 63 tables (5 only with PySR alone, 8 only with the blocks, paired
+  sign test 0.58) and the law itself for 0 and 1; on the set of another generator with blocks outside
+  the block search's vocabulary, accurate for 46 and 50 (1 and 5, sign test 0.22) and the law for 0
+  and 0. By inputs the gains sit at three inputs (third set, 19 against 22) and four (other set, 16
+  against 20). As foreseen when it was built: the block search returns the right law of a part where
+  the part's table is clean enough, but the split search takes the shortest law within its tolerance
+  of the best fit on the rows set aside, and on noisy rows a shorter wrong law passes; the next step is
+  that choice, not the search. Records `benchmarks/table_split/dev_blocks_*.json`. Not in force.
+- **GF(2^12) by exhaustive search of symmetric decompositions invariant under a Frobenius power
+  (2026-11-26, development).** `scripts/gf2_invariant_search.py` with `scripts/gf2_invariant_search.c`:
+  in a class invariant under x -> x^(q^k), a choice of orbits of forms is a decomposition exactly
+  when the multiplication lies in the span of what their outputs can produce, so the class can be
+  enumerated completely and anything found solved and checked exactly. Over GF(2) with the full
+  Frobenius: decompositions exist for GF(2^6) at 15 and GF(2^8) at 24 (the best known counts); none
+  for GF(2^7) at 22, GF(2^9) at 30, GF(2^10) at 33, and none for GF(2^12) at 41 (48 million choices,
+  28 seconds) or at 42. Over GF(4) (GF(2^12) = GF(4^6), each GF(4) product three over GF(2)) with
+  x -> x^4: decompositions of 14 GF(4) products exist, the best known (Ballet et al., the symmetric
+  bound 14 behind the 42), and give new 42s over GF(2) unlike the GF(8) tower, each checked exactly;
+  none of 13 or 12. A decomposition of 13 would give 39 over GF(2). The class invariant under
+  x -> x^16 is larger (46 thousand million choices at 13); its complete search runs on GitHub
+  (`.github/workflows/gf2-invariant-search.yml`). `tests/test_gf2_invariant_search.py` (6).
 - **GF(2^12) below 42: what the published constructions allow, and a walk a hundred times faster
   from many towers (2026-11-26, development; owner's word "look for the solution even if it is not
   conventional ... do not stop until you solve the problem").** Calibration of the Python flip walk
