@@ -1,0 +1,97 @@
+name: GF(2^12) below 42, the flip walk in C from many towers (development)
+
+# Development, not a result: scripts/search_gf2_mul_flip_c.py runs scripts/gf2_flip_walk.c (the moves of
+# apedp_dyn/quantum/flip_search.py, about a hundred times faster) from the repository's 42, from GF(8) towers of 42
+# that differ by construction, from GF(16) towers of 45 and from the schoolbook; GF(2^9) and GF(2^8) as calibration.
+# Every decomposition is checked against every entry of its tensor before anything is counted. Owner's word of
+# 26 November ("look for the solution even if it is not conventional ... do not stop until you solve the problem").
+#   push to gf2-flip-walk-c-run-*  -> 16 jobs of four walks of 19000 seconds, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf2-flip-walk-c-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: 'f12-t8-0', field: 12, starts: 'ref tower:3:5 tower:3:10 tower:3:15', seeds: '0 1 2 3', slack: '2 3 4 6'}
+          - {name: 'f12-t8-1', field: 12, starts: 'tower:3:20 tower:3:25 tower:3:30 tower:3:35', seeds: '100 101 102 103', slack: '2 3 4 6'}
+          - {name: 'f12-t8-2', field: 12, starts: 'tower:3:40 tower:3:45 tower:3:50 tower:3:55', seeds: '200 201 202 203', slack: '2 3 4 6'}
+          - {name: 'f12-t8-3', field: 12, starts: 'tower:3:60 tower:3:65 tower:3:70 tower:3:75', seeds: '300 301 302 303', slack: '2 3 4 6'}
+          - {name: 'f12-t8-4', field: 12, starts: 'tower:3:80 tower:3:85 tower:3:90 tower:3:95', seeds: '400 401 402 403', slack: '2 3 4 6'}
+          - {name: 'f12-t8-5', field: 12, starts: 'tower:3:100 tower:3:105 tower:3:110 tower:3:115', seeds: '500 501 502 503', slack: '2 3 4 6'}
+          - {name: 'f12-t8-6', field: 12, starts: 'tower:3:120 tower:3:125 tower:3:130 tower:3:135', seeds: '600 601 602 603', slack: '2 3 4 6'}
+          - {name: 'f12-t8-7', field: 12, starts: 'tower:3:140 tower:3:145 tower:3:150 tower:3:155', seeds: '700 701 702 703', slack: '2 3 4 6'}
+          - {name: 'f12-t8-8', field: 12, starts: 'tower:3:160 tower:3:165 tower:3:170 tower:3:175', seeds: '800 801 802 803', slack: '2 3 4 6'}
+          - {name: 'f12-t8-9', field: 12, starts: 'tower:3:180 tower:3:185 tower:3:190 tower:3:195', seeds: '900 901 902 903', slack: '2 3 4 6'}
+          - {name: 'f12-t16-0', field: 12, starts: 'tower:4:0 tower:4:5 tower:4:10 tower:4:15', seeds: '500 501 502 503', slack: '2 3 4 6'}
+          - {name: 'f12-t16-1', field: 12, starts: 'tower:4:20 tower:4:25 tower:4:30 tower:4:35', seeds: '510 511 512 513', slack: '2 3 4 6'}
+          - {name: 'f12-schoolbook', field: 12, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '700 701 702 703', slack: '2 3 4 6'}
+          - {name: 'cal9-t8', field: 9, starts: 'tower:3:0 tower:3:50 tower:3:100 tower:3:200', seeds: '900 901 902 903', slack: '2 3 4 6'}
+          - {name: 'cal9-schoolbook', field: 9, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '910 911 912 913', slack: '2 3 4 6'}
+          - {name: 'cal8-schoolbook', field: 8, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '800 801 802 803', slack: '2 3 4 6'}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The walk's own tests
+        run: python -m pytest tests/test_gf2_towers.py tests/test_search_gf2_mul_flip_c.py tests/test_flip_search.py -q
+      - name: Walk ${{ matrix.name }}
+        timeout-minutes: 335
+        env:
+          FIELD: ${{ matrix.field }}
+          STARTS: ${{ matrix.starts }}
+          SEEDS: ${{ matrix.seeds }}
+          SLACK: ${{ matrix.slack }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/search_gf2_mul_flip_c.py run --field "$FIELD" --starts $STARTS --seeds $SEEDS --slack $SLACK --seconds 19000 --processes 4 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf2-flip-c-${{ matrix.name }}
+          path: out
+
+  collect:
+    needs: walk
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf2-flip-c-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/search_gf2_mul_flip_c.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf2 flip walk c====="
+          if [ -f got/flip_walk_c.json ]; then gzip -9c got/flip_walk_c.json | base64 -w 60000; echo; fi
+          echo "=====END gf2 flip walk c====="

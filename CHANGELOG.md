@@ -68,6 +68,28 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) below 42: what the published constructions allow, and a walk a hundred times faster
+  from many towers (2026-11-26, development; owner's word "look for the solution even if it is not
+  conventional ... do not stop until you solve the problem").** Calibration of the Python flip walk
+  against a published search of the same kind (arXiv:2602.15285, Table 2, bilinear: 22, 26, 32, 39
+  for GF(2^7) to GF(2^10)), four walks of two hours each from the schoolbook: 22 reached in 2.5 to 8
+  minutes; 31, 51 and 73 at GF(2^8), GF(2^9), GF(2^10). The best counts known for GF(2^8), GF(2^9),
+  GF(2^10) and GF(2^12) (24, 30, 33, 42) come from towers; GF(2^12)'s 42 is seven products over
+  GF(8) (optimal, 2m - 1) of six each (optimal). Counting places of every curve type of genus 0 to 3
+  over GF(2) (real Weil polynomials), a Chudnovsky-type construction over GF(2) costs at least 44,
+  43, 44 and 44 for GF(2^12), under the usual costs of products at places of degree 1 to 7 and with
+  derivatives; an optimistic model, not a proof, but it says the 42 will not be beaten that way.
+  Frobenius-invariant decompositions by SAT (CryptoMiniSat, XOR clauses) were found for GF(2^2),
+  GF(2^3), GF(2^4), GF(2^6) (symmetric, 15) and GF(4^4) over GF(4) (8) within seconds and timed out
+  at GF(2^7) (22) and GF(4^5) (10, 11): not a route at GF(2^12) as written. New:
+  `scripts/gf2_flip_walk.c` (the same moves in C, about 14 million flips a second: GF(2^7) from the
+  schoolbook to 22 in 4 seconds, GF(2^8) to 31 in 10, and from the GF(16) tower of GF(2^8), 27 products,
+  to the best known 24 in a third of a second), `scripts/gf2_towers.py` (towers in many variants,
+  each checked exactly) and `scripts/search_gf2_mul_flip_c.py` with
+  `.github/workflows/gf2-flip-walk-c.yml`: GF(2^12) from the repository's 42, 40 GF(8) towers of 42,
+  8 GF(16) towers of 45 and the schoolbook, slack 2 to 6, five hours and a quarter each, with
+  calibration on GF(2^9) and GF(2^8). Locally, 90 seconds from towers of 42 and 45 changed nothing.
+  `tests/test_gf2_towers.py` (8), `tests/test_search_gf2_mul_flip_c.py` (3).
 - **A search of one input with look-ahead, for the split search's parts (2026-11-26, development;
   owner's word "add what you think could help this system from that repo").** From the owner's
   non-neural program-search studies (`psalmprax/non-neural-program-search`), whose largest gain per
