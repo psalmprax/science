@@ -68,6 +68,9 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **A register of what gets added (2026-11-26; on the owner's word).** `docs/SOLUTIONS_REGISTER_2026-11-26.md`
+  sorts every solution tested that day, with its hybrids, into: to add on the owner's word, keep as a tool,
+  do not add, and waiting for results, with the evidence for each. It changes nothing in force.
 - **Hybrids of the GF(2^n) searchers measured (2026-11-26, development; on the owner's word).**
   `scripts/study_gf2_hybrid_walks.py`, `benchmarks/gf2_multiplication/hybrid_walks_local.json`: at equal time
   (40 s, three seeds) the symmetric walk followed by the plain walk is the best or level arm on GF(2^8) to

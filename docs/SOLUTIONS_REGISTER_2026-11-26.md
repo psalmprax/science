@@ -1,0 +1,56 @@
+# What gets added: every solution tested on 26 November, with its hybrids, by category
+
+The owner asked on 26 November (20:32) for every suggested solution to be tested with hybrid approaches
+where possible, and for the results to be sorted "so that we know what will be added finally into the
+system". This register covers what was suggested and tested that day: the four unconventional approaches
+to GF(2^12) multiplication, the patent-derived count of independent trials, the loops of the non-neural
+program search, the quantum-inspired language model, and the video approaches. Each entry names its
+evidence in the repository. Nothing here is in force: an entry in category A goes in only on the owner's
+word, after its preregistered test and independent review (AGENTS.md 1.5 and 1.6).
+
+Categories:
+
+- **A. To add, on your word** — it passed its tests, and the steps before it can go in are named.
+- **B. Keep as a tool or an option** — useful for a purpose, not a default.
+- **C. Do not add** — tested; no gain, or unsafe.
+- **D. Waiting for results** — its decisive run has not finished; the category it moves to is fixed in
+  advance by its preregistration.
+
+## A. To add, on your word
+
+| Solution | Hybrids tried | Evidence | Before it goes in |
+| :--- | :--- | :--- | :--- |
+| **Counting independent trials by clusters** for the deflated Sharpe ratio (after US20190294990A1 and López de Prado and Lewis) | four: cluster series with an eigenvalue count across clusters; the trial's own Sharpe ratio with the cluster count; both counts; either count | Simulated searches: false alarms at most 1 in 300, as the referee's count; power far higher where strategies come in families (e.g. 85 % against 19 %). Real prices (six series, 56 strategies): false alarms 0.17 % as the referee's count; planted edges found 52 to 62 % of the time against 0 %. No hybrid beat it clearly; "own Sharpe ratio with the cluster count" is unsafe (11 to 35 % false alarms on real prices). `benchmarks/referee_trials/independent_trials_dev.json`, `independent_trials_real_dev.json`, `independent_trials_hybrid_dev.json` | a preregistered blind test, an independent review, and your words "make it the default"; it changes the referee, so the trustees' signing rules apply to any change of the specification |
+
+## B. Keep as a tool or an option
+
+| Solution | Hybrids tried | Evidence | Use |
+| :--- | :--- | :--- | :--- |
+| **Flip walk that keeps a Frobenius symmetry** (`scripts/gf2_orbit_walk.c`) | then the plain walk; then SAT | Reaches the best known 24 for GF(2^8) and 30 for GF(2^9) from the schoolbook; leaves the 42s for GF(2^12) unchanged (209 core-hours). Symmetric then plain is the best or level arm at equal time on GF(2^8) to GF(2^10), a small gain. `orbit_walk.json`, `hybrid_walks_local.json` | the searcher to start with on small fields and new targets, followed by the plain walk |
+| **SAT on neighbourhoods** (`scripts/search_gf2_sat_lns.py`) | after either walk | Around the 42s, none of 290,952 neighbourhoods of 5 to 9 products can be one shorter; from the GF(2^7) schoolbook it shortens 49 to 28. After a walk, nothing in 20 seconds. `sat_lns.json` | a check that a decomposition is locally shortest, not a searcher |
+| **Complete searches of symmetric decompositions** (`scripts/gf2_invariant_search.*`) | mixed subfields | None at 41 or 42 invariant under a Frobenius power over GF(2); over GF(4) 14 products exist, 13 do not among 56 thousand million invariant choices | negative certificates for the record |
+| **The plain C flip walk** (`scripts/gf2_flip_walk.c`) | look-ahead; learned scorer; settings loop; then SAT | 42 stays 42 in 274 core-hours; the baseline everything else is measured against | the calibration baseline |
+
+## C. Do not add
+
+| Solution | Hybrids tried | Why not |
+| :--- | :--- | :--- |
+| **A language model evolving the GF(2^n) builder** (AlphaEvolve-style, `scripts/run_gf2_evolution.py`) | — | 118 calls; 75 of its 77 versions failed to run and none was repaired, so the best is the starting builder. Revisit only after finding why they failed (the run's ledger, in its artifact) and with a stronger coding model; the count of calls is said before any larger run |
+| **Look-ahead and a scorer learned from the walk's own descents** (the non-neural program search's loops, `scripts/gf2_guided_walk.c`) | with merge-greedy choice; a settings loop one level up | Held out, only the last move before a new best is predictable, and it is a merge by construction; the learned weights are near zero; no gain at equal time; the settings loop settled on the default. `guided_walk_local.json`, `guided_walk_settings_local.json` |
+| **AND gates instead of products** (`scripts/gf2_and_walk.c`) | — | Reaches the known counts up to GF(2^6), stops at 27 for GF(2^7) (22 known), 42 for GF(2^12); and it counts AND gates, not the bilinear products of the target. `and_walk.json` |
+| **A walk over GF(4) toward 13 products** (`scripts/gf4_flip_walk.c`) | — | GF(4^5) reaches the published 11; GF(4^6) stays at 14 in 178 core-hours. `gf4_flip_walk.json` |
+| **The 719 OpenAI mathematics manuscripts** | — | none applies directly; one lesson on process taken |
+
+## D. Waiting for results
+
+| Solution | Hybrids in the test | Rehearsal so far | Where its result goes |
+| :--- | :--- | :--- | :--- |
+| **A quantum-inspired byte model** (MMLM-QI: pure and mixed states, complex and real; `PREREG-MMLM-QI-2026-11`) | mixed byte by byte with Kneser-Ney counting (expectation 7) | Best 2.77 bits per byte against a hidden Markov model's 2.50 and counting's 1.85 (10 minutes of training) | the plan's table: an expert in MMLM-CM's mixture only if the hybrid gains more than an automaton of its size would; otherwise not developed |
+| **JetFlow against plain flow matching and MeanFlow** (`PREREG-VIDEO-FLOW-2026-11`) | MeanFlow on JetFlow's network; JetFlow's sampler on the UNet; the Jet2 step on MeanFlow's velocity | JetFlow's sampler lost to plain flow matching at four calls on all three data sets (2 minutes of training). Its Jet2 step was found to have its curvature reversed; the run scores it as packaged and corrected | the plan's consequences: JetFlow kept only if it (or its corrected step) beats flow matching on real footage and a toy world; a hybrid only if it beats what it would replace |
+
+## Waiting for your word, apart from the above
+
+- Fix JetFlow's Jet2 step in `packages/jetflow-video/jetflow_video/stepper.py` (its acceleration is -dv/dt).
+  The video comparison does not need the fix; it scores both.
+- Earlier, unchanged: PREREG-RANKED-MEMORY-2026-11; the search-budget and kept-processes proposals; branch
+  protection on `master`; the trustees' signatures; the dashboard's remint; the two finance audits ("run it").
