@@ -68,6 +68,15 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^n) decompositions by a language model evolving the construction (2026-11-26, development; the fourth
+  of the four approaches).** `scripts/run_gf2_evolution.py`, `.github/workflows/gf2-evolution.yml`: an
+  AlphaEvolve-style loop on this repository's evolution machinery. The model rewrites `construct(n, modulus,
+  seconds)`, which returns a bilinear decomposition; the judge runs it in the jail for GF(2^5) to GF(2^10)
+  and GF(2^12), checks every entry, and scores by fields at the best known count, total excess and the
+  GF(2^12) count. The first run has 40 steps, two repairs each, and a hard cap of 120 model calls (besides
+  the one-line probes that find a model that answers). The seed gives 14, 23, 31 and 54 for GF(2^5) to
+  GF(2^8) in four seconds each; the scripted stand-in's loop improves it and refuses a version with an
+  import. Tests `tests/test_run_gf2_evolution.py` (5).
 - **GF(2^12) by large-neighbourhood SAT (2026-11-26, development; the third of the four approaches).**
   `scripts/search_gf2_sat_lns.py`, `.github/workflows/gf2-sat-lns.yml`: after Heule, Kauers and Seidl (SAT 2019),
   free k products of a decomposition and ask CryptoMiniSat for k - 1 with the same sum; streamlining by
