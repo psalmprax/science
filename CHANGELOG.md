@@ -30,6 +30,12 @@ inferred releases.
 
 ### Added
 
+- **The physics judge's first development run on PhysInOne (2026-11-26).** `benchmarks/physics_judge/dev_run_1.json`
+  and the plan's new last section: PhysInOne's rigid scenes move on a three-frame cadence (tracks are now
+  taken every third frame), the first static camera often looks steeply down (the next run takes the most
+  level one), the bounce phenomenon is a soft body, and collisions need three dimensions. After the changes,
+  76 of 150 true development clips pass; gate J (80 %, and at most 10 % of each kind of broken clip) is not
+  near. Development numbers from a judge tuned on them.
 - **PREREG-VIDEO-FLOW-2026-11 frozen and started (2026-11-26).** After the last rehearsal with JetFlow's
   fixed Jet2 step (`benchmarks/video/video_flow_rehearsal5.json`: all 36 jobs ran, no NaN, the hybrid
   trained), the plan's status is frozen by `preregistration/DIGEST-VIDEO-FLOW.json` (19 files) and the

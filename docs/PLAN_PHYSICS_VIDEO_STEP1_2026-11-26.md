@@ -1,8 +1,9 @@
 # Plan: physics-first video, step 1 and its first gates
 
-**Status:** plan only, 26 November 2026. Nothing in it is built. The owner asked for it ("yes let us try in
-that direction", 22:15 Berlin time) after the answer to "if you are to make it top notch, what will you do
-with it differently". It becomes a preregistration once its code exists and an independent reviewer has
+**Status:** plan, 26 November 2026; part 1a in development since the owner's word "so, build" (22:45 Berlin
+time); see "Development of part 1a" at the end. Nothing in it is frozen or in force. The owner asked for it
+("yes let us try in that direction", 22:15 Berlin time) after the answer to "if you are to make it top notch,
+what will you do with it differently". It becomes a preregistration once its code exists and an independent reviewer has
 checked it (AGENTS.md 1.6). Every number marked *proposed* is a new named threshold: it needs the owner's
 word, a pin and a `CHANGELOG.md` entry before it is used (AGENTS.md 1.3), and none is borrowed from another
 test.
@@ -148,3 +149,39 @@ result is recorded, and whether to try step 2 anyway is the owner's call.
 2. Independent review; freeze gate J; the reviewer's blind perturbations; one blind run; record.
 3. If gate J holds: write 1b and 1c as a preregistration, review, rehearse on five prompts, freeze, run once,
    record with an independent check of every number.
+
+## Development of part 1a (the judge), 26 November
+
+Built: `apedp_dyn/epistemic/physics_judge.py` (the judge), `apedp_dyn/video/physics_perturbations.py` (the four
+development perturbations), `apedp_dyn/video/physics_tracks_synthetic.py` (worlds for its unit tests),
+`tests/test_physics_judge.py`, and `scripts/run_physics_judge_dev.py` with `.github/workflows/physics-judge-dev.yml`
+(development runs on PhysInOne). Every setting is a development number; none is pinned.
+
+On the synthetic worlds (in distribution: the judge was developed on them) 35 of 36 true clips passed and
+every applicable perturbation failed. On real PhysInOne tracks it is far from gate J (which asks for 80 % of
+true clips passing and at most 10 % of each kind of broken clip): on the first run's 150 development clips,
+re-judged after the changes below, 76 true clips pass (falls 10 of 30, throws 22, rolls 23, soft bounces 20,
+collisions 1), and of the broken ones 1 of 141 jumps, 7 of 139 holds, 15 of 101 mirrored stretches and 26
+of 71 time reversals pass. These numbers are from the development pool and from a judge tuned on it. What the first
+development run (`benchmarks/physics_judge/dev_run_1.json`) showed, and what was done:
+
+- **PhysInOne's rigid scenes move on a three-frame cadence**: an object's position changes in one large step
+  out of every three frames (a fixed simulation step against the render's 30 frames per second). The judge
+  read the small steps as stops and starts. The adapter now takes every third frame, at the phase after the
+  large step; the clips are 90 to 210 frames long, so 30 to 70 samples.
+- **The first listed static camera often looks steeply down**, so a fall hardly accelerates in the image
+  ("no segment shows a downward acceleration" on 10 of 30 falls). The second development run takes the most
+  nearly level static camera, as generated clips are usually framed.
+- **The phenomenon chosen for bounces, ElasticFall, is a soft body**: its contacts last several frames and
+  push upward, where the judge assumes rigid contacts. The owner may prefer rigid bounces instead (from
+  VerticalFall or SpringboardRebound scenes).
+- **Collisions are seen in three dimensions**: MovingHitsMoving objects move in depth and hide each other,
+  and judging their momentum from the image alone failed on nearly every true clip. A judge that lifts the
+  tracks to three dimensions (PhysInOne's depth maps for validation, a monocular depth model for generated
+  clips) is the likely fix; it is a change to the plan and waits for the owner.
+- **Time reversal of a gradual slowdown is not caught**: contact rules see only abrupt changes. A check that
+  speed is gained only by descending (depth taken out with the object's size) was tried and dropped: it failed
+  most true rolls.
+- Made more robust on what the data showed: noise and jump limits relative to the object's size, launches
+  and speed gains counted only when substantial, durations in seconds, no "must speed up" rule for rolls
+  (a roll receding from the camera slows in the image), collisions paired only when the objects touch.
