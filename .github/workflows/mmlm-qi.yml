@@ -1,0 +1,133 @@
+name: MMLM-QI, trained quantum-inspired byte models against a classical automaton of their size
+
+# PREREG-MMLM-QI-2026-11 (preregistration/PREREG-MMLM-QI-2026-11.md), on the owner's word of 26 November ("yes set it
+# up"). scripts/run_prereg_mmlm_qi.py trains each model of apedp_mmlm/quantum_inspired.py on one runner: a learning-rate
+# sweep of five rates for 150 s each, then 45 minutes at the best rate, keeping the parameters best on the first 300,000
+# bytes of the validation split, then scores the WikiText-2 test split. The final run checks the digest first.
+#   push to mmlm-qi-smoke-*  -> a rehearsal: every arm and the baselines on the development split (valid_b), sweep 60 s, 10 min.
+#   push to mmlm-qi-run-*    -> the preregistered run, once.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['mmlm-qi-run-*', 'mmlm-qi-smoke-*']
+
+permissions:
+  contents: read
+
+jobs:
+  arm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        arm:
+          - 'pure-complex-16'
+          - 'pure-complex-32'
+          - 'pure-complex-64'
+          - 'pure-real-16'
+          - 'pure-real-32'
+          - 'pure-real-64'
+          - 'pure-real-23'
+          - 'pure-real-45'
+          - 'pure-real-90'
+          - 'mixed-complex-16-2'
+          - 'mixed-complex-32-2'
+          - 'mixed-real-16-2'
+          - 'mixed-real-32-2'
+          - 'hmm-256'
+          - 'hmm-1024'
+          - 'pure-complex-16@1'
+          - 'hmm-256@1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The models' own tests
+        run: python -m pytest tests/test_quantum_inspired_lm.py -q
+      - name: Train and score ${{ matrix.arm }}
+        timeout-minutes: 120
+        env:
+          ARM: ${{ matrix.arm }}
+          REF: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF" == mmlm-qi-run-* ]]; then
+            python scripts/run_prereg_mmlm_qi.py arm --arm "$ARM" --mode final --out out
+          else
+            python scripts/run_prereg_mmlm_qi.py arm --arm "$ARM" --mode dev --sweep-seconds 60 --seconds 600 --evaluate-every 120 --out out
+          fi
+      - name: Print the arm's record
+        if: always()
+        run: |
+          echo "=====BEGIN mmlm qi arm====="
+          for f in out/arm_*.json; do [ -f "$f" ] && gzip -9c "$f" | base64 -w 60000; echo; done
+          echo "=====END mmlm qi arm====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mmlm-qi-${{ strategy.job-index }}
+          path: out
+
+  baselines:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: Kneser-Ney
+        env:
+          REF: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF" == mmlm-qi-run-* ]]; then MODE=final; else MODE=dev; fi
+          python scripts/run_prereg_mmlm_qi.py baselines --mode "$MODE" --out out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mmlm-qi-baselines
+          path: out
+
+  collect:
+    needs: [arm, baselines]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: mmlm-qi-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        env:
+          REF: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF" == mmlm-qi-run-* ]]; then MODE=final; else MODE=dev; fi
+          python scripts/run_prereg_mmlm_qi.py collect --mode "$MODE" --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN mmlm qi====="
+          if [ -f got/results.json ]; then gzip -9c got/results.json | base64 -w 60000; echo; fi
+          echo "=====END mmlm qi====="

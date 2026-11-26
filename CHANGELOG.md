@@ -68,6 +68,17 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **MMLM-QI: quantum-inspired byte models, trained, with a classical control of their size (2026-11-26,
+  experimental; on the owner's word "yes set it up").** `apedp_mmlm/quantum_inspired.py`,
+  `scripts/run_prereg_mmlm_qi.py`, `.github/workflows/mmlm-qi.yml`, `tests/test_quantum_inspired_lm.py`. The
+  proposal MMLM-QI-001 asked for a language model on quantum states, Kraus operators and tensor trains. Built:
+  pure and mixed states, complex and real, with operators that are complete by construction (QR), so a byte
+  costs O(D^2) to train on; the pure-state model is the same as a uniform matrix product state read as a
+  Born machine, so the proposal's tensor-train and open-system candidates meet. Because rho evolves
+  linearly the model is a weighted automaton with D^2 states, and the control is a hidden Markov model with
+  that many states, trained the same way for the same time; Kneser-Ney with up to four bytes of history is
+  the counting baseline. A rehearsal on the development split comes first; the preregistration
+  (PREREG-MMLM-QI-2026-11) is written from it and reviewed before it is frozen. Nothing is in force.
 - **The non-neural program search's loops tried on the GF(2^n) walk: nothing to learn from its moves
   (2026-11-26, development; on the owner's question).** `scripts/gf2_guided_walk.c`,
   `scripts/search_gf2_guided_walk.py`, `tests/test_search_gf2_guided_walk.py`. From
