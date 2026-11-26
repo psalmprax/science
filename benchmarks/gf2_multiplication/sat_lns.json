@@ -1,0 +1,1453 @@
+{
+ "tag": "DEV-GF2-12-SAT-LNS-2026-11",
+ "development_not_a_result": true,
+ "target": 41,
+ "target_met": false,
+ "by_field": {
+  "7": {
+   "runs": 4,
+   "trials": 351470,
+   "sat": 34,
+   "unsat": 351436,
+   "unknown": 0,
+   "by_k": {
+    "6": {
+     "sat": 9,
+     "unsat": 116987,
+     "unknown": 0
+    },
+    "7": {
+     "sat": 12,
+     "unsat": 116911,
+     "unknown": 0
+    },
+    "8": {
+     "sat": 13,
+     "unsat": 117538,
+     "unknown": 0
+    }
+   },
+   "known": 22,
+   "best_reached_exactly": 28,
+   "core_hours": 7.54
+  },
+  "8": {
+   "runs": 4,
+   "trials": 4993,
+   "sat": 0,
+   "unsat": 4993,
+   "unknown": 0,
+   "by_k": {
+    "7": {
+     "sat": 0,
+     "unsat": 2469,
+     "unknown": 0
+    },
+    "8": {
+     "sat": 0,
+     "unsat": 2524,
+     "unknown": 0
+    }
+   },
+   "known": 24,
+   "best_reached_exactly": 27,
+   "core_hours": 18.34
+  },
+  "9": {
+   "runs": 4,
+   "trials": 4338,
+   "sat": 0,
+   "unsat": 4338,
+   "unknown": 0,
+   "by_k": {
+    "7": {
+     "sat": 0,
+     "unsat": 2112,
+     "unknown": 0
+    },
+    "8": {
+     "sat": 0,
+     "unsat": 2226,
+     "unknown": 0
+    }
+   },
+   "known": 30,
+   "best_reached_exactly": 30,
+   "core_hours": 18.34
+  },
+  "12": {
+   "runs": 24,
+   "trials": 290952,
+   "sat": 0,
+   "unsat": 290909,
+   "unknown": 43,
+   "by_k": {
+    "5": {
+     "sat": 0,
+     "unsat": 29386,
+     "unknown": 0
+    },
+    "6": {
+     "sat": 0,
+     "unsat": 249670,
+     "unknown": 0
+    },
+    "7": {
+     "sat": 0,
+     "unsat": 5812,
+     "unknown": 0
+    },
+    "8": {
+     "sat": 0,
+     "unsat": 5955,
+     "unknown": 0
+    },
+    "9": {
+     "sat": 0,
+     "unsat": 86,
+     "unknown": 43
+    }
+   },
+   "known": 42,
+   "best_reached_exactly": 42,
+   "core_hours": 110.25
+  }
+ },
+ "runs": [
+  {
+   "field": 12,
+   "start": "gf4:0",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unknown": 13,
+    "unsat": 80
+   },
+   "trials_run": 93
+  },
+  {
+   "field": 12,
+   "start": "gf4:0",
+   "kind": "random",
+   "symmetric": false,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 13362
+   },
+   "trials_run": 13362
+  },
+  {
+   "field": 12,
+   "start": "gf4:0",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 783
+   },
+   "trials_run": 783
+  },
+  {
+   "field": 12,
+   "start": "gf4:1",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 71,
+    "unknown": 6
+   },
+   "trials_run": 77
+  },
+  {
+   "field": 12,
+   "start": "gf4:1",
+   "kind": "random",
+   "symmetric": false,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 15429
+   },
+   "trials_run": 15429
+  },
+  {
+   "field": 12,
+   "start": "gf4:1",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 819
+   },
+   "trials_run": 819
+  },
+  {
+   "field": 12,
+   "start": "gf4:2",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 803
+   },
+   "trials_run": 803
+  },
+  {
+   "field": 12,
+   "start": "gf4:3",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 838
+   },
+   "trials_run": 838
+  },
+  {
+   "field": 12,
+   "start": "gf4:4",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 55,
+    "unknown": 13
+   },
+   "trials_run": 68
+  },
+  {
+   "field": 12,
+   "start": "gf4:5",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 60,
+    "unknown": 11
+   },
+   "trials_run": 71
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 55147
+   },
+   "trials_run": 55147
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 54955
+   },
+   "trials_run": 54955
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 55004
+   },
+   "trials_run": 55004
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "blocks",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 54943
+   },
+   "trials_run": 54943
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "random",
+   "symmetric": false,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 15105
+   },
+   "trials_run": 15105
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1131
+   },
+   "trials_run": 1131
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1123
+   },
+   "trials_run": 1123
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1093
+   },
+   "trials_run": 1093
+  },
+  {
+   "field": 12,
+   "start": "ref",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1129
+   },
+   "trials_run": 1129
+  },
+  {
+   "field": 12,
+   "start": "tower:3:0",
+   "kind": "random",
+   "symmetric": false,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 14963
+   },
+   "trials_run": 14963
+  },
+  {
+   "field": 12,
+   "start": "tower:3:0",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1014
+   },
+   "trials_run": 1014
+  },
+  {
+   "field": 12,
+   "start": "tower:3:100",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 979
+   },
+   "trials_run": 979
+  },
+  {
+   "field": 12,
+   "start": "tower:3:150",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1020
+   },
+   "trials_run": 1020
+  },
+  {
+   "field": 12,
+   "start": "tower:3:50",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 42,
+   "best": 42,
+   "trial_outcomes": {
+    "unsat": 1003
+   },
+   "trials_run": 1003
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 300.0,
+   "starting_products": 49,
+   "best": 28,
+   "best_triples": [
+    [
+     42,
+     42,
+     74
+    ],
+    [
+     12,
+     12,
+     35
+    ],
+    [
+     8,
+     8,
+     48
+    ],
+    [
+     40,
+     40,
+     67
+    ],
+    [
+     96,
+     96,
+     51
+    ],
+    [
+     32,
+     32,
+     39
+    ],
+    [
+     6,
+     6,
+     8
+    ],
+    [
+     24,
+     24,
+     3
+    ],
+    [
+     88,
+     88,
+     8
+    ],
+    [
+     35,
+     35,
+     32
+    ],
+    [
+     69,
+     69,
+     6
+    ],
+    [
+     98,
+     98,
+     15
+    ],
+    [
+     1,
+     1,
+     65
+    ],
+    [
+     10,
+     10,
+     86
+    ],
+    [
+     20,
+     20,
+     64
+    ],
+    [
+     4,
+     4,
+     124
+    ],
+    [
+     16,
+     16,
+     113
+    ],
+    [
+     34,
+     34,
+     41
+    ],
+    [
+     48,
+     48,
+     12
+    ],
+    [
+     44,
+     44,
+     3
+    ],
+    [
+     5,
+     5,
+     2
+    ],
+    [
+     89,
+     89,
+     8
+    ],
+    [
+     19,
+     19,
+     24
+    ],
+    [
+     3,
+     3,
+     58
+    ],
+    [
+     80,
+     80,
+     24
+    ],
+    [
+     65,
+     65,
+     78
+    ],
+    [
+     18,
+     18,
+     56
+    ],
+    [
+     106,
+     106,
+     12
+    ]
+   ],
+   "best_exact": true,
+   "trial_outcomes": {
+    "unsat": 51449,
+    "sat": 21
+   },
+   "trials_run": 51470
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 300.0,
+   "starting_products": 49,
+   "best": 44,
+   "best_triples": [
+    [
+     1,
+     8,
+     8
+    ],
+    [
+     1,
+     16,
+     16
+    ],
+    [
+     1,
+     64,
+     64
+    ],
+    [
+     2,
+     4,
+     8
+    ],
+    [
+     2,
+     8,
+     16
+    ],
+    [
+     2,
+     16,
+     32
+    ],
+    [
+     2,
+     32,
+     64
+    ],
+    [
+     2,
+     64,
+     3
+    ],
+    [
+     4,
+     2,
+     8
+    ],
+    [
+     4,
+     16,
+     64
+    ],
+    [
+     8,
+     1,
+     8
+    ],
+    [
+     8,
+     2,
+     16
+    ],
+    [
+     8,
+     64,
+     12
+    ],
+    [
+     16,
+     1,
+     16
+    ],
+    [
+     16,
+     2,
+     32
+    ],
+    [
+     16,
+     4,
+     64
+    ],
+    [
+     16,
+     64,
+     24
+    ],
+    [
+     32,
+     2,
+     64
+    ],
+    [
+     32,
+     64,
+     48
+    ],
+    [
+     64,
+     1,
+     64
+    ],
+    [
+     64,
+     2,
+     3
+    ],
+    [
+     64,
+     8,
+     12
+    ],
+    [
+     64,
+     16,
+     24
+    ],
+    [
+     64,
+     32,
+     48
+    ],
+    [
+     64,
+     64,
+     96
+    ],
+    [
+     3,
+     3,
+     2
+    ],
+    [
+     66,
+     66,
+     6
+    ],
+    [
+     60,
+     60,
+     3
+    ],
+    [
+     4,
+     4,
+     19
+    ],
+    [
+     52,
+     52,
+     3
+    ],
+    [
+     8,
+     8,
+     70
+    ],
+    [
+     126,
+     126,
+     6
+    ],
+    [
+     80,
+     80,
+     6
+    ],
+    [
+     104,
+     104,
+     6
+    ],
+    [
+     41,
+     41,
+     36
+    ],
+    [
+     1,
+     1,
+     35
+    ],
+    [
+     40,
+     40,
+     4
+    ],
+    [
+     37,
+     37,
+     32
+    ],
+    [
+     62,
+     62,
+     6
+    ],
+    [
+     45,
+     45,
+     36
+    ],
+    [
+     16,
+     16,
+     12
+    ],
+    [
+     48,
+     48,
+     12
+    ],
+    [
+     32,
+     32,
+     49
+    ],
+    [
+     44,
+     44,
+     7
+    ]
+   ],
+   "best_exact": true,
+   "trial_outcomes": {
+    "unsat": 99995,
+    "sat": 5
+   },
+   "trials_run": 100000
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 300.0,
+   "starting_products": 49,
+   "best": 46,
+   "best_triples": [
+    [
+     1,
+     2,
+     2
+    ],
+    [
+     1,
+     4,
+     4
+    ],
+    [
+     1,
+     8,
+     8
+    ],
+    [
+     1,
+     16,
+     16
+    ],
+    [
+     1,
+     64,
+     64
+    ],
+    [
+     2,
+     1,
+     2
+    ],
+    [
+     2,
+     8,
+     16
+    ],
+    [
+     2,
+     64,
+     3
+    ],
+    [
+     4,
+     1,
+     4
+    ],
+    [
+     4,
+     16,
+     64
+    ],
+    [
+     4,
+     32,
+     3
+    ],
+    [
+     4,
+     64,
+     6
+    ],
+    [
+     8,
+     1,
+     8
+    ],
+    [
+     8,
+     2,
+     16
+    ],
+    [
+     8,
+     16,
+     3
+    ],
+    [
+     8,
+     32,
+     6
+    ],
+    [
+     8,
+     64,
+     12
+    ],
+    [
+     16,
+     1,
+     16
+    ],
+    [
+     16,
+     4,
+     64
+    ],
+    [
+     16,
+     8,
+     3
+    ],
+    [
+     16,
+     16,
+     6
+    ],
+    [
+     16,
+     32,
+     12
+    ],
+    [
+     16,
+     64,
+     24
+    ],
+    [
+     32,
+     4,
+     3
+    ],
+    [
+     32,
+     8,
+     6
+    ],
+    [
+     32,
+     16,
+     12
+    ],
+    [
+     32,
+     64,
+     48
+    ],
+    [
+     64,
+     1,
+     64
+    ],
+    [
+     64,
+     2,
+     3
+    ],
+    [
+     64,
+     4,
+     6
+    ],
+    [
+     64,
+     8,
+     12
+    ],
+    [
+     64,
+     16,
+     24
+    ],
+    [
+     64,
+     32,
+     48
+    ],
+    [
+     64,
+     64,
+     96
+    ],
+    [
+     6,
+     6,
+     72
+    ],
+    [
+     36,
+     36,
+     64
+    ],
+    [
+     32,
+     32,
+     56
+    ],
+    [
+     51,
+     51,
+     32
+    ],
+    [
+     1,
+     1,
+     33
+    ],
+    [
+     35,
+     35,
+     32
+    ],
+    [
+     4,
+     4,
+     120
+    ],
+    [
+     38,
+     38,
+     64
+    ],
+    [
+     49,
+     49,
+     32
+    ],
+    [
+     8,
+     8,
+     96
+    ],
+    [
+     12,
+     12,
+     32
+    ],
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   "best_exact": true,
+   "trial_outcomes": {
+    "unsat": 99997,
+    "sat": 3
+   },
+   "trials_run": 100000
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 300.0,
+   "starting_products": 49,
+   "best": 44,
+   "best_triples": [
+    [
+     1,
+     2,
+     2
+    ],
+    [
+     1,
+     4,
+     4
+    ],
+    [
+     1,
+     8,
+     8
+    ],
+    [
+     1,
+     16,
+     16
+    ],
+    [
+     1,
+     32,
+     32
+    ],
+    [
+     1,
+     64,
+     64
+    ],
+    [
+     2,
+     1,
+     2
+    ],
+    [
+     4,
+     1,
+     4
+    ],
+    [
+     4,
+     8,
+     32
+    ],
+    [
+     4,
+     32,
+     3
+    ],
+    [
+     4,
+     64,
+     6
+    ],
+    [
+     8,
+     1,
+     8
+    ],
+    [
+     8,
+     4,
+     32
+    ],
+    [
+     8,
+     32,
+     6
+    ],
+    [
+     8,
+     64,
+     12
+    ],
+    [
+     16,
+     1,
+     16
+    ],
+    [
+     16,
+     32,
+     12
+    ],
+    [
+     16,
+     64,
+     24
+    ],
+    [
+     32,
+     1,
+     32
+    ],
+    [
+     32,
+     4,
+     3
+    ],
+    [
+     32,
+     8,
+     6
+    ],
+    [
+     32,
+     16,
+     12
+    ],
+    [
+     32,
+     64,
+     48
+    ],
+    [
+     64,
+     1,
+     64
+    ],
+    [
+     64,
+     4,
+     6
+    ],
+    [
+     64,
+     8,
+     12
+    ],
+    [
+     64,
+     16,
+     24
+    ],
+    [
+     64,
+     32,
+     48
+    ],
+    [
+     16,
+     16,
+     78
+    ],
+    [
+     22,
+     22,
+     8
+    ],
+    [
+     20,
+     20,
+     72
+    ],
+    [
+     4,
+     4,
+     80
+    ],
+    [
+     16,
+     16,
+     32
+    ],
+    [
+     32,
+     32,
+     88
+    ],
+    [
+     66,
+     66,
+     3
+    ],
+    [
+     26,
+     26,
+     3
+    ],
+    [
+     10,
+     10,
+     3
+    ],
+    [
+     1,
+     1,
+     1
+    ],
+    [
+     34,
+     34,
+     64
+    ],
+    [
+     64,
+     64,
+     99
+    ],
+    [
+     10,
+     10,
+     16
+    ],
+    [
+     8,
+     8,
+     80
+    ],
+    [
+     2,
+     2,
+     116
+    ],
+    [
+     18,
+     18,
+     43
+    ]
+   ],
+   "best_exact": true,
+   "trial_outcomes": {
+    "unsat": 99995,
+    "sat": 5
+   },
+   "trials_run": 100000
+  },
+  {
+   "field": 8,
+   "start": "tower:4:0",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 27,
+   "best": 27,
+   "trial_outcomes": {
+    "unsat": 1309
+   },
+   "trials_run": 1309
+  },
+  {
+   "field": 8,
+   "start": "tower:4:1",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 27,
+   "best": 27,
+   "trial_outcomes": {
+    "unsat": 1181
+   },
+   "trials_run": 1181
+  },
+  {
+   "field": 8,
+   "start": "tower:4:2",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 27,
+   "best": 27,
+   "trial_outcomes": {
+    "unsat": 1245
+   },
+   "trials_run": 1245
+  },
+  {
+   "field": 8,
+   "start": "tower:4:3",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 27,
+   "best": 27,
+   "trial_outcomes": {
+    "unsat": 1258
+   },
+   "trials_run": 1258
+  },
+  {
+   "field": 9,
+   "start": "tower:3:0",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 0,
+   "limit": 600.0,
+   "starting_products": 30,
+   "best": 30,
+   "trial_outcomes": {
+    "unsat": 1140
+   },
+   "trials_run": 1140
+  },
+  {
+   "field": 9,
+   "start": "tower:3:100",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 2,
+   "limit": 600.0,
+   "starting_products": 30,
+   "best": 30,
+   "trial_outcomes": {
+    "unsat": 1111
+   },
+   "trials_run": 1111
+  },
+  {
+   "field": 9,
+   "start": "tower:3:200",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 3,
+   "limit": 600.0,
+   "starting_products": 30,
+   "best": 30,
+   "trial_outcomes": {
+    "unsat": 1067
+   },
+   "trials_run": 1067
+  },
+  {
+   "field": 9,
+   "start": "tower:3:50",
+   "kind": "random",
+   "symmetric": true,
+   "seed": 1,
+   "limit": 600.0,
+   "starting_products": 30,
+   "best": 30,
+   "trial_outcomes": {
+    "unsat": 1020
+   },
+   "trials_run": 1020
+  }
+ ],
+ "note": "Written beside the run's output (run 45781130935): each run's list of trials (290,952 for GF(2^12)) is replaced by its counts to keep the record small; the full record is the collect job's printout."
+}

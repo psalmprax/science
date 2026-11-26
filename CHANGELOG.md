@@ -68,6 +68,15 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) by SAT on neighbourhoods recorded, and the independent-trials hybrids measured (2026-11-26,
+  development).** `benchmarks/gf2_multiplication/sat_lns.json` (run 45781130935, 154 core-hours): around the
+  42s, 290,952 neighbourhoods of 5 to 9 products, none of which can be one product shorter (43 of size 9
+  undecided); from the GF(2^7) schoolbook it shortened 49 to 28 (22 known), re-checked exact. So all four
+  approaches leave 42 where it was. `apedp_dyn/epistemic/independent_trials_hybrid.py` and
+  `scripts/study_independent_trials_hybrid.py` (`benchmarks/referee_trials/independent_trials_hybrid_dev.json`):
+  four hybrid counts on the earlier studies' worlds and prices; none beats the cluster count clearly, and
+  one (the selected trial's own Sharpe ratio with the cluster count) is unsafe (11 to 35 % false alarms on
+  real prices). Not wired into the referee.
 - **Hybrids added to the two open plans, and both rehearsals recorded (2026-11-26, development; on the
   owner's word "test hybrid approach in all the suggested solutions").** MMLM-QI: every arm is also mixed
   byte by byte with Kneser-Ney (four bytes of history), and expectation 7 asks whether the mixture gains
