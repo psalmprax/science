@@ -30,6 +30,17 @@ inferred releases.
 
 ### Added
 
+- **The physics judge, step 1a of the physics-first video plan (2026-11-26, owner's word "so, build").**
+  `apedp_dyn/epistemic/physics_judge.py` (experimental) judges one object's image track, or two for a
+  collision, for six scene kinds (fall, throw, roll, bounce, pendulum, collision): pass, fail or untestable,
+  with reasons. It cuts the track into motion segments by optimal partitioning, the richest model being
+  constant-acceleration motion seen through a pinhole camera, and checks each contact (no jump, no start
+  from rest by itself, no gain in speed, no rebound faster than the fall), gravity's direction, and the
+  scene's own law. Development perturbations in `apedp_dyn/video/physics_perturbations.py`, synthetic test
+  worlds in `apedp_dyn/video/physics_tracks_synthetic.py`, 24 tests. `scripts/run_physics_judge_dev.py` and
+  `.github/workflows/physics-judge-dev.yml` run it on PhysInOne's development scenes (backgrounds that are
+  multiples of five are kept for the blind set). Every setting is a proposed development number; nothing
+  in force reads the judge, and gate J has not been frozen or run.
 - **A plan for physics-first video, step 1 (2026-11-26, owner's word "yes let us try in that direction").**
   `docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md`, plan only, nothing built: a physics judge first (track
   one object, test its law's form with the referee; gate J on a blind set with perturbations the builder
