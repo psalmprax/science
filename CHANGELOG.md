@@ -68,6 +68,15 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12), the C flip walk's GitHub run recorded: nothing below 42 in 274 core-hours (2026-11-26,
+  development).** `benchmarks/gf2_multiplication/flip_walk_c.json` (run 1 of `.github/workflows/gf2-flip-walk-c.yml`):
+  52 walks for GF(2^12) and 6.35 million million flips. From the repository's 42 and 39 GF(8) towers of 42:
+  42; from eight GF(16) towers of 45: 45 (the walk does not reach the 42s from there); from the schoolbook:
+  105 to 116. Calibration: GF(2^8) from the schoolbook 26, 30, 31, 31 (best known 24; 100 times the flips of
+  the Python walk, which reached 31); GF(2^9) from the schoolbook 43 to 54 and from towers of 30 stayed at 30.
+  So the plain walk is weak at this size from poor starts and stays where good starts put it. Every walk
+  exact. The record was assembled from the walk jobs' logs: the collect job was queued behind the other
+  runs, and the proxy here refuses the artifact download; no walk kept products, so collect adds nothing.
 - **GF(2^n) decompositions by a language model evolving the construction (2026-11-26, development; the fourth
   of the four approaches).** `scripts/run_gf2_evolution.py`, `.github/workflows/gf2-evolution.yml`: an
   AlphaEvolve-style loop on this repository's evolution machinery. The model rewrites `construct(n, modulus,
