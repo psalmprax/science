@@ -68,6 +68,17 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Video: JetFlow against plain flow matching and MeanFlow, built (2026-11-26, experimental; on the owner's
+  word "yes build it").** `packages/jetflow-video/jetflow_video/head_to_head.py`,
+  `scripts/run_prereg_video_flow.py`, `.github/workflows/video-flow.yml`, `tests/test_video_flow_head_to_head.py`.
+  Three ways to train a video model on one shared latent, at equal training time, compared by the network
+  calls each needs to generate: JetFlow as packaged (flow matching, its Jet2 sampler), the compact UNet of
+  about its size with plain flow matching, and the same UNet trained by MeanFlow (one call from noise to
+  data). Two toy worlds (fluid, collision) and real footage (the UCF101 subset on the Hugging Face Hub,
+  16 x 16, six frames); quality by the Frechet distance to held-out clips in principal components of the
+  training clips, with a floor and a copying check; three seeds. A rehearsal on the development splits
+  comes first; the preregistration (PREREG-VIDEO-FLOW-2026-11) is written from it and reviewed before it
+  is frozen. Nothing is in force.
 - **MMLM-QI: quantum-inspired byte models, trained, with a classical control of their size (2026-11-26,
   experimental; on the owner's word "yes set it up").** `apedp_mmlm/quantum_inspired.py`,
   `scripts/run_prereg_mmlm_qi.py`, `.github/workflows/mmlm-qi.yml`, `tests/test_quantum_inspired_lm.py`. The
