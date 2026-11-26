@@ -68,6 +68,19 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Counting independent trials for the deflated Sharpe ratio, built and tested (2026-11-26, development; on the
+  owner's word "build and test first").** The idea found in US patent application US20190294990A1 (López de
+  Prado and Lewis, 2019). `apedp_dyn/epistemic/independent_trials.py` clusters the trials' returns (ONC's
+  silhouette rule; chance clusters split back) and also gives Li and Ji's eigenvalue count; `deflated`
+  calls the referee's own DSR three ways. `scripts/study_independent_trials.py` and
+  `benchmarks/referee_trials/independent_trials_dev.json`: on 27 cells of simulated searches, without an edge
+  none of the three calls more than 1 in 300 significant, in any of nine structures (families of weakly
+  correlated strategies included); with a real edge in a family of near copies the cluster count finds it
+  several times as often as the referee's count (37 % against 3 %, 85 % against 19 %, 91 % against 0 % in
+  three cells), the eigenvalue count in between. Caveats in the record: the cluster count tests the
+  family's average; beside 60 independent strategies it missed the families and counted every strategy.
+  Not wired into the referee: that changes what is in force and waits for the owner's word, a preregistered
+  test on structures not used here and an independent review. Tests `tests/test_independent_trials.py` (5).
 - **GF(2^12): new symmetric starts for the symmetric walk (2026-11-26, development).** The mixed invariant
   search finds 288 decompositions of seven GF(8) products invariant under x -> x^64 (42 over GF(2), exact) and
   15 of five GF(16) products invariant under x -> x^16 (45, exact; over GF(2) they are not invariant, since a

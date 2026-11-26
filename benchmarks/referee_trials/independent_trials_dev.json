@@ -1,0 +1,804 @@
+{
+ "tag": "DEV-INDEPENDENT-TRIALS-2026-11",
+ "development_not_a_result": true,
+ "seed": 2026112611,
+ "bars": 500,
+ "daily_volatility": 0.01,
+ "threshold": 0.95,
+ "methods": [
+  "as_referee",
+  "by_cluster",
+  "by_eigenvalues"
+ ],
+ "worst_false_positive_rate": {
+  "as_referee": 0.0033,
+  "by_cluster": 0.0033,
+  "by_eigenvalues": 0.0033
+ },
+ "cells": {
+  "independent 50 | no edge": {
+   "strategies": 50,
+   "families": 50,
+   "rho": 0.0,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 50.0,
+   "clusters_range": [
+    50,
+    50
+   ],
+   "eigen_effective_median": 50.0,
+   "as_referee": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_cluster": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   }
+  },
+  "independent 50 | edge 2.5": {
+   "strategies": 50,
+   "families": 50,
+   "rho": 0.0,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 50.0,
+   "clusters_range": [
+    50,
+    50
+   ],
+   "eigen_effective_median": 50.0,
+   "as_referee": {
+    "rate_significant": 0.2267,
+    "upper_95": 0.3021,
+    "rate_edge_found": 0.2267,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.2267,
+    "upper_95": 0.3021,
+    "rate_edge_found": 0.2267,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.2267,
+    "upper_95": 0.3021,
+    "rate_edge_found": 0.2267,
+    "rate_other_called": 0.0
+   }
+  },
+  "independent 50 | edge 3.5": {
+   "strategies": 50,
+   "families": 50,
+   "rho": 0.0,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 50.0,
+   "clusters_range": [
+    50,
+    50
+   ],
+   "eigen_effective_median": 50.0,
+   "as_referee": {
+    "rate_significant": 0.72,
+    "upper_95": 0.7902,
+    "rate_edge_found": 0.72,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.72,
+    "upper_95": 0.7902,
+    "rate_edge_found": 0.72,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.7133,
+    "upper_95": 0.7841,
+    "rate_edge_found": 0.7133,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.5 | no edge": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.5,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 60.0,
+   "as_referee": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_cluster": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   }
+  },
+  "10 x 10, rho 0.5 | edge 2.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.5,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 59.0,
+   "as_referee": {
+    "rate_significant": 0.14,
+    "upper_95": 0.206,
+    "rate_edge_found": 0.14,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.66,
+    "upper_95": 0.7353,
+    "rate_edge_found": 0.66,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.2667,
+    "upper_95": 0.3449,
+    "rate_edge_found": 0.2667,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.5 | edge 3.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.5,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 60.0,
+   "as_referee": {
+    "rate_significant": 0.3733,
+    "upper_95": 0.456,
+    "rate_edge_found": 0.3733,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.98,
+    "upper_95": 0.9959,
+    "rate_edge_found": 0.98,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.68,
+    "upper_95": 0.7537,
+    "rate_edge_found": 0.68,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.8 | no edge": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 33.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_cluster": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   }
+  },
+  "10 x 10, rho 0.8 | edge 2.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 33.0,
+   "as_referee": {
+    "rate_significant": 0.0333,
+    "upper_95": 0.0761,
+    "rate_edge_found": 0.0333,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.3667,
+    "upper_95": 0.4492,
+    "rate_edge_found": 0.3667,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.28,
+    "upper_95": 0.3591,
+    "rate_edge_found": 0.28,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.8 | edge 3.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 33.0,
+   "as_referee": {
+    "rate_significant": 0.1933,
+    "upper_95": 0.2657,
+    "rate_edge_found": 0.1933,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.8467,
+    "upper_95": 0.9002,
+    "rate_edge_found": 0.8467,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.7133,
+    "upper_95": 0.7841,
+    "rate_edge_found": 0.7133,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.95 | no edge": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.95,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 20.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_cluster": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   }
+  },
+  "10 x 10, rho 0.95 | edge 2.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.95,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 20.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0243,
+    "rate_edge_found": 0.0,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.3333,
+    "upper_95": 0.4148,
+    "rate_edge_found": 0.3333,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.3067,
+    "upper_95": 0.3871,
+    "rate_edge_found": 0.3067,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.95 | edge 3.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.95,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 20.0,
+   "as_referee": {
+    "rate_significant": 0.04,
+    "upper_95": 0.085,
+    "rate_edge_found": 0.04,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.76,
+    "upper_95": 0.8259,
+    "rate_edge_found": 0.76,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.68,
+    "upper_95": 0.7537,
+    "rate_edge_found": 0.68,
+    "rate_other_called": 0.0
+   }
+  },
+  "2/5/10/20/40, rho 0.8 | no edge": {
+   "strategies": 77,
+   "families": 5,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 5.0,
+   "clusters_range": [
+    5,
+    5
+   ],
+   "eigen_effective_median": 22.0,
+   "as_referee": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_cluster": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   }
+  },
+  "2/5/10/20/40, rho 0.8 | edge 2.5": {
+   "strategies": 77,
+   "families": 5,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 5.0,
+   "clusters_range": [
+    5,
+    5
+   ],
+   "eigen_effective_median": 22.0,
+   "as_referee": {
+    "rate_significant": 0.0067,
+    "upper_95": 0.0366,
+    "rate_edge_found": 0.0067,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.5067,
+    "upper_95": 0.5892,
+    "rate_edge_found": 0.5067,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0467,
+    "upper_95": 0.0938,
+    "rate_edge_found": 0.0467,
+    "rate_other_called": 0.0
+   }
+  },
+  "2/5/10/20/40, rho 0.8 | edge 3.5": {
+   "strategies": 77,
+   "families": 5,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 5.0,
+   "clusters_range": [
+    5,
+    5
+   ],
+   "eigen_effective_median": 22.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0243,
+    "rate_edge_found": 0.0,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.9067,
+    "upper_95": 0.948,
+    "rate_edge_found": 0.9067,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.08,
+    "upper_95": 0.1356,
+    "rate_edge_found": 0.08,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.1 | no edge": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.1,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 100.0,
+   "clusters_range": [
+    99,
+    100
+   ],
+   "eigen_effective_median": 93.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_cluster": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   }
+  },
+  "10 x 10, rho 0.1 | edge 2.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.1,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 100.0,
+   "clusters_range": [
+    100,
+    100
+   ],
+   "eigen_effective_median": 93.0,
+   "as_referee": {
+    "rate_significant": 0.2467,
+    "upper_95": 0.3236,
+    "rate_edge_found": 0.2467,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.2467,
+    "upper_95": 0.3236,
+    "rate_edge_found": 0.2467,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.2533,
+    "upper_95": 0.3307,
+    "rate_edge_found": 0.2533,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.1 | edge 3.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.1,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 100.0,
+   "clusters_range": [
+    99,
+    100
+   ],
+   "eigen_effective_median": 93.0,
+   "as_referee": {
+    "rate_significant": 0.6133,
+    "upper_95": 0.6916,
+    "rate_edge_found": 0.6133,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.6133,
+    "upper_95": 0.6916,
+    "rate_edge_found": 0.6133,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.6533,
+    "upper_95": 0.7291,
+    "rate_edge_found": 0.6533,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.2 | no edge": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.2,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 19.0,
+   "clusters_range": [
+    10,
+    46
+   ],
+   "eigen_effective_median": 85.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_cluster": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   }
+  },
+  "10 x 10, rho 0.2 | edge 2.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.2,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 19.0,
+   "clusters_range": [
+    10,
+    37
+   ],
+   "eigen_effective_median": 86.0,
+   "as_referee": {
+    "rate_significant": 0.1467,
+    "upper_95": 0.2136,
+    "rate_edge_found": 0.1467,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.9133,
+    "upper_95": 0.953,
+    "rate_edge_found": 0.9133,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.2,
+    "upper_95": 0.273,
+    "rate_edge_found": 0.2,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.2 | edge 3.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.2,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 19.0,
+   "clusters_range": [
+    10,
+    37
+   ],
+   "eigen_effective_median": 85.0,
+   "as_referee": {
+    "rate_significant": 0.6,
+    "upper_95": 0.679,
+    "rate_edge_found": 0.6,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.8667,
+    "upper_95": 0.9166,
+    "rate_edge_found": 0.8667,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.68,
+    "upper_95": 0.7537,
+    "rate_edge_found": 0.68,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.35 | no edge": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.35,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 72.0,
+   "as_referee": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_cluster": {
+    "rate_significant": 0.0,
+    "upper_95": 0.0122
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   }
+  },
+  "10 x 10, rho 0.35 | edge 2.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.35,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 72.0,
+   "as_referee": {
+    "rate_significant": 0.16,
+    "upper_95": 0.2286,
+    "rate_edge_found": 0.16,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.8933,
+    "upper_95": 0.9378,
+    "rate_edge_found": 0.8933,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.2467,
+    "upper_95": 0.3236,
+    "rate_edge_found": 0.2467,
+    "rate_other_called": 0.0
+   }
+  },
+  "10 x 10, rho 0.35 | edge 3.5": {
+   "strategies": 100,
+   "families": 10,
+   "rho": 0.35,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 10.0,
+   "clusters_range": [
+    10,
+    10
+   ],
+   "eigen_effective_median": 73.0,
+   "as_referee": {
+    "rate_significant": 0.5733,
+    "upper_95": 0.6536,
+    "rate_edge_found": 0.5733,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 1.0,
+    "upper_95": 1.0,
+    "rate_edge_found": 1.0,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.6867,
+    "upper_95": 0.7598,
+    "rate_edge_found": 0.6867,
+    "rate_other_called": 0.0
+   }
+  },
+  "4 x 10 at rho 0.8 and 60 alone | no edge": {
+   "strategies": 100,
+   "families": 64,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 0.0,
+   "repetitions": 300,
+   "clusters_median": 100.0,
+   "clusters_range": [
+    34,
+    100
+   ],
+   "eigen_effective_median": 73.0,
+   "as_referee": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_cluster": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0033,
+    "upper_95": 0.0184
+   }
+  },
+  "4 x 10 at rho 0.8 and 60 alone | edge 2.5": {
+   "strategies": 100,
+   "families": 64,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 2.5,
+   "repetitions": 150,
+   "clusters_median": 100.0,
+   "clusters_range": [
+    41,
+    100
+   ],
+   "eigen_effective_median": 73.0,
+   "as_referee": {
+    "rate_significant": 0.0333,
+    "upper_95": 0.0761,
+    "rate_edge_found": 0.0333,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.12,
+    "upper_95": 0.183,
+    "rate_edge_found": 0.12,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.0867,
+    "upper_95": 0.1436,
+    "rate_edge_found": 0.0867,
+    "rate_other_called": 0.0
+   }
+  },
+  "4 x 10 at rho 0.8 and 60 alone | edge 3.5": {
+   "strategies": 100,
+   "families": 64,
+   "rho": 0.8,
+   "annual_sharpe_of_edge": 3.5,
+   "repetitions": 150,
+   "clusters_median": 100.0,
+   "clusters_range": [
+    43,
+    100
+   ],
+   "eigen_effective_median": 73.0,
+   "as_referee": {
+    "rate_significant": 0.1667,
+    "upper_95": 0.2361,
+    "rate_edge_found": 0.1667,
+    "rate_other_called": 0.0
+   },
+   "by_cluster": {
+    "rate_significant": 0.4,
+    "upper_95": 0.4831,
+    "rate_edge_found": 0.4,
+    "rate_other_called": 0.0
+   },
+   "by_eigenvalues": {
+    "rate_significant": 0.3133,
+    "upper_95": 0.3941,
+    "rate_edge_found": 0.3133,
+    "rate_other_called": 0.0
+   }
+  }
+ },
+ "seconds": 153.0
+}
