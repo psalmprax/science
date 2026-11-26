@@ -1,8 +1,8 @@
 # PREREG-MMLM-QI-2026-11: trained quantum-inspired byte models against a classical automaton of their size
 
 **Status:** draft, not frozen. It will be frozen by `preregistration/DIGEST-MMLM-QI.json`, which pins this
-file, `scripts/run_prereg_mmlm_qi.py`, `apedp_mmlm/quantum_inspired.py`, `apedp_mmlm/text_corpus.py` and
-`.github/workflows/mmlm-qi.yml`, after the independent review below. Runs once, on GitHub, by pushing the
+file, `scripts/run_prereg_mmlm_qi.py`, `apedp_mmlm/quantum_inspired.py`, `apedp_mmlm/text_corpus.py`,
+`.github/workflows/mmlm-qi.yml` and `tests/test_quantum_inspired_lm.py`, after the independent review below. Runs once, on GitHub, by pushing the
 frozen commit to a branch `mmlm-qi-run-1`; the runner checks the digest before it reads anything.
 
 ## Why
@@ -30,7 +30,7 @@ is therefore a hidden Markov model with N = D^2 states (a nonnegative weighted a
 with negative entries cannot be trained as a distribution in this way). For D = 16 its parameter count
 (131,328) is about the complex model's (131,104); for D = 32 it has 1.31 million against 0.52 million.
 
-## Arms (19)
+## Arms (25)
 
 | Arm | What | Parameters |
 | :--- | :--- | ---: |
@@ -41,11 +41,12 @@ with negative entries cannot be trained as a distribution in this way). For D = 
 | `mixed-real-16-2`, `-32-2` | mixed state, real | 131,088 / 524,320 |
 | `hmm-256`, `hmm-1024` | hidden Markov model with 16^2 and 32^2 states | 131,328 / 1,311,744 |
 | `pure-complex-23`, `-45` | pure state, complex, about the parameters of the two complex mixed models | 270,894 / 1,036,890 |
-| `pure-complex-16@1`, `hmm-256@1` | the same two with a second seed, for the noise | |
+| `...@1`, `...@2` of `pure-complex-16`, `-32`, `hmm-256`, `hmm-1024` | expectation 2's four arms with seeds 1 and 2 as well; it is read on the three-seed means | |
 
 ## Data
 
-WikiText-2, raw, bytes (`apedp_mmlm/text_corpus.py`, files pinned by SHA-256). Training split (10.8 MB):
+WikiText-2 as bytes, the copy in the PyTorch examples repository (`apedp_mmlm/text_corpus.py`, files pinned by
+SHA-256; it is the tokenised version, with `<unk>` for rare words, not the raw one). Training split (10.8 MB):
 every model trains on it. Validation split: its first 300,000 bytes choose the learning rate and the
 parameters kept. **Test split (1.26 MB): scored only by this run.** It was read once before, by
 RESULT-MMLM-CM-2026-11's run; nothing in this preregistration's development has read it (development used
@@ -55,8 +56,10 @@ the training split, the first 300,000 bytes of `valid_a` and `valid_b`).
 
 Each arm runs alone on one GitHub runner (ubuntu-latest, four threads):
 
-1. **Rate sweep.** Five learning rates, 0.003, 0.01, 0.03, 0.1 and 0.3, the same for every arm; at each, a
-   fresh model trains for 150 seconds and is scored on the selection slice. The rate kept is the best.
+1. **Rate sweep.** Seven learning rates, 0.003, 0.01, 0.03, 0.1, 0.3, 1 and 3, the same for every arm; at
+   each, a fresh model trains for 150 seconds and is scored on the selection slice. The rate kept is the
+   best; a rate whose score is not finite (it diverged) is never kept. A byte's probability is never taken
+   below 1e-30 (no log of zero, no undefined state).
 2. **Training.** A fresh model (same seed) at that rate trains for 2,700 seconds (45 minutes): Adam,
    batch 64 streams, segments of 128 bytes with the state carried between segments (truncated
    back-propagation), gradient norm clipped at 1. Every 300 seconds and at the end it is scored on the
@@ -72,13 +75,14 @@ expert alone 1.772, its order-4 counts alone 1.945.
 
 ## Expectations, fixed now
 
-All in bits per byte on the test split; "the best quantum-inspired arm" is the lowest of the 15 non-HMM
-arms with seed 0.
+All in bits per byte on the test split. "The best quantum-inspired arm" is, of the 15 non-HMM arms with
+seed 0, the one best on the selection slice (not on the test split).
 
 1. **It learns more than three-byte statistics:** the best quantum-inspired arm costs less than
    Kneser-Ney with 2 bytes of history.
-2. **Quantum structure beats a classical automaton of its size:** `pure-complex-16` costs at least 0.05
-   less than `hmm-256`, and `pure-complex-32` at least 0.05 less than `hmm-1024`.
+2. **Quantum structure beats a classical automaton of its state's size:** over seeds 0, 1 and 2,
+   `pure-complex-16`'s mean costs at least 0.05 less than `hmm-256`'s, and `pure-complex-32`'s at least
+   0.05 less than `hmm-1024`'s. (The automaton has D^2 states; at D = 32 it has 2.5 times the parameters.)
 3. **Complex amplitudes earn their place:** `pure-complex-D` costs at least 0.02 less than the real model
    with about its parameters (`pure-real-23`, `-45`, `-90`) for each of D = 16, 32, 64. The real model of
    the same D is reported beside it.
@@ -93,28 +97,30 @@ arms with seed 0.
    Kneser-Ney with 4 bytes of history (weight on the model from 0, 0.05, ..., 1, chosen on the selection
    slice; both scored on the same bytes of the test split). For D = 16 and 32, `pure-complex-D` mixed so
    costs at least 0.02 less than Kneser-Ney alone **and** at least 0.02 less than `hmm-D^2` mixed the same
-   way. The second half asks whether what the mixture gains comes from the quantum-inspired model or
-   would come from any second model of its size.
+   way (both on the three-seed means). The second half asks whether what the mixture gains comes from
+   the quantum-inspired model or would come from any second model of its size.
 
 Reported without a criterion: the gap from the best arm to each reference; bytes seen; scoring speed;
-the rates chosen; and the seed spread of `pure-complex-16` and `hmm-256`. Where a margin in 2, 3 or 4 is
-no larger than the larger seed spread, the record says that margin is within the noise of one seed.
+the rates chosen; each runner's processor; and, for 2 and 7, the larger seed spread at each D (a margin
+no larger than it is reported as within the noise of the seeds, D by D). 3 and 4 rest on one seed per arm.
 
-A miss is reported as a miss. An arm that fails to run is reported as missing; the expectations that
-need it are then not read.
+A miss is reported as a miss. An arm that fails to run is reported as missing; each expectation that
+needs it is then marked not read, and the others are read.
 
 ## What each outcome proposes (the owner decides; nothing goes in force, AGENTS.md 1.5)
 
-- **2 and 3 hold:** propose developing the quantum-inspired model further for MMLM, first as one more
-  expert in MMLM-CM's mixture, under its own preregistration.
-- **2 holds, 3 fails:** the gain is the linear-algebra structure, not complex numbers; propose a real
-  Kraus model or a weighted automaton as that expert instead, and not complex amplitudes.
-- **2 fails:** propose not developing quantum-inspired language models in MMLM; a classical automaton of
-  the same size does as well.
-- **6 fails:** no claim that these models compete with counting, whatever 2 to 5 say.
-- **7 holds:** propose the quantum-inspired model as one more expert in MMLM-CM's mixture (a hybrid, not
-  a replacement), under its own preregistration, whatever 6 says. **7 fails:** it adds nothing to counting
-  that a hidden Markov model of its size would not.
+Read in this order; the first line that applies is the proposal. 1, 4 and 5 propose nothing on their own;
+they say what the model is like.
+
+| 7 (hybrid) | 2 (against the automaton) | 3 (complex) | Proposal |
+| :--- | :--- | :--- | :--- |
+| holds | holds | holds | develop the complex quantum-inspired model as one more expert in MMLM-CM's mixture, under its own preregistration |
+| holds | holds | fails | the same with the real model: the gain is the structure, not complex numbers (under this optimiser and budget) |
+| holds | fails | either | an expert is still worth a preregistration of its own, but as a hybrid only: it adds to counting more than an automaton of its size does, though alone it does not beat that automaton |
+| fails | any | any | do not develop quantum-inspired language models in MMLM: mixed with counting, they add nothing a hidden Markov model with D^2 states (2.5 times the parameters at D = 32) does not |
+
+6 is read on its own: if it fails, no claim is made that these models compete with counting, whatever the
+table says.
 
 ## Disclosed before freezing
 
@@ -134,8 +140,9 @@ need it are then not read.
   for it (`pure-complex-23`, `-45`); the comparison at the same D is still reported. The two new arms are
   not in the rehearsal; they are the rehearsed pure model at other sizes.
 - **Choices made on those numbers:** the rate grid (0.3 added after the hidden Markov model chose the
-  highest rate tried, 0.1, so that neither family is held at the edge of the grid); batch 64 and segments
-  of 128; the D values and the real sizes with matched parameters.
+  highest rate tried, 0.1; then 1 and 3 after the rehearsal, where both hidden Markov models chose 0.3 and
+  `hmm-1024` was still falling steeply there: 4.04 at 0.1, 2.76 at 0.3); batch 64 and segments of 128;
+  the D values and the real sizes with matched parameters.
 - **Rehearsal** on the development split (selection on `valid_a`'s first 300,000 bytes, scored on
   `valid_b`), the 17 arms then planned, sweep 60 s at each rate and 10 minutes of training (run 45871761319,
   `benchmarks/mmlm/mmlm_qi_rehearsal.json`). Bits per byte: `pure-complex-16` 3.08 (second seed 3.06),
@@ -143,19 +150,29 @@ need it are then not read.
   `mixed-complex-16-2` 3.13, `-32-2` 2.95; `mixed-real-16-2` 3.22, `-32-2` 2.93; `hmm-256` 3.05 (second
   seed 2.82), `hmm-1024` 2.50. Kneser-Ney with 0 to 4 bytes of history 4.62, 3.39, 2.72, 2.18, 1.85. Rates
   chosen: 0.01 to 0.3; the hidden Markov model chose 0.3 (the top of the grid) and its two seeds chose 0.3
-  and 0.1, which is most of its seed spread of 0.23. Read as the plan reads: 1 missed (2.77 against 2.72),
+  and 0.1 (its seed spread was 0.23). Read as the plan reads: 1 missed (2.77 against 2.72),
   2 missed (`hmm-1024` better by 0.34), 3 held, 4 (as it then read, at the same D) missed, 5 held, 6
-  missed; the seed spread covers the margins of 2 and 4. Every arm finished within 11 minutes of training
-  and scoring; the final run's 45 minutes plus a 12.5-minute sweep fit the 120-minute step limit.
+  missed; the seed spread covers the margin of 2 at D = 16 (0.03 against 0.23) but not at D = 32 (0.34).
+  Every arm finished within 11 minutes of training and scoring; the final run's 45 minutes plus a
+  17.5-minute sweep (seven rates) and its scoring fit the 120-minute step limit.
 - **Changes after the rehearsal, before freezing.** Expectation 4 compares at equal parameters (above).
   Expectation 7, the hybrid with counting, was added on the owner's word of 26 November (20:32: "test
-  hybrid approach in all the suggested solutions"); its computation was checked locally on a short run
-  (an untrained model gets weight 0 and the mixture equals Kneser-Ney), not in the rehearsal.
+  hybrid approach in all the suggested solutions"). Then, on the independent review (below): rates 1 and
+  3; three seeds for expectation 2's arms, read on means; the best arm chosen on the selection slice; a
+  floor on a byte's probability; each expectation read on its own when an arm fails; the table of
+  proposals; each runner's processor recorded; the test file frozen and its training test given 10
+  seconds. A second rehearsal of all 25 arms runs this code before freezing (`mmlm-qi-smoke-2`).
 
 ## Limits
 
-- One seed per arm, except the two repeated ones.
-- Runner speeds vary between jobs; bytes seen are reported.
+- One seed per arm, except expectation 2's four arms (three each). A seed spread mixes the start, the
+  rate chosen and the runner's speed (the data order is the same for every seed).
+- Equal wall-clock is not equal compute: in the rehearsal two runs of the same model differed by up to
+  36 % in bytes seen (`hmm-256` 59.2 and 80.6 million in 600 s). Each runner's processor and core count
+  are now recorded, and bytes seen are reported.
+- The real-valued arms may be under-optimised: in the rehearsal's sweep no rate took `pure-real-16` or
+  `pure-real-23` below the cost of Kneser-Ney with no history, and `pure-real-45` and `-90` came out worse
+  than `-23`. Expectation 3 is therefore about complex against real under this optimiser and budget.
 - 45 minutes of training is short for the larger models; the conclusion is about these budgets.
 - Scoring in 32 pieces from the initial state is slightly pessimistic for every model, against the
   references' single stream; a piece is 39,000 bytes long.
@@ -169,4 +186,29 @@ Before the result is recorded, a reviewer checks every number of the record agai
 The rule on traps concerns blind tests of a check; this compares models on a fixed public benchmark and
 tests no check, so it has no trap arm, and says so.
 
-*Findings: to be written here.*
+**Findings of the review before freezing (26 November), and what was done:**
+
+1. The rate grid held the hidden Markov model at its top (both chose 0.3; `hmm-1024` still falling) and so
+   under-tuned the control. *Done:* rates 1 and 3 added; a diverging rate is never kept.
+2. The proposals contradicted each other (2 fails with 7 holding; 7 failing with 2 and 3 holding) and 1, 4
+   and 5 had none. *Done:* one table read in order; 1, 4 and 5 propose nothing; the automaton's size stated.
+3. Expectation 2's margin (0.05) was inside one seed's spread (0.23). *Done:* its four arms run with three
+   seeds and it is read on the means; spreads reported per D, for 7 too.
+4. The real-valued arms looked under-optimised (no sweep rate took two of them below the no-history
+   counting model). *Done:* disclosed; expectation 3 limited to this optimiser and budget.
+5. The plan said a failed arm leaves only its expectations unread; the runner read none. *Done:* each
+   expectation is read on its own.
+6. The code after the rehearsal had not run on GitHub. *Done:* a second rehearsal before freezing.
+7. Equal wall-clock is not equal compute (36 % between two runs of one model). *Done:* the processor and
+   core count recorded; stated under Limits.
+8. The best arm was picked on the test split. *Done:* picked on the selection slice.
+9. Two sentences of the rehearsal bullet were wrong (the spread covers 2's margin only at D = 16; a causal
+   claim the record cannot check). *Done:* corrected.
+10. A zero probability would give a log of zero and an undefined state. *Done:* a floor of 1e-30.
+11. The data is the tokenised WikiText-2, not the raw. *Done:* the wording.
+12. The test file decides whether an arm runs but was not frozen, and its 6-second training test could
+    fail on a slow runner. *Done:* frozen; 10 seconds.
+
+The reviewer checked and found no fault in: the arms and parameter counts, the protocol against the
+runner and workflow, the arithmetic of every expectation, the rehearsal's numbers, and that nothing here
+changes what is in force.

@@ -23,6 +23,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import os
 import platform
 import sys
 import time
@@ -41,15 +43,17 @@ from apedp_mmlm.text_corpus import split_bytes  # noqa: E402
 PREREGISTRATION_ID = "PREREG-MMLM-QI-2026-11"
 DIGEST = ROOT / "preregistration" / "DIGEST-MMLM-QI.json"
 FROZEN = ("preregistration/PREREG-MMLM-QI-2026-11.md", "scripts/run_prereg_mmlm_qi.py",
-          "apedp_mmlm/quantum_inspired.py", "apedp_mmlm/text_corpus.py", ".github/workflows/mmlm-qi.yml")
+          "apedp_mmlm/quantum_inspired.py", "apedp_mmlm/text_corpus.py", ".github/workflows/mmlm-qi.yml",
+          "tests/test_quantum_inspired_lm.py")
 ARMS = ("pure-complex-16", "pure-complex-32", "pure-complex-64",
         "pure-real-16", "pure-real-32", "pure-real-64",
         "pure-real-23", "pure-real-45", "pure-real-90",
         "mixed-complex-16-2", "mixed-complex-32-2", "mixed-real-16-2", "mixed-real-32-2",
         "hmm-256", "hmm-1024",
         "pure-complex-23", "pure-complex-45",                   #: about the parameters of mixed-complex-16-2 and -32-2
-        "pure-complex-16@1", "hmm-256@1")                       #: the last two: a second seed, for the noise
-RATES = (3e-3, 1e-2, 3e-2, 1e-1, 3e-1)
+        "pure-complex-16@1", "pure-complex-16@2", "pure-complex-32@1", "pure-complex-32@2",
+        "hmm-256@1", "hmm-256@2", "hmm-1024@1", "hmm-1024@2")   #: E2's four arms with seeds 1 and 2 as well
+RATES = (3e-3, 1e-2, 3e-2, 1e-1, 3e-1, 1.0, 3.0)   #: 1 and 3 added after the rehearsal
 BATCH, SEGMENT, SELECT_BYTES, CHUNKS = 64, 128, 300_000, 32
 HYBRID_ORDER = 4                                               #: the counting model the hybrid mixes with
 SAME_PARAMETERS = {16: 23, 32: 45, 64: 90}                     #: real D' with about the parameters of complex D
@@ -65,6 +69,16 @@ def frozen_digests() -> dict[str, str]:
 def check_frozen() -> None:
     if json.loads(DIGEST.read_text(encoding="utf-8"))["sha256"] != frozen_digests():
         raise SystemExit(f"{PREREGISTRATION_ID} changed since it was frozen")
+
+
+def _cpu_model() -> str:
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor()
 
 
 def data(mode: str) -> tuple[bytes, bytes, bytes]:
@@ -85,14 +99,17 @@ def run_arm(args: argparse.Namespace) -> int:
     torch.set_num_threads(args.threads)
     arm, seed = _arm(args.arm)
     train_bytes, select, scored = data(args.mode)
-    sweep = {}
+    sweep: dict[str, Any] = {}
+    swept: dict[float, float] = {}
     for rate in RATES:
         torch.manual_seed(seed)
         result = qi.train(qi.build(arm, seed), train_bytes, select, args.sweep_seconds, BATCH, SEGMENT, rate,
                           evaluate_every=10**9, valid_chunks=CHUNKS)
-        sweep[str(rate)] = {"selection_bpb": round(result.best_valid_bpb, 4), "bytes_seen": result.bytes_seen}
+        bpb = result.best_valid_bpb if math.isfinite(result.best_valid_bpb) else float("inf")
+        swept[rate] = bpb                       # a rate that diverged (not finite) is never chosen
+        sweep[str(rate)] = {"selection_bpb": round(bpb, 4) if math.isfinite(bpb) else None, "bytes_seen": result.bytes_seen}
         print(f"{args.arm} sweep lr={rate}: {result.best_valid_bpb:.4f}", flush=True)
-    rate = min(RATES, key=lambda r: sweep[str(r)]["selection_bpb"])
+    rate = min(RATES, key=lambda r: swept[r])
     torch.manual_seed(seed)
     model = qi.build(arm, seed)
     result = qi.train(model, train_bytes, select, args.seconds, BATCH, SEGMENT, rate, evaluate_every=args.evaluate_every,
@@ -116,7 +133,8 @@ def run_arm(args: argparse.Namespace) -> int:
         "steps": result.steps, "bytes_seen": result.bytes_seen, "selection_bpb": round(result.best_valid_bpb, 4),
         "curve": result.curve, "scored_bytes": len(scored), "bits_per_byte": round(score, 4),
         "scoring_bytes_per_second": round(len(scored) / took), "hybrid_with_counts": hybrid, "threads": args.threads,
-        "torch": torch.__version__, "python": platform.python_version(), "processor": platform.processor()}
+        "torch": torch.__version__, "python": platform.python_version(), "cpu": _cpu_model(), "cpu_count": os.cpu_count(),
+        "commit": os.environ.get("GITHUB_SHA")}
     if args.mode == "final":
         row["frozen"] = frozen_digests()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -136,49 +154,82 @@ def run_baselines(args: argparse.Namespace) -> int:
     return 0
 
 
+THREE_SEEDS = ("pure-complex-16", "pure-complex-32", "hmm-256", "hmm-1024")   #: E2's arms, run with seeds 0, 1 and 2
+
+
+def _mean(values: dict[str, float], arm: str) -> float:
+    """An arm's mean over the seeds it was run with (E2's four arms have three)."""
+    runs = [values[a] for a in (arm, f"{arm}@1", f"{arm}@2") if a in values]
+    if not runs:
+        raise KeyError(arm)
+    return sum(runs) / len(runs)
+
+
+def _spread(values: dict[str, float], arm: str) -> float:
+    runs = [values[a] for a in (arm, f"{arm}@1", f"{arm}@2") if a in values]
+    return max(runs) - min(runs) if len(runs) > 1 else float("nan")
+
+
+def _read(fn: Any) -> dict[str, Any]:
+    """An expectation whose arms are all present; otherwise 'not read' (an arm failed)."""
+    try:
+        out: dict[str, Any] = fn()
+        return out
+    except KeyError as missing:
+        return {"held": None, "not_read": f"arm missing: {missing}"}
+
+
 def expectations(bpb: dict[str, float], kn: dict[str, float], hybrid: dict[str, float],
-                 counting_alone: float) -> dict[str, Any]:
-    """The seven expectations of the preregistration, read from bits per byte on the scored split; ``hybrid``
-    is each arm mixed with Kneser-Ney (4 bytes of history), ``counting_alone`` that model on the same bytes."""
-    e7_counts = {d: round(counting_alone - hybrid[f"pure-complex-{d}"], 4) for d in (16, 32)}
-    e7_hmm = {d: round(hybrid[f"hmm-{d * d}"] - hybrid[f"pure-complex-{d}"], 4) for d in (16, 32)}
+                 counting_alone: float, selection: dict[str, float]) -> dict[str, Any]:
+    """The seven expectations of the preregistration, read from bits per byte on the scored split. ``hybrid`` is
+    each arm mixed with Kneser-Ney (4 bytes of history), ``counting_alone`` that model on the same bytes;
+    ``selection`` is each arm's score on the selection slice, which picks the best quantum-inspired arm."""
     qi_arms = {a: v for a, v in bpb.items() if not a.startswith("hmm") and "@" not in a}
-    best_arm = min(qi_arms, key=lambda a: qi_arms[a])
-    spread = {"pure-complex-16": abs(bpb["pure-complex-16"] - bpb["pure-complex-16@1"]),
-              "hmm-256": abs(bpb["hmm-256"] - bpb["hmm-256@1"])}
-    e2 = {d: round(bpb[f"hmm-{d * d}"] - bpb[f"pure-complex-{d}"], 4) for d in (16, 32)}
-    e3 = {d: round(bpb[f"pure-real-{SAME_PARAMETERS[d]}"] - bpb[f"pure-complex-{d}"], 4) for d in (16, 32, 64)}
-    e4 = {d: round(bpb[f"pure-complex-{MIXED_SAME_PARAMETERS[d]}"] - bpb[f"mixed-complex-{d}-2"], 4) for d in (16, 32)}
-    curve = [bpb[f"pure-complex-{d}"] for d in (16, 32, 64)]
+    best_arm = min(qi_arms, key=lambda a: selection.get(a, float("inf"))) if qi_arms else None
+    best = qi_arms[best_arm] if best_arm else float("nan")
     kn2, kn4 = kn["Kneser-Ney, 2 bytes of history"], kn["Kneser-Ney, 4 bytes of history"]
+
+    def e2() -> dict[str, Any]:
+        margin = {d: round(_mean(bpb, f"hmm-{d * d}") - _mean(bpb, f"pure-complex-{d}"), 4) for d in (16, 32)}
+        spread = {d: round(max(_spread(bpb, f"hmm-{d * d}"), _spread(bpb, f"pure-complex-{d}")), 4) for d in (16, 32)}
+        return {"held": all(v >= 0.05 for v in margin.values()), "margin_by_D_on_three_seed_means": margin,
+                "larger_seed_spread_by_D": spread, "margin_within_spread_by_D": {d: abs(margin[d]) <= spread[d] for d in margin}}
+
+    def e3() -> dict[str, Any]:
+        margin = {d: round(bpb[f"pure-real-{SAME_PARAMETERS[d]}"] - bpb[f"pure-complex-{d}"], 4) for d in (16, 32, 64)}
+        return {"held": all(v >= 0.02 for v in margin.values()), "margin_by_D": margin,
+                "same_D_real_minus_complex": {d: round(bpb[f"pure-real-{d}"] - bpb[f"pure-complex-{d}"], 4) for d in (16, 32, 64)}}
+
+    def e4() -> dict[str, Any]:
+        margin = {d: round(bpb[f"pure-complex-{MIXED_SAME_PARAMETERS[d]}"] - bpb[f"mixed-complex-{d}-2"], 4) for d in (16, 32)}
+        return {"held": all(v >= 0.02 for v in margin.values()), "margin_by_D": margin,
+                "same_D_pure_minus_mixed": {d: round(bpb[f"pure-complex-{d}"] - bpb[f"mixed-complex-{d}-2"], 4) for d in (16, 32)},
+                "real_mixed_minus_complex_mixed": {d: round(bpb[f"mixed-real-{d}-2"] - bpb[f"mixed-complex-{d}-2"], 4)
+                                                   for d in (16, 32)}}
+
+    def e5() -> dict[str, Any]:
+        curve = [bpb[f"pure-complex-{d}"] for d in (16, 32, 64)]
+        return {"held": curve[0] > curve[1] > curve[2], "pure_complex_16_32_64": curve}
+
+    def e7() -> dict[str, Any]:
+        counts = {d: round(counting_alone - _mean(hybrid, f"pure-complex-{d}"), 4) for d in (16, 32)}
+        versus = {d: round(_mean(hybrid, f"hmm-{d * d}") - _mean(hybrid, f"pure-complex-{d}"), 4) for d in (16, 32)}
+        spread = {d: round(max(_spread(hybrid, f"hmm-{d * d}"), _spread(hybrid, f"pure-complex-{d}")), 4) for d in (16, 32)}
+        return {"held": all(counts[d] >= 0.02 and versus[d] >= 0.02 for d in (16, 32)),
+                "counting_alone_minus_hybrid_by_D": counts, "hmm_hybrid_minus_hybrid_by_D": versus,
+                "larger_seed_spread_by_D": spread}
+
     return {
-        "best_quantum_inspired_arm": best_arm, "best_quantum_inspired_bpb": qi_arms[best_arm],
-        "seed_spread": {k: round(v, 4) for k, v in spread.items()},
-        "E1 learns more than three-byte statistics": {"held": qi_arms[best_arm] < kn2, "kneser_ney_2": kn2},
-        "E2 beats a hidden Markov model with D^2 states by 0.05": {"held": all(v >= 0.05 for v in e2.values()),
-                                                                  "margin_by_D": e2},
-        "E3 complex beats real of the same size by 0.02": {"held": all(v >= 0.02 for v in e3.values()), "margin_by_D": e3,
-                                                           "same_D_real_minus_complex": {
-                                                               d: round(bpb[f"pure-real-{d}"] - bpb[f"pure-complex-{d}"], 4)
-                                                               for d in (16, 32, 64)}},
-        "E4 a mixed state beats a pure one of the same size by 0.02": {
-                                                       "held": all(v >= 0.02 for v in e4.values()), "margin_by_D": e4,
-                                                       "same_D_pure_minus_mixed": {
-                                                           d: round(bpb[f"pure-complex-{d}"] - bpb[f"mixed-complex-{d}-2"], 4)
-                                                           for d in (16, 32)},
-                                                       "real_mixed_minus_complex_mixed": {
-                                                           d: round(bpb[f"mixed-real-{d}-2"] - bpb[f"mixed-complex-{d}-2"], 4)
-                                                           for d in (16, 32)}},
-        "E5 better with a larger state": {"held": curve[0] > curve[1] > curve[2], "pure_complex_16_32_64": curve},
-        "E6 beats the strongest Kneser-Ney": {"held": qi_arms[best_arm] < kn4, "kneser_ney_4": kn4},
-        "E7 mixed with counting it adds what an automaton of its size does not": {
-            "held": all(e7_counts[d] >= 0.02 and e7_hmm[d] >= 0.02 for d in (16, 32)),
-            "counting_alone_minus_hybrid_by_D": e7_counts, "hmm_hybrid_minus_hybrid_by_D": e7_hmm},
+        "best_quantum_inspired_arm": best_arm, "chosen_on": "the selection slice", "best_quantum_inspired_bpb": best,
+        "E1 learns more than three-byte statistics": {"held": bool(best < kn2), "kneser_ney_2": kn2},
+        "E2 beats a hidden Markov model with D^2 states by 0.05": _read(e2),
+        "E3 complex beats real of the same size by 0.02": _read(e3),
+        "E4 a mixed state beats a pure one of the same size by 0.02": _read(e4),
+        "E5 better with a larger state": _read(e5),
+        "E6 beats the strongest Kneser-Ney": {"held": bool(best < kn4), "kneser_ney_4": kn4},
+        "E7 mixed with counting it adds what an automaton of its size does not": _read(e7),
         "hybrids_without_criterion": {a: h for a, h in hybrid.items() if "@" not in a},
-        "references_without_criterion": {k: round(qi_arms[best_arm] - v, 4) for k, v in REFERENCES.items()},
-        "margins_within_seed_spread": {"E2": any(abs(v) <= max(spread.values()) for v in e2.values()),
-                                       "E3": any(abs(v) <= max(spread.values()) for v in e3.values()),
-                                       "E4": any(abs(v) <= max(spread.values()) for v in e4.values())},
+        "references_without_criterion": {k: round(best - v, 4) for k, v in REFERENCES.items()},
     }
 
 
@@ -192,10 +243,12 @@ def collect(args: argparse.Namespace) -> int:
                               "arms": {a: {k: v for k, v in rows[a].items() if k != "curve"} for a in ARMS if a in rows},
                               "curves": {a: rows[a]["curve"] for a in ARMS if a in rows}, "kneser_ney": kn,
                               "references_from_RESULT-MMLM-CM-2026-11": REFERENCES}
-    if not missing:
-        record["expectations"] = expectations({a: rows[a]["bits_per_byte"] for a in ARMS}, kn,
-                                              {a: rows[a]["hybrid_with_counts"]["bits_per_byte"] for a in ARMS},
-                                              rows["pure-complex-16"]["hybrid_with_counts"]["counting_alone_same_bytes"])
+    present = [a for a in ARMS if a in rows]
+    if present:
+        record["expectations"] = expectations({a: rows[a]["bits_per_byte"] for a in present}, kn,
+                                              {a: rows[a]["hybrid_with_counts"]["bits_per_byte"] for a in present},
+                                              rows[present[0]]["hybrid_with_counts"]["counting_alone_same_bytes"],
+                                              {a: rows[a]["selection_bpb"] for a in present})
     if args.mode == "final":
         record["frozen"] = frozen_digests()
     (args.out / "results.json").write_text(json.dumps(record, indent=1) + "\n")

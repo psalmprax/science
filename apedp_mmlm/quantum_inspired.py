@@ -37,6 +37,7 @@ import torch
 from torch import Tensor, nn
 
 V = 256
+FLOOR = 1e-30                                   #: a byte's probability never below this (no log of zero, no NaN state)
 Ops = Tensor | tuple[Tensor, Tensor]            #: Kraus operators, or a hidden Markov model's transition and emission
 
 
@@ -78,10 +79,10 @@ class KrausLM(nn.Module):
         k = ops[x]                                                    # (B, rank, D, D)
         if self.rank == 1:
             phi = torch.einsum("bij,bj->bi", k[:, 0], state)
-            p = (phi.abs() ** 2).sum(-1)
+            p = (phi.abs() ** 2).sum(-1).clamp_min(FLOOR)
             return torch.log(p), phi / torch.sqrt(p)[:, None]
         sigma = torch.einsum("brij,bjk,brlk->bil", k, state, k.conj())
-        p = torch.diagonal(sigma, dim1=-2, dim2=-1).real.sum(-1)
+        p = torch.diagonal(sigma, dim1=-2, dim2=-1).real.sum(-1).clamp_min(FLOOR)
         return torch.log(p), sigma / p[:, None, None]
 
     def distribution(self, ops: Ops, state: Tensor) -> Tensor:
@@ -120,7 +121,7 @@ class HiddenMarkovLM(nn.Module):
             raise TypeError("a transition and an emission matrix expected")
         transition, emission = ops
         joint = state * emission[:, x].T                              # (B, N)
-        p = joint.sum(-1)
+        p = joint.sum(-1).clamp_min(FLOOR)
         return torch.log(p), (joint / p[:, None]) @ transition
 
     def distribution(self, ops: Ops, state: Tensor) -> Tensor:

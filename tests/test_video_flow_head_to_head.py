@@ -1,6 +1,7 @@
 """Pins for the JetFlow / flow matching / MeanFlow head-to-head (packages/jetflow-video/jetflow_video/head_to_head.py)."""
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -72,23 +73,55 @@ class _Oracle(torch.nn.Module):
 
 
 @pytest.mark.parametrize(("how", "steps", "calls"), [("euler", 1, 1), ("euler", 4, 4), ("meanflow", 1, 1),
-                                                     ("meanflow", 2, 2), ("jet2", 2, 4)])
+                                                     ("meanflow", 2, 2), ("jet2", 2, 4), ("jet2-corrected", 2, 4)])
 def test_samplers_go_from_noise_to_data_with_the_calls_they_claim(how: str, steps: int, calls: int) -> None:
     x0 = torch.randn(h.FRAMES, h.LATENT, 8, 8)
     oracle = _Oracle(x0)
     counter = h.counter_for(oracle)
     out = h.sample(oracle, how, steps, n=3, seed=1)
     assert counter.calls == 3 * calls
-    assert torch.allclose(out, x0.expand_as(out), atol=1e-2 if how == "jet2" else 1e-5)
+    assert torch.allclose(out, x0.expand_as(out), atol=1e-2 if how.startswith("jet2") else 1e-5)
 
 
-def test_jetflow_sampler_is_counted_and_its_latent_kept() -> None:
+def test_jetflow_sampler_is_what_generate_video_does_from_the_same_noise() -> None:
+    torch.manual_seed(0)
     jet = h.build("fm-jetflow")
-    h.install_latent_capture(jet)  # type: ignore[arg-type]
+    for p in jet.parameters():                                 # zero-initialised paths: make the velocity non-trivial
+        with torch.no_grad():
+            p.add_(0.05 * torch.randn_like(p))
+    shape = (h.FRAMES, h.LATENT, 8, 8)
+    kept = []
+    original = jet.vae_bridge.decode_latent_to_video
+    jet.vae_bridge.decode_latent_to_video = lambda z: (kept.append(z.clone()), original(z))[1]  # type: ignore[method-assign]
+    torch.manual_seed(7)
+    z0 = torch.randn(*shape)
+    torch.manual_seed(7)
+    jet.generate_video(h.TEXT[0], num_steps=2, shape=shape)
     counter = h.counter_for(jet)
-    out = h.sample(jet, "jetflow", 2, n=2, seed=0)
-    assert out.shape == (2, h.FRAMES, h.LATENT, 8, 8)
-    assert counter.calls == 2 * 4                      # two Jet2 steps, two calls each, guidance off
+    ours = h.sample(jet, "jetflow-sampler", 2, n=1, seed=0, noise=z0.unsqueeze(0))
+    assert torch.allclose(ours[0], kept[0], atol=1e-5)
+    assert counter.calls == 4                                   # two Jet2 steps, two calls each, guidance off
+
+
+class _Curved(torch.nn.Module):
+    """dz/dt = z: integrated from t = 1 to 0, the exact answer is z(1) / e."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.w = torch.nn.Parameter(torch.zeros(1))
+
+    def forward(self, z: torch.Tensor, t: float, text_tokens: torch.Tensor | None = None, r: float | None = None) -> torch.Tensor:
+        return z
+
+
+def test_the_corrected_jet2_step_is_second_order_and_the_packaged_one_has_its_curvature_reversed() -> None:
+    z0 = torch.randn(1, h.FRAMES, h.LATENT, 8, 8)
+    exact = z0[0] / torch.e
+    err = {how: float((h.sample(_Curved(), how, 1, n=1, seed=0, noise=z0)[0] - exact).abs().mean() / exact.abs().mean())
+           for how in ("euler", "jet2", "jet2-corrected")}
+    assert err["jet2-corrected"] < err["euler"] < err["jet2"]
+    assert err["jet2-corrected"] == pytest.approx(abs(0.5 - 1 / math.e) * math.e, rel=1e-2)
+    assert err["jet2"] == pytest.approx(abs(-0.5 - 1 / math.e) * math.e, rel=1e-2)
 
 
 def test_frechet_distance_and_copying_check() -> None:
@@ -146,33 +179,40 @@ def test_the_expectations_are_read_as_written() -> None:
     jobs = {}
     for kind in run.DATA:
         for seed in run.SEEDS:
-            jobs[(kind, "fm-jetflow", seed)] = job(kind, "fm-jetflow", seed, {("jetflow", 2): 30.0, ("euler", 4): 40.0})
+            jobs[(kind, "fm-jetflow", seed)] = job(kind, "fm-jetflow", seed, {("jetflow-sampler", 2): 30.0, ("euler", 4): 40.0,
+                                                                               ("jetflow-sampler-corrected", 2): 44.0})
             jobs[(kind, "fm-unet", seed)] = job(kind, "fm-unet", seed, {("euler", 4): 40.0, ("euler", 1): 80.0,
-                                                                         ("jet2", 2): 39.0})
+                                                                         ("jet2-corrected", 2): 39.0})
             jobs[(kind, "meanflow-unet", seed)] = job(kind, "meanflow-unet", seed, {("meanflow", 1): 32.0})
             jobs[(kind, "meanflow-jetflow", seed)] = job(kind, "meanflow-jetflow", seed, {("meanflow", 1): 20.0})
     e = run.expectations(jobs)["ucf101"]
-    assert e["E1 JetFlow beats flow matching at four calls"]["held"]           # 30 against 40
-    assert e["E2 MeanFlow beats flow matching at one call"]["held"]            # 32 against 80
-    assert e["E3 MeanFlow at one call is no worse than JetFlow at four"]["held"]   # 32 <= 30 / 0.9
-    assert not e["E4 the Jet2 step beats Euler at four calls, UNet"]["held"]  # 39 against 40: not by 10 %
-    assert e["E4 the Jet2 step beats Euler at four calls, JetFlow"]["held"]
-    assert not e["E5 JetFlow's network beats the UNet, Euler 32"]["held"]     # equal
-    assert e["E6 hybrid: MeanFlow helps JetFlow's network at one call"]["held"]                    # 20 against 50
-    assert e["E6 hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call"]["held"]   # 20 against 32
-    assert not e["E6 hybrid: JetFlow's sampler on the UNet beats Euler at four calls"]["held"]     # 50 against 40
+    assert e["E1 JetFlow beats flow matching at four calls, as packaged"]["held"]          # 30 against 40
+    assert not e["E1 JetFlow beats flow matching at four calls, its step corrected"]["held"]   # 44 against 40
+    assert e["E2 MeanFlow beats flow matching at one call"]["held"]                        # 32 against 80
+    assert e["E3 MeanFlow at one call is no worse than JetFlow at four"]["held"]           # 32 <= 30 / 0.9
+    assert not e["E4 the corrected Jet2 step beats Euler at four calls, UNet"]["held"]    # 39 against 40: not by 10 %
+    assert not e["E5 JetFlow's network beats the UNet, Euler 32"]["held"]                 # equal
+    assert e["E6a hybrid: MeanFlow helps JetFlow's network at one call"]["held"]          # 20 against 50
+    assert e["E6b hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call"]["held"]
+    assert not e["E6d hybrid: JetFlow's corrected sampler on the UNet beats Euler at four calls"]["held"]
+    del jobs[("ucf101", "meanflow-jetflow", 1)]                 # a failed job: only what needs it is not read
+    part = run.expectations(jobs)["ucf101"]
+    assert part["E6a hybrid: MeanFlow helps JetFlow's network at one call"]["held"] is None
+    assert part["E2 MeanFlow beats flow matching at one call"]["held"] is True
     assert run.beats([1.0, 1.0, 5.0], [2.0, 2.0, 2.0])["held"] is False     # mean 2.33 > 0.9 * 2
     assert run.beats([1.0, 1.0, 1.7], [2.0, 2.0, 1.0])["seeds_lower"] == 2
 
 
-def test_the_hybrid_meanflow_on_jetflow_runs_trains_and_is_counted() -> None:
+def test_the_hybrid_meanflow_on_jetflow_learns_the_gap_from_its_real_start() -> None:
     torch.manual_seed(0)
     model = h.build("meanflow-jetflow")
     z = torch.randn(h.FRAMES, h.LATENT, 8, 8)
     assert torch.allclose(model(z, 0.6, text_tokens=h.TEXT, r=0.6), model.jet(z, 0.6, text_tokens=h.TEXT))
-    loss = h.meanflow_loss(model, z.unsqueeze(0), t=0.8, r=0.3, derivative="fd")
-    loss.backward()
-    assert any(float(p.grad.abs().sum()) > 0 for p in model.parameters() if p.grad is not None)
+    latents = torch.randn(4, h.FRAMES, h.LATENT, 8, 8)
+    h.train_meanflow(model, latents, seconds=4, lr=1e-2, seed=0, share_unequal=1.0)
+    assert float(model.gap_proj.weight.abs().sum()) > 0
+    with torch.no_grad():
+        assert not torch.allclose(model(z, 0.9, text_tokens=h.TEXT, r=0.9), model(z, 0.9, text_tokens=h.TEXT, r=0.1))
     counter = h.counter_for(model)
     h.sample(model, "meanflow", 2, n=2, seed=0)
     assert counter.calls == 4

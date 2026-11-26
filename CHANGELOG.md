@@ -68,6 +68,20 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Both open plans changed on their independent reviews; JetFlow's Jet2 step found to have its curvature
+  reversed (2026-11-26, development; AGENTS.md 1.6).** JetFlow's `JetFlowStepper` computes the acceleration
+  as (v - v_probe) / h, which is -dv/dt: on dz/dt = z one step from t = 1 lands at -0.5 z (exact z / e,
+  Euler 0), worse than Euler. The package is not changed (that waits for the owner's word); the video
+  comparison scores the step as packaged and a corrected step beside it (`jet2_corrected_step`), and
+  `tests/test_video_flow_head_to_head.py` pins both. Also in the video plan: the hybrid `meanflow-jetflow`
+  takes the gap as a channel shift (its token route had no gradient), JetFlow's sampler runs from the
+  shared noise (equal to `generate_video`, pinned), the UNet is matched to JetFlow's backbone, flow
+  matching trains on t in (0, 1), MeanFlow's weight is on the squared norm, the floor uses the same clips
+  for every seed, each expectation is read on its own, the frozen list covers the package and the toy
+  worlds. In MMLM-QI: rates 1 and 3 added (the hidden Markov model sat at the top of the grid), three
+  seeds for expectation 2's arms, the best arm chosen on the selection slice, a probability floor, a
+  table of proposals, each runner's processor recorded, the test file frozen. Second rehearsals of both
+  run before either plan is frozen.
 - **GF(2^12) by SAT on neighbourhoods recorded, and the independent-trials hybrids measured (2026-11-26,
   development).** `benchmarks/gf2_multiplication/sat_lns.json` (run 45781130935, 154 core-hours): around the
   42s, 290,952 neighbourhoods of 5 to 9 products, none of which can be one product shorter (43 of size 9

@@ -2,9 +2,9 @@ name: MMLM-QI, trained quantum-inspired byte models against a classical automato
 
 # PREREG-MMLM-QI-2026-11 (preregistration/PREREG-MMLM-QI-2026-11.md), on the owner's word of 26 November ("yes set it
 # up"). scripts/run_prereg_mmlm_qi.py trains each model of apedp_mmlm/quantum_inspired.py on one runner: a learning-rate
-# sweep of five rates for 150 s each, then 45 minutes at the best rate, keeping the parameters best on the first 300,000
+# sweep of seven rates for 150 s each, then 45 minutes at the best rate, keeping the parameters best on the first 300,000
 # bytes of the validation split, then scores the WikiText-2 test split. The final run checks the digest first.
-#   push to mmlm-qi-smoke-*  -> a rehearsal: every arm and the baselines on the development split (valid_b), sweep 60 s, 10 min.
+#   push to mmlm-qi-smoke-*  -> a rehearsal: every arm and the baselines on the development split (valid_b), sweep 20 s, 2 min.
 #   push to mmlm-qi-run-*    -> the preregistered run, once.
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 
@@ -41,7 +41,13 @@ jobs:
           - 'pure-complex-23'
           - 'pure-complex-45'
           - 'pure-complex-16@1'
+          - 'pure-complex-16@2'
+          - 'pure-complex-32@1'
+          - 'pure-complex-32@2'
           - 'hmm-256@1'
+          - 'hmm-256@2'
+          - 'hmm-1024@1'
+          - 'hmm-1024@2'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -63,7 +69,7 @@ jobs:
           if [[ "$REF" == mmlm-qi-run-* ]]; then
             python scripts/run_prereg_mmlm_qi.py arm --arm "$ARM" --mode final --out out
           else
-            python scripts/run_prereg_mmlm_qi.py arm --arm "$ARM" --mode dev --sweep-seconds 60 --seconds 600 --evaluate-every 120 --out out
+            python scripts/run_prereg_mmlm_qi.py arm --arm "$ARM" --mode dev --sweep-seconds 20 --seconds 120 --evaluate-every 60 --out out
           fi
       - name: Print the arm's record
         if: always()

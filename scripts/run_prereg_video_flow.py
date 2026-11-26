@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import re
 import sys
@@ -43,20 +44,25 @@ from jetflow_video import head_to_head as h  # noqa: E402
 PREREGISTRATION_ID = "PREREG-VIDEO-FLOW-2026-11"
 DIGEST = ROOT / "preregistration" / "DIGEST-VIDEO-FLOW.json"
 FROZEN = ("preregistration/PREREG-VIDEO-FLOW-2026-11.md", "scripts/run_prereg_video_flow.py",
-          "packages/jetflow-video/jetflow_video/head_to_head.py", ".github/workflows/video-flow.yml")
+          "packages/jetflow-video/jetflow_video/head_to_head.py", ".github/workflows/video-flow.yml",
+          "tests/test_video_flow_head_to_head.py",
+          *(f"packages/jetflow-video/jetflow_video/{m}.py" for m in ("model", "stepper", "noether", "physics",
+                                                                    "diffusion_baseline", "bridge", "tensor_train")),
+          "apedp_dyn/video/fluid_domain.py", "apedp_dyn/video/collision_domain.py", "apedp_dyn/video/eval_gate.py")
 DATA = ("fluid", "collision", "ucf101")
 ARMS = ("fm-jetflow", "fm-unet", "meanflow-unet", "meanflow-jetflow")   #: the last is a hybrid
 SEEDS = (0, 1, 2)
 GRID: dict[str, tuple[tuple[str, int], ...]] = {
     "fm-jetflow": (("euler", 1), ("euler", 2), ("euler", 4), ("euler", 8), ("euler", 32),
-                   ("jetflow", 1), ("jetflow", 2), ("jetflow", 4)),
+                   ("jetflow-sampler", 1), ("jetflow-sampler", 2), ("jetflow-sampler", 4),
+                   ("jetflow-sampler-corrected", 1), ("jetflow-sampler-corrected", 2), ("jetflow-sampler-corrected", 4)),
     "fm-unet": (("euler", 1), ("euler", 2), ("euler", 4), ("euler", 8), ("euler", 32),
-                ("jet2", 1), ("jet2", 2), ("jet2", 4)),
+                ("jet2", 2), ("jet2-corrected", 1), ("jet2-corrected", 2), ("jet2-corrected", 4),
+                ("jetflow-sampler", 2), ("jetflow-sampler-corrected", 2)),                  # the last two: hybrids
     "meanflow-unet": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32),
-                      ("jet2", 1), ("jet2", 2)),                               # hybrid: Jet2 on MeanFlow's velocity
+                      ("jet2-corrected", 2)),                                             # the last: a hybrid
     "meanflow-jetflow": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32)),
 }
-GRID["fm-unet"] = GRID["fm-unet"] + (("jetflow-sampler", 1), ("jetflow-sampler", 2))   # hybrid: JetFlow's sampler on the UNet
 UCF_REPO, UCF_FILE = "sayakpaul/ucf101-subset", "UCF101_subset.tar.gz"
 UCF_SHA256: str | None = "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb"   #: from the rehearsal
 MARGIN, SEEDS_NEEDED = 0.9, 2            #: "A beats B": mean FD of A at most 0.9 of B's, and lower on 2 of 3 seeds
@@ -97,6 +103,8 @@ def _ucf(mode: str, cache: Path) -> tuple[np.ndarray, np.ndarray, dict[str, Any]
     if mode == "final":
         held, held_names = h.video_folder(base, "test")
         info["held_videos"] = len(set(held_names))
+        info["train_groups"] = sorted({int(re.search(r"_g(\d+)_", n).group(1)) for n in names})  # type: ignore[union-attr]
+        info["held_groups"] = sorted({int(re.search(r"_g(\d+)_", n).group(1)) for n in held_names})  # type: ignore[union-attr]
         return train, held, info
     group = np.array([int(re.search(r"_g(\d+)_", n).group(1)) for n in names])  # type: ignore[union-attr]
     dev_held = (group >= 8) & (group <= 10)
@@ -118,8 +126,6 @@ def run_job(args: argparse.Namespace) -> int:
     train, held, info = data(args.data, args.mode, args.cache)
     latents = h.encode(train)
     model = h.build(args.arm)
-    if args.arm == "fm-jetflow":
-        h.install_latent_capture(model)
     trainer = h.train_meanflow if args.arm.startswith("meanflow") else h.train_flow_matching
     fit = trainer(model, latents, args.seconds, lr=1e-3, seed=args.seed)
     print(f"{args.data} {args.arm} seed {args.seed}: {fit}", flush=True)
@@ -128,7 +134,7 @@ def run_job(args: argparse.Namespace) -> int:
         row = h.evaluate(model, how, steps, args.n_gen, 10_000 + args.seed, train, held)
         rows.append(row)
         print(json.dumps(row), flush=True)
-    rng = np.random.default_rng(args.seed)
+    rng = np.random.default_rng(0)                       # the floor's clips: the same for every arm and seed
     pick = rng.choice(len(train), size=min(args.n_gen, len(train)), replace=False)
     record: dict[str, Any] = {
         "data": args.data, "arm": args.arm, "seed": args.seed, "mode": args.mode, "training": fit,
@@ -136,7 +142,8 @@ def run_job(args: argparse.Namespace) -> int:
         "train_clips": len(train), "held_clips": len(held), "data_info": info, "samples": rows,
         "floor_frechet_pca": round(h.frechet_pca(train, held, train[pick]), 4),
         "held_temporal_roughness": round(h.temporal_roughness(held), 5),
-        "threads": args.threads, "torch": torch.__version__, "python": platform.python_version()}
+        "threads": args.threads, "torch": torch.__version__, "python": platform.python_version(),
+        "cpu_count": os.cpu_count(), "commit": os.environ.get("GITHUB_SHA")}
     if args.mode == "final":
         record["frozen"] = frozen_digests()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -159,32 +166,55 @@ def beats(a: list[float], b: list[float], margin: float = MARGIN) -> dict[str, A
             "seeds_lower": wins}
 
 
+def _read(fn: Any) -> dict[str, Any]:
+    try:
+        out: dict[str, Any] = fn()
+        return out
+    except (KeyError, StopIteration) as missing:
+        return {"held": None, "not_read": f"job or sampler missing: {missing}"}
+
+
 def expectations(jobs: dict[tuple[str, str, int], dict[str, Any]]) -> dict[str, Any]:
+    """Each expectation per data set, read on its own: one whose jobs are missing is marked not read."""
     out: dict[str, Any] = {}
     for kind in DATA:
-        jet2 = _fd(jobs, kind, "fm-jetflow", "jetflow", 2)          # 4 calls
-        fm4 = _fd(jobs, kind, "fm-unet", "euler", 4)
-        fm1 = _fd(jobs, kind, "fm-unet", "euler", 1)
-        mf1 = _fd(jobs, kind, "meanflow-unet", "meanflow", 1)
-        e3 = float(np.mean(mf1)) <= (1 / MARGIN) * float(np.mean(jet2))
+        def fd(arm: str, how: str, steps: int, kind: str = kind) -> list[float]:
+            return _fd(jobs, kind, arm, how, steps)
+
+        def e3(kind: str = kind) -> dict[str, Any]:
+            mf1, jet = fd("meanflow-unet", "meanflow", 1), fd("fm-jetflow", "jetflow-sampler", 2)
+            best_jet = min(float(np.mean(jet)), float(np.mean(fd("fm-jetflow", "jetflow-sampler-corrected", 2))))
+            return {"held": float(np.mean(mf1)) <= (1 / MARGIN) * best_jet,
+                    "mean_meanflow_1": round(float(np.mean(mf1)), 4), "best_jetflow_4_calls": round(best_jet, 4)}
+
+        def floor(kind: str = kind) -> float:
+            vals = [jobs[(kind, a, s)]["floor_frechet_pca"] for a in ARMS for s in SEEDS if (kind, a, s) in jobs]
+            if not vals:
+                raise KeyError(kind)
+            return round(float(np.mean(vals)), 4)
         out[kind] = {
-            "E1 JetFlow beats flow matching at four calls": beats(jet2, fm4),
-            "E2 MeanFlow beats flow matching at one call": beats(mf1, fm1),
-            "E3 MeanFlow at one call is no worse than JetFlow at four": {
-                "held": e3, "mean_meanflow_1": round(float(np.mean(mf1)), 4), "mean_jetflow_4_calls": round(float(np.mean(jet2)), 4)},
-            "E4 the Jet2 step beats Euler at four calls, UNet": beats(_fd(jobs, kind, "fm-unet", "jet2", 2), fm4),
-            "E4 the Jet2 step beats Euler at four calls, JetFlow": beats(jet2, _fd(jobs, kind, "fm-jetflow", "euler", 4)),
-            "E5 JetFlow's network beats the UNet, Euler 32": beats(_fd(jobs, kind, "fm-jetflow", "euler", 32),
-                                                                  _fd(jobs, kind, "fm-unet", "euler", 32)),
-            "E6 hybrid: MeanFlow helps JetFlow's network at one call": beats(
-                _fd(jobs, kind, "meanflow-jetflow", "meanflow", 1), _fd(jobs, kind, "fm-jetflow", "euler", 1)),
-            "E6 hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call": beats(
-                _fd(jobs, kind, "meanflow-jetflow", "meanflow", 1), mf1),
-            "E6 hybrid: the Jet2 step on MeanFlow's velocity beats MeanFlow's own four calls": beats(
-                _fd(jobs, kind, "meanflow-unet", "jet2", 2), _fd(jobs, kind, "meanflow-unet", "meanflow", 4)),
-            "E6 hybrid: JetFlow's sampler on the UNet beats Euler at four calls": beats(
-                _fd(jobs, kind, "fm-unet", "jetflow-sampler", 2), fm4),
-            "floor_mean": round(float(np.mean([jobs[(kind, a, s)]["floor_frechet_pca"] for a in ARMS for s in SEEDS])), 4),
+            "E1 JetFlow beats flow matching at four calls, as packaged":
+                _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler", 2), fd("fm-unet", "euler", 4))),
+            "E1 JetFlow beats flow matching at four calls, its step corrected":
+                _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler-corrected", 2), fd("fm-unet", "euler", 4))),
+            "E2 MeanFlow beats flow matching at one call":
+                _read(lambda: beats(fd("meanflow-unet", "meanflow", 1), fd("fm-unet", "euler", 1))),
+            "E3 MeanFlow at one call is no worse than JetFlow at four": _read(e3),
+            "E4 the corrected Jet2 step beats Euler at four calls, UNet":
+                _read(lambda: beats(fd("fm-unet", "jet2-corrected", 2), fd("fm-unet", "euler", 4))),
+            "E4 the corrected Jet2 step beats Euler at four calls, JetFlow":
+                _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler-corrected", 2), fd("fm-jetflow", "euler", 4))),
+            "E5 JetFlow's network beats the UNet, Euler 32":
+                _read(lambda: beats(fd("fm-jetflow", "euler", 32), fd("fm-unet", "euler", 32))),
+            "E6a hybrid: MeanFlow helps JetFlow's network at one call":
+                _read(lambda: beats(fd("meanflow-jetflow", "meanflow", 1), fd("fm-jetflow", "euler", 1))),
+            "E6b hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call":
+                _read(lambda: beats(fd("meanflow-jetflow", "meanflow", 1), fd("meanflow-unet", "meanflow", 1))),
+            "E6c hybrid: the corrected Jet2 step on MeanFlow's velocity beats MeanFlow's own four calls":
+                _read(lambda: beats(fd("meanflow-unet", "jet2-corrected", 2), fd("meanflow-unet", "meanflow", 4))),
+            "E6d hybrid: JetFlow's corrected sampler on the UNet beats Euler at four calls":
+                _read(lambda: beats(fd("fm-unet", "jetflow-sampler-corrected", 2), fd("fm-unet", "euler", 4))),
+            "floor_mean": _read(lambda: {"value": floor()}),
         }
     return out
 
@@ -199,7 +229,7 @@ def collect(args: argparse.Namespace) -> int:
     missing = [f"{d}/{a}/{s}" for d in DATA for a in ARMS for s in SEEDS if (d, a, s) not in jobs]
     record: dict[str, Any] = {"preregistration": PREREGISTRATION_ID, "mode": args.mode, "missing_jobs": missing,
                               "jobs": [jobs[k] for k in sorted(jobs)]}
-    if not missing:
+    if jobs:
         record["expectations"] = expectations(jobs)
     if args.mode == "final":
         record["frozen"] = frozen_digests()

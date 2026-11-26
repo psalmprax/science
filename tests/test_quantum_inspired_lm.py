@@ -80,7 +80,7 @@ def test_training_learns_a_repeating_text() -> None:
     text = b"abcab" * 4000
     model = qi.build("pure-complex-4", seed=0)
     before = qi.bits_per_byte(model, text[:5000], chunks=4)
-    trained = qi.train(model, text, text[:5000], seconds=6, batch=8, segment=32, lr=3e-2, evaluate_every=2, valid_chunks=4)
+    trained = qi.train(model, text, text[:5000], seconds=10, batch=8, segment=32, lr=3e-2, evaluate_every=2, valid_chunks=4)
     assert trained.best_valid_bpb < 0.5 * before
     assert trained.best_valid_bpb < math.log2(3)          # better than the bytes' own frequencies
     assert qi.bits_per_byte(trained.model, text[:5000], chunks=4) == pytest.approx(trained.best_valid_bpb, abs=1e-6)
@@ -102,14 +102,17 @@ def test_the_expectations_are_read_as_written() -> None:
     bpb.update({"pure-complex-16": 2.5, "pure-complex-32": 2.4, "pure-complex-64": 2.3, "hmm-256": 2.6, "hmm-1024": 2.5,
                 "pure-real-23": 2.55, "pure-real-45": 2.45, "pure-real-90": 2.33,
                 "mixed-complex-16-2": 2.45, "mixed-complex-32-2": 2.39, "pure-complex-16@1": 2.51, "hmm-256@1": 2.6,
-                "pure-complex-23": 2.5, "pure-complex-45": 2.4})
+                "pure-complex-23": 2.5, "pure-complex-45": 2.4, "pure-complex-16@2": 2.49, "pure-complex-32@1": 2.4,
+                "pure-complex-32@2": 2.4, "hmm-256@2": 2.6, "hmm-1024@1": 2.5, "hmm-1024@2": 2.5})
     kn = {f"Kneser-Ney, {k} bytes of history": v for k, v in enumerate((4.6, 3.4, 2.7, 2.2, 1.85))}
     hybrid = dict.fromkeys(run.ARMS, 1.84)
-    hybrid.update({"pure-complex-16": 1.82, "pure-complex-32": 1.80, "hmm-256": 1.83, "hmm-1024": 1.83})
-    e = run.expectations(bpb, kn, hybrid, counting_alone=1.85)
+    for arm, value in {"pure-complex-16": 1.82, "pure-complex-32": 1.80, "hmm-256": 1.83, "hmm-1024": 1.83}.items():
+        hybrid.update({arm: value, f"{arm}@1": value, f"{arm}@2": value})
+    selection = dict(bpb)
+    e = run.expectations(bpb, kn, hybrid, counting_alone=1.85, selection=selection)
     assert e["best_quantum_inspired_arm"] == "pure-complex-64"
     assert e["E1 learns more than three-byte statistics"]["held"]
-    assert e["E2 beats a hidden Markov model with D^2 states by 0.05"]["margin_by_D"] == {16: 0.1, 32: 0.1}
+    assert e["E2 beats a hidden Markov model with D^2 states by 0.05"]["margin_by_D_on_three_seed_means"] == {16: 0.1, 32: 0.1}
     assert e["E2 beats a hidden Markov model with D^2 states by 0.05"]["held"]
     assert e["E3 complex beats real of the same size by 0.02"]["margin_by_D"] == {16: 0.05, 32: 0.05, 64: 0.03}
     assert e["E3 complex beats real of the same size by 0.02"]["held"]
@@ -117,7 +120,11 @@ def test_the_expectations_are_read_as_written() -> None:
     assert not e4["held"] and e4["margin_by_D"] == {16: 0.05, 32: 0.01}       # against pure 23 and 45
     assert e["E5 better with a larger state"]["held"]
     assert not e["E6 beats the strongest Kneser-Ney"]["held"]
-    assert e["seed_spread"] == {"pure-complex-16": 0.01, "hmm-256": 0.0}
+    assert e["E2 beats a hidden Markov model with D^2 states by 0.05"]["larger_seed_spread_by_D"][16] == pytest.approx(0.02)
+    del bpb["pure-real-90"]                                                  # an arm that failed: only E3 is not read
+    partial = run.expectations(bpb, kn, hybrid, counting_alone=1.85, selection=selection)
+    assert partial["E3 complex beats real of the same size by 0.02"]["held"] is None
+    assert partial["E2 beats a hidden Markov model with D^2 states by 0.05"]["held"] is not None
     e7 = e["E7 mixed with counting it adds what an automaton of its size does not"]
     assert e7["counting_alone_minus_hybrid_by_D"] == {16: 0.03, 32: 0.05}
     assert e7["hmm_hybrid_minus_hybrid_by_D"] == {16: 0.01, 32: 0.03}

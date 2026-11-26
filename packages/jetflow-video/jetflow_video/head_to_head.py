@@ -8,8 +8,9 @@ build the comparison. Everything here shares one latent space (the fixed wavelet
 step, because JetFlow's backbone conditions correctly only at batch one) and one optimiser; only the
 network, the objective and the sampler differ:
 
-* ``fm-jetflow``: ``JetFlowVideoModel`` trained by flow matching, sampled by its own ``generate_video``
-  (the Jet2 second-order step, its solenoidal projection and steering) and by plain Euler;
+* ``fm-jetflow``: ``JetFlowVideoModel`` trained by flow matching, sampled by its own sampler (the Jet2
+  second-order step and its latent velocity projection; its steering is the identity at default settings),
+  as packaged and with the step's curvature sign corrected, and by plain Euler;
 * ``fm-unet``: the repository's compact video UNet (``diffusion_baseline``) of about the same size,
   trained by the same flow matching, sampled by Euler and by the Jet2 step alone;
 * ``meanflow-unet``: the same UNet with one more time input, trained by MeanFlow (Geng et al., 2025):
@@ -63,8 +64,9 @@ def build_jetflow() -> JetFlowVideoModel:
 
 
 def unet_config() -> DiffusionVideoConfig:
-    """The UNet width closest to JetFlow's parameter count (within 15 %)."""
-    return pick_matched_config(count_parameters(build_jetflow()), latent_channels=LATENT, frames=FRAMES)
+    """The UNet width closest to the parameters JetFlow's forward uses, its backbone (within 15 %); the text
+    encoder and depth engine it also holds are not used by these unconditional models."""
+    return pick_matched_config(count_parameters(build_jetflow().backbone), latent_channels=LATENT, frames=FRAMES)
 
 
 def _fourier(module: Any, t: Tensor) -> Tensor:
@@ -102,15 +104,16 @@ class MeanFlowUNet(DiffusionVideoUNet):
 
 class MeanFlowJetFlow(torch.nn.Module):
     """A hybrid: JetFlow's network trained by MeanFlow. Its backbone takes one time; the gap t - r reaches it
-    through the conditioning tokens (a Fourier embedding of the gap mapped to two tokens, learned), the way
-    a prompt would, so JetFlow's code is unchanged. With r = t the tokens carry gap 0."""
+    as a learned shift of each latent channel (a Fourier embedding of the gap through a layer that starts at
+    zero), so JetFlow's code is unchanged and the shift gets a gradient from the first step. With r = t the
+    gap is zero and its embedding constant."""
 
     def __init__(self) -> None:
         super().__init__()
         self.jet = build_jetflow()
         self.backbone = self.jet.backbone
         self.gap_freqs = torch.nn.Parameter(torch.exp(-torch.arange(8.0) * math.log(1000.0) / 7), requires_grad=False)
-        self.gap_proj = torch.nn.Linear(16, 2 * 64)
+        self.gap_proj = torch.nn.Linear(16, LATENT)
         torch.nn.init.zeros_(self.gap_proj.weight)
         torch.nn.init.zeros_(self.gap_proj.bias)
 
@@ -119,10 +122,8 @@ class MeanFlowJetFlow(torch.nn.Module):
         t_f = float(t)
         gap = torch.tensor([t_f - (t_f if r is None else float(r))], dtype=z.dtype)
         angles = gap.reshape(1, 1) * self.gap_freqs.unsqueeze(0) * (2.0 * math.pi)
-        tokens = self.gap_proj(torch.cat([torch.sin(angles), torch.cos(angles)], dim=-1)).reshape(1, 2, 64)
-        if text_tokens is not None:
-            tokens = tokens + text_tokens
-        out: Tensor = self.jet(z, t_f, text_tokens=tokens)
+        shift = self.gap_proj(torch.cat([torch.sin(angles), torch.cos(angles)], dim=-1)).reshape(LATENT, 1, 1)
+        out: Tensor = self.jet(z + shift, t_f, text_tokens=text_tokens if text_tokens is not None else TEXT)
         return out
 
 
@@ -142,7 +143,8 @@ def build(arm: str) -> torch.nn.Module:
 
 def train_flow_matching(model: torch.nn.Module, latents: Tensor, seconds: float, lr: float = 1e-3,
                         seed: int = 0) -> dict[str, Any]:
-    """Flow matching, one clip per step, t uniform in [0.05, 0.95] (the repository's trainer)."""
+    """Flow matching, one clip per step, t uniform in (0, 1) (the repository's trainer uses [0.05, 0.95]; every
+    sampler here starts at t = 1, and MeanFlow trains up to it, so the full range is used)."""
     rng = np.random.default_rng(seed)
     torch.manual_seed(seed)
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
@@ -152,7 +154,7 @@ def train_flow_matching(model: torch.nn.Module, latents: Tensor, seconds: float,
     while time.monotonic() - t0 < seconds:
         x = latents[int(rng.integers(len(latents)))].unsqueeze(0)
         e = torch.randn_like(x)
-        t = float(rng.uniform(0.05, 0.95))
+        t = float(rng.uniform(1e-3, 1.0))
         loss = F.mse_loss(model(((1 - t) * x + t * e), t, text_tokens=TEXT), e - x)
         opt.zero_grad(set_to_none=True)
         loss.backward()  # type: ignore[no-untyped-call]
@@ -167,7 +169,8 @@ def _logit_normal(rng: np.random.Generator, mean: float = -0.4, std: float = 1.0
 
 def meanflow_loss(model: torch.nn.Module, x: Tensor, t: float, r: float, power: float = 1.0,
                   derivative: str = "jvp") -> Tensor:
-    """MeanFlow: u(z_t, r, t) against sg(v - (t - r)(v . grad_z u + d_t u)), adaptively weighted."""
+    """MeanFlow: u(z_t, r, t) against sg(v - (t - r)(v . grad_z u + d_t u)), weighted by
+    sg(1 / (||error||^2 + 0.001)^power), power 1 (the paper's adaptive weight)."""
     e = torch.randn_like(x)
     z = (1 - t) * x + t * e
     v = e - x
@@ -185,7 +188,7 @@ def meanflow_loss(model: torch.nn.Module, x: Tensor, t: float, r: float, power: 
         with torch.no_grad():
             dudt = (u_fn(z + eps * v, rr, tt + eps) - u.detach()) / eps
     target = (v - (t - r) * dudt).detach()
-    err = ((u - target) ** 2).mean()
+    err = ((u - target) ** 2).sum()                      # the squared norm of the error, as in the paper
     weight = (1.0 / (err.detach() + 1e-3) ** power) if power else 1.0
     loss: Tensor = weight * err
     return loss
@@ -253,56 +256,57 @@ def _noise(n: int, seed: int) -> Tensor:
     return torch.randn(n, FRAMES, LATENT, SIZE // 2, SIZE // 2, generator=g)
 
 
+def jet2_corrected_step(velocity: Callable[[Tensor, float], Tensor], z: Tensor, t: float, dt: float,
+                        eps: float = 1e-3) -> Tensor:
+    """The second-order step z + dt v + dt^2 / 2 a with a = dv/dt along the flow, by one probe in the
+    direction of integration. JetFlow's ``JetFlowStepper`` computes (v - v_probe) / h, which is -dv/dt
+    (found by the independent review of 26 November); this is the step it means to take. Same two calls."""
+    v = velocity(z, t)
+    h = (-eps if t - eps >= 0.0 else eps) if dt < 0 else (eps if t + eps <= 1.0 else -eps)
+    a = (velocity(z + h * v, t + h) - v) / h
+    out: Tensor = z + dt * v + 0.5 * dt * dt * a
+    return out
+
+
 @torch.no_grad()
-def sample(model: torch.nn.Module, how: str, steps: int, n: int, seed: int) -> Tensor:
-    """``euler``, ``jet2`` (the second-order step alone), ``jetflow`` (``generate_video``'s whole sampler),
-    ``jetflow-sampler`` (its projection and Jet2 step on any network) or ``meanflow``; one clip at a time;
-    returns (n, T, C, H, W) latents."""
+def sample(model: torch.nn.Module, how: str, steps: int, n: int, seed: int, noise: Tensor | None = None) -> Tensor:
+    """``euler``; ``jet2`` (JetFlow's second-order step as packaged); ``jet2-corrected`` (the same step with
+    the curvature's sign right); ``jetflow-sampler`` (JetFlow's latent velocity projection and its step as
+    packaged: what ``generate_video`` does, from shared noise); ``jetflow-sampler-corrected``; ``meanflow``.
+    One clip at a time; returns (n, T, C, H, W) latents."""
     model.eval()
     out = []
     ts = torch.linspace(1.0, 0.0, steps + 1).tolist()
     stepper = JetFlowStepper(JetFlowConfig(order=2, num_steps=steps))
-    for i, z0 in enumerate(_noise(n, seed)):
+
+    def plain(z_: Tensor, t_: float) -> Tensor:
+        v: Tensor = model(z_, t_, text_tokens=TEXT)
+        return v
+
+    def projected(z_: Tensor, t_: float) -> Tensor:
+        v: Tensor = NOETHER.project_spatial_latent_velocity(model(z_, t_, text_tokens=TEXT))[0]
+        return v
+    for z0 in (_noise(n, seed) if noise is None else noise):
         z = z0.clone()
-        if how == "jetflow":
-            torch.manual_seed(seed * 100_003 + i)
-            gen = model.generate_video(TEXT[0], num_steps=steps, shape=tuple(z.shape))  # type: ignore[operator]
-            out.append(_last_latent)
-            del gen
-            continue
         for k in range(steps):
             t, t_next = ts[k], ts[k + 1]
             dt = t_next - t
             if how == "euler":
-                z = z + dt * model(z, t, text_tokens=TEXT)
+                z = z + dt * plain(z, t)
             elif how == "jet2":
-                z, _, _ = stepper.step(lambda z_, t_: model(z_, t_, text_tokens=TEXT), z, t, dt)
-            elif how == "jetflow-sampler":            # JetFlow's projection and Jet2 step on this network's velocity
-                z, _, _ = stepper.step(lambda z_, t_: NOETHER.project_spatial_latent_velocity(
-                    model(z_, t_, text_tokens=TEXT))[0], z, t, dt)
+                z, _, _ = stepper.step(plain, z, t, dt)
+            elif how == "jet2-corrected":
+                z = jet2_corrected_step(plain, z, t, dt)
+            elif how == "jetflow-sampler":
+                z, _, _ = stepper.step(projected, z, t, dt)
+            elif how == "jetflow-sampler-corrected":
+                z = jet2_corrected_step(projected, z, t, dt)
             elif how == "meanflow":
                 z = z + dt * model(z, t, text_tokens=TEXT, r=t_next)
             else:
                 raise ValueError(how)
         out.append(z)
     return torch.stack(out)
-
-
-_last_latent: Tensor = torch.zeros(0)
-
-
-def install_latent_capture(model: JetFlowVideoModel) -> None:
-    """``generate_video`` returns RGB and a tensor train; keep the latent it decoded, so every arm is
-    decoded the same way afterwards."""
-    bridge = model.vae_bridge
-    original = bridge.decode_latent_to_video
-
-    def capture(latent: Tensor) -> Tensor:
-        global _last_latent
-        _last_latent = latent.detach().clone()
-        result: Tensor = original(latent)
-        return result
-    bridge.decode_latent_to_video = capture  # type: ignore[method-assign]
 
 
 # ---------------------------------------------------------------- data and metrics
