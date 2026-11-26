@@ -1,0 +1,7899 @@
+{
+ "tag": "DEV-GF2-12-FLIP-SEARCH-NO-MODEL-2026-11",
+ "development_not_a_result": true,
+ "what": "a flip-graph search with no language model for multiplication in GF(2^12), with calibration on GF(2^7) to GF(2^10) against published counts; every decomposition checked exactly",
+ "search": "apedp_dyn/quantum/flip_search.py (flips, three reductions, plus transitions)",
+ "settings": {
+  "plateau": 100,
+  "reset": 300000,
+  "kept": 16,
+  "random_multiplications_checked": 4096
+ },
+ "published_counts_source": "Khoruzhii, Gel\u00df, Pokutta, arXiv:2602.15285 (2026), Table 2, column 'Bilinear'",
+ "summary": {
+  "target": 41,
+  "starting_point": 42,
+  "calibration": {
+   "7": {
+    "published": 22,
+    "walks": 4,
+    "best_reached": 22,
+    "walks_that_reached_the_published_count": 4,
+    "seconds_to_reach_it": [
+     154.2,
+     188.6,
+     279.3,
+     462.4
+    ],
+    "all_exact": true
+   },
+   "8": {
+    "published": 26,
+    "walks": 4,
+    "best_reached": 31,
+    "walks_that_reached_the_published_count": 0,
+    "seconds_to_reach_it": [],
+    "all_exact": true
+   },
+   "9": {
+    "published": 32,
+    "walks": 4,
+    "best_reached": 51,
+    "walks_that_reached_the_published_count": 0,
+    "seconds_to_reach_it": [],
+    "all_exact": true
+   },
+   "10": {
+    "published": 39,
+    "walks": 4,
+    "best_reached": 73,
+    "walks_that_reached_the_published_count": 0,
+    "seconds_to_reach_it": [],
+    "all_exact": true
+   }
+  },
+  "gf2_12_by_start": {
+   "tower42": {
+    "walks": 12,
+    "starting_products": 42,
+    "best_reached": 42,
+    "bests": [
+     42,
+     42,
+     42,
+     42,
+     42,
+     42,
+     42,
+     42,
+     42,
+     42,
+     42,
+     42
+    ],
+    "flips_in_all": 9649936803,
+    "machine_hours": 60.0
+   },
+   "karatsuba54": {
+    "walks": 8,
+    "starting_products": 54,
+    "best_reached": 51,
+    "bests": [
+     51,
+     51,
+     51,
+     51,
+     51,
+     51,
+     51,
+     51
+    ],
+    "flips_in_all": 8289779570,
+    "machine_hours": 40.0
+   },
+   "schoolbook": {
+    "walks": 4,
+    "starting_products": 144,
+    "best_reached": 112,
+    "bests": [
+     112,
+     117,
+     118,
+     120
+    ],
+    "flips_in_all": 4154804224,
+    "machine_hours": 20.0
+   }
+  },
+  "fewest_products_reached_exactly": 42,
+  "shorter_than_42": false,
+  "target_met": false,
+  "walks_not_exact": 0
+ },
+ "shortest_for_gf2_12": {
+  "products": 42,
+  "start": "tower42",
+  "seed": 0,
+  "triples_bit_k_is_coefficient_k": [
+   [
+    321,
+    321,
+    2934
+   ],
+   [
+    272,
+    272,
+    348
+   ],
+   [
+    2016,
+    2016,
+    1158
+   ],
+   [
+    81,
+    81,
+    2602
+   ],
+   [
+    1697,
+    1697,
+    1498
+   ],
+   [
+    1776,
+    1776,
+    3756
+   ],
+   [
+    3855,
+    3855,
+    1021
+   ],
+   [
+    592,
+    592,
+    2397
+   ],
+   [
+    608,
+    608,
+    1273
+   ],
+   [
+    3423,
+    3423,
+    2720
+   ],
+   [
+    3439,
+    3439,
+    3492
+   ],
+   [
+    48,
+    48,
+    3673
+   ],
+   [
+    2617,
+    2617,
+    3355
+   ],
+   [
+    2282,
+    2282,
+    1494
+   ],
+   [
+    1636,
+    1636,
+    3347
+   ],
+   [
+    723,
+    723,
+    2253
+   ],
+   [
+    3165,
+    3165,
+    2245
+   ],
+   [
+    3726,
+    3726,
+    1502
+   ],
+   [
+    393,
+    393,
+    1752
+   ],
+   [
+    820,
+    820,
+    1356
+   ],
+   [
+    510,
+    510,
+    3848
+   ],
+   [
+    701,
+    701,
+    916
+   ],
+   [
+    119,
+    119,
+    2628
+   ],
+   [
+    714,
+    714,
+    3228
+   ],
+   [
+    3879,
+    3879,
+    96
+   ],
+   [
+    2162,
+    2162,
+    3499
+   ],
+   [
+    156,
+    156,
+    2333
+   ],
+   [
+    1877,
+    1877,
+    3531
+   ],
+   [
+    4027,
+    4027,
+    1206
+   ],
+   [
+    2286,
+    2286,
+    1238
+   ],
+   [
+    729,
+    729,
+    1069
+   ],
+   [
+    318,
+    318,
+    1380
+   ],
+   [
+    218,
+    218,
+    1674
+   ],
+   [
+    999,
+    999,
+    329
+   ],
+   [
+    515,
+    515,
+    1006
+   ],
+   [
+    484,
+    484,
+    1987
+   ],
+   [
+    1895,
+    1895,
+    3
+   ],
+   [
+    2350,
+    2350,
+    1275
+   ],
+   [
+    3538,
+    3538,
+    3570
+   ],
+   [
+    3657,
+    3657,
+    1272
+   ],
+   [
+    2741,
+    2741,
+    2313
+   ],
+   [
+    1276,
+    1276,
+    2314
+   ]
+  ]
+ },
+ "walks": [
+  {
+   "field": 10,
+   "start": "schoolbook",
+   "starting_products": 100,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 39,
+   "best": 86,
+   "flips": 467218432,
+   "flips_tried": 467218432,
+   "plus_transitions": 2332211,
+   "resets": 1554,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 100,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 99,
+     "flips": 21,
+     "seconds": 0.0
+    },
+    {
+     "products": 98,
+     "flips": 31,
+     "seconds": 0.0
+    },
+    {
+     "products": 97,
+     "flips": 60,
+     "seconds": 0.0
+    },
+    {
+     "products": 96,
+     "flips": 72,
+     "seconds": 0.0
+    },
+    {
+     "products": 95,
+     "flips": 93,
+     "seconds": 0.0
+    },
+    {
+     "products": 94,
+     "flips": 387,
+     "seconds": 0.0
+    },
+    {
+     "products": 93,
+     "flips": 609,
+     "seconds": 0.0
+    },
+    {
+     "products": 92,
+     "flips": 26773,
+     "seconds": 0.5
+    },
+    {
+     "products": 91,
+     "flips": 329586,
+     "seconds": 5.3
+    },
+    {
+     "products": 90,
+     "flips": 4967607,
+     "seconds": 80.0
+    },
+    {
+     "products": 89,
+     "flips": 7414517,
+     "seconds": 119.5
+    },
+    {
+     "products": 88,
+     "flips": 42265310,
+     "seconds": 671.4
+    },
+    {
+     "products": 87,
+     "flips": 90766924,
+     "seconds": 1415.8
+    },
+    {
+     "products": 86,
+     "flips": 141741994,
+     "seconds": 2201.6
+    }
+   ],
+   "triples": [
+    [
+     726,
+     476,
+     73
+    ],
+    [
+     870,
+     991,
+     440
+    ],
+    [
+     559,
+     70,
+     694
+    ],
+    [
+     286,
+     350,
+     88
+    ],
+    [
+     77,
+     353,
+     826
+    ],
+    [
+     514,
+     551,
+     212
+    ],
+    [
+     744,
+     443,
+     802
+    ],
+    [
+     475,
+     968,
+     168
+    ],
+    [
+     935,
+     984,
+     659
+    ],
+    [
+     963,
+     190,
+     357
+    ],
+    [
+     1012,
+     579,
+     936
+    ],
+    [
+     299,
+     526,
+     847
+    ],
+    [
+     74,
+     888,
+     266
+    ],
+    [
+     747,
+     114,
+     272
+    ],
+    [
+     387,
+     104,
+     512
+    ],
+    [
+     17,
+     835,
+     439
+    ],
+    [
+     134,
+     513,
+     286
+    ],
+    [
+     660,
+     712,
+     680
+    ],
+    [
+     360,
+     795,
+     949
+    ],
+    [
+     78,
+     178,
+     564
+    ],
+    [
+     239,
+     364,
+     410
+    ],
+    [
+     379,
+     464,
+     455
+    ],
+    [
+     813,
+     602,
+     92
+    ],
+    [
+     213,
+     454,
+     613
+    ],
+    [
+     284,
+     126,
+     663
+    ],
+    [
+     699,
+     449,
+     378
+    ],
+    [
+     801,
+     1014,
+     56
+    ],
+    [
+     216,
+     588,
+     171
+    ],
+    [
+     746,
+     572,
+     810
+    ],
+    [
+     513,
+     1003,
+     938
+    ],
+    [
+     123,
+     644,
+     694
+    ],
+    [
+     772,
+     972,
+     404
+    ],
+    [
+     992,
+     627,
+     90
+    ],
+    [
+     474,
+     4,
+     853
+    ],
+    [
+     981,
+     774,
+     812
+    ],
+    [
+     727,
+     195,
+     108
+    ],
+    [
+     960,
+     388,
+     256
+    ],
+    [
+     453,
+     301,
+     1018
+    ],
+    [
+     89,
+     400,
+     23
+    ],
+    [
+     99,
+     409,
+     570
+    ],
+    [
+     705,
+     332,
+     721
+    ],
+    [
+     663,
+     984,
+     885
+    ],
+    [
+     37,
+     801,
+     1016
+    ],
+    [
+     546,
+     10,
+     566
+    ],
+    [
+     226,
+     32,
+     33
+    ],
+    [
+     299,
+     705,
+     517
+    ],
+    [
+     192,
+     270,
+     109
+    ],
+    [
+     836,
+     392,
+     904
+    ],
+    [
+     2,
+     124,
+     549
+    ],
+    [
+     965,
+     123,
+     403
+    ],
+    [
+     518,
+     841,
+     357
+    ],
+    [
+     515,
+     38,
+     670
+    ],
+    [
+     881,
+     470,
+     545
+    ],
+    [
+     768,
+     131,
+     51
+    ],
+    [
+     487,
+     884,
+     816
+    ],
+    [
+     563,
+     79,
+     527
+    ],
+    [
+     888,
+     602,
+     786
+    ],
+    [
+     462,
+     88,
+     615
+    ],
+    [
+     513,
+     39,
+     985
+    ],
+    [
+     926,
+     14,
+     927
+    ],
+    [
+     154,
+     647,
+     552
+    ],
+    [
+     112,
+     577,
+     307
+    ],
+    [
+     206,
+     252,
+     902
+    ],
+    [
+     516,
+     864,
+     819
+    ],
+    [
+     497,
+     1,
+     503
+    ],
+    [
+     128,
+     939,
+     677
+    ],
+    [
+     194,
+     105,
+     962
+    ],
+    [
+     821,
+     73,
+     401
+    ],
+    [
+     79,
+     264,
+     706
+    ],
+    [
+     785,
+     903,
+     42
+    ],
+    [
+     604,
+     881,
+     151
+    ],
+    [
+     253,
+     600,
+     927
+    ],
+    [
+     611,
+     87,
+     290
+    ],
+    [
+     920,
+     855,
+     930
+    ],
+    [
+     773,
+     13,
+     812
+    ],
+    [
+     771,
+     113,
+     129
+    ],
+    [
+     855,
+     654,
+     280
+    ],
+    [
+     474,
+     79,
+     1014
+    ],
+    [
+     521,
+     93,
+     207
+    ],
+    [
+     988,
+     337,
+     186
+    ],
+    [
+     706,
+     857,
+     607
+    ],
+    [
+     265,
+     85,
+     124
+    ],
+    [
+     793,
+     584,
+     442
+    ],
+    [
+     1023,
+     839,
+     568
+    ],
+    [
+     258,
+     585,
+     491
+    ],
+    [
+     290,
+     20,
+     251
+    ]
+   ],
+   "exact": true,
+   "products_counted": 86,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 10,
+   "start": "schoolbook",
+   "starting_products": 100,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 39,
+   "best": 73,
+   "flips": 453244928,
+   "flips_tried": 453244928,
+   "plus_transitions": 2164721,
+   "resets": 1508,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 100,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 99,
+     "flips": 7,
+     "seconds": 0.0
+    },
+    {
+     "products": 98,
+     "flips": 31,
+     "seconds": 0.0
+    },
+    {
+     "products": 97,
+     "flips": 40,
+     "seconds": 0.0
+    },
+    {
+     "products": 96,
+     "flips": 65,
+     "seconds": 0.0
+    },
+    {
+     "products": 95,
+     "flips": 111,
+     "seconds": 0.0
+    },
+    {
+     "products": 94,
+     "flips": 116,
+     "seconds": 0.0
+    },
+    {
+     "products": 93,
+     "flips": 137,
+     "seconds": 0.0
+    },
+    {
+     "products": 92,
+     "flips": 147,
+     "seconds": 0.0
+    },
+    {
+     "products": 91,
+     "flips": 153,
+     "seconds": 0.0
+    },
+    {
+     "products": 90,
+     "flips": 157,
+     "seconds": 0.0
+    },
+    {
+     "products": 89,
+     "flips": 526,
+     "seconds": 0.0
+    },
+    {
+     "products": 88,
+     "flips": 806,
+     "seconds": 0.0
+    },
+    {
+     "products": 87,
+     "flips": 933,
+     "seconds": 0.0
+    },
+    {
+     "products": 86,
+     "flips": 301814,
+     "seconds": 4.9
+    },
+    {
+     "products": 85,
+     "flips": 301995,
+     "seconds": 4.9
+    },
+    {
+     "products": 84,
+     "flips": 603366,
+     "seconds": 9.9
+    },
+    {
+     "products": 83,
+     "flips": 603404,
+     "seconds": 9.9
+    },
+    {
+     "products": 82,
+     "flips": 603670,
+     "seconds": 9.9
+    },
+    {
+     "products": 81,
+     "flips": 604112,
+     "seconds": 9.9
+    },
+    {
+     "products": 80,
+     "flips": 904145,
+     "seconds": 15.1
+    },
+    {
+     "products": 79,
+     "flips": 1244040,
+     "seconds": 21.1
+    },
+    {
+     "products": 78,
+     "flips": 1844053,
+     "seconds": 31.0
+    },
+    {
+     "products": 77,
+     "flips": 6404967,
+     "seconds": 105.3
+    },
+    {
+     "products": 76,
+     "flips": 19429459,
+     "seconds": 315.6
+    },
+    {
+     "products": 75,
+     "flips": 51109466,
+     "seconds": 821.9
+    },
+    {
+     "products": 74,
+     "flips": 55998402,
+     "seconds": 900.2
+    },
+    {
+     "products": 73,
+     "flips": 62824564,
+     "seconds": 1014.3
+    }
+   ],
+   "triples": [
+    [
+     768,
+     1014,
+     205
+    ],
+    [
+     739,
+     724,
+     777
+    ],
+    [
+     2,
+     980,
+     696
+    ],
+    [
+     771,
+     418,
+     182
+    ],
+    [
+     985,
+     889,
+     570
+    ],
+    [
+     1,
+     317,
+     393
+    ],
+    [
+     417,
+     400,
+     818
+    ],
+    [
+     908,
+     724,
+     253
+    ],
+    [
+     1017,
+     1001,
+     177
+    ],
+    [
+     930,
+     711,
+     575
+    ],
+    [
+     291,
+     80,
+     820
+    ],
+    [
+     292,
+     328,
+     160
+    ],
+    [
+     588,
+     856,
+     843
+    ],
+    [
+     960,
+     789,
+     531
+    ],
+    [
+     690,
+     516,
+     859
+    ],
+    [
+     495,
+     34,
+     549
+    ],
+    [
+     613,
+     724,
+     365
+    ],
+    [
+     82,
+     442,
+     782
+    ],
+    [
+     516,
+     590,
+     53
+    ],
+    [
+     788,
+     456,
+     670
+    ],
+    [
+     914,
+     768,
+     640
+    ],
+    [
+     4,
+     605,
+     693
+    ],
+    [
+     48,
+     171,
+     691
+    ],
+    [
+     359,
+     696,
+     64
+    ],
+    [
+     311,
+     506,
+     119
+    ],
+    [
+     637,
+     155,
+     521
+    ],
+    [
+     12,
+     83,
+     520
+    ],
+    [
+     876,
+     442,
+     138
+    ],
+    [
+     801,
+     290,
+     206
+    ],
+    [
+     186,
+     80,
+     600
+    ],
+    [
+     127,
+     374,
+     658
+    ],
+    [
+     590,
+     1022,
+     349
+    ],
+    [
+     311,
+     399,
+     2
+    ],
+    [
+     852,
+     146,
+     395
+    ],
+    [
+     500,
+     66,
+     300
+    ],
+    [
+     929,
+     692,
+     109
+    ],
+    [
+     874,
+     692,
+     193
+    ],
+    [
+     43,
+     951,
+     369
+    ],
+    [
+     484,
+     14,
+     537
+    ],
+    [
+     834,
+     594,
+     48
+    ],
+    [
+     457,
+     757,
+     2
+    ],
+    [
+     300,
+     899,
+     690
+    ],
+    [
+     53,
+     114,
+     553
+    ],
+    [
+     876,
+     738,
+     1006
+    ],
+    [
+     367,
+     446,
+     672
+    ],
+    [
+     768,
+     330,
+     663
+    ],
+    [
+     16,
+     237,
+     266
+    ],
+    [
+     84,
+     298,
+     380
+    ],
+    [
+     297,
+     1,
+     906
+    ],
+    [
+     289,
+     667,
+     176
+    ],
+    [
+     290,
+     786,
+     186
+    ],
+    [
+     1,
+     63,
+     5
+    ],
+    [
+     741,
+     204,
+     116
+    ],
+    [
+     65,
+     796,
+     567
+    ],
+    [
+     61,
+     298,
+     802
+    ],
+    [
+     586,
+     824,
+     48
+    ],
+    [
+     32,
+     515,
+     1011
+    ],
+    [
+     847,
+     10,
+     9
+    ],
+    [
+     129,
+     913,
+     139
+    ],
+    [
+     256,
+     888,
+     801
+    ],
+    [
+     198,
+     88,
+     676
+    ],
+    [
+     96,
+     947,
+     594
+    ],
+    [
+     24,
+     257,
+     391
+    ],
+    [
+     793,
+     658,
+     921
+    ],
+    [
+     564,
+     18,
+     21
+    ],
+    [
+     716,
+     640,
+     230
+    ],
+    [
+     955,
+     243,
+     559
+    ],
+    [
+     345,
+     128,
+     74
+    ],
+    [
+     721,
+     1013,
+     129
+    ],
+    [
+     581,
+     624,
+     238
+    ],
+    [
+     43,
+     499,
+     353
+    ],
+    [
+     747,
+     568,
+     587
+    ],
+    [
+     264,
+     664,
+     430
+    ]
+   ],
+   "exact": true,
+   "products_counted": 73,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 10,
+   "start": "schoolbook",
+   "starting_products": 100,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 39,
+   "best": 81,
+   "flips": 484864000,
+   "flips_tried": 484864000,
+   "plus_transitions": 3288024,
+   "resets": 1615,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 100,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 99,
+     "flips": 28,
+     "seconds": 0.0
+    },
+    {
+     "products": 98,
+     "flips": 53,
+     "seconds": 0.0
+    },
+    {
+     "products": 97,
+     "flips": 57,
+     "seconds": 0.0
+    },
+    {
+     "products": 96,
+     "flips": 109,
+     "seconds": 0.0
+    },
+    {
+     "products": 95,
+     "flips": 136,
+     "seconds": 0.0
+    },
+    {
+     "products": 94,
+     "flips": 197,
+     "seconds": 0.0
+    },
+    {
+     "products": 93,
+     "flips": 205,
+     "seconds": 0.0
+    },
+    {
+     "products": 92,
+     "flips": 378,
+     "seconds": 0.0
+    },
+    {
+     "products": 91,
+     "flips": 415,
+     "seconds": 0.0
+    },
+    {
+     "products": 90,
+     "flips": 504,
+     "seconds": 0.0
+    },
+    {
+     "products": 89,
+     "flips": 980,
+     "seconds": 0.0
+    },
+    {
+     "products": 88,
+     "flips": 1104,
+     "seconds": 0.0
+    },
+    {
+     "products": 87,
+     "flips": 16842,
+     "seconds": 0.3
+    },
+    {
+     "products": 86,
+     "flips": 5724097,
+     "seconds": 92.3
+    },
+    {
+     "products": 85,
+     "flips": 5731039,
+     "seconds": 92.4
+    },
+    {
+     "products": 84,
+     "flips": 8748398,
+     "seconds": 141.8
+    },
+    {
+     "products": 83,
+     "flips": 9050443,
+     "seconds": 146.4
+    },
+    {
+     "products": 82,
+     "flips": 9757381,
+     "seconds": 156.9
+    },
+    {
+     "products": 81,
+     "flips": 15642633,
+     "seconds": 247.3
+    }
+   ],
+   "triples": [
+    [
+     320,
+     694,
+     443
+    ],
+    [
+     676,
+     1012,
+     424
+    ],
+    [
+     578,
+     843,
+     417
+    ],
+    [
+     519,
+     740,
+     175
+    ],
+    [
+     384,
+     154,
+     202
+    ],
+    [
+     480,
+     677,
+     180
+    ],
+    [
+     616,
+     936,
+     417
+    ],
+    [
+     630,
+     519,
+     146
+    ],
+    [
+     414,
+     518,
+     274
+    ],
+    [
+     295,
+     857,
+     68
+    ],
+    [
+     645,
+     232,
+     307
+    ],
+    [
+     574,
+     685,
+     872
+    ],
+    [
+     633,
+     446,
+     384
+    ],
+    [
+     757,
+     68,
+     473
+    ],
+    [
+     321,
+     524,
+     432
+    ],
+    [
+     471,
+     867,
+     784
+    ],
+    [
+     766,
+     96,
+     84
+    ],
+    [
+     220,
+     21,
+     425
+    ],
+    [
+     169,
+     30,
+     853
+    ],
+    [
+     782,
+     480,
+     297
+    ],
+    [
+     558,
+     503,
+     880
+    ],
+    [
+     653,
+     882,
+     402
+    ],
+    [
+     830,
+     73,
+     106
+    ],
+    [
+     901,
+     860,
+     94
+    ],
+    [
+     762,
+     631,
+     619
+    ],
+    [
+     388,
+     96,
+     998
+    ],
+    [
+     672,
+     652,
+     474
+    ],
+    [
+     16,
+     695,
+     1008
+    ],
+    [
+     782,
+     345,
+     229
+    ],
+    [
+     117,
+     178,
+     592
+    ],
+    [
+     913,
+     12,
+     348
+    ],
+    [
+     423,
+     922,
+     280
+    ],
+    [
+     396,
+     896,
+     642
+    ],
+    [
+     592,
+     758,
+     33
+    ],
+    [
+     772,
+     377,
+     200
+    ],
+    [
+     329,
+     516,
+     940
+    ],
+    [
+     739,
+     168,
+     277
+    ],
+    [
+     406,
+     128,
+     9
+    ],
+    [
+     570,
+     622,
+     521
+    ],
+    [
+     1001,
+     729,
+     555
+    ],
+    [
+     934,
+     558,
+     686
+    ],
+    [
+     442,
+     688,
+     602
+    ],
+    [
+     420,
+     600,
+     278
+    ],
+    [
+     100,
+     970,
+     136
+    ],
+    [
+     263,
+     42,
+     490
+    ],
+    [
+     16,
+     366,
+     854
+    ],
+    [
+     176,
+     712,
+     934
+    ],
+    [
+     11,
+     69,
+     453
+    ],
+    [
+     699,
+     125,
+     558
+    ],
+    [
+     12,
+     562,
+     313
+    ],
+    [
+     888,
+     43,
+     402
+    ],
+    [
+     428,
+     832,
+     617
+    ],
+    [
+     332,
+     41,
+     924
+    ],
+    [
+     990,
+     32,
+     464
+    ],
+    [
+     647,
+     655,
+     407
+    ],
+    [
+     870,
+     5,
+     409
+    ],
+    [
+     451,
+     74,
+     272
+    ],
+    [
+     256,
+     772,
+     624
+    ],
+    [
+     212,
+     879,
+     938
+    ],
+    [
+     208,
+     922,
+     938
+    ],
+    [
+     432,
+     375,
+     35
+    ],
+    [
+     512,
+     947,
+     72
+    ],
+    [
+     647,
+     512,
+     837
+    ],
+    [
+     671,
+     170,
+     764
+    ],
+    [
+     480,
+     396,
+     24
+    ],
+    [
+     737,
+     576,
+     320
+    ],
+    [
+     994,
+     45,
+     304
+    ],
+    [
+     377,
+     334,
+     768
+    ],
+    [
+     794,
+     372,
+     205
+    ],
+    [
+     3,
+     517,
+     64
+    ],
+    [
+     673,
+     651,
+     834
+    ],
+    [
+     926,
+     501,
+     59
+    ],
+    [
+     694,
+     873,
+     567
+    ],
+    [
+     536,
+     233,
+     168
+    ],
+    [
+     649,
+     236,
+     389
+    ],
+    [
+     496,
+     225,
+     643
+    ],
+    [
+     710,
+     900,
+     400
+    ],
+    [
+     404,
+     666,
+     456
+    ],
+    [
+     101,
+     578,
+     392
+    ],
+    [
+     773,
+     170,
+     326
+    ],
+    [
+     368,
+     45,
+     176
+    ]
+   ],
+   "exact": true,
+   "products_counted": 81,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 10,
+   "start": "schoolbook",
+   "starting_products": 100,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 39,
+   "best": 75,
+   "flips": 449107968,
+   "flips_tried": 449107968,
+   "plus_transitions": 2123064,
+   "resets": 1494,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 100,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 99,
+     "flips": 8,
+     "seconds": 0.0
+    },
+    {
+     "products": 98,
+     "flips": 15,
+     "seconds": 0.0
+    },
+    {
+     "products": 97,
+     "flips": 30,
+     "seconds": 0.0
+    },
+    {
+     "products": 96,
+     "flips": 49,
+     "seconds": 0.0
+    },
+    {
+     "products": 95,
+     "flips": 87,
+     "seconds": 0.0
+    },
+    {
+     "products": 94,
+     "flips": 291,
+     "seconds": 0.0
+    },
+    {
+     "products": 93,
+     "flips": 317,
+     "seconds": 0.0
+    },
+    {
+     "products": 92,
+     "flips": 808,
+     "seconds": 0.0
+    },
+    {
+     "products": 91,
+     "flips": 962,
+     "seconds": 0.0
+    },
+    {
+     "products": 90,
+     "flips": 990,
+     "seconds": 0.0
+    },
+    {
+     "products": 89,
+     "flips": 1039,
+     "seconds": 0.0
+    },
+    {
+     "products": 88,
+     "flips": 1142,
+     "seconds": 0.0
+    },
+    {
+     "products": 87,
+     "flips": 2844,
+     "seconds": 0.1
+    },
+    {
+     "products": 86,
+     "flips": 2933,
+     "seconds": 0.1
+    },
+    {
+     "products": 85,
+     "flips": 3265,
+     "seconds": 0.1
+    },
+    {
+     "products": 84,
+     "flips": 1503542,
+     "seconds": 24.8
+    },
+    {
+     "products": 83,
+     "flips": 1521587,
+     "seconds": 25.1
+    },
+    {
+     "products": 82,
+     "flips": 1523763,
+     "seconds": 25.2
+    },
+    {
+     "products": 81,
+     "flips": 1865789,
+     "seconds": 30.9
+    },
+    {
+     "products": 80,
+     "flips": 1876188,
+     "seconds": 31.0
+    },
+    {
+     "products": 79,
+     "flips": 2266222,
+     "seconds": 37.5
+    },
+    {
+     "products": 78,
+     "flips": 4203812,
+     "seconds": 70.2
+    },
+    {
+     "products": 77,
+     "flips": 4948870,
+     "seconds": 82.6
+    },
+    {
+     "products": 76,
+     "flips": 12936993,
+     "seconds": 210.1
+    },
+    {
+     "products": 75,
+     "flips": 18432204,
+     "seconds": 301.2
+    }
+   ],
+   "triples": [
+    [
+     635,
+     32,
+     72
+    ],
+    [
+     92,
+     320,
+     636
+    ],
+    [
+     176,
+     473,
+     248
+    ],
+    [
+     665,
+     329,
+     45
+    ],
+    [
+     994,
+     194,
+     122
+    ],
+    [
+     611,
+     66,
+     423
+    ],
+    [
+     233,
+     265,
+     360
+    ],
+    [
+     688,
+     325,
+     309
+    ],
+    [
+     277,
+     16,
+     519
+    ],
+    [
+     957,
+     926,
+     844
+    ],
+    [
+     756,
+     146,
+     256
+    ],
+    [
+     664,
+     128,
+     755
+    ],
+    [
+     363,
+     968,
+     148
+    ],
+    [
+     561,
+     690,
+     982
+    ],
+    [
+     664,
+     368,
+     191
+    ],
+    [
+     388,
+     296,
+     379
+    ],
+    [
+     198,
+     860,
+     63
+    ],
+    [
+     568,
+     61,
+     628
+    ],
+    [
+     73,
+     488,
+     60
+    ],
+    [
+     634,
+     389,
+     268
+    ],
+    [
+     816,
+     88,
+     980
+    ],
+    [
+     962,
+     127,
+     180
+    ],
+    [
+     748,
+     360,
+     556
+    ],
+    [
+     469,
+     104,
+     261
+    ],
+    [
+     17,
+     519,
+     781
+    ],
+    [
+     664,
+     679,
+     449
+    ],
+    [
+     32,
+     513,
+     359
+    ],
+    [
+     380,
+     138,
+     871
+    ],
+    [
+     386,
+     534,
+     291
+    ],
+    [
+     428,
+     354,
+     724
+    ],
+    [
+     8,
+     385,
+     291
+    ],
+    [
+     400,
+     306,
+     211
+    ],
+    [
+     146,
+     360,
+     591
+    ],
+    [
+     128,
+     62,
+     526
+    ],
+    [
+     823,
+     42,
+     335
+    ],
+    [
+     937,
+     320,
+     254
+    ],
+    [
+     357,
+     384,
+     459
+    ],
+    [
+     177,
+     826,
+     836
+    ],
+    [
+     710,
+     798,
+     831
+    ],
+    [
+     775,
+     64,
+     279
+    ],
+    [
+     863,
+     504,
+     9
+    ],
+    [
+     770,
+     160,
+     728
+    ],
+    [
+     293,
+     640,
+     840
+    ],
+    [
+     304,
+     1002,
+     560
+    ],
+    [
+     252,
+     98,
+     661
+    ],
+    [
+     656,
+     503,
+     402
+    ],
+    [
+     48,
+     610,
+     652
+    ],
+    [
+     459,
+     96,
+     710
+    ],
+    [
+     471,
+     256,
+     136
+    ],
+    [
+     354,
+     64,
+     686
+    ],
+    [
+     691,
+     263,
+     33
+    ],
+    [
+     834,
+     862,
+     268
+    ],
+    [
+     681,
+     481,
+     337
+    ],
+    [
+     659,
+     1,
+     314
+    ],
+    [
+     858,
+     388,
+     774
+    ],
+    [
+     677,
+     538,
+     918
+    ],
+    [
+     668,
+     782,
+     20
+    ],
+    [
+     177,
+     510,
+     120
+    ],
+    [
+     41,
+     517,
+     987
+    ],
+    [
+     374,
+     292,
+     216
+    ],
+    [
+     257,
+     657,
+     328
+    ],
+    [
+     33,
+     246,
+     559
+    ],
+    [
+     123,
+     288,
+     806
+    ],
+    [
+     25,
+     68,
+     130
+    ],
+    [
+     792,
+     713,
+     252
+    ],
+    [
+     79,
+     39,
+     144
+    ],
+    [
+     132,
+     697,
+     148
+    ],
+    [
+     149,
+     296,
+     572
+    ],
+    [
+     217,
+     574,
+     10
+    ],
+    [
+     739,
+     100,
+     496
+    ],
+    [
+     879,
+     232,
+     309
+    ],
+    [
+     450,
+     850,
+     946
+    ],
+    [
+     698,
+     259,
+     49
+    ],
+    [
+     673,
+     410,
+     323
+    ],
+    [
+     696,
+     822,
+     260
+    ]
+   ],
+   "exact": true,
+   "products_counted": 75,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 1454123427,
+   "flips_tried": 1454134272,
+   "plus_transitions": 13364989,
+   "resets": 4844,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 5303729,
+     "seconds": 63.0
+    },
+    {
+     "products": 52,
+     "flips": 6940835,
+     "seconds": 83.5
+    },
+    {
+     "products": 51,
+     "flips": 417928055,
+     "seconds": 5195.8
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 1370006818,
+   "flips_tried": 1370010624,
+   "plus_transitions": 12681962,
+   "resets": 4565,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 1885756,
+     "seconds": 23.2
+    },
+    {
+     "products": 52,
+     "flips": 6855925,
+     "seconds": 82.4
+    },
+    {
+     "products": 51,
+     "flips": 6983801,
+     "seconds": 83.9
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 1276617996,
+   "flips_tried": 1276635136,
+   "plus_transitions": 11830650,
+   "resets": 4253,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 10309593,
+     "seconds": 158.6
+    },
+    {
+     "products": 52,
+     "flips": 10813993,
+     "seconds": 167.6
+    },
+    {
+     "products": 51,
+     "flips": 14964664,
+     "seconds": 225.5
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 1280838335,
+   "flips_tried": 1280843776,
+   "plus_transitions": 12094462,
+   "resets": 4267,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 2262475,
+     "seconds": 39.6
+    },
+    {
+     "products": 52,
+     "flips": 8664676,
+     "seconds": 140.5
+    },
+    {
+     "products": 51,
+     "flips": 24151944,
+     "seconds": 350.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 10,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 703114009,
+   "flips_tried": 703139840,
+   "plus_transitions": 6428790,
+   "resets": 2341,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 9973952,
+     "seconds": 259.5
+    },
+    {
+     "products": 52,
+     "flips": 26115734,
+     "seconds": 680.6
+    },
+    {
+     "products": 51,
+     "flips": 488997281,
+     "seconds": 12641.1
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 11,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 738578338,
+   "flips_tried": 738679808,
+   "plus_transitions": 7098056,
+   "resets": 2459,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 17924274,
+     "seconds": 454.6
+    },
+    {
+     "products": 52,
+     "flips": 37067795,
+     "seconds": 956.0
+    },
+    {
+     "products": 51,
+     "flips": 203177704,
+     "seconds": 5127.6
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 12,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 729467692,
+   "flips_tried": 729470976,
+   "plus_transitions": 6761104,
+   "resets": 2429,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 1049602,
+     "seconds": 26.4
+    },
+    {
+     "products": 52,
+     "flips": 1831195,
+     "seconds": 46.2
+    },
+    {
+     "products": 51,
+     "flips": 3525784,
+     "seconds": 91.4
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "karatsuba54",
+   "starting_products": 54,
+   "seed": 13,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 51,
+   "flips": 737032955,
+   "flips_tried": 737043456,
+   "plus_transitions": 6959552,
+   "resets": 2454,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 54,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 2261109,
+     "seconds": 57.3
+    },
+    {
+     "products": 52,
+     "flips": 6153779,
+     "seconds": 154.2
+    },
+    {
+     "products": 51,
+     "flips": 62178335,
+     "seconds": 1572.3
+    }
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "schoolbook",
+   "starting_products": 144,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 117,
+   "flips": 1025107968,
+   "flips_tried": 1025107968,
+   "plus_transitions": 2008833,
+   "resets": 3412,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 144,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 143,
+     "flips": 9,
+     "seconds": 0.0
+    },
+    {
+     "products": 142,
+     "flips": 22,
+     "seconds": 0.0
+    },
+    {
+     "products": 141,
+     "flips": 64,
+     "seconds": 0.0
+    },
+    {
+     "products": 140,
+     "flips": 65,
+     "seconds": 0.0
+    },
+    {
+     "products": 139,
+     "flips": 83,
+     "seconds": 0.0
+    },
+    {
+     "products": 138,
+     "flips": 97,
+     "seconds": 0.0
+    },
+    {
+     "products": 137,
+     "flips": 107,
+     "seconds": 0.0
+    },
+    {
+     "products": 136,
+     "flips": 125,
+     "seconds": 0.0
+    },
+    {
+     "products": 135,
+     "flips": 141,
+     "seconds": 0.0
+    },
+    {
+     "products": 134,
+     "flips": 4172,
+     "seconds": 0.1
+    },
+    {
+     "products": 133,
+     "flips": 4211,
+     "seconds": 0.1
+    },
+    {
+     "products": 132,
+     "flips": 5005,
+     "seconds": 0.1
+    },
+    {
+     "products": 131,
+     "flips": 4511462,
+     "seconds": 83.1
+    },
+    {
+     "products": 130,
+     "flips": 4634915,
+     "seconds": 85.5
+    },
+    {
+     "products": 129,
+     "flips": 7658573,
+     "seconds": 142.0
+    },
+    {
+     "products": 128,
+     "flips": 8577035,
+     "seconds": 158.8
+    },
+    {
+     "products": 127,
+     "flips": 13979388,
+     "seconds": 258.5
+    },
+    {
+     "products": 126,
+     "flips": 20548415,
+     "seconds": 380.4
+    },
+    {
+     "products": 125,
+     "flips": 24754073,
+     "seconds": 458.7
+    },
+    {
+     "products": 124,
+     "flips": 71663960,
+     "seconds": 1314.4
+    },
+    {
+     "products": 123,
+     "flips": 72128778,
+     "seconds": 1322.8
+    },
+    {
+     "products": 122,
+     "flips": 79640775,
+     "seconds": 1460.3
+    },
+    {
+     "products": 121,
+     "flips": 81167953,
+     "seconds": 1488.7
+    },
+    {
+     "products": 120,
+     "flips": 146455384,
+     "seconds": 2680.2
+    },
+    {
+     "products": 119,
+     "flips": 152799088,
+     "seconds": 2794.2
+    },
+    {
+     "products": 118,
+     "flips": 197344741,
+     "seconds": 3592.1
+    },
+    {
+     "products": 117,
+     "flips": 623250380,
+     "seconds": 10952.2
+    }
+   ],
+   "exact": true,
+   "products_counted": 117,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "schoolbook",
+   "starting_products": 144,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 120,
+   "flips": 1060957184,
+   "flips_tried": 1060957184,
+   "plus_transitions": 2307289,
+   "resets": 3533,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 144,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 143,
+     "flips": 12,
+     "seconds": 0.0
+    },
+    {
+     "products": 142,
+     "flips": 13,
+     "seconds": 0.0
+    },
+    {
+     "products": 141,
+     "flips": 42,
+     "seconds": 0.0
+    },
+    {
+     "products": 140,
+     "flips": 59,
+     "seconds": 0.0
+    },
+    {
+     "products": 139,
+     "flips": 123,
+     "seconds": 0.0
+    },
+    {
+     "products": 138,
+     "flips": 166,
+     "seconds": 0.0
+    },
+    {
+     "products": 137,
+     "flips": 2889,
+     "seconds": 0.1
+    },
+    {
+     "products": 136,
+     "flips": 2984,
+     "seconds": 0.1
+    },
+    {
+     "products": 135,
+     "flips": 3518,
+     "seconds": 0.1
+    },
+    {
+     "products": 134,
+     "flips": 304549,
+     "seconds": 5.5
+    },
+    {
+     "products": 133,
+     "flips": 645722,
+     "seconds": 11.8
+    },
+    {
+     "products": 132,
+     "flips": 1262605,
+     "seconds": 23.9
+    },
+    {
+     "products": 131,
+     "flips": 1563106,
+     "seconds": 29.4
+    },
+    {
+     "products": 130,
+     "flips": 1586126,
+     "seconds": 29.9
+    },
+    {
+     "products": 129,
+     "flips": 4784135,
+     "seconds": 88.3
+    },
+    {
+     "products": 128,
+     "flips": 4795543,
+     "seconds": 88.5
+    },
+    {
+     "products": 127,
+     "flips": 6932344,
+     "seconds": 129.0
+    },
+    {
+     "products": 126,
+     "flips": 8433002,
+     "seconds": 155.8
+    },
+    {
+     "products": 125,
+     "flips": 12036421,
+     "seconds": 220.8
+    },
+    {
+     "products": 124,
+     "flips": 14464880,
+     "seconds": 265.5
+    },
+    {
+     "products": 123,
+     "flips": 26335835,
+     "seconds": 482.5
+    },
+    {
+     "products": 122,
+     "flips": 50020180,
+     "seconds": 893.3
+    },
+    {
+     "products": 121,
+     "flips": 120912631,
+     "seconds": 2120.4
+    },
+    {
+     "products": 120,
+     "flips": 357051425,
+     "seconds": 6180.6
+    }
+   ],
+   "exact": true,
+   "products_counted": 120,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "schoolbook",
+   "starting_products": 144,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 118,
+   "flips": 1036452864,
+   "flips_tried": 1036452864,
+   "plus_transitions": 2155874,
+   "resets": 3449,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 144,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 143,
+     "flips": 17,
+     "seconds": 0.0
+    },
+    {
+     "products": 142,
+     "flips": 24,
+     "seconds": 0.0
+    },
+    {
+     "products": 141,
+     "flips": 27,
+     "seconds": 0.0
+    },
+    {
+     "products": 140,
+     "flips": 28,
+     "seconds": 0.0
+    },
+    {
+     "products": 139,
+     "flips": 145,
+     "seconds": 0.0
+    },
+    {
+     "products": 137,
+     "flips": 150,
+     "seconds": 0.0
+    },
+    {
+     "products": 136,
+     "flips": 155,
+     "seconds": 0.0
+    },
+    {
+     "products": 135,
+     "flips": 248,
+     "seconds": 0.0
+    },
+    {
+     "products": 134,
+     "flips": 398,
+     "seconds": 0.0
+    },
+    {
+     "products": 133,
+     "flips": 660,
+     "seconds": 0.0
+    },
+    {
+     "products": 132,
+     "flips": 1151,
+     "seconds": 0.0
+    },
+    {
+     "products": 131,
+     "flips": 1189,
+     "seconds": 0.0
+    },
+    {
+     "products": 130,
+     "flips": 267118,
+     "seconds": 5.2
+    },
+    {
+     "products": 129,
+     "flips": 889851,
+     "seconds": 17.0
+    },
+    {
+     "products": 128,
+     "flips": 3329751,
+     "seconds": 61.8
+    },
+    {
+     "products": 127,
+     "flips": 37739245,
+     "seconds": 705.3
+    },
+    {
+     "products": 126,
+     "flips": 40141823,
+     "seconds": 747.8
+    },
+    {
+     "products": 125,
+     "flips": 41157504,
+     "seconds": 766.6
+    },
+    {
+     "products": 124,
+     "flips": 50616946,
+     "seconds": 932.3
+    },
+    {
+     "products": 123,
+     "flips": 61182583,
+     "seconds": 1114.2
+    },
+    {
+     "products": 122,
+     "flips": 78985878,
+     "seconds": 1432.4
+    },
+    {
+     "products": 121,
+     "flips": 104763141,
+     "seconds": 1878.9
+    },
+    {
+     "products": 120,
+     "flips": 106135024,
+     "seconds": 1902.3
+    },
+    {
+     "products": 119,
+     "flips": 107136882,
+     "seconds": 1920.3
+    },
+    {
+     "products": 118,
+     "flips": 140833071,
+     "seconds": 2512.6
+    }
+   ],
+   "exact": true,
+   "products_counted": 118,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "schoolbook",
+   "starting_products": 144,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 112,
+   "flips": 1032286208,
+   "flips_tried": 1032286208,
+   "plus_transitions": 2131554,
+   "resets": 3437,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 144,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 143,
+     "flips": 8,
+     "seconds": 0.0
+    },
+    {
+     "products": 142,
+     "flips": 34,
+     "seconds": 0.0
+    },
+    {
+     "products": 141,
+     "flips": 59,
+     "seconds": 0.0
+    },
+    {
+     "products": 140,
+     "flips": 130,
+     "seconds": 0.0
+    },
+    {
+     "products": 139,
+     "flips": 140,
+     "seconds": 0.0
+    },
+    {
+     "products": 138,
+     "flips": 190,
+     "seconds": 0.0
+    },
+    {
+     "products": 137,
+     "flips": 242,
+     "seconds": 0.0
+    },
+    {
+     "products": 136,
+     "flips": 307,
+     "seconds": 0.0
+    },
+    {
+     "products": 135,
+     "flips": 1747,
+     "seconds": 0.0
+    },
+    {
+     "products": 134,
+     "flips": 3121,
+     "seconds": 0.1
+    },
+    {
+     "products": 133,
+     "flips": 3244,
+     "seconds": 0.1
+    },
+    {
+     "products": 132,
+     "flips": 7032,
+     "seconds": 0.2
+    },
+    {
+     "products": 131,
+     "flips": 7920,
+     "seconds": 0.2
+    },
+    {
+     "products": 130,
+     "flips": 9646,
+     "seconds": 0.2
+    },
+    {
+     "products": 129,
+     "flips": 26208,
+     "seconds": 0.6
+    },
+    {
+     "products": 128,
+     "flips": 26282,
+     "seconds": 0.6
+    },
+    {
+     "products": 127,
+     "flips": 26925,
+     "seconds": 0.6
+    },
+    {
+     "products": 126,
+     "flips": 27856,
+     "seconds": 0.6
+    },
+    {
+     "products": 125,
+     "flips": 28925,
+     "seconds": 0.6
+    },
+    {
+     "products": 124,
+     "flips": 331957,
+     "seconds": 6.3
+    },
+    {
+     "products": 123,
+     "flips": 1532702,
+     "seconds": 28.3
+    },
+    {
+     "products": 122,
+     "flips": 1570711,
+     "seconds": 29.1
+    },
+    {
+     "products": 121,
+     "flips": 1572731,
+     "seconds": 29.1
+    },
+    {
+     "products": 120,
+     "flips": 3376786,
+     "seconds": 62.5
+    },
+    {
+     "products": 119,
+     "flips": 5755734,
+     "seconds": 107.2
+    },
+    {
+     "products": 118,
+     "flips": 5769106,
+     "seconds": 107.4
+    },
+    {
+     "products": 117,
+     "flips": 6398553,
+     "seconds": 118.9
+    },
+    {
+     "products": 116,
+     "flips": 19546319,
+     "seconds": 356.8
+    },
+    {
+     "products": 115,
+     "flips": 19997790,
+     "seconds": 364.9
+    },
+    {
+     "products": 114,
+     "flips": 22711075,
+     "seconds": 413.7
+    },
+    {
+     "products": 113,
+     "flips": 37882489,
+     "seconds": 677.6
+    },
+    {
+     "products": 112,
+     "flips": 1013331994,
+     "seconds": 17674.9
+    }
+   ],
+   "exact": true,
+   "products_counted": 112,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 809499342,
+   "flips_tried": 981830656,
+   "plus_transitions": 173529723,
+   "resets": 2698,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 813017039,
+   "flips_tried": 985741312,
+   "plus_transitions": 173938128,
+   "resets": 2710,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 823503897,
+   "flips_tried": 998716416,
+   "plus_transitions": 176436902,
+   "resets": 2745,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 822824660,
+   "flips_tried": 997918720,
+   "plus_transitions": 176314713,
+   "resets": 2742,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 20,
+   "slack": 3,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 786507233,
+   "flips_tried": 953623552,
+   "plus_transitions": 168297242,
+   "resets": 2621,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 21,
+   "slack": 3,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 803867247,
+   "flips_tried": 974736384,
+   "plus_transitions": 172075578,
+   "resets": 2679,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 22,
+   "slack": 3,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 800580929,
+   "flips_tried": 970937344,
+   "plus_transitions": 171549983,
+   "resets": 2668,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 23,
+   "slack": 3,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 805253186,
+   "flips_tried": 976320512,
+   "plus_transitions": 172279661,
+   "resets": 2684,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 10,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 798073683,
+   "flips_tried": 967599104,
+   "plus_transitions": 170723550,
+   "resets": 2660,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 11,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 795433304,
+   "flips_tried": 964188160,
+   "plus_transitions": 169960314,
+   "resets": 2651,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 12,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 800153340,
+   "flips_tried": 970225664,
+   "plus_transitions": 171273446,
+   "resets": 2667,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 12,
+   "start": "tower42",
+   "starting_products": 42,
+   "seed": 13,
+   "slack": 4,
+   "seconds_given": 18000.0,
+   "target": null,
+   "best": 42,
+   "flips": 791222943,
+   "flips_tried": 959217664,
+   "plus_transitions": 169187679,
+   "resets": 2637,
+   "seconds": 18000.0,
+   "reached": [
+    {
+     "products": 42,
+     "flips": 0,
+     "seconds": 0.0
+    }
+   ],
+   "exact": true,
+   "products_counted": 42,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "starting_products": 49,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 22,
+   "best": 22,
+   "flips": 32470519,
+   "flips_tried": 32470538,
+   "plus_transitions": 128005,
+   "resets": 105,
+   "seconds": 462.4,
+   "reached": [
+    {
+     "products": 49,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 48,
+     "flips": 15,
+     "seconds": 0.0
+    },
+    {
+     "products": 47,
+     "flips": 50,
+     "seconds": 0.0
+    },
+    {
+     "products": 46,
+     "flips": 73,
+     "seconds": 0.0
+    },
+    {
+     "products": 45,
+     "flips": 98,
+     "seconds": 0.0
+    },
+    {
+     "products": 44,
+     "flips": 113,
+     "seconds": 0.0
+    },
+    {
+     "products": 43,
+     "flips": 131,
+     "seconds": 0.0
+    },
+    {
+     "products": 42,
+     "flips": 271,
+     "seconds": 0.0
+    },
+    {
+     "products": 41,
+     "flips": 567,
+     "seconds": 0.0
+    },
+    {
+     "products": 40,
+     "flips": 682,
+     "seconds": 0.0
+    },
+    {
+     "products": 39,
+     "flips": 1851,
+     "seconds": 0.1
+    },
+    {
+     "products": 38,
+     "flips": 2180,
+     "seconds": 0.1
+    },
+    {
+     "products": 37,
+     "flips": 2361,
+     "seconds": 0.1
+    },
+    {
+     "products": 36,
+     "flips": 2917,
+     "seconds": 0.1
+    },
+    {
+     "products": 35,
+     "flips": 4430,
+     "seconds": 0.1
+    },
+    {
+     "products": 34,
+     "flips": 10876,
+     "seconds": 0.3
+    },
+    {
+     "products": 33,
+     "flips": 11632,
+     "seconds": 0.3
+    },
+    {
+     "products": 32,
+     "flips": 18211,
+     "seconds": 0.5
+    },
+    {
+     "products": 31,
+     "flips": 25476,
+     "seconds": 0.7
+    },
+    {
+     "products": 30,
+     "flips": 57031,
+     "seconds": 1.5
+    },
+    {
+     "products": 29,
+     "flips": 95588,
+     "seconds": 2.4
+    },
+    {
+     "products": 28,
+     "flips": 490438,
+     "seconds": 12.2
+    },
+    {
+     "products": 27,
+     "flips": 590427,
+     "seconds": 15.0
+    },
+    {
+     "products": 26,
+     "flips": 1049241,
+     "seconds": 26.3
+    },
+    {
+     "products": 25,
+     "flips": 4385852,
+     "seconds": 108.5
+    },
+    {
+     "products": 24,
+     "flips": 10149532,
+     "seconds": 217.9
+    },
+    {
+     "products": 23,
+     "flips": 31984735,
+     "seconds": 457.1
+    },
+    {
+     "products": 22,
+     "flips": 32470519,
+     "seconds": 462.4
+    }
+   ],
+   "triples": [
+    [
+     28,
+     16,
+     96
+    ],
+    [
+     78,
+     82,
+     28
+    ],
+    [
+     66,
+     108,
+     6
+    ],
+    [
+     88,
+     22,
+     82
+    ],
+    [
+     48,
+     50,
+     71
+    ],
+    [
+     74,
+     23,
+     113
+    ],
+    [
+     55,
+     18,
+     29
+    ],
+    [
+     18,
+     42,
+     35
+    ],
+    [
+     19,
+     105,
+     77
+    ],
+    [
+     56,
+     119,
+     48
+    ],
+    [
+     52,
+     59,
+     42
+    ],
+    [
+     75,
+     115,
+     31
+    ],
+    [
+     106,
+     64,
+     76
+    ],
+    [
+     58,
+     89,
+     105
+    ],
+    [
+     68,
+     14,
+     50
+    ],
+    [
+     2,
+     71,
+     89
+    ],
+    [
+     33,
+     41,
+     83
+    ],
+    [
+     86,
+     31,
+     17
+    ],
+    [
+     3,
+     116,
+     55
+    ],
+    [
+     109,
+     120,
+     22
+    ],
+    [
+     92,
+     121,
+     63
+    ],
+    [
+     61,
+     84,
+     51
+    ]
+   ],
+   "exact": true,
+   "products_counted": 22,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "starting_products": 49,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 22,
+   "best": 22,
+   "flips": 17383147,
+   "flips_tried": 17383147,
+   "plus_transitions": 74571,
+   "resets": 55,
+   "seconds": 279.3,
+   "reached": [
+    {
+     "products": 49,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 48,
+     "flips": 5,
+     "seconds": 0.0
+    },
+    {
+     "products": 47,
+     "flips": 23,
+     "seconds": 0.0
+    },
+    {
+     "products": 46,
+     "flips": 38,
+     "seconds": 0.0
+    },
+    {
+     "products": 45,
+     "flips": 40,
+     "seconds": 0.0
+    },
+    {
+     "products": 44,
+     "flips": 55,
+     "seconds": 0.0
+    },
+    {
+     "products": 43,
+     "flips": 67,
+     "seconds": 0.0
+    },
+    {
+     "products": 42,
+     "flips": 355,
+     "seconds": 0.0
+    },
+    {
+     "products": 41,
+     "flips": 488,
+     "seconds": 0.0
+    },
+    {
+     "products": 40,
+     "flips": 492,
+     "seconds": 0.0
+    },
+    {
+     "products": 39,
+     "flips": 511,
+     "seconds": 0.0
+    },
+    {
+     "products": 38,
+     "flips": 587,
+     "seconds": 0.0
+    },
+    {
+     "products": 37,
+     "flips": 776,
+     "seconds": 0.0
+    },
+    {
+     "products": 36,
+     "flips": 17478,
+     "seconds": 0.4
+    },
+    {
+     "products": 35,
+     "flips": 17661,
+     "seconds": 0.5
+    },
+    {
+     "products": 34,
+     "flips": 20670,
+     "seconds": 0.5
+    },
+    {
+     "products": 33,
+     "flips": 38278,
+     "seconds": 1.0
+    },
+    {
+     "products": 32,
+     "flips": 39028,
+     "seconds": 1.0
+    },
+    {
+     "products": 31,
+     "flips": 40072,
+     "seconds": 1.0
+    },
+    {
+     "products": 30,
+     "flips": 124365,
+     "seconds": 3.1
+    },
+    {
+     "products": 29,
+     "flips": 149283,
+     "seconds": 3.7
+    },
+    {
+     "products": 28,
+     "flips": 154927,
+     "seconds": 3.9
+    },
+    {
+     "products": 27,
+     "flips": 303811,
+     "seconds": 7.4
+    },
+    {
+     "products": 26,
+     "flips": 1783622,
+     "seconds": 43.7
+    },
+    {
+     "products": 25,
+     "flips": 1791484,
+     "seconds": 43.9
+    },
+    {
+     "products": 24,
+     "flips": 3599512,
+     "seconds": 88.6
+    },
+    {
+     "products": 23,
+     "flips": 17382211,
+     "seconds": 279.2
+    },
+    {
+     "products": 22,
+     "flips": 17383147,
+     "seconds": 279.3
+    }
+   ],
+   "triples": [
+    [
+     48,
+     6,
+     17
+    ],
+    [
+     73,
+     89,
+     42
+    ],
+    [
+     3,
+     32,
+     37
+    ],
+    [
+     118,
+     94,
+     65
+    ],
+    [
+     47,
+     5,
+     93
+    ],
+    [
+     64,
+     8,
+     31
+    ],
+    [
+     63,
+     7,
+     107
+    ],
+    [
+     78,
+     25,
+     23
+    ],
+    [
+     41,
+     85,
+     111
+    ],
+    [
+     65,
+     24,
+     97
+    ],
+    [
+     21,
+     114,
+     71
+    ],
+    [
+     59,
+     103,
+     30
+    ],
+    [
+     110,
+     29,
+     118
+    ],
+    [
+     76,
+     41,
+     66
+    ],
+    [
+     18,
+     37,
+     116
+    ],
+    [
+     72,
+     73,
+     11
+    ],
+    [
+     62,
+     37,
+     83
+    ],
+    [
+     97,
+     28,
+     115
+    ],
+    [
+     127,
+     15,
+     48
+    ],
+    [
+     124,
+     47,
+     114
+    ],
+    [
+     11,
+     97,
+     92
+    ],
+    [
+     44,
+     50,
+     39
+    ]
+   ],
+   "exact": true,
+   "products_counted": 22,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "starting_products": 49,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 22,
+   "best": 22,
+   "flips": 6304928,
+   "flips_tried": 6304961,
+   "plus_transitions": 15607,
+   "resets": 19,
+   "seconds": 154.2,
+   "reached": [
+    {
+     "products": 49,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 48,
+     "flips": 1,
+     "seconds": 0.0
+    },
+    {
+     "products": 47,
+     "flips": 7,
+     "seconds": 0.0
+    },
+    {
+     "products": 46,
+     "flips": 11,
+     "seconds": 0.0
+    },
+    {
+     "products": 45,
+     "flips": 37,
+     "seconds": 0.0
+    },
+    {
+     "products": 44,
+     "flips": 57,
+     "seconds": 0.0
+    },
+    {
+     "products": 43,
+     "flips": 64,
+     "seconds": 0.0
+    },
+    {
+     "products": 42,
+     "flips": 72,
+     "seconds": 0.0
+    },
+    {
+     "products": 41,
+     "flips": 135,
+     "seconds": 0.0
+    },
+    {
+     "products": 40,
+     "flips": 156,
+     "seconds": 0.0
+    },
+    {
+     "products": 39,
+     "flips": 632,
+     "seconds": 0.0
+    },
+    {
+     "products": 38,
+     "flips": 706,
+     "seconds": 0.0
+    },
+    {
+     "products": 37,
+     "flips": 773,
+     "seconds": 0.0
+    },
+    {
+     "products": 36,
+     "flips": 1002,
+     "seconds": 0.0
+    },
+    {
+     "products": 35,
+     "flips": 1873,
+     "seconds": 0.1
+    },
+    {
+     "products": 34,
+     "flips": 2811,
+     "seconds": 0.1
+    },
+    {
+     "products": 33,
+     "flips": 18263,
+     "seconds": 0.5
+    },
+    {
+     "products": 32,
+     "flips": 71999,
+     "seconds": 1.8
+    },
+    {
+     "products": 31,
+     "flips": 79010,
+     "seconds": 2.0
+    },
+    {
+     "products": 30,
+     "flips": 81841,
+     "seconds": 2.1
+    },
+    {
+     "products": 29,
+     "flips": 84188,
+     "seconds": 2.1
+    },
+    {
+     "products": 28,
+     "flips": 85012,
+     "seconds": 2.1
+    },
+    {
+     "products": 27,
+     "flips": 110655,
+     "seconds": 2.8
+    },
+    {
+     "products": 26,
+     "flips": 128624,
+     "seconds": 3.2
+    },
+    {
+     "products": 25,
+     "flips": 2226422,
+     "seconds": 53.7
+    },
+    {
+     "products": 24,
+     "flips": 6226268,
+     "seconds": 152.3
+    },
+    {
+     "products": 23,
+     "flips": 6303664,
+     "seconds": 154.2
+    },
+    {
+     "products": 22,
+     "flips": 6304928,
+     "seconds": 154.2
+    }
+   ],
+   "triples": [
+    [
+     109,
+     83,
+     76
+    ],
+    [
+     111,
+     17,
+     10
+    ],
+    [
+     125,
+     41,
+     27
+    ],
+    [
+     37,
+     123,
+     58
+    ],
+    [
+     56,
+     56,
+     20
+    ],
+    [
+     62,
+     109,
+     79
+    ],
+    [
+     56,
+     74,
+     4
+    ],
+    [
+     17,
+     9,
+     42
+    ],
+    [
+     43,
+     23,
+     24
+    ],
+    [
+     77,
+     53,
+     51
+    ],
+    [
+     37,
+     94,
+     107
+    ],
+    [
+     112,
+     126,
+     90
+    ],
+    [
+     76,
+     42,
+     108
+    ],
+    [
+     22,
+     112,
+     5
+    ],
+    [
+     19,
+     34,
+     43
+    ],
+    [
+     60,
+     81,
+     86
+    ],
+    [
+     47,
+     77,
+     126
+    ],
+    [
+     84,
+     70,
+     78
+    ],
+    [
+     57,
+     86,
+     44
+    ],
+    [
+     121,
+     97,
+     15
+    ],
+    [
+     75,
+     45,
+     22
+    ],
+    [
+     118,
+     127,
+     55
+    ]
+   ],
+   "exact": true,
+   "products_counted": 22,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 7,
+   "start": "schoolbook",
+   "starting_products": 49,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 22,
+   "best": 22,
+   "flips": 7572672,
+   "flips_tried": 7572672,
+   "plus_transitions": 25598,
+   "resets": 21,
+   "seconds": 188.6,
+   "reached": [
+    {
+     "products": 49,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 48,
+     "flips": 4,
+     "seconds": 0.0
+    },
+    {
+     "products": 47,
+     "flips": 23,
+     "seconds": 0.0
+    },
+    {
+     "products": 46,
+     "flips": 33,
+     "seconds": 0.0
+    },
+    {
+     "products": 44,
+     "flips": 39,
+     "seconds": 0.0
+    },
+    {
+     "products": 43,
+     "flips": 56,
+     "seconds": 0.0
+    },
+    {
+     "products": 42,
+     "flips": 115,
+     "seconds": 0.0
+    },
+    {
+     "products": 41,
+     "flips": 203,
+     "seconds": 0.0
+    },
+    {
+     "products": 40,
+     "flips": 260,
+     "seconds": 0.0
+    },
+    {
+     "products": 39,
+     "flips": 349,
+     "seconds": 0.0
+    },
+    {
+     "products": 38,
+     "flips": 7036,
+     "seconds": 0.2
+    },
+    {
+     "products": 37,
+     "flips": 7225,
+     "seconds": 0.2
+    },
+    {
+     "products": 36,
+     "flips": 7610,
+     "seconds": 0.2
+    },
+    {
+     "products": 35,
+     "flips": 8043,
+     "seconds": 0.2
+    },
+    {
+     "products": 34,
+     "flips": 21086,
+     "seconds": 0.5
+    },
+    {
+     "products": 33,
+     "flips": 21088,
+     "seconds": 0.5
+    },
+    {
+     "products": 32,
+     "flips": 21276,
+     "seconds": 0.6
+    },
+    {
+     "products": 31,
+     "flips": 47075,
+     "seconds": 1.2
+    },
+    {
+     "products": 30,
+     "flips": 147452,
+     "seconds": 3.6
+    },
+    {
+     "products": 29,
+     "flips": 149158,
+     "seconds": 3.7
+    },
+    {
+     "products": 28,
+     "flips": 232786,
+     "seconds": 5.7
+    },
+    {
+     "products": 27,
+     "flips": 394067,
+     "seconds": 9.6
+    },
+    {
+     "products": 26,
+     "flips": 1390992,
+     "seconds": 33.7
+    },
+    {
+     "products": 25,
+     "flips": 2239046,
+     "seconds": 53.9
+    },
+    {
+     "products": 24,
+     "flips": 6016661,
+     "seconds": 148.6
+    },
+    {
+     "products": 23,
+     "flips": 7299824,
+     "seconds": 181.6
+    },
+    {
+     "products": 22,
+     "flips": 7572672,
+     "seconds": 188.6
+    }
+   ],
+   "triples": [
+    [
+     77,
+     64,
+     24
+    ],
+    [
+     31,
+     33,
+     46
+    ],
+    [
+     87,
+     73,
+     20
+    ],
+    [
+     105,
+     112,
+     108
+    ],
+    [
+     14,
+     27,
+     51
+    ],
+    [
+     45,
+     43,
+     72
+    ],
+    [
+     5,
+     86,
+     34
+    ],
+    [
+     61,
+     57,
+     14
+    ],
+    [
+     13,
+     98,
+     69
+    ],
+    [
+     41,
+     85,
+     49
+    ],
+    [
+     94,
+     35,
+     28
+    ],
+    [
+     3,
+     121,
+     118
+    ],
+    [
+     79,
+     8,
+     1
+    ],
+    [
+     72,
+     49,
+     70
+    ],
+    [
+     126,
+     54,
+     37
+    ],
+    [
+     119,
+     62,
+     45
+    ],
+    [
+     26,
+     97,
+     12
+    ],
+    [
+     38,
+     89,
+     109
+    ],
+    [
+     16,
+     4,
+     124
+    ],
+    [
+     88,
+     47,
+     52
+    ],
+    [
+     74,
+     2,
+     35
+    ],
+    [
+     101,
+     53,
+     58
+    ]
+   ],
+   "exact": true,
+   "products_counted": 22,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 8,
+   "start": "schoolbook",
+   "starting_products": 64,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 26,
+   "best": 32,
+   "flips": 533696512,
+   "flips_tried": 533696512,
+   "plus_transitions": 4117942,
+   "resets": 1772,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 64,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 63,
+     "flips": 12,
+     "seconds": 0.0
+    },
+    {
+     "products": 62,
+     "flips": 23,
+     "seconds": 0.0
+    },
+    {
+     "products": 61,
+     "flips": 26,
+     "seconds": 0.0
+    },
+    {
+     "products": 60,
+     "flips": 31,
+     "seconds": 0.0
+    },
+    {
+     "products": 59,
+     "flips": 47,
+     "seconds": 0.0
+    },
+    {
+     "products": 58,
+     "flips": 92,
+     "seconds": 0.0
+    },
+    {
+     "products": 57,
+     "flips": 152,
+     "seconds": 0.0
+    },
+    {
+     "products": 56,
+     "flips": 443,
+     "seconds": 0.0
+    },
+    {
+     "products": 55,
+     "flips": 554,
+     "seconds": 0.0
+    },
+    {
+     "products": 54,
+     "flips": 881,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 2894,
+     "seconds": 0.0
+    },
+    {
+     "products": 52,
+     "flips": 3704,
+     "seconds": 0.1
+    },
+    {
+     "products": 51,
+     "flips": 4918,
+     "seconds": 0.1
+    },
+    {
+     "products": 50,
+     "flips": 209164,
+     "seconds": 2.9
+    },
+    {
+     "products": 49,
+     "flips": 352076,
+     "seconds": 5.0
+    },
+    {
+     "products": 48,
+     "flips": 474155,
+     "seconds": 6.6
+    },
+    {
+     "products": 47,
+     "flips": 850342,
+     "seconds": 11.8
+    },
+    {
+     "products": 46,
+     "flips": 1201484,
+     "seconds": 16.5
+    },
+    {
+     "products": 45,
+     "flips": 1805583,
+     "seconds": 24.9
+    },
+    {
+     "products": 44,
+     "flips": 2182258,
+     "seconds": 30.2
+    },
+    {
+     "products": 43,
+     "flips": 2342260,
+     "seconds": 32.4
+    },
+    {
+     "products": 42,
+     "flips": 2346360,
+     "seconds": 32.5
+    },
+    {
+     "products": 41,
+     "flips": 3726806,
+     "seconds": 51.7
+    },
+    {
+     "products": 40,
+     "flips": 4102040,
+     "seconds": 56.9
+    },
+    {
+     "products": 39,
+     "flips": 4813524,
+     "seconds": 66.8
+    },
+    {
+     "products": 38,
+     "flips": 5952295,
+     "seconds": 82.4
+    },
+    {
+     "products": 37,
+     "flips": 9271769,
+     "seconds": 129.0
+    },
+    {
+     "products": 36,
+     "flips": 9463103,
+     "seconds": 131.8
+    },
+    {
+     "products": 35,
+     "flips": 9770406,
+     "seconds": 136.1
+    },
+    {
+     "products": 34,
+     "flips": 14309603,
+     "seconds": 199.4
+    },
+    {
+     "products": 33,
+     "flips": 87423737,
+     "seconds": 1186.1
+    },
+    {
+     "products": 32,
+     "flips": 189474823,
+     "seconds": 2628.4
+    }
+   ],
+   "triples": [
+    [
+     80,
+     60,
+     167
+    ],
+    [
+     29,
+     178,
+     118
+    ],
+    [
+     85,
+     175,
+     179
+    ],
+    [
+     13,
+     245,
+     69
+    ],
+    [
+     183,
+     106,
+     202
+    ],
+    [
+     37,
+     129,
+     140
+    ],
+    [
+     240,
+     11,
+     13
+    ],
+    [
+     158,
+     96,
+     231
+    ],
+    [
+     53,
+     120,
+     178
+    ],
+    [
+     213,
+     3,
+     10
+    ],
+    [
+     244,
+     86,
+     121
+    ],
+    [
+     195,
+     97,
+     184
+    ],
+    [
+     233,
+     32,
+     160
+    ],
+    [
+     26,
+     72,
+     219
+    ],
+    [
+     14,
+     119,
+     159
+    ],
+    [
+     201,
+     140,
+     154
+    ],
+    [
+     218,
+     4,
+     75
+    ],
+    [
+     90,
+     160,
+     62
+    ],
+    [
+     126,
+     219,
+     74
+    ],
+    [
+     75,
+     16,
+     4
+    ],
+    [
+     229,
+     91,
+     161
+    ],
+    [
+     21,
+     128,
+     188
+    ],
+    [
+     91,
+     189,
+     206
+    ],
+    [
+     16,
+     41,
+     59
+    ],
+    [
+     225,
+     39,
+     14
+    ],
+    [
+     98,
+     181,
+     186
+    ],
+    [
+     58,
+     219,
+     179
+    ],
+    [
+     104,
+     85,
+     229
+    ],
+    [
+     109,
+     208,
+     204
+    ],
+    [
+     59,
+     24,
+     54
+    ],
+    [
+     192,
+     45,
+     144
+    ],
+    [
+     115,
+     199,
+     168
+    ]
+   ],
+   "exact": true,
+   "products_counted": 32,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 8,
+   "start": "schoolbook",
+   "starting_products": 64,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 26,
+   "best": 31,
+   "flips": 490920960,
+   "flips_tried": 490920960,
+   "plus_transitions": 3160418,
+   "resets": 1629,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 64,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 63,
+     "flips": 11,
+     "seconds": 0.0
+    },
+    {
+     "products": 62,
+     "flips": 24,
+     "seconds": 0.0
+    },
+    {
+     "products": 61,
+     "flips": 30,
+     "seconds": 0.0
+    },
+    {
+     "products": 60,
+     "flips": 58,
+     "seconds": 0.0
+    },
+    {
+     "products": 59,
+     "flips": 114,
+     "seconds": 0.0
+    },
+    {
+     "products": 58,
+     "flips": 167,
+     "seconds": 0.0
+    },
+    {
+     "products": 57,
+     "flips": 281,
+     "seconds": 0.0
+    },
+    {
+     "products": 56,
+     "flips": 393,
+     "seconds": 0.0
+    },
+    {
+     "products": 55,
+     "flips": 456,
+     "seconds": 0.0
+    },
+    {
+     "products": 54,
+     "flips": 611,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 654,
+     "seconds": 0.0
+    },
+    {
+     "products": 52,
+     "flips": 705,
+     "seconds": 0.0
+    },
+    {
+     "products": 51,
+     "flips": 1181,
+     "seconds": 0.0
+    },
+    {
+     "products": 50,
+     "flips": 1947,
+     "seconds": 0.0
+    },
+    {
+     "products": 49,
+     "flips": 51871,
+     "seconds": 0.7
+    },
+    {
+     "products": 48,
+     "flips": 235485,
+     "seconds": 3.3
+    },
+    {
+     "products": 47,
+     "flips": 395687,
+     "seconds": 5.5
+    },
+    {
+     "products": 46,
+     "flips": 1186761,
+     "seconds": 16.4
+    },
+    {
+     "products": 45,
+     "flips": 1349306,
+     "seconds": 18.6
+    },
+    {
+     "products": 44,
+     "flips": 1682882,
+     "seconds": 23.2
+    },
+    {
+     "products": 43,
+     "flips": 3780233,
+     "seconds": 52.5
+    },
+    {
+     "products": 42,
+     "flips": 3906548,
+     "seconds": 54.4
+    },
+    {
+     "products": 41,
+     "flips": 3999985,
+     "seconds": 55.7
+    },
+    {
+     "products": 40,
+     "flips": 4102077,
+     "seconds": 57.1
+    },
+    {
+     "products": 39,
+     "flips": 7076488,
+     "seconds": 98.6
+    },
+    {
+     "products": 38,
+     "flips": 7683049,
+     "seconds": 107.0
+    },
+    {
+     "products": 37,
+     "flips": 12238770,
+     "seconds": 170.0
+    },
+    {
+     "products": 36,
+     "flips": 12863136,
+     "seconds": 178.9
+    },
+    {
+     "products": 35,
+     "flips": 14365744,
+     "seconds": 199.6
+    },
+    {
+     "products": 34,
+     "flips": 16824707,
+     "seconds": 233.5
+    },
+    {
+     "products": 33,
+     "flips": 22365307,
+     "seconds": 310.5
+    },
+    {
+     "products": 32,
+     "flips": 36333312,
+     "seconds": 507.6
+    },
+    {
+     "products": 31,
+     "flips": 160006518,
+     "seconds": 2278.7
+    }
+   ],
+   "triples": [
+    [
+     119,
+     141,
+     88
+    ],
+    [
+     171,
+     213,
+     177
+    ],
+    [
+     77,
+     72,
+     12
+    ],
+    [
+     35,
+     19,
+     35
+    ],
+    [
+     193,
+     185,
+     91
+    ],
+    [
+     243,
+     175,
+     227
+    ],
+    [
+     149,
+     43,
+     149
+    ],
+    [
+     76,
+     52,
+     163
+    ],
+    [
+     218,
+     19,
+     102
+    ],
+    [
+     92,
+     179,
+     176
+    ],
+    [
+     112,
+     181,
+     36
+    ],
+    [
+     101,
+     204,
+     155
+    ],
+    [
+     77,
+     19,
+     230
+    ],
+    [
+     187,
+     140,
+     152
+    ],
+    [
+     78,
+     149,
+     10
+    ],
+    [
+     74,
+     136,
+     13
+    ],
+    [
+     118,
+     241,
+     116
+    ],
+    [
+     86,
+     193,
+     233
+    ],
+    [
+     27,
+     100,
+     139
+    ],
+    [
+     66,
+     194,
+     202
+    ],
+    [
+     163,
+     116,
+     252
+    ],
+    [
+     81,
+     57,
+     8
+    ],
+    [
+     55,
+     51,
+     160
+    ],
+    [
+     120,
+     167,
+     43
+    ],
+    [
+     55,
+     77,
+     122
+    ],
+    [
+     250,
+     138,
+     217
+    ],
+    [
+     133,
+     161,
+     210
+    ],
+    [
+     82,
+     28,
+     157
+    ],
+    [
+     71,
+     82,
+     107
+    ],
+    [
+     184,
+     51,
+     168
+    ],
+    [
+     187,
+     2,
+     122
+    ]
+   ],
+   "exact": true,
+   "products_counted": 31,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 8,
+   "start": "schoolbook",
+   "starting_products": 64,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 26,
+   "best": 31,
+   "flips": 524547072,
+   "flips_tried": 524547072,
+   "plus_transitions": 2708979,
+   "resets": 1740,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 64,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 63,
+     "flips": 12,
+     "seconds": 0.0
+    },
+    {
+     "products": 62,
+     "flips": 14,
+     "seconds": 0.0
+    },
+    {
+     "products": 61,
+     "flips": 22,
+     "seconds": 0.0
+    },
+    {
+     "products": 60,
+     "flips": 62,
+     "seconds": 0.0
+    },
+    {
+     "products": 59,
+     "flips": 71,
+     "seconds": 0.0
+    },
+    {
+     "products": 58,
+     "flips": 98,
+     "seconds": 0.0
+    },
+    {
+     "products": 57,
+     "flips": 129,
+     "seconds": 0.0
+    },
+    {
+     "products": 56,
+     "flips": 188,
+     "seconds": 0.0
+    },
+    {
+     "products": 55,
+     "flips": 240,
+     "seconds": 0.0
+    },
+    {
+     "products": 54,
+     "flips": 438,
+     "seconds": 0.0
+    },
+    {
+     "products": 53,
+     "flips": 667,
+     "seconds": 0.0
+    },
+    {
+     "products": 52,
+     "flips": 25371,
+     "seconds": 0.4
+    },
+    {
+     "products": 51,
+     "flips": 34473,
+     "seconds": 0.5
+    },
+    {
+     "products": 50,
+     "flips": 397224,
+     "seconds": 5.6
+    },
+    {
+     "products": 49,
+     "flips": 597596,
+     "seconds": 8.3
+    },
+    {
+     "products": 48,
+     "flips": 1071584,
+     "seconds": 14.9
+    },
+    {
+     "products": 47,
+     "flips": 1416648,
+     "seconds": 19.6
+    },
+    {
+     "products": 46,
+     "flips": 1515418,
+     "seconds": 21.0
+    },
+    {
+     "products": 45,
+     "flips": 1855470,
+     "seconds": 25.7
+    },
+    {
+     "products": 44,
+     "flips": 2053452,
+     "seconds": 28.4
+    },
+    {
+     "products": 43,
+     "flips": 2394425,
+     "seconds": 33.1
+    },
+    {
+     "products": 42,
+     "flips": 3666274,
+     "seconds": 50.9
+    },
+    {
+     "products": 41,
+     "flips": 3685740,
+     "seconds": 51.1
+    },
+    {
+     "products": 40,
+     "flips": 3772495,
+     "seconds": 52.4
+    },
+    {
+     "products": 39,
+     "flips": 6819237,
+     "seconds": 94.6
+    },
+    {
+     "products": 38,
+     "flips": 8310659,
+     "seconds": 115.3
+    },
+    {
+     "products": 37,
+     "flips": 10113776,
+     "seconds": 140.1
+    },
+    {
+     "products": 36,
+     "flips": 16601576,
+     "seconds": 229.7
+    },
+    {
+     "products": 35,
+     "flips": 17814697,
+     "seconds": 246.3
+    },
+    {
+     "products": 34,
+     "flips": 19520217,
+     "seconds": 270.2
+    },
+    {
+     "products": 33,
+     "flips": 145372305,
+     "seconds": 2016.6
+    },
+    {
+     "products": 32,
+     "flips": 423755268,
+     "seconds": 5797.8
+    },
+    {
+     "products": 31,
+     "flips": 453608589,
+     "seconds": 6214.9
+    }
+   ],
+   "triples": [
+    [
+     128,
+     221,
+     121
+    ],
+    [
+     111,
+     5,
+     209
+    ],
+    [
+     104,
+     111,
+     24
+    ],
+    [
+     82,
+     137,
+     66
+    ],
+    [
+     183,
+     69,
+     41
+    ],
+    [
+     31,
+     125,
+     214
+    ],
+    [
+     180,
+     181,
+     54
+    ],
+    [
+     134,
+     237,
+     242
+    ],
+    [
+     55,
+     236,
+     129
+    ],
+    [
+     223,
+     162,
+     38
+    ],
+    [
+     191,
+     33,
+     234
+    ],
+    [
+     241,
+     193,
+     147
+    ],
+    [
+     73,
+     225,
+     194
+    ],
+    [
+     12,
+     79,
+     237
+    ],
+    [
+     51,
+     52,
+     246
+    ],
+    [
+     181,
+     141,
+     116
+    ],
+    [
+     128,
+     15,
+     255
+    ],
+    [
+     11,
+     201,
+     141
+    ],
+    [
+     50,
+     229,
+     135
+    ],
+    [
+     239,
+     38,
+     36
+    ],
+    [
+     145,
+     52,
+     251
+    ],
+    [
+     178,
+     227,
+     124
+    ],
+    [
+     30,
+     202,
+     122
+    ],
+    [
+     192,
+     155,
+     154
+    ],
+    [
+     73,
+     192,
+     226
+    ],
+    [
+     4,
+     172,
+     198
+    ],
+    [
+     13,
+     56,
+     61
+    ],
+    [
+     12,
+     155,
+     157
+    ],
+    [
+     17,
+     169,
+     109
+    ],
+    [
+     249,
+     28,
+     246
+    ],
+    [
+     8,
+     105,
+     194
+    ]
+   ],
+   "exact": true,
+   "products_counted": 31,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 8,
+   "start": "schoolbook",
+   "starting_products": 64,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 26,
+   "best": 32,
+   "flips": 510926848,
+   "flips_tried": 510926848,
+   "plus_transitions": 2637525,
+   "resets": 1693,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 64,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 63,
+     "flips": 6,
+     "seconds": 0.0
+    },
+    {
+     "products": 62,
+     "flips": 7,
+     "seconds": 0.0
+    },
+    {
+     "products": 61,
+     "flips": 17,
+     "seconds": 0.0
+    },
+    {
+     "products": 60,
+     "flips": 59,
+     "seconds": 0.0
+    },
+    {
+     "products": 59,
+     "flips": 78,
+     "seconds": 0.0
+    },
+    {
+     "products": 58,
+     "flips": 1331,
+     "seconds": 0.0
+    },
+    {
+     "products": 57,
+     "flips": 1348,
+     "seconds": 0.0
+    },
+    {
+     "products": 56,
+     "flips": 154258,
+     "seconds": 2.2
+    },
+    {
+     "products": 55,
+     "flips": 168688,
+     "seconds": 2.4
+    },
+    {
+     "products": 54,
+     "flips": 350956,
+     "seconds": 4.9
+    },
+    {
+     "products": 53,
+     "flips": 351967,
+     "seconds": 5.0
+    },
+    {
+     "products": 52,
+     "flips": 606122,
+     "seconds": 8.6
+    },
+    {
+     "products": 51,
+     "flips": 698626,
+     "seconds": 9.9
+    },
+    {
+     "products": 50,
+     "flips": 778302,
+     "seconds": 11.0
+    },
+    {
+     "products": 49,
+     "flips": 878259,
+     "seconds": 12.4
+    },
+    {
+     "products": 48,
+     "flips": 1164818,
+     "seconds": 16.5
+    },
+    {
+     "products": 47,
+     "flips": 1170120,
+     "seconds": 16.6
+    },
+    {
+     "products": 46,
+     "flips": 1262241,
+     "seconds": 17.9
+    },
+    {
+     "products": 45,
+     "flips": 1869573,
+     "seconds": 26.5
+    },
+    {
+     "products": 44,
+     "flips": 2235648,
+     "seconds": 31.7
+    },
+    {
+     "products": 43,
+     "flips": 2275772,
+     "seconds": 32.3
+    },
+    {
+     "products": 42,
+     "flips": 3462565,
+     "seconds": 49.1
+    },
+    {
+     "products": 41,
+     "flips": 4056112,
+     "seconds": 57.4
+    },
+    {
+     "products": 40,
+     "flips": 5576572,
+     "seconds": 79.0
+    },
+    {
+     "products": 39,
+     "flips": 7103663,
+     "seconds": 100.7
+    },
+    {
+     "products": 38,
+     "flips": 7957070,
+     "seconds": 112.6
+    },
+    {
+     "products": 37,
+     "flips": 8614122,
+     "seconds": 121.8
+    },
+    {
+     "products": 36,
+     "flips": 9614696,
+     "seconds": 136.1
+    },
+    {
+     "products": 35,
+     "flips": 9628020,
+     "seconds": 136.3
+    },
+    {
+     "products": 34,
+     "flips": 11527126,
+     "seconds": 163.5
+    },
+    {
+     "products": 33,
+     "flips": 14702418,
+     "seconds": 208.7
+    },
+    {
+     "products": 32,
+     "flips": 15844206,
+     "seconds": 225.4
+    }
+   ],
+   "triples": [
+    [
+     152,
+     223,
+     116
+    ],
+    [
+     27,
+     55,
+     73
+    ],
+    [
+     228,
+     146,
+     35
+    ],
+    [
+     156,
+     190,
+     48
+    ],
+    [
+     81,
+     245,
+     51
+    ],
+    [
+     156,
+     23,
+     47
+    ],
+    [
+     75,
+     63,
+     193
+    ],
+    [
+     36,
+     44,
+     186
+    ],
+    [
+     207,
+     67,
+     232
+    ],
+    [
+     238,
+     8,
+     255
+    ],
+    [
+     82,
+     187,
+     197
+    ],
+    [
+     172,
+     115,
+     248
+    ],
+    [
+     47,
+     206,
+     161
+    ],
+    [
+     234,
+     51,
+     25
+    ],
+    [
+     160,
+     46,
+     114
+    ],
+    [
+     175,
+     32,
+     243
+    ],
+    [
+     167,
+     106,
+     100
+    ],
+    [
+     10,
+     138,
+     169
+    ],
+    [
+     251,
+     171,
+     99
+    ],
+    [
+     115,
+     47,
+     181
+    ],
+    [
+     2,
+     183,
+     226
+    ],
+    [
+     74,
+     122,
+     99
+    ],
+    [
+     103,
+     65,
+     94
+    ],
+    [
+     30,
+     218,
+     144
+    ],
+    [
+     234,
+     142,
+     19
+    ],
+    [
+     97,
+     61,
+     218
+    ],
+    [
+     118,
+     181,
+     101
+    ],
+    [
+     218,
+     169,
+     177
+    ],
+    [
+     112,
+     22,
+     204
+    ],
+    [
+     240,
+     230,
+     77
+    ],
+    [
+     237,
+     150,
+     113
+    ],
+    [
+     48,
+     121,
+     246
+    ]
+   ],
+   "exact": true,
+   "products_counted": 32,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 9,
+   "start": "schoolbook",
+   "starting_products": 81,
+   "seed": 0,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 32,
+   "best": 53,
+   "flips": 258166784,
+   "flips_tried": 258166784,
+   "plus_transitions": 767445,
+   "resets": 854,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 81,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 80,
+     "flips": 20,
+     "seconds": 0.0
+    },
+    {
+     "products": 79,
+     "flips": 29,
+     "seconds": 0.0
+    },
+    {
+     "products": 78,
+     "flips": 43,
+     "seconds": 0.0
+    },
+    {
+     "products": 77,
+     "flips": 66,
+     "seconds": 0.0
+    },
+    {
+     "products": 76,
+     "flips": 81,
+     "seconds": 0.0
+    },
+    {
+     "products": 75,
+     "flips": 82,
+     "seconds": 0.0
+    },
+    {
+     "products": 74,
+     "flips": 92,
+     "seconds": 0.0
+    },
+    {
+     "products": 73,
+     "flips": 217,
+     "seconds": 0.0
+    },
+    {
+     "products": 72,
+     "flips": 1843,
+     "seconds": 0.1
+    },
+    {
+     "products": 71,
+     "flips": 2319,
+     "seconds": 0.1
+    },
+    {
+     "products": 70,
+     "flips": 2515,
+     "seconds": 0.1
+    },
+    {
+     "products": 69,
+     "flips": 261176,
+     "seconds": 7.3
+    },
+    {
+     "products": 68,
+     "flips": 7791545,
+     "seconds": 216.8
+    },
+    {
+     "products": 67,
+     "flips": 37362808,
+     "seconds": 1034.3
+    },
+    {
+     "products": 66,
+     "flips": 42469214,
+     "seconds": 1176.3
+    },
+    {
+     "products": 65,
+     "flips": 43380760,
+     "seconds": 1201.5
+    },
+    {
+     "products": 64,
+     "flips": 43685653,
+     "seconds": 1210.0
+    },
+    {
+     "products": 63,
+     "flips": 49690212,
+     "seconds": 1375.6
+    },
+    {
+     "products": 62,
+     "flips": 52195508,
+     "seconds": 1444.6
+    },
+    {
+     "products": 61,
+     "flips": 59441291,
+     "seconds": 1648.7
+    },
+    {
+     "products": 60,
+     "flips": 69621537,
+     "seconds": 1929.7
+    },
+    {
+     "products": 59,
+     "flips": 112889160,
+     "seconds": 3143.1
+    },
+    {
+     "products": 58,
+     "flips": 116355310,
+     "seconds": 3238.3
+    },
+    {
+     "products": 57,
+     "flips": 163714933,
+     "seconds": 4547.3
+    },
+    {
+     "products": 56,
+     "flips": 176246662,
+     "seconds": 4892.3
+    },
+    {
+     "products": 55,
+     "flips": 182582475,
+     "seconds": 5069.2
+    },
+    {
+     "products": 54,
+     "flips": 185986119,
+     "seconds": 5165.7
+    },
+    {
+     "products": 53,
+     "flips": 205050950,
+     "seconds": 5695.0
+    }
+   ],
+   "triples": [
+    [
+     386,
+     301,
+     416
+    ],
+    [
+     129,
+     393,
+     436
+    ],
+    [
+     363,
+     33,
+     280
+    ],
+    [
+     190,
+     9,
+     413
+    ],
+    [
+     176,
+     213,
+     478
+    ],
+    [
+     422,
+     363,
+     279
+    ],
+    [
+     154,
+     68,
+     10
+    ],
+    [
+     410,
+     478,
+     182
+    ],
+    [
+     388,
+     361,
+     406
+    ],
+    [
+     222,
+     353,
+     83
+    ],
+    [
+     336,
+     19,
+     442
+    ],
+    [
+     33,
+     404,
+     450
+    ],
+    [
+     321,
+     343,
+     172
+    ],
+    [
+     151,
+     488,
+     488
+    ],
+    [
+     143,
+     495,
+     510
+    ],
+    [
+     505,
+     86,
+     23
+    ],
+    [
+     114,
+     67,
+     412
+    ],
+    [
+     345,
+     163,
+     75
+    ],
+    [
+     93,
+     301,
+     22
+    ],
+    [
+     495,
+     28,
+     310
+    ],
+    [
+     178,
+     89,
+     370
+    ],
+    [
+     100,
+     470,
+     313
+    ],
+    [
+     255,
+     210,
+     38
+    ],
+    [
+     355,
+     288,
+     203
+    ],
+    [
+     47,
+     305,
+     152
+    ],
+    [
+     211,
+     397,
+     394
+    ],
+    [
+     126,
+     263,
+     445
+    ],
+    [
+     143,
+     432,
+     409
+    ],
+    [
+     452,
+     241,
+     54
+    ],
+    [
+     265,
+     464,
+     484
+    ],
+    [
+     278,
+     104,
+     123
+    ],
+    [
+     75,
+     381,
+     4
+    ],
+    [
+     300,
+     409,
+     110
+    ],
+    [
+     86,
+     81,
+     383
+    ],
+    [
+     168,
+     235,
+     82
+    ],
+    [
+     413,
+     390,
+     371
+    ],
+    [
+     72,
+     175,
+     90
+    ],
+    [
+     143,
+     270,
+     459
+    ],
+    [
+     27,
+     422,
+     446
+    ],
+    [
+     453,
+     57,
+     303
+    ],
+    [
+     499,
+     246,
+     460
+    ],
+    [
+     28,
+     250,
+     452
+    ],
+    [
+     258,
+     149,
+     20
+    ],
+    [
+     26,
+     99,
+     296
+    ],
+    [
+     10,
+     374,
+     165
+    ],
+    [
+     383,
+     299,
+     263
+    ],
+    [
+     167,
+     111,
+     231
+    ],
+    [
+     119,
+     401,
+     123
+    ],
+    [
+     192,
+     323,
+     186
+    ],
+    [
+     274,
+     146,
+     392
+    ],
+    [
+     332,
+     346,
+     202
+    ],
+    [
+     220,
+     447,
+     21
+    ],
+    [
+     352,
+     76,
+     18
+    ]
+   ],
+   "exact": true,
+   "products_counted": 53,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 9,
+   "start": "schoolbook",
+   "starting_products": 81,
+   "seed": 1,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 32,
+   "best": 53,
+   "flips": 269640704,
+   "flips_tried": 269640704,
+   "plus_transitions": 1454618,
+   "resets": 895,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 81,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 80,
+     "flips": 20,
+     "seconds": 0.0
+    },
+    {
+     "products": 79,
+     "flips": 23,
+     "seconds": 0.0
+    },
+    {
+     "products": 78,
+     "flips": 28,
+     "seconds": 0.0
+    },
+    {
+     "products": 77,
+     "flips": 33,
+     "seconds": 0.0
+    },
+    {
+     "products": 76,
+     "flips": 51,
+     "seconds": 0.0
+    },
+    {
+     "products": 75,
+     "flips": 56,
+     "seconds": 0.0
+    },
+    {
+     "products": 74,
+     "flips": 61,
+     "seconds": 0.0
+    },
+    {
+     "products": 73,
+     "flips": 85,
+     "seconds": 0.0
+    },
+    {
+     "products": 72,
+     "flips": 154,
+     "seconds": 0.0
+    },
+    {
+     "products": 71,
+     "flips": 1098,
+     "seconds": 0.0
+    },
+    {
+     "products": 70,
+     "flips": 1464,
+     "seconds": 0.1
+    },
+    {
+     "products": 69,
+     "flips": 1496,
+     "seconds": 0.1
+    },
+    {
+     "products": 68,
+     "flips": 1514,
+     "seconds": 0.1
+    },
+    {
+     "products": 67,
+     "flips": 2949,
+     "seconds": 0.1
+    },
+    {
+     "products": 66,
+     "flips": 303975,
+     "seconds": 8.3
+    },
+    {
+     "products": 65,
+     "flips": 608045,
+     "seconds": 16.9
+    },
+    {
+     "products": 64,
+     "flips": 1810550,
+     "seconds": 48.9
+    },
+    {
+     "products": 63,
+     "flips": 8740816,
+     "seconds": 237.7
+    },
+    {
+     "products": 62,
+     "flips": 9043341,
+     "seconds": 245.6
+    },
+    {
+     "products": 61,
+     "flips": 12123812,
+     "seconds": 328.1
+    },
+    {
+     "products": 60,
+     "flips": 29551881,
+     "seconds": 800.2
+    },
+    {
+     "products": 59,
+     "flips": 34651340,
+     "seconds": 934.9
+    },
+    {
+     "products": 58,
+     "flips": 37967413,
+     "seconds": 1026.6
+    },
+    {
+     "products": 57,
+     "flips": 53335739,
+     "seconds": 1441.7
+    },
+    {
+     "products": 56,
+     "flips": 53640051,
+     "seconds": 1450.0
+    },
+    {
+     "products": 55,
+     "flips": 57317217,
+     "seconds": 1552.1
+    },
+    {
+     "products": 54,
+     "flips": 65955266,
+     "seconds": 1790.1
+    },
+    {
+     "products": 53,
+     "flips": 96835858,
+     "seconds": 2623.7
+    }
+   ],
+   "triples": [
+    [
+     158,
+     223,
+     444
+    ],
+    [
+     296,
+     162,
+     246
+    ],
+    [
+     388,
+     428,
+     77
+    ],
+    [
+     385,
+     176,
+     123
+    ],
+    [
+     221,
+     53,
+     412
+    ],
+    [
+     134,
+     150,
+     345
+    ],
+    [
+     396,
+     218,
+     333
+    ],
+    [
+     53,
+     127,
+     425
+    ],
+    [
+     439,
+     126,
+     209
+    ],
+    [
+     328,
+     59,
+     196
+    ],
+    [
+     99,
+     322,
+     388
+    ],
+    [
+     245,
+     332,
+     501
+    ],
+    [
+     371,
+     22,
+     475
+    ],
+    [
+     506,
+     82,
+     76
+    ],
+    [
+     363,
+     183,
+     488
+    ],
+    [
+     387,
+     136,
+     332
+    ],
+    [
+     59,
+     480,
+     467
+    ],
+    [
+     326,
+     414,
+     128
+    ],
+    [
+     220,
+     163,
+     217
+    ],
+    [
+     466,
+     270,
+     207
+    ],
+    [
+     4,
+     154,
+     322
+    ],
+    [
+     335,
+     119,
+     313
+    ],
+    [
+     143,
+     288,
+     266
+    ],
+    [
+     235,
+     320,
+     468
+    ],
+    [
+     52,
+     54,
+     69
+    ],
+    [
+     343,
+     317,
+     139
+    ],
+    [
+     448,
+     134,
+     188
+    ],
+    [
+     342,
+     269,
+     50
+    ],
+    [
+     406,
+     403,
+     290
+    ],
+    [
+     305,
+     345,
+     135
+    ],
+    [
+     72,
+     47,
+     433
+    ],
+    [
+     327,
+     106,
+     403
+    ],
+    [
+     281,
+     13,
+     81
+    ],
+    [
+     413,
+     267,
+     249
+    ],
+    [
+     434,
+     192,
+     363
+    ],
+    [
+     167,
+     480,
+     194
+    ],
+    [
+     95,
+     481,
+     348
+    ],
+    [
+     264,
+     109,
+     248
+    ],
+    [
+     498,
+     258,
+     463
+    ],
+    [
+     363,
+     225,
+     10
+    ],
+    [
+     157,
+     82,
+     247
+    ],
+    [
+     115,
+     54,
+     151
+    ],
+    [
+     152,
+     108,
+     158
+    ],
+    [
+     211,
+     427,
+     497
+    ],
+    [
+     283,
+     36,
+     443
+    ],
+    [
+     504,
+     216,
+     34
+    ],
+    [
+     488,
+     186,
+     397
+    ],
+    [
+     17,
+     437,
+     230
+    ],
+    [
+     430,
+     405,
+     236
+    ],
+    [
+     65,
+     158,
+     271
+    ],
+    [
+     122,
+     138,
+     165
+    ],
+    [
+     478,
+     193,
+     191
+    ],
+    [
+     282,
+     224,
+     200
+    ]
+   ],
+   "exact": true,
+   "products_counted": 53,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 9,
+   "start": "schoolbook",
+   "starting_products": 81,
+   "seed": 2,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 32,
+   "best": 54,
+   "flips": 271466496,
+   "flips_tried": 271466496,
+   "plus_transitions": 1545202,
+   "resets": 900,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 81,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 80,
+     "flips": 3,
+     "seconds": 0.0
+    },
+    {
+     "products": 79,
+     "flips": 7,
+     "seconds": 0.0
+    },
+    {
+     "products": 78,
+     "flips": 30,
+     "seconds": 0.0
+    },
+    {
+     "products": 77,
+     "flips": 66,
+     "seconds": 0.0
+    },
+    {
+     "products": 76,
+     "flips": 76,
+     "seconds": 0.0
+    },
+    {
+     "products": 75,
+     "flips": 82,
+     "seconds": 0.0
+    },
+    {
+     "products": 74,
+     "flips": 89,
+     "seconds": 0.0
+    },
+    {
+     "products": 73,
+     "flips": 136,
+     "seconds": 0.0
+    },
+    {
+     "products": 72,
+     "flips": 246,
+     "seconds": 0.0
+    },
+    {
+     "products": 71,
+     "flips": 310,
+     "seconds": 0.0
+    },
+    {
+     "products": 70,
+     "flips": 379,
+     "seconds": 0.0
+    },
+    {
+     "products": 69,
+     "flips": 380,
+     "seconds": 0.0
+    },
+    {
+     "products": 68,
+     "flips": 518,
+     "seconds": 0.0
+    },
+    {
+     "products": 67,
+     "flips": 1417,
+     "seconds": 0.0
+    },
+    {
+     "products": 66,
+     "flips": 18577,
+     "seconds": 0.5
+    },
+    {
+     "products": 65,
+     "flips": 31883,
+     "seconds": 0.9
+    },
+    {
+     "products": 64,
+     "flips": 62420,
+     "seconds": 1.7
+    },
+    {
+     "products": 63,
+     "flips": 1575616,
+     "seconds": 42.2
+    },
+    {
+     "products": 62,
+     "flips": 7843730,
+     "seconds": 210.8
+    },
+    {
+     "products": 61,
+     "flips": 10210246,
+     "seconds": 275.5
+    },
+    {
+     "products": 60,
+     "flips": 10383720,
+     "seconds": 280.3
+    },
+    {
+     "products": 59,
+     "flips": 19684273,
+     "seconds": 535.3
+    },
+    {
+     "products": 58,
+     "flips": 32051516,
+     "seconds": 871.7
+    },
+    {
+     "products": 57,
+     "flips": 32968968,
+     "seconds": 897.3
+    },
+    {
+     "products": 56,
+     "flips": 41061380,
+     "seconds": 1118.8
+    },
+    {
+     "products": 55,
+     "flips": 41977964,
+     "seconds": 1143.6
+    },
+    {
+     "products": 54,
+     "flips": 253357263,
+     "seconds": 6721.3
+    }
+   ],
+   "triples": [
+    [
+     11,
+     452,
+     65
+    ],
+    [
+     227,
+     268,
+     1
+    ],
+    [
+     86,
+     373,
+     224
+    ],
+    [
+     104,
+     203,
+     429
+    ],
+    [
+     500,
+     420,
+     99
+    ],
+    [
+     115,
+     172,
+     109
+    ],
+    [
+     119,
+     455,
+     147
+    ],
+    [
+     126,
+     59,
+     423
+    ],
+    [
+     251,
+     125,
+     46
+    ],
+    [
+     83,
+     480,
+     197
+    ],
+    [
+     155,
+     164,
+     358
+    ],
+    [
+     107,
+     149,
+     239
+    ],
+    [
+     51,
+     155,
+     126
+    ],
+    [
+     159,
+     12,
+     359
+    ],
+    [
+     206,
+     307,
+     157
+    ],
+    [
+     412,
+     185,
+     84
+    ],
+    [
+     494,
+     234,
+     173
+    ],
+    [
+     348,
+     57,
+     25
+    ],
+    [
+     320,
+     111,
+     362
+    ],
+    [
+     47,
+     17,
+     459
+    ],
+    [
+     267,
+     466,
+     432
+    ],
+    [
+     241,
+     443,
+     285
+    ],
+    [
+     211,
+     198,
+     428
+    ],
+    [
+     427,
+     119,
+     455
+    ],
+    [
+     220,
+     299,
+     94
+    ],
+    [
+     316,
+     48,
+     227
+    ],
+    [
+     204,
+     324,
+     199
+    ],
+    [
+     19,
+     426,
+     248
+    ],
+    [
+     412,
+     331,
+     387
+    ],
+    [
+     362,
+     422,
+     218
+    ],
+    [
+     137,
+     346,
+     88
+    ],
+    [
+     139,
+     478,
+     302
+    ],
+    [
+     158,
+     137,
+     18
+    ],
+    [
+     211,
+     442,
+     483
+    ],
+    [
+     483,
+     218,
+     372
+    ],
+    [
+     380,
+     218,
+     480
+    ],
+    [
+     502,
+     312,
+     277
+    ],
+    [
+     31,
+     253,
+     126
+    ],
+    [
+     143,
+     275,
+     235
+    ],
+    [
+     329,
+     45,
+     501
+    ],
+    [
+     346,
+     456,
+     136
+    ],
+    [
+     113,
+     104,
+     254
+    ],
+    [
+     450,
+     376,
+     442
+    ],
+    [
+     212,
+     314,
+     159
+    ],
+    [
+     321,
+     228,
+     484
+    ],
+    [
+     115,
+     341,
+     57
+    ],
+    [
+     397,
+     366,
+     144
+    ],
+    [
+     305,
+     77,
+     505
+    ],
+    [
+     507,
+     145,
+     323
+    ],
+    [
+     279,
+     11,
+     331
+    ],
+    [
+     253,
+     449,
+     404
+    ],
+    [
+     494,
+     258,
+     158
+    ],
+    [
+     280,
+     507,
+     297
+    ],
+    [
+     462,
+     261,
+     334
+    ]
+   ],
+   "exact": true,
+   "products_counted": 54,
+   "wrong_of_random_multiplications": 0
+  },
+  {
+   "field": 9,
+   "start": "schoolbook",
+   "starting_products": 81,
+   "seed": 3,
+   "slack": 2,
+   "seconds_given": 7200.0,
+   "target": 32,
+   "best": 51,
+   "flips": 267675648,
+   "flips_tried": 267675648,
+   "plus_transitions": 693212,
+   "resets": 886,
+   "seconds": 7200.0,
+   "reached": [
+    {
+     "products": 81,
+     "flips": 0,
+     "seconds": 0.0
+    },
+    {
+     "products": 80,
+     "flips": 10,
+     "seconds": 0.0
+    },
+    {
+     "products": 79,
+     "flips": 40,
+     "seconds": 0.0
+    },
+    {
+     "products": 78,
+     "flips": 99,
+     "seconds": 0.0
+    },
+    {
+     "products": 77,
+     "flips": 190,
+     "seconds": 0.0
+    },
+    {
+     "products": 76,
+     "flips": 207,
+     "seconds": 0.0
+    },
+    {
+     "products": 75,
+     "flips": 261,
+     "seconds": 0.0
+    },
+    {
+     "products": 74,
+     "flips": 617,
+     "seconds": 0.0
+    },
+    {
+     "products": 73,
+     "flips": 619,
+     "seconds": 0.0
+    },
+    {
+     "products": 72,
+     "flips": 700,
+     "seconds": 0.0
+    },
+    {
+     "products": 71,
+     "flips": 1422,
+     "seconds": 0.1
+    },
+    {
+     "products": 70,
+     "flips": 3301,
+     "seconds": 0.1
+    },
+    {
+     "products": 69,
+     "flips": 3565,
+     "seconds": 0.1
+    },
+    {
+     "products": 68,
+     "flips": 5097,
+     "seconds": 0.2
+    },
+    {
+     "products": 67,
+     "flips": 58197,
+     "seconds": 1.6
+    },
+    {
+     "products": 66,
+     "flips": 663604,
+     "seconds": 17.8
+    },
+    {
+     "products": 65,
+     "flips": 667646,
+     "seconds": 17.9
+    },
+    {
+     "products": 64,
+     "flips": 11242507,
+     "seconds": 304.2
+    },
+    {
+     "products": 63,
+     "flips": 11249708,
+     "seconds": 304.4
+    },
+    {
+     "products": 62,
+     "flips": 28058509,
+     "seconds": 757.7
+    },
+    {
+     "products": 61,
+     "flips": 45202515,
+     "seconds": 1219.8
+    },
+    {
+     "products": 60,
+     "flips": 46706308,
+     "seconds": 1260.3
+    },
+    {
+     "products": 59,
+     "flips": 78325944,
+     "seconds": 2117.2
+    },
+    {
+     "products": 58,
+     "flips": 78457609,
+     "seconds": 2121.1
+    },
+    {
+     "products": 57,
+     "flips": 120428628,
+     "seconds": 3246.8
+    },
+    {
+     "products": 56,
+     "flips": 120466768,
+     "seconds": 3247.9
+    },
+    {
+     "products": 55,
+     "flips": 123329636,
+     "seconds": 3327.6
+    },
+    {
+     "products": 54,
+     "flips": 213241740,
+     "seconds": 5719.4
+    },
+    {
+     "products": 53,
+     "flips": 241380600,
+     "seconds": 6485.5
+    },
+    {
+     "products": 52,
+     "flips": 243220377,
+     "seconds": 6535.1
+    },
+    {
+     "products": 51,
+     "flips": 261772888,
+     "seconds": 7042.3
+    }
+   ],
+   "triples": [
+    [
+     69,
+     495,
+     145
+    ],
+    [
+     510,
+     2,
+     347
+    ],
+    [
+     69,
+     201,
+     498
+    ],
+    [
+     8,
+     45,
+     185
+    ],
+    [
+     498,
+     211,
+     486
+    ],
+    [
+     218,
+     59,
+     327
+    ],
+    [
+     431,
+     439,
+     123
+    ],
+    [
+     8,
+     50,
+     190
+    ],
+    [
+     508,
+     16,
+     414
+    ],
+    [
+     381,
+     225,
+     217
+    ],
+    [
+     333,
+     25,
+     5
+    ],
+    [
+     319,
+     441,
+     318
+    ],
+    [
+     390,
+     463,
+     488
+    ],
+    [
+     82,
+     345,
+     499
+    ],
+    [
+     172,
+     180,
+     378
+    ],
+    [
+     483,
+     107,
+     503
+    ],
+    [
+     490,
+     183,
+     316
+    ],
+    [
+     72,
+     428,
+     68
+    ],
+    [
+     499,
+     437,
+     61
+    ],
+    [
+     484,
+     45,
+     401
+    ],
+    [
+     346,
+     64,
+     123
+    ],
+    [
+     40,
+     286,
+     253
+    ],
+    [
+     67,
+     206,
+     466
+    ],
+    [
+     343,
+     228,
+     129
+    ],
+    [
+     189,
+     184,
+     420
+    ],
+    [
+     444,
+     25,
+     379
+    ],
+    [
+     270,
+     311,
+     267
+    ],
+    [
+     73,
+     15,
+     181
+    ],
+    [
+     197,
+     497,
+     410
+    ],
+    [
+     340,
+     150,
+     113
+    ],
+    [
+     459,
+     370,
+     371
+    ],
+    [
+     3,
+     49,
+     79
+    ],
+    [
+     36,
+     314,
+     466
+    ],
+    [
+     231,
+     69,
+     273
+    ],
+    [
+     49,
+     252,
+     303
+    ],
+    [
+     283,
+     121,
+     393
+    ],
+    [
+     10,
+     405,
+     170
+    ],
+    [
+     394,
+     108,
+     273
+    ],
+    [
+     373,
+     46,
+     450
+    ],
+    [
+     466,
+     397,
+     1
+    ],
+    [
+     304,
+     55,
+     16
+    ],
+    [
+     62,
+     497,
+     178
+    ],
+    [
+     398,
+     271,
+     209
+    ],
+    [
+     14,
+     123,
+     490
+    ],
+    [
+     330,
+     306,
+     55
+    ],
+    [
+     146,
+     20,
+     184
+    ],
+    [
+     284,
+     272,
+     203
+    ],
+    [
+     112,
+     154,
+     176
+    ],
+    [
+     281,
+     23,
+     201
+    ],
+    [
+     308,
+     48,
+     111
+    ],
+    [
+     238,
+     313,
+     501
+    ]
+   ],
+   "exact": true,
+   "products_counted": 51,
+   "wrong_of_random_multiplications": 0
+  }
+ ]
+}

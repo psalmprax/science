@@ -68,6 +68,11 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12), the Python flip walk's GitHub run recorded (2026-11-26, development).**
+  `benchmarks/gf2_multiplication/flip_search.json`: twelve walks of five hours from the 42 (slack 2 to
+  4) stayed at 42; eight from the composed 54 reached 51; four from the schoolbook 112 to 120. The
+  calibration is as reported on 26 November (22 at GF(2^7); 31, 51 and 73 against the published 26,
+  32 and 39). Every decomposition exact.
 - **The block search beside PySR for the parts of wide tables: a little more often accurate, never
   more often the law (2026-11-26, development).** Run 2 of `.github/workflows/table-split-blocks.yml`
   (run 1 stopped at a test that counted a docstring mention as building the split search). On the
