@@ -101,7 +101,8 @@ def test_the_expectations_are_read_as_written() -> None:
     bpb = dict.fromkeys(run.ARMS, 3.0)
     bpb.update({"pure-complex-16": 2.5, "pure-complex-32": 2.4, "pure-complex-64": 2.3, "hmm-256": 2.6, "hmm-1024": 2.5,
                 "pure-real-23": 2.55, "pure-real-45": 2.45, "pure-real-90": 2.33,
-                "mixed-complex-16-2": 2.45, "mixed-complex-32-2": 2.39, "pure-complex-16@1": 2.51, "hmm-256@1": 2.6})
+                "mixed-complex-16-2": 2.45, "mixed-complex-32-2": 2.39, "pure-complex-16@1": 2.51, "hmm-256@1": 2.6,
+                "pure-complex-23": 2.5, "pure-complex-45": 2.4})
     kn = {f"Kneser-Ney, {k} bytes of history": v for k, v in enumerate((4.6, 3.4, 2.7, 2.2, 1.85))}
     e = run.expectations(bpb, kn)
     assert e["best_quantum_inspired_arm"] == "pure-complex-64"
@@ -110,7 +111,8 @@ def test_the_expectations_are_read_as_written() -> None:
     assert e["E2 beats a hidden Markov model with D^2 states by 0.05"]["held"]
     assert e["E3 complex beats real of the same size by 0.02"]["margin_by_D"] == {16: 0.05, 32: 0.05, 64: 0.03}
     assert e["E3 complex beats real of the same size by 0.02"]["held"]
-    assert not e["E4 a mixed state beats a pure one by 0.02"]["held"]      # 0.05 at 16, only 0.01 at 32
+    e4 = e["E4 a mixed state beats a pure one of the same size by 0.02"]
+    assert not e4["held"] and e4["margin_by_D"] == {16: 0.05, 32: 0.01}       # against pure 23 and 45
     assert e["E5 better with a larger state"]["held"]
     assert not e["E6 beats the strongest Kneser-Ney"]["held"]
     assert e["seed_spread"] == {"pure-complex-16": 0.01, "hmm-256": 0.0}

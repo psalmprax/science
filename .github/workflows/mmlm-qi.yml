@@ -38,6 +38,8 @@ jobs:
           - 'mixed-real-32-2'
           - 'hmm-256'
           - 'hmm-1024'
+          - 'pure-complex-23'
+          - 'pure-complex-45'
           - 'pure-complex-16@1'
           - 'hmm-256@1'
     steps:

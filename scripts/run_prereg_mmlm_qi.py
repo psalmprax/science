@@ -46,10 +46,12 @@ ARMS = ("pure-complex-16", "pure-complex-32", "pure-complex-64",
         "pure-real-23", "pure-real-45", "pure-real-90",
         "mixed-complex-16-2", "mixed-complex-32-2", "mixed-real-16-2", "mixed-real-32-2",
         "hmm-256", "hmm-1024",
+        "pure-complex-23", "pure-complex-45",                   #: about the parameters of mixed-complex-16-2 and -32-2
         "pure-complex-16@1", "hmm-256@1")                       #: the last two: a second seed, for the noise
 RATES = (3e-3, 1e-2, 3e-2, 1e-1, 3e-1)
 BATCH, SEGMENT, SELECT_BYTES, CHUNKS = 64, 128, 300_000, 32
 SAME_PARAMETERS = {16: 23, 32: 45, 64: 90}                     #: real D' with about the parameters of complex D
+MIXED_SAME_PARAMETERS = {16: 23, 32: 45}                       #: pure complex D' with about the parameters of mixed D, r = 2
 REFERENCES = {"MMLM-CM, all experts": 1.45485, "PPMd order 16, primed with the training text": 1.51287,
               "MMLM-CM's LSTM expert alone": 1.77240, "MMLM-CM's order-4 counts alone": 1.94505}   #: RESULT-MMLM-CM-2026-11
 
@@ -130,7 +132,7 @@ def expectations(bpb: dict[str, float], kn: dict[str, float]) -> dict[str, Any]:
               "hmm-256": abs(bpb["hmm-256"] - bpb["hmm-256@1"])}
     e2 = {d: round(bpb[f"hmm-{d * d}"] - bpb[f"pure-complex-{d}"], 4) for d in (16, 32)}
     e3 = {d: round(bpb[f"pure-real-{SAME_PARAMETERS[d]}"] - bpb[f"pure-complex-{d}"], 4) for d in (16, 32, 64)}
-    e4 = {d: round(bpb[f"pure-complex-{d}"] - bpb[f"mixed-complex-{d}-2"], 4) for d in (16, 32)}
+    e4 = {d: round(bpb[f"pure-complex-{MIXED_SAME_PARAMETERS[d]}"] - bpb[f"mixed-complex-{d}-2"], 4) for d in (16, 32)}
     curve = [bpb[f"pure-complex-{d}"] for d in (16, 32, 64)]
     kn2, kn4 = kn["Kneser-Ney, 2 bytes of history"], kn["Kneser-Ney, 4 bytes of history"]
     return {
@@ -143,7 +145,11 @@ def expectations(bpb: dict[str, float], kn: dict[str, float]) -> dict[str, Any]:
                                                            "same_D_real_minus_complex": {
                                                                d: round(bpb[f"pure-real-{d}"] - bpb[f"pure-complex-{d}"], 4)
                                                                for d in (16, 32, 64)}},
-        "E4 a mixed state beats a pure one by 0.02": {"held": all(v >= 0.02 for v in e4.values()), "margin_by_D": e4,
+        "E4 a mixed state beats a pure one of the same size by 0.02": {
+                                                       "held": all(v >= 0.02 for v in e4.values()), "margin_by_D": e4,
+                                                       "same_D_pure_minus_mixed": {
+                                                           d: round(bpb[f"pure-complex-{d}"] - bpb[f"mixed-complex-{d}-2"], 4)
+                                                           for d in (16, 32)},
                                                        "real_mixed_minus_complex_mixed": {
                                                            d: round(bpb[f"mixed-real-{d}-2"] - bpb[f"mixed-complex-{d}-2"], 4)
                                                            for d in (16, 32)}},

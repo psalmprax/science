@@ -30,7 +30,7 @@ is therefore a hidden Markov model with N = D^2 states (a nonnegative weighted a
 with negative entries cannot be trained as a distribution in this way). For D = 16 its parameter count
 (131,328) is about the complex model's (131,104); for D = 32 it has 1.31 million against 0.52 million.
 
-## Arms (17)
+## Arms (19)
 
 | Arm | What | Parameters |
 | :--- | :--- | ---: |
@@ -40,6 +40,7 @@ with negative entries cannot be trained as a distribution in this way). For D = 
 | `mixed-complex-16-2`, `-32-2` | mixed state, complex, two operators per byte | 262,176 / 1,048,640 |
 | `mixed-real-16-2`, `-32-2` | mixed state, real | 131,088 / 524,320 |
 | `hmm-256`, `hmm-1024` | hidden Markov model with 16^2 and 32^2 states | 131,328 / 1,311,744 |
+| `pure-complex-23`, `-45` | pure state, complex, about the parameters of the two complex mixed models | 270,894 / 1,036,890 |
 | `pure-complex-16@1`, `hmm-256@1` | the same two with a second seed, for the noise | |
 
 ## Data
@@ -71,7 +72,7 @@ expert alone 1.772, its order-4 counts alone 1.945.
 
 ## Expectations, fixed now
 
-All in bits per byte on the test split; "the best quantum-inspired arm" is the lowest of the 13 non-HMM
+All in bits per byte on the test split; "the best quantum-inspired arm" is the lowest of the 15 non-HMM
 arms with seed 0.
 
 1. **It learns more than three-byte statistics:** the best quantum-inspired arm costs less than
@@ -81,8 +82,10 @@ arms with seed 0.
 3. **Complex amplitudes earn their place:** `pure-complex-D` costs at least 0.02 less than the real model
    with about its parameters (`pure-real-23`, `-45`, `-90`) for each of D = 16, 32, 64. The real model of
    the same D is reported beside it.
-4. **A mixed state earns its place:** `mixed-complex-D-2` costs at least 0.02 less than `pure-complex-D`,
-   for D = 16 and 32. The real mixed models are reported beside them.
+4. **A mixed state earns its place at equal size:** `mixed-complex-16-2` costs at least 0.02 less than
+   `pure-complex-23`, and `mixed-complex-32-2` at least 0.02 less than `pure-complex-45` (each pair about
+   the same number of parameters). The pure model of the same D, and the real mixed models, are reported
+   beside them.
 5. **A larger state is better:** `pure-complex-16` > `pure-complex-32` > `pure-complex-64`.
 6. **Competitive with counting:** the best quantum-inspired arm costs less than Kneser-Ney with 4 bytes
    of history.
@@ -111,6 +114,16 @@ need it are then not read.
   rate 0.003; `hmm-256` 4.28 at rate 0.01, 3.68 at 0.03, 3.27 at 0.1; `pure-real-16` 4.23 at 0.03.
   Training speeds: `pure-complex-32` 32,000 bytes per second, `mixed-complex-16-2` 19,000, `hmm-1024`
   11,000 (batch 32). Kneser-Ney on `valid_b`: 4.62, 3.39, 2.72, 2.18, 1.85 with 0 to 4 bytes of history.
+- **A change made while the rehearsal ran (26 Nov, 20:05).** The owner passed on another assistant's
+  write-up of a tensor-network language model and its prototype (character-level TinyStories, CPU, one
+  run per model: a 4-character n-gram 1.88 bits per character, a small LSTM 1.50, a hidden Markov model
+  with 128 states 2.25, a Born machine with bond dimension 32 2.83, a locally purified state with bond
+  dimension 32 2.49; numbers not checked here). The mixed-state model here is a uniform locally purified
+  state in its trace-preserving form, with the number of operators per byte as its purification
+  dimension. That write-up compared it with the pure state at the same bond dimension, where the mixed
+  one has twice the parameters. So expectation 4 now compares at equal parameters, and two arms were added
+  for it (`pure-complex-23`, `-45`); the comparison at the same D is still reported. The two new arms are
+  not in the rehearsal; they are the rehearsed pure model at other sizes.
 - **Choices made on those numbers:** the rate grid (0.3 added after the hidden Markov model chose the
   highest rate tried, 0.1, so that neither family is held at the edge of the grid); batch 64 and segments
   of 128; the D values and the real sizes with matched parameters.
