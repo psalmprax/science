@@ -68,6 +68,12 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(4^6) over GF(4), the flip walk's GitHub run recorded: no 13 (2026-11-26, development).** Run
+  45771414813 (10 jobs, 178 core-hours, 3.4e12 flips), from the collect job's record
+  (`benchmarks/gf2_multiplication/gf4_flip_walk.json`): GF(4^5) from the schoolbook reaches the published
+  11 in 3 of 4 walks (one stops at 15), so the walk finds what is known where it is small; GF(4^6) from
+  the schoolbook 24 to 28, and from the recorded 14s 14 in all 24 walks. No 13 products (39 over GF(2)),
+  so this route to 41 for GF(2^12) gave nothing. Every decomposition exact.
 - **Video: JetFlow against plain flow matching and MeanFlow, built (2026-11-26, experimental; on the owner's
   word "yes build it").** `packages/jetflow-video/jetflow_video/head_to_head.py`,
   `scripts/run_prereg_video_flow.py`, `.github/workflows/video-flow.yml`, `tests/test_video_flow_head_to_head.py`.
