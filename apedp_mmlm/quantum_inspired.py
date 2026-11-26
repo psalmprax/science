@@ -156,16 +156,36 @@ def _streams(data: bytes, count: int) -> Tensor:
 
 
 @torch.no_grad()
-def bits_per_byte(model: Model, data: bytes, chunks: int = 32) -> float:
-    """Mean bits per byte over ``chunks`` contiguous pieces, each scored from the model's initial state."""
+def byte_probabilities(model: Model, data: bytes, chunks: int = 32) -> np.ndarray:
+    """p(byte | the bytes before it in its piece) for the first ``chunks * (len(data) // chunks)`` bytes, in
+    the order of ``data``; the data is cut into ``chunks`` contiguous pieces, each from the initial state."""
     streams = _streams(data, chunks)
     ops = model.operators()
     state = model.initial(chunks)
-    total = 0.0
+    out = torch.empty(streams.shape, dtype=torch.float64)
     for t in range(streams.shape[1]):
         logp, state = model.step(ops, state, streams[:, t])
-        total -= float(logp.sum())
-    return total / (streams.numel() * math.log(2))
+        out[:, t] = logp.double()
+    probs: np.ndarray = torch.exp(out).reshape(-1).numpy()
+    return probs
+
+
+def bits_per_byte(model: Model, data: bytes, chunks: int = 32) -> float:
+    """Mean bits per byte over ``chunks`` contiguous pieces, each scored from the model's initial state."""
+    return float(-np.log2(byte_probabilities(model, data, chunks)).mean())
+
+
+MIX_WEIGHTS = tuple(round(0.05 * k, 2) for k in range(21))
+
+
+def mixture(p_model: np.ndarray, p_counts: np.ndarray, weight: float) -> float:
+    """Bits per byte of weight * the model + (1 - weight) * the counting model, byte by byte."""
+    return float(-np.log2(weight * p_model + (1.0 - weight) * p_counts).mean())
+
+
+def best_mixture_weight(p_model: np.ndarray, p_counts: np.ndarray) -> float:
+    """The weight on the model, from ``MIX_WEIGHTS``, that costs least on the bytes given."""
+    return min(MIX_WEIGHTS, key=lambda w: mixture(p_model, p_counts, w))
 
 
 @dataclass

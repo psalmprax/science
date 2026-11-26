@@ -2,7 +2,7 @@ name: Video flow head-to-head, JetFlow against flow matching and MeanFlow
 
 # PREREG-VIDEO-FLOW-2026-11 (preregistration/PREREG-VIDEO-FLOW-2026-11.md), on the owner's word of 26 November ("yes
 # build it"). scripts/run_prereg_video_flow.py trains one arm of packages/jetflow-video/jetflow_video/head_to_head.py
-# on one data set with one seed per runner (three arms, three data sets, three seeds), then generates 256 clips with
+# on one data set with one seed per runner (four arms, one of them a hybrid; three data sets; three seeds), then generates 256 clips with
 # each sampler of the arm's grid and scores them against held-out real clips. The final run checks the digest first.
 #   push to video-flow-smoke-*  -> a rehearsal on the development splits: 120 s of training, 64 clips per sampler.
 #   push to video-flow-run-*    -> the preregistered run, once: 1,200 s of training, 256 clips per sampler.
@@ -50,6 +50,15 @@ jobs:
           - {data: 'ucf101', arm: 'meanflow-unet', seed: 0}
           - {data: 'ucf101', arm: 'meanflow-unet', seed: 1}
           - {data: 'ucf101', arm: 'meanflow-unet', seed: 2}
+          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 0}
+          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 1}
+          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'collision', arm: 'meanflow-jetflow', seed: 0}
+          - {data: 'collision', arm: 'meanflow-jetflow', seed: 1}
+          - {data: 'collision', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'ucf101', arm: 'meanflow-jetflow', seed: 0}
+          - {data: 'ucf101', arm: 'meanflow-jetflow', seed: 1}
+          - {data: 'ucf101', arm: 'meanflow-jetflow', seed: 2}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -101,7 +110,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test]"
+          python -m pip install -e ".[dev,test]" opencv-python-headless huggingface_hub tqdm
       - uses: actions/download-artifact@v8
         with:
           pattern: video-flow-*

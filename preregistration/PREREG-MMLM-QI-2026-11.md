@@ -89,6 +89,12 @@ arms with seed 0.
 5. **A larger state is better:** `pure-complex-16` > `pure-complex-32` > `pure-complex-64`.
 6. **Competitive with counting:** the best quantum-inspired arm costs less than Kneser-Ney with 4 bytes
    of history.
+7. **A hybrid with counting gains from the quantum structure:** each arm is also mixed byte by byte with
+   Kneser-Ney with 4 bytes of history (weight on the model from 0, 0.05, ..., 1, chosen on the selection
+   slice; both scored on the same bytes of the test split). For D = 16 and 32, `pure-complex-D` mixed so
+   costs at least 0.02 less than Kneser-Ney alone **and** at least 0.02 less than `hmm-D^2` mixed the same
+   way. The second half asks whether what the mixture gains comes from the quantum-inspired model or
+   would come from any second model of its size.
 
 Reported without a criterion: the gap from the best arm to each reference; bytes seen; scoring speed;
 the rates chosen; and the seed spread of `pure-complex-16` and `hmm-256`. Where a margin in 2, 3 or 4 is
@@ -106,6 +112,9 @@ need it are then not read.
 - **2 fails:** propose not developing quantum-inspired language models in MMLM; a classical automaton of
   the same size does as well.
 - **6 fails:** no claim that these models compete with counting, whatever 2 to 5 say.
+- **7 holds:** propose the quantum-inspired model as one more expert in MMLM-CM's mixture (a hybrid, not
+  a replacement), under its own preregistration, whatever 6 says. **7 fails:** it adds nothing to counting
+  that a hidden Markov model of its size would not.
 
 ## Disclosed before freezing
 
@@ -127,8 +136,21 @@ need it are then not read.
 - **Choices made on those numbers:** the rate grid (0.3 added after the hidden Markov model chose the
   highest rate tried, 0.1, so that neither family is held at the edge of the grid); batch 64 and segments
   of 128; the D values and the real sizes with matched parameters.
-- **Rehearsal** on the development split, every arm, sweep 60 s and 10 minutes of training (run
-  `mmlm-qi-smoke-1`): *to be written here before freezing.*
+- **Rehearsal** on the development split (selection on `valid_a`'s first 300,000 bytes, scored on
+  `valid_b`), the 17 arms then planned, sweep 60 s at each rate and 10 minutes of training (run 45871761319,
+  `benchmarks/mmlm/mmlm_qi_rehearsal.json`). Bits per byte: `pure-complex-16` 3.08 (second seed 3.06),
+  `-32` 2.84, `-64` 2.77; `pure-real-16` 3.82, `-32` 3.76, `-64` 3.52, `-23` 3.45, `-45` 3.72, `-90` 3.73;
+  `mixed-complex-16-2` 3.13, `-32-2` 2.95; `mixed-real-16-2` 3.22, `-32-2` 2.93; `hmm-256` 3.05 (second
+  seed 2.82), `hmm-1024` 2.50. Kneser-Ney with 0 to 4 bytes of history 4.62, 3.39, 2.72, 2.18, 1.85. Rates
+  chosen: 0.01 to 0.3; the hidden Markov model chose 0.3 (the top of the grid) and its two seeds chose 0.3
+  and 0.1, which is most of its seed spread of 0.23. Read as the plan reads: 1 missed (2.77 against 2.72),
+  2 missed (`hmm-1024` better by 0.34), 3 held, 4 (as it then read, at the same D) missed, 5 held, 6
+  missed; the seed spread covers the margins of 2 and 4. Every arm finished within 11 minutes of training
+  and scoring; the final run's 45 minutes plus a 12.5-minute sweep fit the 120-minute step limit.
+- **Changes after the rehearsal, before freezing.** Expectation 4 compares at equal parameters (above).
+  Expectation 7, the hybrid with counting, was added on the owner's word of 26 November (20:32: "test
+  hybrid approach in all the suggested solutions"); its computation was checked locally on a short run
+  (an untrained model gets weight 0 and the mixture equals Kneser-Ney), not in the rehearsal.
 
 ## Limits
 

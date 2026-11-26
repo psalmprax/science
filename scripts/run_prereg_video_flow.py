@@ -45,17 +45,20 @@ DIGEST = ROOT / "preregistration" / "DIGEST-VIDEO-FLOW.json"
 FROZEN = ("preregistration/PREREG-VIDEO-FLOW-2026-11.md", "scripts/run_prereg_video_flow.py",
           "packages/jetflow-video/jetflow_video/head_to_head.py", ".github/workflows/video-flow.yml")
 DATA = ("fluid", "collision", "ucf101")
-ARMS = ("fm-jetflow", "fm-unet", "meanflow-unet")
+ARMS = ("fm-jetflow", "fm-unet", "meanflow-unet", "meanflow-jetflow")   #: the last is a hybrid
 SEEDS = (0, 1, 2)
 GRID: dict[str, tuple[tuple[str, int], ...]] = {
     "fm-jetflow": (("euler", 1), ("euler", 2), ("euler", 4), ("euler", 8), ("euler", 32),
                    ("jetflow", 1), ("jetflow", 2), ("jetflow", 4)),
     "fm-unet": (("euler", 1), ("euler", 2), ("euler", 4), ("euler", 8), ("euler", 32),
                 ("jet2", 1), ("jet2", 2), ("jet2", 4)),
-    "meanflow-unet": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32)),
+    "meanflow-unet": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32),
+                      ("jet2", 1), ("jet2", 2)),                               # hybrid: Jet2 on MeanFlow's velocity
+    "meanflow-jetflow": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32)),
 }
+GRID["fm-unet"] = GRID["fm-unet"] + (("jetflow-sampler", 1), ("jetflow-sampler", 2))   # hybrid: JetFlow's sampler on the UNet
 UCF_REPO, UCF_FILE = "sayakpaul/ucf101-subset", "UCF101_subset.tar.gz"
-UCF_SHA256: str | None = None            #: pinned from the rehearsal before freezing
+UCF_SHA256: str | None = "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb"   #: from the rehearsal
 MARGIN, SEEDS_NEEDED = 0.9, 2            #: "A beats B": mean FD of A at most 0.9 of B's, and lower on 2 of 3 seeds
 
 
@@ -117,7 +120,7 @@ def run_job(args: argparse.Namespace) -> int:
     model = h.build(args.arm)
     if args.arm == "fm-jetflow":
         h.install_latent_capture(model)
-    trainer = h.train_meanflow if args.arm == "meanflow-unet" else h.train_flow_matching
+    trainer = h.train_meanflow if args.arm.startswith("meanflow") else h.train_flow_matching
     fit = trainer(model, latents, args.seconds, lr=1e-3, seed=args.seed)
     print(f"{args.data} {args.arm} seed {args.seed}: {fit}", flush=True)
     rows = []
@@ -173,6 +176,14 @@ def expectations(jobs: dict[tuple[str, str, int], dict[str, Any]]) -> dict[str, 
             "E4 the Jet2 step beats Euler at four calls, JetFlow": beats(jet2, _fd(jobs, kind, "fm-jetflow", "euler", 4)),
             "E5 JetFlow's network beats the UNet, Euler 32": beats(_fd(jobs, kind, "fm-jetflow", "euler", 32),
                                                                   _fd(jobs, kind, "fm-unet", "euler", 32)),
+            "E6 hybrid: MeanFlow helps JetFlow's network at one call": beats(
+                _fd(jobs, kind, "meanflow-jetflow", "meanflow", 1), _fd(jobs, kind, "fm-jetflow", "euler", 1)),
+            "E6 hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call": beats(
+                _fd(jobs, kind, "meanflow-jetflow", "meanflow", 1), mf1),
+            "E6 hybrid: the Jet2 step on MeanFlow's velocity beats MeanFlow's own four calls": beats(
+                _fd(jobs, kind, "meanflow-unet", "jet2", 2), _fd(jobs, kind, "meanflow-unet", "meanflow", 4)),
+            "E6 hybrid: JetFlow's sampler on the UNet beats Euler at four calls": beats(
+                _fd(jobs, kind, "fm-unet", "jetflow-sampler", 2), fm4),
             "floor_mean": round(float(np.mean([jobs[(kind, a, s)]["floor_frechet_pca"] for a in ARMS for s in SEEDS])), 4),
         }
     return out

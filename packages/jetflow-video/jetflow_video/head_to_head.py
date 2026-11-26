@@ -45,10 +45,12 @@ from jetflow_video.diffusion_baseline import (
     pick_matched_config,
 )
 from jetflow_video.model import JetFlowModelConfig, JetFlowVideoModel
+from jetflow_video.noether import NoetherConfig, NoetherConservationEngine
 from jetflow_video.stepper import JetFlowConfig, JetFlowStepper
 
 FRAMES, SIZE, LATENT = 6, 16, 12
 TEXT = torch.zeros(1, 2, 64)                                    #: the constant prompt every model sees
+NOETHER = NoetherConservationEngine(NoetherConfig(enforce_divergence_free=True, preserve_wavelet_subbands=True))
 JETFLOW = {"latent_channels": LATENT, "hidden_dim": 48, "num_layers": 2}   #: as in the earlier matched benchmark
 
 
@@ -98,9 +100,37 @@ class MeanFlowUNet(DiffusionVideoUNet):
         return v.squeeze(0) if squeeze else v
 
 
+class MeanFlowJetFlow(torch.nn.Module):
+    """A hybrid: JetFlow's network trained by MeanFlow. Its backbone takes one time; the gap t - r reaches it
+    through the conditioning tokens (a Fourier embedding of the gap mapped to two tokens, learned), the way
+    a prompt would, so JetFlow's code is unchanged. With r = t the tokens carry gap 0."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.jet = build_jetflow()
+        self.backbone = self.jet.backbone
+        self.gap_freqs = torch.nn.Parameter(torch.exp(-torch.arange(8.0) * math.log(1000.0) / 7), requires_grad=False)
+        self.gap_proj = torch.nn.Linear(16, 2 * 64)
+        torch.nn.init.zeros_(self.gap_proj.weight)
+        torch.nn.init.zeros_(self.gap_proj.bias)
+
+    def forward(self, z: Tensor, t: float | Tensor, text_tokens: Tensor | None = None,
+                r: float | Tensor | None = None) -> Tensor:
+        t_f = float(t)
+        gap = torch.tensor([t_f - (t_f if r is None else float(r))], dtype=z.dtype)
+        angles = gap.reshape(1, 1) * self.gap_freqs.unsqueeze(0) * (2.0 * math.pi)
+        tokens = self.gap_proj(torch.cat([torch.sin(angles), torch.cos(angles)], dim=-1)).reshape(1, 2, 64)
+        if text_tokens is not None:
+            tokens = tokens + text_tokens
+        out: Tensor = self.jet(z, t_f, text_tokens=tokens)
+        return out
+
+
 def build(arm: str) -> torch.nn.Module:
     if arm == "fm-jetflow":
         return build_jetflow()
+    if arm == "meanflow-jetflow":
+        return MeanFlowJetFlow()
     if arm == "fm-unet":
         return DiffusionVideoUNet(unet_config())
     if arm == "meanflow-unet":
@@ -135,7 +165,8 @@ def _logit_normal(rng: np.random.Generator, mean: float = -0.4, std: float = 1.0
     return float(1.0 / (1.0 + math.exp(-rng.normal(mean, std))))
 
 
-def meanflow_loss(model: MeanFlowUNet, x: Tensor, t: float, r: float, power: float = 1.0) -> Tensor:
+def meanflow_loss(model: torch.nn.Module, x: Tensor, t: float, r: float, power: float = 1.0,
+                  derivative: str = "jvp") -> Tensor:
     """MeanFlow: u(z_t, r, t) against sg(v - (t - r)(v . grad_z u + d_t u)), adaptively weighted."""
     e = torch.randn_like(x)
     z = (1 - t) * x + t * e
@@ -146,7 +177,13 @@ def meanflow_loss(model: MeanFlowUNet, x: Tensor, t: float, r: float, power: flo
     def u_fn(z_: Tensor, r_: Tensor, t_: Tensor) -> Tensor:
         out: Tensor = model(z_, t_, text_tokens=TEXT, r=r_)
         return out
-    u, dudt = torch.func.jvp(u_fn, (z, rr, tt), (v, torch.zeros_like(rr), torch.ones_like(tt)))
+    if derivative == "jvp":
+        u, dudt = torch.func.jvp(u_fn, (z, rr, tt), (v, torch.zeros_like(rr), torch.ones_like(tt)))
+    else:                                   # finite difference along (v, 0, 1); the target is not differentiated
+        u = u_fn(z, rr, tt)
+        eps = 1e-3 if t + 1e-3 <= 1.0 else -1e-3
+        with torch.no_grad():
+            dudt = (u_fn(z + eps * v, rr, tt + eps) - u.detach()) / eps
     target = (v - (t - r) * dudt).detach()
     err = ((u - target) ** 2).mean()
     weight = (1.0 / (err.detach() + 1e-3) ** power) if power else 1.0
@@ -154,7 +191,7 @@ def meanflow_loss(model: MeanFlowUNet, x: Tensor, t: float, r: float, power: flo
     return loss
 
 
-def train_meanflow(model: MeanFlowUNet, latents: Tensor, seconds: float, lr: float = 1e-3, seed: int = 0,
+def train_meanflow(model: torch.nn.Module, latents: Tensor, seconds: float, lr: float = 1e-3, seed: int = 0,
                    share_unequal: float = 0.25) -> dict[str, Any]:
     """MeanFlow, one clip per step; (t, r) logit-normal(-0.4, 1), r = t on 75 % of steps (the paper's)."""
     rng = np.random.default_rng(seed)
@@ -169,7 +206,7 @@ def train_meanflow(model: MeanFlowUNet, latents: Tensor, seconds: float, lr: flo
         t, r = max(a, b), min(a, b)
         if rng.random() >= share_unequal:
             r = t
-        loss = meanflow_loss(model, x, t, r)
+        loss = meanflow_loss(model, x, t, r, derivative="fd" if isinstance(model, MeanFlowJetFlow) else "jvp")
         opt.zero_grad(set_to_none=True)
         loss.backward()  # type: ignore[no-untyped-call]
         opt.step()
@@ -218,8 +255,9 @@ def _noise(n: int, seed: int) -> Tensor:
 
 @torch.no_grad()
 def sample(model: torch.nn.Module, how: str, steps: int, n: int, seed: int) -> Tensor:
-    """``euler``, ``jet2`` (the second-order step alone), ``jetflow`` (``generate_video``'s whole sampler)
-    or ``meanflow``; one clip at a time; returns (n, T, C, H, W) latents."""
+    """``euler``, ``jet2`` (the second-order step alone), ``jetflow`` (``generate_video``'s whole sampler),
+    ``jetflow-sampler`` (its projection and Jet2 step on any network) or ``meanflow``; one clip at a time;
+    returns (n, T, C, H, W) latents."""
     model.eval()
     out = []
     ts = torch.linspace(1.0, 0.0, steps + 1).tolist()
@@ -239,6 +277,9 @@ def sample(model: torch.nn.Module, how: str, steps: int, n: int, seed: int) -> T
                 z = z + dt * model(z, t, text_tokens=TEXT)
             elif how == "jet2":
                 z, _, _ = stepper.step(lambda z_, t_: model(z_, t_, text_tokens=TEXT), z, t, dt)
+            elif how == "jetflow-sampler":            # JetFlow's projection and Jet2 step on this network's velocity
+                z, _, _ = stepper.step(lambda z_, t_: NOETHER.project_spatial_latent_velocity(
+                    model(z_, t_, text_tokens=TEXT))[0], z, t, dt)
             elif how == "meanflow":
                 z = z + dt * model(z, t, text_tokens=TEXT, r=t_next)
             else:

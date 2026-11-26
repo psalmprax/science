@@ -1,0 +1,2482 @@
+{
+ "preregistration": "PREREG-VIDEO-FLOW-2026-11",
+ "mode": "dev",
+ "missing_jobs": [],
+ "jobs": [
+  {
+   "data": "collision",
+   "arm": "fm-jetflow",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 8102,
+    "seconds": 120.0,
+    "final_loss": 0.02111
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0056,
+     "frechet_pca": 2.5452,
+     "memorisation_ratio": 0.743,
+     "temporal_roughness": 0.03272
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0135,
+     "frechet_pca": 2.5523,
+     "memorisation_ratio": 0.6978,
+     "temporal_roughness": 0.02242
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0177,
+     "frechet_pca": 2.0518,
+     "memorisation_ratio": 0.7665,
+     "temporal_roughness": 0.02145
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0334,
+     "frechet_pca": 1.758,
+     "memorisation_ratio": 0.8595,
+     "temporal_roughness": 0.02272
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1284,
+     "frechet_pca": 1.4758,
+     "memorisation_ratio": 0.9816,
+     "temporal_roughness": 0.03407
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0159,
+     "frechet_pca": 1.6474,
+     "memorisation_ratio": 2.0529,
+     "temporal_roughness": 0.20024
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0241,
+     "frechet_pca": 2.6107,
+     "memorisation_ratio": 0.7703,
+     "temporal_roughness": 0.04444
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0399,
+     "frechet_pca": 2.5743,
+     "memorisation_ratio": 0.6979,
+     "temporal_roughness": 0.02716
+    }
+   ],
+   "floor_frechet_pca": 0.607,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "fm-jetflow",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 12012,
+    "seconds": 120.0,
+    "final_loss": 0.02255
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0037,
+     "frechet_pca": 2.511,
+     "memorisation_ratio": 0.7986,
+     "temporal_roughness": 0.04809
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0063,
+     "frechet_pca": 2.3837,
+     "memorisation_ratio": 0.694,
+     "temporal_roughness": 0.02054
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0117,
+     "frechet_pca": 1.8486,
+     "memorisation_ratio": 0.8072,
+     "temporal_roughness": 0.02489
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0235,
+     "frechet_pca": 1.5522,
+     "memorisation_ratio": 0.9237,
+     "temporal_roughness": 0.02885
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0887,
+     "frechet_pca": 1.2697,
+     "memorisation_ratio": 1.0626,
+     "temporal_roughness": 0.04016
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0107,
+     "frechet_pca": 1.7091,
+     "memorisation_ratio": 2.3681,
+     "temporal_roughness": 0.23516
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0162,
+     "frechet_pca": 2.6864,
+     "memorisation_ratio": 0.7221,
+     "temporal_roughness": 0.03474
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0263,
+     "frechet_pca": 2.3077,
+     "memorisation_ratio": 0.717,
+     "temporal_roughness": 0.02878
+    }
+   ],
+   "floor_frechet_pca": 0.7296,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "fm-jetflow",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 9792,
+    "seconds": 120.0,
+    "final_loss": 0.02186
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0047,
+     "frechet_pca": 2.6295,
+     "memorisation_ratio": 0.7593,
+     "temporal_roughness": 0.0289
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0079,
+     "frechet_pca": 2.5449,
+     "memorisation_ratio": 0.6994,
+     "temporal_roughness": 0.02169
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0149,
+     "frechet_pca": 2.1384,
+     "memorisation_ratio": 0.7557,
+     "temporal_roughness": 0.02543
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0294,
+     "frechet_pca": 1.8889,
+     "memorisation_ratio": 0.8274,
+     "temporal_roughness": 0.02256
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1105,
+     "frechet_pca": 1.647,
+     "memorisation_ratio": 0.9317,
+     "temporal_roughness": 0.03184
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0131,
+     "frechet_pca": 1.9844,
+     "memorisation_ratio": 1.394,
+     "temporal_roughness": 0.12713
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.02,
+     "frechet_pca": 2.7035,
+     "memorisation_ratio": 0.7572,
+     "temporal_roughness": 0.03966
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0338,
+     "frechet_pca": 2.4902,
+     "memorisation_ratio": 0.7286,
+     "temporal_roughness": 0.03546
+    }
+   ],
+   "floor_frechet_pca": 0.7447,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "fm-unet",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 8466,
+    "seconds": 120.0,
+    "final_loss": 0.02247
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0057,
+     "frechet_pca": 2.1286,
+     "memorisation_ratio": 0.9631,
+     "temporal_roughness": 0.07053
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0102,
+     "frechet_pca": 2.339,
+     "memorisation_ratio": 0.811,
+     "temporal_roughness": 0.04605
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0442,
+     "frechet_pca": 2.0077,
+     "memorisation_ratio": 0.8419,
+     "temporal_roughness": 0.04798
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0361,
+     "frechet_pca": 1.7771,
+     "memorisation_ratio": 0.8725,
+     "temporal_roughness": 0.04465
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1359,
+     "frechet_pca": 1.669,
+     "memorisation_ratio": 0.8885,
+     "temporal_roughness": 0.03725
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.01,
+     "frechet_pca": 1.3137,
+     "memorisation_ratio": 1.7168,
+     "temporal_roughness": 0.14757
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0193,
+     "frechet_pca": 2.3939,
+     "memorisation_ratio": 0.8567,
+     "temporal_roughness": 0.05176
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0355,
+     "frechet_pca": 2.2659,
+     "memorisation_ratio": 0.8269,
+     "temporal_roughness": 0.04961
+    }
+   ],
+   "floor_frechet_pca": 0.607,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "fm-unet",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 11733,
+    "seconds": 120.0,
+    "final_loss": 0.02023
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0037,
+     "frechet_pca": 2.2614,
+     "memorisation_ratio": 0.8081,
+     "temporal_roughness": 0.05037
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.006,
+     "frechet_pca": 2.3284,
+     "memorisation_ratio": 0.7507,
+     "temporal_roughness": 0.03947
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0118,
+     "frechet_pca": 1.9042,
+     "memorisation_ratio": 0.832,
+     "temporal_roughness": 0.04509
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0216,
+     "frechet_pca": 1.6198,
+     "memorisation_ratio": 0.9114,
+     "temporal_roughness": 0.04697
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0836,
+     "frechet_pca": 1.4635,
+     "memorisation_ratio": 0.9623,
+     "temporal_roughness": 0.04238
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0071,
+     "frechet_pca": 1.1124,
+     "memorisation_ratio": 1.4229,
+     "temporal_roughness": 0.11799
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0122,
+     "frechet_pca": 2.417,
+     "memorisation_ratio": 0.761,
+     "temporal_roughness": 0.04214
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0215,
+     "frechet_pca": 2.2844,
+     "memorisation_ratio": 0.7669,
+     "temporal_roughness": 0.0422
+    }
+   ],
+   "floor_frechet_pca": 0.7296,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "fm-unet",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 8663,
+    "seconds": 120.0,
+    "final_loss": 0.02048
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0057,
+     "frechet_pca": 2.2999,
+     "memorisation_ratio": 0.8417,
+     "temporal_roughness": 0.0565
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0095,
+     "frechet_pca": 2.3836,
+     "memorisation_ratio": 0.7707,
+     "temporal_roughness": 0.04311
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0179,
+     "frechet_pca": 1.9543,
+     "memorisation_ratio": 0.8418,
+     "temporal_roughness": 0.04672
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0347,
+     "frechet_pca": 1.7437,
+     "memorisation_ratio": 0.8857,
+     "temporal_roughness": 0.04541
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1325,
+     "frechet_pca": 1.6248,
+     "memorisation_ratio": 0.9102,
+     "temporal_roughness": 0.04001
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0106,
+     "frechet_pca": 0.8048,
+     "memorisation_ratio": 1.7286,
+     "temporal_roughness": 0.145
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0181,
+     "frechet_pca": 2.4649,
+     "memorisation_ratio": 0.8383,
+     "temporal_roughness": 0.05325
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0348,
+     "frechet_pca": 2.172,
+     "memorisation_ratio": 0.8096,
+     "temporal_roughness": 0.04734
+    }
+   ],
+   "floor_frechet_pca": 0.7447,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "meanflow-unet",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 4625,
+    "seconds": 120.0,
+    "final_loss": 0.93581
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0041,
+     "frechet_pca": 2.3416,
+     "memorisation_ratio": 0.8116,
+     "temporal_roughness": 0.05119
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0068,
+     "frechet_pca": 1.8568,
+     "memorisation_ratio": 0.865,
+     "temporal_roughness": 0.0539
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0126,
+     "frechet_pca": 1.7143,
+     "memorisation_ratio": 0.8887,
+     "temporal_roughness": 0.05358
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0246,
+     "frechet_pca": 2.0815,
+     "memorisation_ratio": 0.8025,
+     "temporal_roughness": 0.0442
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0948,
+     "frechet_pca": 1.749,
+     "memorisation_ratio": 0.8903,
+     "temporal_roughness": 0.05477
+    }
+   ],
+   "floor_frechet_pca": 0.607,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "meanflow-unet",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 4589,
+    "seconds": 120.0,
+    "final_loss": 0.92585
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.004,
+     "frechet_pca": 2.1067,
+     "memorisation_ratio": 0.8695,
+     "temporal_roughness": 0.05961
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0071,
+     "frechet_pca": 1.3972,
+     "memorisation_ratio": 1.018,
+     "temporal_roughness": 0.06393
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0139,
+     "frechet_pca": 1.1849,
+     "memorisation_ratio": 1.0759,
+     "temporal_roughness": 0.06295
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0258,
+     "frechet_pca": 0.7276,
+     "memorisation_ratio": 1.3275,
+     "temporal_roughness": 0.07605
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0971,
+     "frechet_pca": 0.4998,
+     "memorisation_ratio": 1.7034,
+     "temporal_roughness": 0.11654
+    }
+   ],
+   "floor_frechet_pca": 0.7296,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "collision",
+   "arm": "meanflow-unet",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 4178,
+    "seconds": 120.0,
+    "final_loss": 0.92491
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0041,
+     "frechet_pca": 2.2512,
+     "memorisation_ratio": 0.7997,
+     "temporal_roughness": 0.04859
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0076,
+     "frechet_pca": 1.671,
+     "memorisation_ratio": 0.9084,
+     "temporal_roughness": 0.05473
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0136,
+     "frechet_pca": 1.6707,
+     "memorisation_ratio": 0.8868,
+     "temporal_roughness": 0.04806
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0254,
+     "frechet_pca": 1.791,
+     "memorisation_ratio": 0.8357,
+     "temporal_roughness": 0.03962
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0958,
+     "frechet_pca": 1.1214,
+     "memorisation_ratio": 1.0983,
+     "temporal_roughness": 0.06462
+    }
+   ],
+   "floor_frechet_pca": 0.7447,
+   "held_temporal_roughness": 0.03098,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "fm-jetflow",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 9374,
+    "seconds": 120.0,
+    "final_loss": 0.09751
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0046,
+     "frechet_pca": 118.4406,
+     "memorisation_ratio": 0.9159,
+     "temporal_roughness": 0.08039
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0081,
+     "frechet_pca": 80.1675,
+     "memorisation_ratio": 0.9481,
+     "temporal_roughness": 0.07951
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0158,
+     "frechet_pca": 61.8571,
+     "memorisation_ratio": 0.9992,
+     "temporal_roughness": 0.0894
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0284,
+     "frechet_pca": 53.9581,
+     "memorisation_ratio": 1.0395,
+     "temporal_roughness": 0.09974
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1111,
+     "frechet_pca": 48.671,
+     "memorisation_ratio": 1.0822,
+     "temporal_roughness": 0.11384
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0133,
+     "frechet_pca": 129.4326,
+     "memorisation_ratio": 1.0591,
+     "temporal_roughness": 0.1892
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0196,
+     "frechet_pca": 106.2819,
+     "memorisation_ratio": 0.9375,
+     "temporal_roughness": 0.09756
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0338,
+     "frechet_pca": 79.0105,
+     "memorisation_ratio": 0.9667,
+     "temporal_roughness": 0.09267
+    }
+   ],
+   "floor_frechet_pca": 15.1507,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "fm-jetflow",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 12377,
+    "seconds": 120.0,
+    "final_loss": 0.09234
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.003,
+     "frechet_pca": 136.4766,
+     "memorisation_ratio": 0.9198,
+     "temporal_roughness": 0.09135
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0053,
+     "frechet_pca": 88.4957,
+     "memorisation_ratio": 0.9407,
+     "temporal_roughness": 0.07982
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0116,
+     "frechet_pca": 73.9401,
+     "memorisation_ratio": 0.9826,
+     "temporal_roughness": 0.08484
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0201,
+     "frechet_pca": 68.1963,
+     "memorisation_ratio": 1.0195,
+     "temporal_roughness": 0.09256
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0744,
+     "frechet_pca": 64.2073,
+     "memorisation_ratio": 1.0599,
+     "temporal_roughness": 0.10604
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0099,
+     "frechet_pca": 219.421,
+     "memorisation_ratio": 1.5288,
+     "temporal_roughness": 0.38786
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0141,
+     "frechet_pca": 129.694,
+     "memorisation_ratio": 0.9422,
+     "temporal_roughness": 0.09835
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0234,
+     "frechet_pca": 91.6501,
+     "memorisation_ratio": 0.9509,
+     "temporal_roughness": 0.09128
+    }
+   ],
+   "floor_frechet_pca": 17.6993,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "fm-jetflow",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 7098,
+    "seconds": 120.0,
+    "final_loss": 0.11479
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0062,
+     "frechet_pca": 124.2184,
+     "memorisation_ratio": 1.0421,
+     "temporal_roughness": 0.1797
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0112,
+     "frechet_pca": 85.537,
+     "memorisation_ratio": 0.952,
+     "temporal_roughness": 0.07823
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0203,
+     "frechet_pca": 71.4629,
+     "memorisation_ratio": 0.9842,
+     "temporal_roughness": 0.08666
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.039,
+     "frechet_pca": 65.3044,
+     "memorisation_ratio": 1.0129,
+     "temporal_roughness": 0.09512
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1491,
+     "frechet_pca": 60.0335,
+     "memorisation_ratio": 1.0474,
+     "temporal_roughness": 0.11127
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.039,
+     "frechet_pca": 158.8867,
+     "memorisation_ratio": 2.0239,
+     "temporal_roughness": 0.5916
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0272,
+     "frechet_pca": 108.6966,
+     "memorisation_ratio": 0.9561,
+     "temporal_roughness": 0.09348
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0448,
+     "frechet_pca": 81.8612,
+     "memorisation_ratio": 0.9654,
+     "temporal_roughness": 0.0919
+    }
+   ],
+   "floor_frechet_pca": 24.1948,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "fm-unet",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 11549,
+    "seconds": 120.0,
+    "final_loss": 0.0854
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.004,
+     "frechet_pca": 78.0964,
+     "memorisation_ratio": 0.9546,
+     "temporal_roughness": 0.12349
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0071,
+     "frechet_pca": 54.3631,
+     "memorisation_ratio": 0.9308,
+     "temporal_roughness": 0.08457
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0136,
+     "frechet_pca": 48.1119,
+     "memorisation_ratio": 0.964,
+     "temporal_roughness": 0.09733
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0243,
+     "frechet_pca": 45.3052,
+     "memorisation_ratio": 0.9998,
+     "temporal_roughness": 0.11276
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0937,
+     "frechet_pca": 43.3625,
+     "memorisation_ratio": 1.037,
+     "temporal_roughness": 0.12632
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0074,
+     "frechet_pca": 110.0551,
+     "memorisation_ratio": 1.251,
+     "temporal_roughness": 0.2705
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0125,
+     "frechet_pca": 68.4207,
+     "memorisation_ratio": 0.9389,
+     "temporal_roughness": 0.0931
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0243,
+     "frechet_pca": 56.6724,
+     "memorisation_ratio": 0.9271,
+     "temporal_roughness": 0.08406
+    }
+   ],
+   "floor_frechet_pca": 15.1507,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "fm-unet",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 8219,
+    "seconds": 120.0,
+    "final_loss": 0.09163
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0057,
+     "frechet_pca": 73.1183,
+     "memorisation_ratio": 1.0219,
+     "temporal_roughness": 0.14416
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0097,
+     "frechet_pca": 43.9743,
+     "memorisation_ratio": 0.991,
+     "temporal_roughness": 0.09886
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0176,
+     "frechet_pca": 36.0671,
+     "memorisation_ratio": 1.0229,
+     "temporal_roughness": 0.11333
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0335,
+     "frechet_pca": 32.7195,
+     "memorisation_ratio": 1.0506,
+     "temporal_roughness": 0.12499
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1304,
+     "frechet_pca": 30.9015,
+     "memorisation_ratio": 1.0779,
+     "temporal_roughness": 0.13652
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0094,
+     "frechet_pca": 109.9612,
+     "memorisation_ratio": 1.2669,
+     "temporal_roughness": 0.2705
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0181,
+     "frechet_pca": 59.6925,
+     "memorisation_ratio": 0.9816,
+     "temporal_roughness": 0.10241
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0348,
+     "frechet_pca": 46.1961,
+     "memorisation_ratio": 0.9952,
+     "temporal_roughness": 0.10211
+    }
+   ],
+   "floor_frechet_pca": 17.6993,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "fm-unet",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 11436,
+    "seconds": 120.0,
+    "final_loss": 0.09033
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.004,
+     "frechet_pca": 74.3596,
+     "memorisation_ratio": 0.9907,
+     "temporal_roughness": 0.13069
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0072,
+     "frechet_pca": 36.4519,
+     "memorisation_ratio": 0.9684,
+     "temporal_roughness": 0.09201
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0127,
+     "frechet_pca": 28.1468,
+     "memorisation_ratio": 1.0274,
+     "temporal_roughness": 0.10979
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0247,
+     "frechet_pca": 26.1004,
+     "memorisation_ratio": 1.0766,
+     "temporal_roughness": 0.12768
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0957,
+     "frechet_pca": 25.3571,
+     "memorisation_ratio": 1.1222,
+     "temporal_roughness": 0.14322
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0077,
+     "frechet_pca": 145.8384,
+     "memorisation_ratio": 1.235,
+     "temporal_roughness": 0.27645
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0139,
+     "frechet_pca": 72.9534,
+     "memorisation_ratio": 0.9696,
+     "temporal_roughness": 0.0985
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0251,
+     "frechet_pca": 39.2565,
+     "memorisation_ratio": 0.9703,
+     "temporal_roughness": 0.0944
+    }
+   ],
+   "floor_frechet_pca": 24.1948,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "meanflow-unet",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 4411,
+    "seconds": 120.0,
+    "final_loss": 0.98507
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.004,
+     "frechet_pca": 56.0697,
+     "memorisation_ratio": 1.0059,
+     "temporal_roughness": 0.11956
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.007,
+     "frechet_pca": 35.2665,
+     "memorisation_ratio": 1.094,
+     "temporal_roughness": 0.1048
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0131,
+     "frechet_pca": 29.1762,
+     "memorisation_ratio": 1.0445,
+     "temporal_roughness": 0.10102
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0247,
+     "frechet_pca": 23.049,
+     "memorisation_ratio": 1.0493,
+     "temporal_roughness": 0.10699
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0971,
+     "frechet_pca": 22.2189,
+     "memorisation_ratio": 1.0866,
+     "temporal_roughness": 0.12876
+    }
+   ],
+   "floor_frechet_pca": 15.1507,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "meanflow-unet",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 6219,
+    "seconds": 120.0,
+    "final_loss": 0.98513
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0028,
+     "frechet_pca": 62.3148,
+     "memorisation_ratio": 1.0143,
+     "temporal_roughness": 0.11877
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0045,
+     "frechet_pca": 47.5645,
+     "memorisation_ratio": 1.1126,
+     "temporal_roughness": 0.11339
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0091,
+     "frechet_pca": 41.5047,
+     "memorisation_ratio": 1.0759,
+     "temporal_roughness": 0.10177
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0154,
+     "frechet_pca": 35.3121,
+     "memorisation_ratio": 1.0494,
+     "temporal_roughness": 0.09618
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0598,
+     "frechet_pca": 37.8841,
+     "memorisation_ratio": 1.0871,
+     "temporal_roughness": 0.11741
+    }
+   ],
+   "floor_frechet_pca": 17.6993,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "fluid",
+   "arm": "meanflow-unet",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 3120,
+    "seconds": 120.0,
+    "final_loss": 0.98479
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 400,
+   "held_clips": 100,
+   "data_info": {},
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0061,
+     "frechet_pca": 88.7979,
+     "memorisation_ratio": 1.0057,
+     "temporal_roughness": 0.12668
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0102,
+     "frechet_pca": 92.6449,
+     "memorisation_ratio": 1.0896,
+     "temporal_roughness": 0.10729
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0194,
+     "frechet_pca": 105.2158,
+     "memorisation_ratio": 1.0711,
+     "temporal_roughness": 0.10869
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0368,
+     "frechet_pca": 118.6868,
+     "memorisation_ratio": 1.0668,
+     "temporal_roughness": 0.10474
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.137,
+     "frechet_pca": 130.6336,
+     "memorisation_ratio": 1.0977,
+     "temporal_roughness": 0.12284
+    }
+   ],
+   "floor_frechet_pca": 24.1948,
+   "held_temporal_roughness": 0.05608,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "fm-jetflow",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 9541,
+    "seconds": 120.0,
+    "final_loss": 0.11654
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0045,
+     "frechet_pca": 154.1244,
+     "memorisation_ratio": 0.7218,
+     "temporal_roughness": 0.10064
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0078,
+     "frechet_pca": 108.8299,
+     "memorisation_ratio": 0.8752,
+     "temporal_roughness": 0.08638
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0147,
+     "frechet_pca": 88.1842,
+     "memorisation_ratio": 1.0051,
+     "temporal_roughness": 0.0919
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0283,
+     "frechet_pca": 79.2394,
+     "memorisation_ratio": 1.0852,
+     "temporal_roughness": 0.10339
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1107,
+     "frechet_pca": 73.0204,
+     "memorisation_ratio": 1.1584,
+     "temporal_roughness": 0.1227
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0128,
+     "frechet_pca": 206.0067,
+     "memorisation_ratio": 1.5847,
+     "temporal_roughness": 0.48844
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0192,
+     "frechet_pca": 149.425,
+     "memorisation_ratio": 0.7254,
+     "temporal_roughness": 0.10271
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.033,
+     "frechet_pca": 117.1001,
+     "memorisation_ratio": 0.8761,
+     "temporal_roughness": 0.0939
+    }
+   ],
+   "floor_frechet_pca": 35.1249,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "fm-jetflow",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 9745,
+    "seconds": 120.0,
+    "final_loss": 0.10559
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0045,
+     "frechet_pca": 193.6682,
+     "memorisation_ratio": 0.7608,
+     "temporal_roughness": 0.10727
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.008,
+     "frechet_pca": 156.9949,
+     "memorisation_ratio": 0.8773,
+     "temporal_roughness": 0.07823
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0149,
+     "frechet_pca": 130.5915,
+     "memorisation_ratio": 0.9856,
+     "temporal_roughness": 0.07732
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0289,
+     "frechet_pca": 120.0167,
+     "memorisation_ratio": 1.0611,
+     "temporal_roughness": 0.08384
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1162,
+     "frechet_pca": 113.8384,
+     "memorisation_ratio": 1.131,
+     "temporal_roughness": 0.10086
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0132,
+     "frechet_pca": 310.8897,
+     "memorisation_ratio": 1.0917,
+     "temporal_roughness": 0.2583
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0202,
+     "frechet_pca": 191.755,
+     "memorisation_ratio": 0.8242,
+     "temporal_roughness": 0.11245
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0332,
+     "frechet_pca": 145.2248,
+     "memorisation_ratio": 0.8801,
+     "temporal_roughness": 0.08772
+    }
+   ],
+   "floor_frechet_pca": 31.8373,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "fm-jetflow",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 6860,
+    "seconds": 120.0,
+    "final_loss": 0.11661
+   },
+   "parameters": 210637,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0066,
+     "frechet_pca": 167.5223,
+     "memorisation_ratio": 0.7211,
+     "temporal_roughness": 0.09552
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0109,
+     "frechet_pca": 133.6489,
+     "memorisation_ratio": 0.8693,
+     "temporal_roughness": 0.09033
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0219,
+     "frechet_pca": 119.8186,
+     "memorisation_ratio": 1.0081,
+     "temporal_roughness": 0.09178
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.041,
+     "frechet_pca": 114.1393,
+     "memorisation_ratio": 1.0834,
+     "temporal_roughness": 0.09092
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1597,
+     "frechet_pca": 111.5652,
+     "memorisation_ratio": 1.1522,
+     "temporal_roughness": 0.10267
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0173,
+     "frechet_pca": 204.5795,
+     "memorisation_ratio": 1.3133,
+     "temporal_roughness": 0.37442
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0266,
+     "frechet_pca": 159.422,
+     "memorisation_ratio": 0.7361,
+     "temporal_roughness": 0.10317
+    },
+    {
+     "sampler": "jetflow",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0451,
+     "frechet_pca": 123.4528,
+     "memorisation_ratio": 0.8877,
+     "temporal_roughness": 0.10679
+    }
+   ],
+   "floor_frechet_pca": 34.9028,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "fm-unet",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 8498,
+    "seconds": 120.0,
+    "final_loss": 0.08876
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0057,
+     "frechet_pca": 127.4429,
+     "memorisation_ratio": 0.7561,
+     "temporal_roughness": 0.12889
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0096,
+     "frechet_pca": 97.4108,
+     "memorisation_ratio": 0.8254,
+     "temporal_roughness": 0.06752
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0179,
+     "frechet_pca": 79.7351,
+     "memorisation_ratio": 0.9303,
+     "temporal_roughness": 0.06136
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0345,
+     "frechet_pca": 73.413,
+     "memorisation_ratio": 1.0003,
+     "temporal_roughness": 0.0674
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1342,
+     "frechet_pca": 70.406,
+     "memorisation_ratio": 1.0671,
+     "temporal_roughness": 0.07481
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0098,
+     "frechet_pca": 271.3369,
+     "memorisation_ratio": 1.0632,
+     "temporal_roughness": 0.25899
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0182,
+     "frechet_pca": 153.4472,
+     "memorisation_ratio": 0.7682,
+     "temporal_roughness": 0.09065
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0339,
+     "frechet_pca": 102.5639,
+     "memorisation_ratio": 0.8128,
+     "temporal_roughness": 0.0618
+    }
+   ],
+   "floor_frechet_pca": 35.1249,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "fm-unet",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 8430,
+    "seconds": 120.0,
+    "final_loss": 0.08755
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0061,
+     "frechet_pca": 153.0759,
+     "memorisation_ratio": 0.8132,
+     "temporal_roughness": 0.12283
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0102,
+     "frechet_pca": 114.2868,
+     "memorisation_ratio": 0.8567,
+     "temporal_roughness": 0.06422
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.032,
+     "frechet_pca": 91.8417,
+     "memorisation_ratio": 0.9447,
+     "temporal_roughness": 0.0542
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0348,
+     "frechet_pca": 81.4056,
+     "memorisation_ratio": 1.0161,
+     "temporal_roughness": 0.06374
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1353,
+     "frechet_pca": 74.9813,
+     "memorisation_ratio": 1.0885,
+     "temporal_roughness": 0.07311
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0098,
+     "frechet_pca": 274.5246,
+     "memorisation_ratio": 1.0181,
+     "temporal_roughness": 0.24038
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0183,
+     "frechet_pca": 186.5158,
+     "memorisation_ratio": 0.7915,
+     "temporal_roughness": 0.08946
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0352,
+     "frechet_pca": 125.692,
+     "memorisation_ratio": 0.8496,
+     "temporal_roughness": 0.05833
+    }
+   ],
+   "floor_frechet_pca": 31.8373,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "fm-unet",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 8190,
+    "seconds": 120.0,
+    "final_loss": 0.0915
+   },
+   "parameters": 216396,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "euler",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0061,
+     "frechet_pca": 141.2529,
+     "memorisation_ratio": 0.8013,
+     "temporal_roughness": 0.15806
+    },
+    {
+     "sampler": "euler",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0097,
+     "frechet_pca": 113.5324,
+     "memorisation_ratio": 0.8044,
+     "temporal_roughness": 0.06911
+    },
+    {
+     "sampler": "euler",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.018,
+     "frechet_pca": 95.469,
+     "memorisation_ratio": 0.9006,
+     "temporal_roughness": 0.06072
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0344,
+     "frechet_pca": 87.9459,
+     "memorisation_ratio": 0.9707,
+     "temporal_roughness": 0.0652
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.1362,
+     "frechet_pca": 82.5376,
+     "memorisation_ratio": 1.0424,
+     "temporal_roughness": 0.07424
+    },
+    {
+     "sampler": "jet2",
+     "steps": 1,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.01,
+     "frechet_pca": 227.9259,
+     "memorisation_ratio": 1.1307,
+     "temporal_roughness": 0.29729
+    },
+    {
+     "sampler": "jet2",
+     "steps": 2,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0181,
+     "frechet_pca": 153.6562,
+     "memorisation_ratio": 0.7507,
+     "temporal_roughness": 0.09713
+    },
+    {
+     "sampler": "jet2",
+     "steps": 4,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.035,
+     "frechet_pca": 117.3661,
+     "memorisation_ratio": 0.8043,
+     "temporal_roughness": 0.06438
+    }
+   ],
+   "floor_frechet_pca": 34.9028,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "meanflow-unet",
+   "seed": 0,
+   "mode": "dev",
+   "training": {
+    "steps": 6471,
+    "seconds": 120.0,
+    "final_loss": 0.98447
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0025,
+     "frechet_pca": 151.9467,
+     "memorisation_ratio": 0.8353,
+     "temporal_roughness": 0.1208
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0045,
+     "frechet_pca": 116.6971,
+     "memorisation_ratio": 0.9682,
+     "temporal_roughness": 0.0955
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.008,
+     "frechet_pca": 85.5003,
+     "memorisation_ratio": 0.9443,
+     "temporal_roughness": 0.08428
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0141,
+     "frechet_pca": 73.842,
+     "memorisation_ratio": 0.9519,
+     "temporal_roughness": 0.08075
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0557,
+     "frechet_pca": 71.2267,
+     "memorisation_ratio": 1.0352,
+     "temporal_roughness": 0.11612
+    }
+   ],
+   "floor_frechet_pca": 35.1249,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "meanflow-unet",
+   "seed": 1,
+   "mode": "dev",
+   "training": {
+    "steps": 5712,
+    "seconds": 120.0,
+    "final_loss": 0.98372
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0031,
+     "frechet_pca": 228.6296,
+     "memorisation_ratio": 0.8522,
+     "temporal_roughness": 0.11034
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0053,
+     "frechet_pca": 169.7674,
+     "memorisation_ratio": 1.036,
+     "temporal_roughness": 0.06183
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0099,
+     "frechet_pca": 145.8329,
+     "memorisation_ratio": 1.0454,
+     "temporal_roughness": 0.0565
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0188,
+     "frechet_pca": 122.9465,
+     "memorisation_ratio": 1.0433,
+     "temporal_roughness": 0.06183
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.073,
+     "frechet_pca": 104.6298,
+     "memorisation_ratio": 1.1472,
+     "temporal_roughness": 0.0904
+    }
+   ],
+   "floor_frechet_pca": 31.8373,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  },
+  {
+   "data": "ucf101",
+   "arm": "meanflow-unet",
+   "seed": 2,
+   "mode": "dev",
+   "training": {
+    "steps": 6327,
+    "seconds": 120.0,
+    "final_loss": 0.98456
+   },
+   "parameters": 219564,
+   "n_gen": 64,
+   "train_clips": 1056,
+   "held_clips": 144,
+   "data_info": {
+    "archive_sha256": "e9fcc76af48d320be88c5265f2e0576ecd615956976f6ce4742fdf2b042b71eb",
+    "train_videos": 300,
+    "dev_held_videos": 36
+   },
+   "samples": [
+    {
+     "sampler": "meanflow",
+     "steps": 1,
+     "calls_per_clip": 1.0,
+     "seconds_per_clip": 0.0026,
+     "frechet_pca": 162.2188,
+     "memorisation_ratio": 0.898,
+     "temporal_roughness": 0.11855
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 2,
+     "calls_per_clip": 2.0,
+     "seconds_per_clip": 0.0041,
+     "frechet_pca": 145.8538,
+     "memorisation_ratio": 1.0406,
+     "temporal_roughness": 0.0668
+    },
+    {
+     "sampler": "meanflow",
+     "steps": 4,
+     "calls_per_clip": 4.0,
+     "seconds_per_clip": 0.0079,
+     "frechet_pca": 104.1379,
+     "memorisation_ratio": 0.9981,
+     "temporal_roughness": 0.05379
+    },
+    {
+     "sampler": "euler",
+     "steps": 8,
+     "calls_per_clip": 8.0,
+     "seconds_per_clip": 0.0147,
+     "frechet_pca": 77.8816,
+     "memorisation_ratio": 1.018,
+     "temporal_roughness": 0.06856
+    },
+    {
+     "sampler": "euler",
+     "steps": 32,
+     "calls_per_clip": 32.0,
+     "seconds_per_clip": 0.0581,
+     "frechet_pca": 73.6061,
+     "memorisation_ratio": 1.1026,
+     "temporal_roughness": 0.1048
+    }
+   ],
+   "floor_frechet_pca": 34.9028,
+   "held_temporal_roughness": 0.02833,
+   "threads": 4,
+   "torch": "2.9.1+cpu",
+   "python": "3.12.16"
+  }
+ ],
+ "expectations": {
+  "fluid": {
+   "E1 JetFlow beats flow matching at four calls": {
+    "held": false,
+    "mean_a": 114.8908,
+    "mean_b": 37.4419,
+    "seeds_lower": 0
+   },
+   "E2 MeanFlow beats flow matching at one call": {
+    "held": false,
+    "mean_a": 69.0608,
+    "mean_b": 75.1914,
+    "seeds_lower": 2
+   },
+   "E3 MeanFlow at one call is no worse than JetFlow at four": {
+    "held": true,
+    "mean_meanflow_1": 69.0608,
+    "mean_jetflow_4_calls": 114.8908
+   },
+   "E4 the Jet2 step beats Euler at four calls, UNet": {
+    "held": false,
+    "mean_a": 67.0222,
+    "mean_b": 37.4419,
+    "seeds_lower": 0
+   },
+   "E4 the Jet2 step beats Euler at four calls, JetFlow": {
+    "held": false,
+    "mean_a": 114.8908,
+    "mean_b": 69.0867,
+    "seeds_lower": 0
+   },
+   "E5 JetFlow's network beats the UNet, Euler 32": {
+    "held": false,
+    "mean_a": 57.6373,
+    "mean_b": 33.207,
+    "seeds_lower": 0
+   },
+   "floor_mean": 19.0149
+  },
+  "collision": {
+   "E1 JetFlow beats flow matching at four calls": {
+    "held": false,
+    "mean_a": 2.6669,
+    "mean_b": 1.9554,
+    "seeds_lower": 0
+   },
+   "E2 MeanFlow beats flow matching at one call": {
+    "held": false,
+    "mean_a": 2.2332,
+    "mean_b": 2.23,
+    "seeds_lower": 2
+   },
+   "E3 MeanFlow at one call is no worse than JetFlow at four": {
+    "held": true,
+    "mean_meanflow_1": 2.2332,
+    "mean_jetflow_4_calls": 2.6669
+   },
+   "E4 the Jet2 step beats Euler at four calls, UNet": {
+    "held": false,
+    "mean_a": 2.4253,
+    "mean_b": 1.9554,
+    "seeds_lower": 0
+   },
+   "E4 the Jet2 step beats Euler at four calls, JetFlow": {
+    "held": false,
+    "mean_a": 2.6669,
+    "mean_b": 2.0129,
+    "seeds_lower": 0
+   },
+   "E5 JetFlow's network beats the UNet, Euler 32": {
+    "held": false,
+    "mean_a": 1.4642,
+    "mean_b": 1.5858,
+    "seeds_lower": 2
+   },
+   "floor_mean": 0.6938
+  },
+  "ucf101": {
+   "E1 JetFlow beats flow matching at four calls": {
+    "held": false,
+    "mean_a": 166.8673,
+    "mean_b": 89.0153,
+    "seeds_lower": 0
+   },
+   "E2 MeanFlow beats flow matching at one call": {
+    "held": false,
+    "mean_a": 180.9317,
+    "mean_b": 140.5906,
+    "seeds_lower": 0
+   },
+   "E3 MeanFlow at one call is no worse than JetFlow at four": {
+    "held": true,
+    "mean_meanflow_1": 180.9317,
+    "mean_jetflow_4_calls": 166.8673
+   },
+   "E4 the Jet2 step beats Euler at four calls, UNet": {
+    "held": false,
+    "mean_a": 164.5397,
+    "mean_b": 89.0153,
+    "seeds_lower": 0
+   },
+   "E4 the Jet2 step beats Euler at four calls, JetFlow": {
+    "held": false,
+    "mean_a": 166.8673,
+    "mean_b": 112.8648,
+    "seeds_lower": 0
+   },
+   "E5 JetFlow's network beats the UNet, Euler 32": {
+    "held": false,
+    "mean_a": 99.4747,
+    "mean_b": 75.975,
+    "seeds_lower": 0
+   },
+   "floor_mean": 33.955
+  }
+ },
+ "rehearsal_of": "PREREG-VIDEO-FLOW-2026-11 (draft), run 45875359514 on branch video-flow-smoke-1: development splits, 120 s, 64 clips per sampler; the collect job failed for a missing package (tqdm) and the 27 job records were read from the jobs' logs and collected locally"
+}

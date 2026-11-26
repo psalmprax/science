@@ -27,8 +27,9 @@ sampling (an unconditional model, guidance off).
 | Arm | Network | Objective | Samplers scored (network calls per clip) |
 | :--- | :--- | :--- | :--- |
 | `fm-jetflow` | `JetFlowVideoModel`, hidden 48, two layers (210,637 parameters) | flow matching | Euler 1, 2, 4, 8, 32; JetFlow's own `generate_video` (Jet2 step, solenoidal projection, steering) 1, 2, 4 steps = 2, 4, 8 calls |
-| `fm-unet` | the compact video UNet, width matched to JetFlow (216,396) | flow matching | Euler 1, 2, 4, 8, 32; the Jet2 step alone 1, 2, 4 steps = 2, 4, 8 calls |
-| `meanflow-unet` | the same UNet with the gap t - r embedded beside t (219,564) | MeanFlow: u(z_t, r, t) against sg(v - (t - r) du/dt), du/dt by one forward-mode product along (v, 0, 1); (t, r) logit-normal(-0.4, 1), r = t on 75 % of steps; adaptive weight 1 / (error + 0.001) | MeanFlow 1, 2, 4 steps = 1, 2, 4 calls; Euler on u(z, t, t) 8, 32 |
+| `fm-unet` | the compact video UNet, width matched to JetFlow (216,396) | flow matching | Euler 1, 2, 4, 8, 32; the Jet2 step alone 1, 2, 4 steps = 2, 4, 8 calls; **hybrid:** JetFlow's sampler (its solenoidal projection and Jet2 step; its steering is the identity at default settings) on the UNet, 1 and 2 steps = 2 and 4 calls |
+| `meanflow-unet` | the same UNet with the gap t - r embedded beside t (219,564) | MeanFlow: u(z_t, r, t) against sg(v - (t - r) du/dt), du/dt by one forward-mode product along (v, 0, 1); (t, r) logit-normal(-0.4, 1), r = t on 75 % of steps; adaptive weight 1 / (error + 0.001) | MeanFlow 1, 2, 4 steps = 1, 2, 4 calls; Euler on u(z, t, t) 8, 32; **hybrid:** the Jet2 step on u(z, t, t), 1 and 2 steps = 2 and 4 calls |
+| `meanflow-jetflow` (**hybrid**) | JetFlow's network; the gap t - r reaches it through its conditioning tokens (a Fourier embedding of the gap, mapped to two tokens by a learned layer that starts at zero), so JetFlow's code is unchanged | MeanFlow as above, du/dt by a finite difference along (v, 0, 1) with step 0.001 (the target is not differentiated, so no forward-mode product is needed) | MeanFlow 1, 2, 4 steps; Euler 8, 32 |
 
 ## Data
 
@@ -43,7 +44,7 @@ sampling (an unconditional model, guidance off).
 
 ## Protocol
 
-Each of the 27 jobs (three arms, three data sets, seeds 0, 1 and 2) runs alone on one GitHub runner:
+Each of the 36 jobs (four arms, three data sets, seeds 0, 1 and 2) runs alone on one GitHub runner:
 train for 1,200 seconds, then generate 256 clips with every sampler of the arm's grid (the same noise
 seeds for every arm except JetFlow's own sampler, which draws its own) and decode them.
 
@@ -69,6 +70,13 @@ than B's on at least two of the three seeds (paired by seed). Each expectation i
    Euler four) and on `fm-jetflow` (its own sampler two steps against Euler four), read separately.
 5. **JetFlow's network beats the UNet with the same sampler:** `fm-jetflow` with Euler at 32 steps beats
    `fm-unet` with Euler at 32.
+6. **Hybrids** (on the owner's word of 26 November, 20:32: "test hybrid approach in all the suggested
+   solutions"), each read on its own:
+   a. MeanFlow helps JetFlow's network: `meanflow-jetflow` at one step beats `fm-jetflow` with Euler at
+      one step;
+   b. MeanFlow on JetFlow's network beats MeanFlow on the UNet at one step;
+   c. the Jet2 step on MeanFlow's velocity, two steps (four calls), beats MeanFlow's own four steps;
+   d. JetFlow's sampler on the UNet, two steps (four calls), beats Euler at four steps on the UNet.
 
 A miss is reported as a miss. A job that fails is reported as missing; the expectations that need it are
 then not read.
@@ -81,6 +89,9 @@ then not read.
 - **2 and 3 hold on ucf101:** propose MeanFlow as the few-step training objective for the video package,
   under its own preregistration at a larger size.
 - **Neither:** plain flow matching with a many-step sampler stays the reference; nothing new is proposed.
+- **A hybrid in 6 holds on ucf101 and on at least one toy world:** propose that combination in place of
+  its parents for the video package, under its own preregistration at a larger size. A hybrid that holds
+  only on toy worlds is reported, not proposed.
 
 ## Disclosed before freezing
 
@@ -92,8 +103,24 @@ then not read.
 - **Choices made:** the clip shape, JetFlow's size and the UNet's matched width are those of the earlier
   matched benchmark; the learning rate is the repository's (1e-3 for every arm, not tuned); the MeanFlow
   settings are the paper's defaults; 16 principal components; 256 clips per sampler.
-- **Rehearsal** on the development splits, every job, 120 seconds of training and 64 clips per sampler
-  (run `video-flow-smoke-1`): *to be written here before freezing.*
+- **Rehearsal** on the development splits, the 27 jobs then planned, 120 seconds of training and 64 clips
+  per sampler (run 45875359514; its collect job failed for a missing package, `tqdm`, which the jobs had
+  and the collect job did not; the 27 records were read from the jobs' logs and collected here,
+  `benchmarks/video/video_flow_rehearsal.json`). UCF101 subset: 300 videos in its train split, 36 of them
+  in groups 8 to 10; 1,056 training and 144 held-out clips; archive SHA-256 e9fcc76a...71eb, now pinned in
+  the runner. Mean FD over three seeds (floor): fluid (19.0) JetFlow's sampler 2 steps 114.9, the UNet's
+  Euler 4 37.4, MeanFlow 1 step 69.1 against Euler 1 75.2; collision (0.69) 2.67, 1.96, 2.23 against 2.23;
+  ucf101 (34.0) 166.9, 89.0, 180.9 against 140.6. Read as the plan reads: 1 missed on all three, 2 missed
+  on all three (on fluid lower on 2 of 3 seeds but not by 10 %), 3 held on all three (because JetFlow's
+  sampler did badly), 4 missed for both networks on all three (the Jet2 step was worse than Euler at
+  equal calls), 5 missed on fluid and ucf101 (on collision lower on 2 of 3 seeds, not by 10 %). One
+  observation not in any expectation: the MeanFlow-trained UNet with Euler at 8 calls (fluid 23.0, seed 0)
+  beat the flow-matching UNet at 32 calls (43.4). Jobs took 3.5 to 4.5 minutes; the final run's 20
+  minutes of training and four times the clips come to about 30, inside the 70-minute step limit.
+- **Changes after the rehearsal, before freezing.** The hybrid arm `meanflow-jetflow`, the two hybrid
+  samplers and expectation 6, on the owner's word of 26 November (20:32); checked locally on short runs
+  (`tests/test_video_flow_head_to_head.py`; a 20-second run of each), not in the rehearsal. The collect
+  job now installs the jobs' packages. The archive's SHA-256 is pinned.
 
 ## Limits
 

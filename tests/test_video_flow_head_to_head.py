@@ -150,6 +150,7 @@ def test_the_expectations_are_read_as_written() -> None:
             jobs[(kind, "fm-unet", seed)] = job(kind, "fm-unet", seed, {("euler", 4): 40.0, ("euler", 1): 80.0,
                                                                          ("jet2", 2): 39.0})
             jobs[(kind, "meanflow-unet", seed)] = job(kind, "meanflow-unet", seed, {("meanflow", 1): 32.0})
+            jobs[(kind, "meanflow-jetflow", seed)] = job(kind, "meanflow-jetflow", seed, {("meanflow", 1): 20.0})
     e = run.expectations(jobs)["ucf101"]
     assert e["E1 JetFlow beats flow matching at four calls"]["held"]           # 30 against 40
     assert e["E2 MeanFlow beats flow matching at one call"]["held"]            # 32 against 80
@@ -157,5 +158,30 @@ def test_the_expectations_are_read_as_written() -> None:
     assert not e["E4 the Jet2 step beats Euler at four calls, UNet"]["held"]  # 39 against 40: not by 10 %
     assert e["E4 the Jet2 step beats Euler at four calls, JetFlow"]["held"]
     assert not e["E5 JetFlow's network beats the UNet, Euler 32"]["held"]     # equal
+    assert e["E6 hybrid: MeanFlow helps JetFlow's network at one call"]["held"]                    # 20 against 50
+    assert e["E6 hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call"]["held"]   # 20 against 32
+    assert not e["E6 hybrid: JetFlow's sampler on the UNet beats Euler at four calls"]["held"]     # 50 against 40
     assert run.beats([1.0, 1.0, 5.0], [2.0, 2.0, 2.0])["held"] is False     # mean 2.33 > 0.9 * 2
     assert run.beats([1.0, 1.0, 1.7], [2.0, 2.0, 1.0])["seeds_lower"] == 2
+
+
+def test_the_hybrid_meanflow_on_jetflow_runs_trains_and_is_counted() -> None:
+    torch.manual_seed(0)
+    model = h.build("meanflow-jetflow")
+    z = torch.randn(h.FRAMES, h.LATENT, 8, 8)
+    assert torch.allclose(model(z, 0.6, text_tokens=h.TEXT, r=0.6), model.jet(z, 0.6, text_tokens=h.TEXT))
+    loss = h.meanflow_loss(model, z.unsqueeze(0), t=0.8, r=0.3, derivative="fd")
+    loss.backward()
+    assert any(float(p.grad.abs().sum()) > 0 for p in model.parameters() if p.grad is not None)
+    counter = h.counter_for(model)
+    h.sample(model, "meanflow", 2, n=2, seed=0)
+    assert counter.calls == 4
+
+
+def test_jetflow_sampler_on_another_network_costs_two_calls_a_step() -> None:
+    x0 = torch.randn(h.FRAMES, h.LATENT, 8, 8)
+    oracle = _Oracle(x0)
+    counter = h.counter_for(oracle)
+    out = h.sample(oracle, "jetflow-sampler", 2, n=2, seed=0)
+    assert counter.calls == 2 * 4 and out.shape == (2, h.FRAMES, h.LATENT, 8, 8)
+    assert torch.isfinite(out).all()

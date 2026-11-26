@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Hybrids added to the two open plans, and both rehearsals recorded (2026-11-26, development; on the
+  owner's word "test hybrid approach in all the suggested solutions").** MMLM-QI: every arm is also mixed
+  byte by byte with Kneser-Ney (four bytes of history), and expectation 7 asks whether the mixture gains
+  more from the quantum-inspired model than from a hidden Markov model of its size. Video: a hybrid arm,
+  JetFlow's network trained by MeanFlow (`meanflow-jetflow`), JetFlow's sampler on the UNet, and the Jet2
+  step on MeanFlow's velocity (expectation 6). Rehearsals on the development splits:
+  `benchmarks/mmlm/mmlm_qi_rehearsal.json` (best quantum-inspired arm 2.77 bits per byte against a hidden
+  Markov model's 2.50 and Kneser-Ney's 1.85) and `benchmarks/video/video_flow_rehearsal.json` (JetFlow's
+  sampler lost to plain flow matching at four calls on all three data sets; read from the jobs' logs, its
+  collect job lacked `tqdm`, now installed). The UCF101 archive's SHA-256 is pinned. Neither plan is frozen yet.
 - **GF(2^12), two more of the four approaches recorded (2026-11-26, development).** The AND-gate walk
   (run 45779331737, 151 core-hours, `benchmarks/gf2_multiplication/and_walk.json`; it counts AND gates,
   not bilinear products): GF(2^4) to GF(2^6) reach the known 9, 13 and 15, GF(2^7) stops at 27 (22
