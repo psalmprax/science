@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12): searches mixing subfields can run sharded, and the local ones are recorded (2026-11-26,
+  development).** `scripts/gf2_invariant_search.py` has `prepare-mixed` and `run-mixed` (every profile of
+  a GF(2) cost with a number of choices in a given range, one shard of the first orbit) and
+  `extract_mixed` (each GF(q) product written as an optimal symmetric decomposition of GF(q) inside
+  GF(2^12), the outputs solved, then checked by the repository's verifier); `collect` reads mixed shards.
+  `benchmarks/gf2_multiplication/invariant_mixed_local.json` records the local runs: GF(4) and GF(2)
+  forms invariant under x -> x^4 at a cost of 41, every profile of at most 1e7 choices (587 profiles,
+  1.0 thousand million choices), none; GF(8) and GF(2) under x -> x^8 at 42, 28 profiles before the
+  machine restarted, none. The classes are far larger (7.7e16 choices for the first), so these are
+  samples of their smallest profiles, not exhaustive. Tests in `tests/test_gf2_invariant_search.py` (5 new).
 - **GF(4^6) over GF(4) by a flip walk, toward 13 products (39 over GF(2)) (2026-11-26, development).**
   `scripts/search_gf4_mul_flip.py` with `scripts/gf4_flip_walk.c` (the walk over GF(4) built on 26
   November in scratch, now in the repository) and `.github/workflows/gf4-flip-walk.yml`: GF(2^12) as

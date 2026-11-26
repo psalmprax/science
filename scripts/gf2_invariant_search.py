@@ -347,24 +347,140 @@ def extract(field: Field, step: int, reps: list[int]) -> tuple[list[tuple[int, i
     return triples, len(terms)
 
 
+def extract_mixed(step: int, labels: list[int], reps: list[int]) -> tuple[list[tuple[int, int, int]], int]:
+    """As ``extract`` for a mixed choice: reps paired with the labels (q * 100 + size) in decreasing order, as the
+    enumerator prints them; each GF(q) product becomes an optimal symmetric decomposition of GF(q) over GF(2)."""
+    n = 12
+    fields: dict[int, Field] = {}
+    columns, meta = [], []
+    for label, lam in zip(sorted(labels, reverse=True), reps, strict=True):
+        q, d = label // 100, label % 100
+        field = fields.setdefault(q, Field(n, q))
+        for e in kernel(field, lam, d, step):
+            columns.append(contribution(field, lam, d, step, e))
+            meta.append((q, lam, d, e))
+    piv: dict[int, tuple[int, int]] = {}
+    for k, col in enumerate(columns):
+        v, tag = col, 1 << k
+        for bit in sorted(piv, reverse=True):
+            if v >> bit & 1:
+                v ^= piv[bit][0]
+                tag ^= piv[bit][1]
+        if v:
+            piv[v.bit_length() - 1] = (v, tag)
+    v, tag = target(Field(n, 2)), 0
+    for bit in sorted(piv, reverse=True):
+        if v >> bit & 1:
+            v ^= piv[bit][0]
+            tag ^= piv[bit][1]
+    if v:
+        raise ValueError("the multiplication is not in the span of these orbits")
+    c_of: dict[tuple[int, int, int], int] = {}
+    for k, (q, lam, d, e) in enumerate(meta):
+        if tag >> k & 1:
+            c_of[(q, lam, d)] = c_of.get((q, lam, d), 0) ^ e
+    triples: list[tuple[int, int, int]] = []
+    cost = 0
+    for (q, lam, d), c in c_of.items():
+        if not c:
+            continue
+        field = fields[q]
+        cost += field.cost * d
+        base = _subfield_base(field)
+        for j in range(d):
+            lj, cj = field.frob(lam, j * step), field.frob(c, j * step)
+            if q == 2:
+                form = sum(field.trace(field.mul(lj, 1 << i)) << i for i in range(n))
+                triples.append((form, form, cj))
+                continue
+            sub_coord, base_terms = base
+            k = q.bit_length() - 1
+            masks = [0] * k
+            for i in range(n):
+                bits = sub_coord[field.trace(field.mul(lj, 1 << i))]
+                for s in range(k):
+                    masks[s] |= (bits >> s & 1) << i
+            for form_a, _, delta in base_terms:
+                a = 0
+                for s in range(k):
+                    if form_a >> s & 1:
+                        a ^= masks[s]
+                out = field.mul(delta, cj)
+                if a and out:
+                    triples.append((a, a, out))
+    return triples, cost
+
+
+def _subfield_base(field: Field) -> tuple[dict[int, int], list[tuple[int, int, int]]]:
+    """Coordinates of GF(q) inside GF(2^n) in the basis of powers of its generator, and an optimal symmetric
+    decomposition of GF(q) multiplication in that basis."""
+    if field.q == 2:
+        return {0: 0, 1: 1}, []
+    k = field.q.bit_length() - 1
+    g = field.pow(towers.primitive_elements(field.n)[0], ((1 << field.n) - 1) // (field.q - 1))
+    sub_basis = [field.pow(g, i) for i in range(k)]
+    sub_coord = {}
+    for bits in range(1 << k):
+        v = 0
+        for i in range(k):
+            if bits >> i & 1:
+                v ^= sub_basis[i]
+        sub_coord[v] = bits
+    return sub_coord, towers.subfield_decompositions(k, sub_basis, sub_coord, field.mod, limit=1)[0]
+
+
+def run_mixed(args: argparse.Namespace) -> int:
+    """Every mixed profile of a GF(2) cost with between --min-leaves and --max-leaves choices, one shard."""
+    args.out.mkdir(parents=True, exist_ok=True)
+    counts = read_counts(args.file)
+    chosen = [(p, n_leaves) for p, n_leaves in mixed_profiles(counts, args.budget, int(args.max_leaves)) if n_leaves > args.min_leaves]
+    rows = []
+    with tempfile.TemporaryDirectory() as tmp:
+        binary = build(Path(tmp) / "search")
+        for profile, _ in sorted(chosen, key=lambda pl: pl[1]):
+            done = subprocess.run([str(binary), str(args.file), "--shard", str(args.shard), str(args.shards), *map(str, profile)],  # noqa: S603 - built here
+                                  capture_output=True, text=True, check=True)
+            lines = done.stdout.strip().split("\n")
+            found = [[int(v) for v in line.split(":")[1].split()] for line in lines if line.startswith("FOUND")]
+            last = lines[-1]
+            rows.append({"profile": sorted(profile, reverse=True), "leaves": int(last.split("leaves ")[1].split()[0]),
+                         "found": int(last.split("found ")[1]), "reps": found})
+            print(json.dumps(rows[-1]), flush=True)
+    record = {"kind": "mixed", "file": args.file.name, "step": args.step, "budget": args.budget,
+              "min_leaves": args.min_leaves, "max_leaves": int(args.max_leaves), "shard": args.shard,
+              "shards": args.shards, "profiles": rows}
+    (args.out / f"shard_{args.file.stem}_b{args.budget}_{args.shard}.json").write_text(json.dumps(record) + "\n")
+    return 0
+
 def collect(args: argparse.Namespace) -> int:
     shards = [json.loads(p.read_text()) for p in sorted(args.out.glob("shard_*.json"))]
     by_class: dict[str, Any] = {}
     for s in shards:
-        key = f"{s['file']} rank {s['rank']}"
-        entry = by_class.setdefault(key, {"over": s["over"], "step": s["step"], "rank": s["rank"], "shards_read": 0,
-                                          "shards": s["shards"], "leaves": 0, "found": 0, "reps": []})
+        if s.get("kind") == "mixed":
+            key = f"{s['file']} budget {s['budget']} leaves {s['min_leaves']}-{s['max_leaves']}"
+            entry = by_class.setdefault(key, {"kind": "mixed", "step": s["step"], "budget": s["budget"], "shards_read": 0,
+                                              "shards": s["shards"], "profiles": 0, "leaves": 0, "found": 0, "reps": []})
+        else:
+            key = f"{s['file']} rank {s['rank']}"
+            entry = by_class.setdefault(key, {"over": s["over"], "step": s["step"], "rank": s["rank"], "shards_read": 0,
+                                              "shards": s["shards"], "leaves": 0, "found": 0, "reps": []})
         entry["shards_read"] += 1
         for row in s["profiles"]:
             entry["leaves"] += row["leaves"]
             entry["found"] += row["found"]
-            entry["reps"] += row["reps"][:3]
+            if s.get("kind") == "mixed":
+                entry["profiles"] = max(entry["profiles"], len(s["profiles"]))
+                entry["reps"] += [{"labels": row["profile"], "reps": r} for r in row["reps"][:3]]
+            else:
+                entry["reps"] += row["reps"][:3]
     checked = []
+    from apedp_dyn.quantum import flip_search
     for entry in by_class.values():
         for reps in entry["reps"][:5]:
-            field = Field(12, entry["over"])
-            triples, products = extract(field, entry["step"], reps)
-            from apedp_dyn.quantum import flip_search
+            if entry.get("kind") == "mixed":
+                triples, products = extract_mixed(entry["step"], reps["labels"], reps["reps"])
+            else:
+                triples, products = extract(Field(12, entry["over"]), entry["step"], reps)
             checked.append({"reps": reps, "products_over_gf2": len(triples), "terms_over_gfq": products,
                             "exact": flip_search.verified(triples), "triples": [list(t) for t in triples]})
     record = {"tag": TAG, "development_not_a_result": True, "classes": by_class, "checked": checked,
@@ -376,7 +492,11 @@ def collect(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("command", choices=("prepare", "profiles", "run", "extract", "collect"))
+    parser.add_argument("command", choices=("prepare", "prepare-mixed", "profiles", "run", "run-mixed", "extract", "collect"))
+    parser.add_argument("--families", type=int, nargs="*", default=[4, 2])
+    parser.add_argument("--budget", type=int, default=41)
+    parser.add_argument("--min-leaves", type=float, default=0)
+    parser.add_argument("--max-leaves", type=float, default=1e7)
     parser.add_argument("--field", type=int, default=12)
     parser.add_argument("--over", type=int, choices=(2, 4), default=4)
     parser.add_argument("--step", type=int, default=1)
@@ -390,6 +510,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "prepare":
         print(json.dumps(prepare(Field(args.field, args.over), args.step, args.out)))
         return 0
+    if args.command == "prepare-mixed":
+        print(json.dumps(prepare_mixed(args.field, args.families, args.step, args.out)))
+        return 0
+    if args.command == "run-mixed":
+        return run_mixed(args)
     if args.command == "profiles":
         counts = read_counts(args.file)
         for p in profiles(counts, args.rank):

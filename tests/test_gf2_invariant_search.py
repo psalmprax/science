@@ -68,3 +68,44 @@ def test_a_gf4_decomposition_of_14_gives_42_exact_products() -> None:
 def test_extract_refuses_orbits_that_do_not_reach_the_multiplication() -> None:
     with pytest.raises(ValueError):
         inv.extract(inv.Field(12, 4), 2, [103, 131])
+
+
+@pytest.mark.parametrize("q", [4, 8, 16])
+def test_the_subfield_decomposition_multiplies_gfq_inside_gf2_12(q: int) -> None:
+    field = inv.Field(12, q)
+    coord, base = inv._subfield_base(field)
+    assert len(base) == {4: 3, 8: 6, 16: 9}[q]
+    elems = dict(coord)
+    assert len(elems) == q
+    for u in elems:
+        for v in elems:
+            acc = 0
+            for form, _, delta in base:
+                pu = bin(form & elems[u]).count("1") & 1
+                pv = bin(form & elems[v]).count("1") & 1
+                if pu and pv:
+                    acc ^= delta
+            assert acc == field.mul(u, v), (u, v)
+
+
+def test_mixed_extraction_of_a_recorded_gf4_choice_gives_42_exact() -> None:
+    from apedp_dyn.quantum import flip_search
+    triples, cost = inv.extract_mixed(2, [406, 403, 402, 402, 401], [103, 131, 138, 195, 1])
+    assert cost == 42 and len(triples) == 42 and flip_search.verified(triples)
+    with pytest.raises(ValueError):
+        inv.extract_mixed(2, [406, 403, 402, 402, 401], [103, 131, 138, 195, 459])   # not among the six the enumeration finds
+
+
+@needs_gcc
+def test_a_mixed_run_finds_the_known_class_and_collect_checks_it(tmp_path: Path) -> None:
+    orbit_file = tmp_path / "m4.bin"
+    inv.main(["prepare-mixed", "--families", "4", "--step", "2", "--out", str(orbit_file)])
+    out = tmp_path / "out"
+    assert inv.main(["run-mixed", "--file", str(orbit_file), "--step", "2", "--budget", "42", "--min-leaves", "50000",
+                     "--max-leaves", "60000", "--out", str(out)]) == 0
+    shard = json.loads(next(out.glob("shard_*.json")).read_text())
+    assert [r["profile"] for r in shard["profiles"]] == [[406, 403, 402, 402, 401]]
+    assert shard["profiles"][0]["found"] == 6
+    assert inv.main(["collect", "--out", str(out)]) == 0
+    record = json.loads((out / "invariant_search.json").read_text())
+    assert all(c["exact"] and c["products_over_gf2"] == 42 for c in record["checked"]) and not record["below_42"]
