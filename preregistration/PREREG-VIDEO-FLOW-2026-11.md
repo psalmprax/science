@@ -32,7 +32,7 @@ sampling (an unconditional model, guidance off).
 | `fm-jetflow` | `JetFlowVideoModel`, hidden 48, two layers (210,637 parameters, of which its forward uses the backbone's 135,580) | flow matching, t uniform in (0, 1) | Euler 1, 2, 4, 8, 32; JetFlow's sampler (its Jet2 step and its latent velocity projection; its steering is the identity at default settings) as packaged, 1, 2, 4 steps = 2, 4, 8 calls; the same with the step's curvature sign corrected, 1, 2, 4 steps |
 | `fm-unet` | the compact video UNet, width 40, matched to JetFlow's backbone (152,492) | flow matching, as above | Euler 1, 2, 4, 8, 32; the Jet2 step as packaged, 2 steps; corrected, 1, 2, 4 steps; **hybrids:** JetFlow's sampler on the UNet, as packaged and corrected, 2 steps = 4 calls |
 | `meanflow-unet` | the same UNet with the gap t - r embedded beside t (154,812) | MeanFlow: u(z_t, r, t) against sg(v - (t - r) du/dt), du/dt by one forward-mode product along (v, 0, 1); (t, r) logit-normal(-0.4, 1), r = t on 75 % of steps; weight sg(1 / (squared norm of the error + 0.001)), the paper's adaptive weight with power 1 | MeanFlow 1, 2, 4 steps = 1, 2, 4 calls; Euler on u(z, t, t) 8, 32; **hybrid:** the corrected Jet2 step on u(z, t, t), 2 steps = 4 calls |
-| `meanflow-jetflow` (**hybrid**) | JetFlow's network; the gap t - r reaches it as a learned shift of each latent channel (a Fourier embedding of the gap through a layer that starts at zero), so JetFlow's code is unchanged | MeanFlow as above, du/dt by a finite difference along (v, 0, 1) with step 0.001 (the target is not differentiated, so no forward-mode product is needed) | MeanFlow 1, 2, 4 steps; Euler 8, 32 |
+| `meanflow-jetflow` (**hybrid**) | JetFlow's network; the gap t - r reaches it the way it reaches the UNet, added to the time embedding (a forward hook on the backbone's time embedding adds a Fourier embedding of the gap through a layer that starts at zero), so JetFlow's code is unchanged | MeanFlow as above, du/dt by a finite difference along (v, 0, 1) with step 0.001 (the target is not differentiated, so no forward-mode product is needed) | MeanFlow 1, 2, 4 steps; Euler 8, 32 |
 
 **JetFlow's step as packaged has its curvature term reversed.** `JetFlowStepper` computes the acceleration
 as (v - v_probe) / h, which is -dv/dt (found by this plan's independent review and pinned by
@@ -151,11 +151,14 @@ only is reported, not proposed.
   backbone; flow matching on t in (0, 1); MeanFlow's weight on the squared norm; the floor on the same
   clips for every seed; each expectation read on its own; the consequences tightened; the frozen list
   widened and each job's commit recorded. The collect job now installs the jobs' packages; the archive's
-  SHA-256 is pinned. A second rehearsal of all 36 jobs runs this code before freezing (`video-flow-smoke-2`).
+  SHA-256 is pinned. After the review's second look: the gap through the time embedding, seeded starting
+  weights, the test's float tolerance. A rehearsal of all 36 jobs runs this code before freezing
+  (`video-flow-smoke-4`; the second stopped on the test's tolerance, the third was cancelled for the
+  second look's changes).
 
 ## Limits
 
-- 16 x 16 pixels and six frames, and models of about 210,000 parameters: a test of the approaches at toy
+- 16 x 16 pixels and six frames, and networks of 135,580 to 154,812 parameters: a test of the approaches at toy
   size, on CPU, for 20 minutes each. Nothing here says how they compare at production size.
 - The Frechet distance in principal components of the training clips is not FVD (no I3D network); at
   this resolution an I3D network would see almost nothing. It measures how close the generated clips'
@@ -202,3 +205,15 @@ arm, and says so.
 10. MeanFlow, the metric and the expectations' arithmetic: no finding.
 11. Data: no finding; the run now records the UCF101 groups it trained and scored on.
 12. The changed code had not run on GitHub. *Done:* a second rehearsal before freezing.
+
+**Second look at the fixes (26 November), and what was done:** (1) A new test (JetFlow's sampler against
+`generate_video`) failed on the runners at a tolerance of 1e-5 (float32 rounding through the probe's
+division by 0.001), which stopped five jobs of the second rehearsal before training. *Done:* compared at
+1e-3; a third rehearsal. (2) The channel shift mixed the gap with each channel's mean, a weaker way in
+than the UNet's. *Done:* the gap is added to JetFlow's time embedding through a forward hook, as for the
+UNet; the test trains at the run's settings. (3) The starting weights were not seeded. *Done:* seeded
+before the model is built. (4) Four imported package files were not frozen, and NumPy's and OpenCV's
+versions not recorded. *Done:* frozen and recorded. (5) A stale parameter count under Limits. *Done.*
+The reviewer found the corrected step right (sign, probe, the dt^2/2 factor; exact on dz/dt = t),
+JetFlow's sampler from shared noise equal to `generate_video` up to rounding, the expectations, the
+consequences and the grid matching the code.

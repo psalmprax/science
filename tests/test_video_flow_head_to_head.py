@@ -209,7 +209,7 @@ def test_the_hybrid_meanflow_on_jetflow_learns_the_gap_from_its_real_start() -> 
     z = torch.randn(h.FRAMES, h.LATENT, 8, 8)
     assert torch.allclose(model(z, 0.6, text_tokens=h.TEXT, r=0.6), model.jet(z, 0.6, text_tokens=h.TEXT))
     latents = torch.randn(4, h.FRAMES, h.LATENT, 8, 8)
-    h.train_meanflow(model, latents, seconds=4, lr=1e-2, seed=0, share_unequal=1.0)
+    h.train_meanflow(model, latents, seconds=6, lr=1e-3, seed=0)        # the run's settings
     assert float(model.gap_proj.weight.abs().sum()) > 0
     with torch.no_grad():
         assert not torch.allclose(model(z, 0.9, text_tokens=h.TEXT, r=0.9), model(z, 0.9, text_tokens=h.TEXT, r=0.1))

@@ -46,8 +46,9 @@ DIGEST = ROOT / "preregistration" / "DIGEST-VIDEO-FLOW.json"
 FROZEN = ("preregistration/PREREG-VIDEO-FLOW-2026-11.md", "scripts/run_prereg_video_flow.py",
           "packages/jetflow-video/jetflow_video/head_to_head.py", ".github/workflows/video-flow.yml",
           "tests/test_video_flow_head_to_head.py",
-          *(f"packages/jetflow-video/jetflow_video/{m}.py" for m in ("model", "stepper", "noether", "physics",
-                                                                    "diffusion_baseline", "bridge", "tensor_train")),
+          *(f"packages/jetflow-video/jetflow_video/{m}.py" for m in ("__init__", "model", "stepper", "noether", "physics",
+                                                                    "diffusion_baseline", "bridge", "tensor_train",
+                                                                    "text_encoder", "depth_se3", "trainer")),
           "apedp_dyn/video/fluid_domain.py", "apedp_dyn/video/collision_domain.py", "apedp_dyn/video/eval_gate.py")
 DATA = ("fluid", "collision", "ucf101")
 ARMS = ("fm-jetflow", "fm-unet", "meanflow-unet", "meanflow-jetflow")   #: the last is a hybrid
@@ -112,6 +113,14 @@ def _ucf(mode: str, cache: Path) -> tuple[np.ndarray, np.ndarray, dict[str, Any]
     return train[~dev_held], train[dev_held], info
 
 
+def _opencv_version() -> str | None:
+    try:
+        import cv2
+        return str(cv2.__version__)
+    except ImportError:
+        return None
+
+
 def data(kind: str, mode: str, cache: Path) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     if kind == "ucf101":
         return _ucf(mode, cache)
@@ -125,6 +134,7 @@ def run_job(args: argparse.Namespace) -> int:
     torch.set_num_threads(args.threads)
     train, held, info = data(args.data, args.mode, args.cache)
     latents = h.encode(train)
+    torch.manual_seed(args.seed)                          # the starting weights, from the seed
     model = h.build(args.arm)
     trainer = h.train_meanflow if args.arm.startswith("meanflow") else h.train_flow_matching
     fit = trainer(model, latents, args.seconds, lr=1e-3, seed=args.seed)
@@ -143,7 +153,8 @@ def run_job(args: argparse.Namespace) -> int:
         "floor_frechet_pca": round(h.frechet_pca(train, held, train[pick]), 4),
         "held_temporal_roughness": round(h.temporal_roughness(held), 5),
         "threads": args.threads, "torch": torch.__version__, "python": platform.python_version(),
-        "cpu_count": os.cpu_count(), "commit": os.environ.get("GITHUB_SHA")}
+        "cpu_count": os.cpu_count(), "commit": os.environ.get("GITHUB_SHA"), "numpy": np.__version__,
+        "opencv": _opencv_version()}
     if args.mode == "final":
         record["frozen"] = frozen_digests()
     args.out.mkdir(parents=True, exist_ok=True)

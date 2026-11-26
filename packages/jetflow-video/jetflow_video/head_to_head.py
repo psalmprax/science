@@ -104,26 +104,38 @@ class MeanFlowUNet(DiffusionVideoUNet):
 
 class MeanFlowJetFlow(torch.nn.Module):
     """A hybrid: JetFlow's network trained by MeanFlow. Its backbone takes one time; the gap t - r reaches it
-    as a learned shift of each latent channel (a Fourier embedding of the gap through a layer that starts at
-    zero), so JetFlow's code is unchanged and the shift gets a gradient from the first step. With r = t the
-    gap is zero and its embedding constant."""
+    the way it reaches the UNet, added to the time embedding: a forward hook on the backbone's time
+    embedding adds a learned embedding of the gap (a Fourier embedding through a layer that starts at zero),
+    so JetFlow's code is unchanged. With r = t the gap is zero and its embedding constant."""
 
     def __init__(self) -> None:
         super().__init__()
         self.jet = build_jetflow()
         self.backbone = self.jet.backbone
+        hidden = int(JETFLOW["hidden_dim"])
         self.gap_freqs = torch.nn.Parameter(torch.exp(-torch.arange(8.0) * math.log(1000.0) / 7), requires_grad=False)
-        self.gap_proj = torch.nn.Linear(16, LATENT)
+        self.gap_proj = torch.nn.Linear(16, hidden)
         torch.nn.init.zeros_(self.gap_proj.weight)
         torch.nn.init.zeros_(self.gap_proj.bias)
+        self._gap_embedding: Tensor | None = None
+        self.backbone.time_embed.register_forward_hook(self._add_gap)
+
+    def _add_gap(self, module: torch.nn.Module, inputs: Any, output: Tensor) -> Tensor:
+        if self._gap_embedding is None:
+            return output
+        added: Tensor = output + self._gap_embedding.to(output.dtype)
+        return added
 
     def forward(self, z: Tensor, t: float | Tensor, text_tokens: Tensor | None = None,
                 r: float | Tensor | None = None) -> Tensor:
         t_f = float(t)
         gap = torch.tensor([t_f - (t_f if r is None else float(r))], dtype=z.dtype)
         angles = gap.reshape(1, 1) * self.gap_freqs.unsqueeze(0) * (2.0 * math.pi)
-        shift = self.gap_proj(torch.cat([torch.sin(angles), torch.cos(angles)], dim=-1)).reshape(LATENT, 1, 1)
-        out: Tensor = self.jet(z + shift, t_f, text_tokens=text_tokens if text_tokens is not None else TEXT)
+        self._gap_embedding = self.gap_proj(torch.cat([torch.sin(angles), torch.cos(angles)], dim=-1))
+        try:
+            out: Tensor = self.jet(z, t_f, text_tokens=text_tokens if text_tokens is not None else TEXT)
+        finally:
+            self._gap_embedding = None
         return out
 
 

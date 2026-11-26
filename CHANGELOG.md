@@ -68,6 +68,12 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **The video plan after its review's second look (2026-11-26, development).** The hybrid `meanflow-jetflow`
+  now takes the gap through JetFlow's time embedding (a forward hook; the channel shift mixed it with each
+  channel's mean), starting weights are seeded, four more package files are frozen and NumPy's and OpenCV's
+  versions recorded; a test that failed on the runners at a 1e-5 tolerance now compares at 1e-3. MMLM-QI
+  after its second look: a missing seed or arm leaves its expectation not read instead of averaged over,
+  and the proposals table's second and fourth rows follow from the expectations.
 - **A register of what gets added (2026-11-26; on the owner's word).** `docs/SOLUTIONS_REGISTER_2026-11-26.md`
   sorts every solution tested that day, with its hybrids, into: to add on the owner's word, keep as a tool,
   do not add, and waiting for results, with the evidence for each. It changes nothing in force.
