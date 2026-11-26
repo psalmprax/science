@@ -161,5 +161,7 @@ def test_it_reads_the_table_once_with_the_reader_it_is_given():
 
 
 def test_nothing_in_the_package_builds_it():
-    users = subprocess.run(["git", "grep", "-l", "split_search", "--", "apedp_dyn"], cwd=ROOT, capture_output=True, text=True).stdout.split()
+    # an import or a call builds it; a module that only names it in its prose (block_search.py) does not
+    pattern = r"import.*split_search|split_search import|SplitSearchProposer\("
+    users = subprocess.run(["git", "grep", "-l", "-E", pattern, "--", "apedp_dyn"], cwd=ROOT, capture_output=True, text=True).stdout.split()
     assert users == ["apedp_dyn/proposers/split_search.py"]
