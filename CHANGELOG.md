@@ -2152,6 +2152,16 @@ inferred releases.
 
 ### Fixed
 
+- **JetFlow's Jet2 step used -dv/dt for its curvature (6 to 26 November 2026; fixed on the owner's word).**
+  `packages/jetflow-video/jetflow_video/stepper.py` passed its two velocity samples to
+  `_acceleration_between` the wrong way round in both its one-sided and central forms since commit 99f15f2
+  (6 November), so the second-order step was worse than Euler on a curved flow (on dz/dt = z, one step from
+  t = 1 gave -0.5 z; exact z / e; Euler 0). Found by the independent review of PREREG-VIDEO-FLOW-2026-11;
+  fixed by passing them in order (the native kernel was right throughout). `tests/test_jetflow_stepper_curvature.py`
+  pins it. No recorded result used the reversed step: every JetFlow record that uses the step predates
+  the swap, and `benchmarks/jetflow_integrator_sweep.json` reproduces to every digit with the fixed step
+  (with the reversed one its first Jet2 error would be 0.898, not 0.165). The README's JetFlow-against-
+  diffusion results stand. `docs/ERRATUM_JETFLOW_JET2_SIGN_2026-11-26.md`.
 - **A test that depended on the machine's speed (2026-11-20, audit M-25).** The MMLM transformer
   test trained for five seconds and required a fixed score; on a loaded CI runner it reached 4.03
   bits per byte against a limit of 4.0 and stopped the suite. It now compares the trained model

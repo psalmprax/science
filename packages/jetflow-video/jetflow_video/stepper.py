@@ -29,7 +29,13 @@ NATIVE_ACCELERATION_CALLS = [0]
 
 def _acceleration_between(v_from: torch.Tensor, v_to: torch.Tensor,
                           h_eff: float) -> torch.Tensor:
-    r"""Directional acceleration between two velocity samples.
+    r"""Directional acceleration between two velocity samples: (v_to - v_from) / h_eff, where v_to is the
+    velocity h_eff later in time than v_from.
+
+    Fixed 26 November 2026 on the owner's word: both callers passed the samples the other way round, so the
+    step used -dv/dt and its curvature term had the wrong sign (on dz/dt = z one step from t = 1 landed at
+    -0.5 z where the exact answer is z / e and Euler gives 0). Every JetFlow result recorded before then was
+    measured with that step (docs/ERRATUM_JETFLOW_JET2_SIGN_2026-11-26.md).
 
     Uses the native kernel when it is available, and falls back to the same
     quotient in Python when it refuses. Both paths return the same value by
@@ -111,7 +117,7 @@ class JetFlowStepper:
             h_eff = t_f - t_b
             if abs(h_eff) <= 1e-12:
                 return torch.zeros_like(v_current)
-            return _acceleration_between(v_f, v_b, h_eff)
+            return _acceleration_between(v_b, v_f, h_eff)   # (v_f - v_b) / (t_f - t_b) = dv/dt
         # Step in the integration direction so t + h stays inside [0, 1]
         if dt is not None and dt < 0.0:
             h = -eps if (t - eps) >= 0.0 else eps
@@ -125,7 +131,7 @@ class JetFlowStepper:
 
         z_probe = z + h_eff * v_current
         v_probe = velocity_fn(z_probe, t_probe)
-        return _acceleration_between(v_probe, v_current, h_eff)
+        return _acceleration_between(v_current, v_probe, h_eff)   # (v_probe - v_current) / h = dv/dt
 
     def step(
         self,

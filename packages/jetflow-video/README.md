@@ -14,6 +14,10 @@ terms. It runs on a CPU or a single small GPU at the clip sizes it has been meas
 
 ## What has been measured, and what has not
 
+> **Erratum (26 November 2026).** From 6 to 26 November the Jet2 step used -dv/dt for its curvature
+> (`docs/ERRATUM_JETFLOW_JET2_SIGN_2026-11-26.md` in the repository root); it is fixed. The numbers below
+> were measured before that change, with the step right, and stand.
+
 Everything below comes from the repository's own benchmarks, at toy scale: ten synthetic clips
 of 16×16 pixels and six frames, eight for training and two held out
 (`benchmarks/jetflow_vs_diffusion_matched*_results.json`, with a diffusion baseline of matched

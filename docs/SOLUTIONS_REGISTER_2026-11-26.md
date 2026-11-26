@@ -46,11 +46,9 @@ Categories:
 | Solution | Hybrids in the test | Rehearsal so far | Where its result goes |
 | :--- | :--- | :--- | :--- |
 | **A quantum-inspired byte model** (MMLM-QI: pure and mixed states, complex and real; `PREREG-MMLM-QI-2026-11`) | mixed byte by byte with Kneser-Ney counting (expectation 7) | Best 2.77 bits per byte against a hidden Markov model's 2.50 and counting's 1.85 (10 minutes of training) | the plan's table: an expert in MMLM-CM's mixture only if the hybrid gains more than an automaton of its size would; otherwise not developed |
-| **JetFlow against plain flow matching and MeanFlow** (`PREREG-VIDEO-FLOW-2026-11`) | MeanFlow on JetFlow's network; JetFlow's sampler on the UNet; the Jet2 step on MeanFlow's velocity | JetFlow's sampler lost to plain flow matching at four calls on all three data sets (2 minutes of training). Its Jet2 step was found to have its curvature reversed; the run scores it as packaged and corrected | the plan's consequences: JetFlow kept only if it (or its corrected step) beats flow matching on real footage and a toy world; a hybrid only if it beats what it would replace |
+| **JetFlow against plain flow matching and MeanFlow** (`PREREG-VIDEO-FLOW-2026-11`) | MeanFlow on JetFlow's network; JetFlow's sampler on the UNet; the Jet2 step on MeanFlow's velocity | JetFlow's sampler lost to plain flow matching at four calls on all three data sets (2 minutes of training). Its Jet2 step was found to have its curvature reversed since 6 November; fixed on your word, so the run scores the fixed step (no recorded result had used the reversed one) | the plan's consequences: JetFlow kept only if it (or its corrected step) beats flow matching on real footage and a toy world; a hybrid only if it beats what it would replace |
 
 ## Waiting for your word, apart from the above
 
-- Fix JetFlow's Jet2 step in `packages/jetflow-video/jetflow_video/stepper.py` (its acceleration is -dv/dt).
-  The video comparison does not need the fix; it scores both.
 - Earlier, unchanged: PREREG-RANKED-MEMORY-2026-11; the search-budget and kept-processes proposals; branch
   protection on `master`; the trustees' signatures; the dashboard's remint; the two finance audits ("run it").

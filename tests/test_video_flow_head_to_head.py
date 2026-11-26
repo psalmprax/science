@@ -73,7 +73,7 @@ class _Oracle(torch.nn.Module):
 
 
 @pytest.mark.parametrize(("how", "steps", "calls"), [("euler", 1, 1), ("euler", 4, 4), ("meanflow", 1, 1),
-                                                     ("meanflow", 2, 2), ("jet2", 2, 4), ("jet2-corrected", 2, 4)])
+                                                     ("meanflow", 2, 2), ("jet2", 2, 4)])
 def test_samplers_go_from_noise_to_data_with_the_calls_they_claim(how: str, steps: int, calls: int) -> None:
     x0 = torch.randn(h.FRAMES, h.LATENT, 8, 8)
     oracle = _Oracle(x0)
@@ -114,14 +114,13 @@ class _Curved(torch.nn.Module):
         return z
 
 
-def test_the_corrected_jet2_step_is_second_order_and_the_packaged_one_has_its_curvature_reversed() -> None:
+def test_the_jet2_step_is_second_order_now_its_curvature_sign_is_fixed() -> None:
     z0 = torch.randn(1, h.FRAMES, h.LATENT, 8, 8)
     exact = z0[0] / torch.e
     err = {how: float((h.sample(_Curved(), how, 1, n=1, seed=0, noise=z0)[0] - exact).abs().mean() / exact.abs().mean())
-           for how in ("euler", "jet2", "jet2-corrected")}
-    assert err["jet2-corrected"] < err["euler"] < err["jet2"]
-    assert err["jet2-corrected"] == pytest.approx(abs(0.5 - 1 / math.e) * math.e, rel=1e-2)
-    assert err["jet2"] == pytest.approx(abs(-0.5 - 1 / math.e) * math.e, rel=1e-2)
+           for how in ("euler", "jet2")}
+    assert err["jet2"] < err["euler"]
+    assert err["jet2"] == pytest.approx(abs(0.5 - 1 / math.e) * math.e, rel=1e-2)
 
 
 def test_frechet_distance_and_copying_check() -> None:
@@ -179,22 +178,21 @@ def test_the_expectations_are_read_as_written() -> None:
     jobs = {}
     for kind in run.DATA:
         for seed in run.SEEDS:
-            jobs[(kind, "fm-jetflow", seed)] = job(kind, "fm-jetflow", seed, {("jetflow-sampler", 2): 30.0, ("euler", 4): 40.0,
-                                                                               ("jetflow-sampler-corrected", 2): 44.0})
+            jobs[(kind, "fm-jetflow", seed)] = job(kind, "fm-jetflow", seed, {("jetflow-sampler", 2): 30.0, ("euler", 4): 40.0})
             jobs[(kind, "fm-unet", seed)] = job(kind, "fm-unet", seed, {("euler", 4): 40.0, ("euler", 1): 80.0,
-                                                                         ("jet2-corrected", 2): 39.0})
+                                                                         ("jet2", 2): 39.0})
             jobs[(kind, "meanflow-unet", seed)] = job(kind, "meanflow-unet", seed, {("meanflow", 1): 32.0})
             jobs[(kind, "meanflow-jetflow", seed)] = job(kind, "meanflow-jetflow", seed, {("meanflow", 1): 20.0})
     e = run.expectations(jobs)["ucf101"]
-    assert e["E1 JetFlow beats flow matching at four calls, as packaged"]["held"]          # 30 against 40
-    assert not e["E1 JetFlow beats flow matching at four calls, its step corrected"]["held"]   # 44 against 40
+    assert e["E1 JetFlow beats flow matching at four calls"]["held"]                      # 30 against 40
     assert e["E2 MeanFlow beats flow matching at one call"]["held"]                        # 32 against 80
     assert e["E3 MeanFlow at one call is no worse than JetFlow at four"]["held"]           # 32 <= 30 / 0.9
-    assert not e["E4 the corrected Jet2 step beats Euler at four calls, UNet"]["held"]    # 39 against 40: not by 10 %
+    assert not e["E4 the Jet2 step beats Euler at four calls, UNet"]["held"]             # 39 against 40: not by 10 %
+    assert e["E4 the Jet2 step beats Euler at four calls, JetFlow"]["held"]              # 30 against 40
     assert not e["E5 JetFlow's network beats the UNet, Euler 32"]["held"]                 # equal
     assert e["E6a hybrid: MeanFlow helps JetFlow's network at one call"]["held"]          # 20 against 50
     assert e["E6b hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call"]["held"]
-    assert not e["E6d hybrid: JetFlow's corrected sampler on the UNet beats Euler at four calls"]["held"]
+    assert not e["E6d hybrid: JetFlow's sampler on the UNet beats Euler at four calls"]["held"]
     del jobs[("ucf101", "meanflow-jetflow", 1)]                 # a failed job: only what needs it is not read
     part = run.expectations(jobs)["ucf101"]
     assert part["E6a hybrid: MeanFlow helps JetFlow's network at one call"]["held"] is None

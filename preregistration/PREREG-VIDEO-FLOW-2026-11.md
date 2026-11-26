@@ -29,17 +29,18 @@ sampling (an unconditional model, guidance off).
 
 | Arm | Network | Objective | Samplers scored (network calls per clip) |
 | :--- | :--- | :--- | :--- |
-| `fm-jetflow` | `JetFlowVideoModel`, hidden 48, two layers (210,637 parameters, of which its forward uses the backbone's 135,580) | flow matching, t uniform in (0, 1) | Euler 1, 2, 4, 8, 32; JetFlow's sampler (its Jet2 step and its latent velocity projection; its steering is the identity at default settings) as packaged, 1, 2, 4 steps = 2, 4, 8 calls; the same with the step's curvature sign corrected, 1, 2, 4 steps |
-| `fm-unet` | the compact video UNet, width 40, matched to JetFlow's backbone (152,492) | flow matching, as above | Euler 1, 2, 4, 8, 32; the Jet2 step as packaged, 2 steps; corrected, 1, 2, 4 steps; **hybrids:** JetFlow's sampler on the UNet, as packaged and corrected, 2 steps = 4 calls |
-| `meanflow-unet` | the same UNet with the gap t - r embedded beside t (154,812) | MeanFlow: u(z_t, r, t) against sg(v - (t - r) du/dt), du/dt by one forward-mode product along (v, 0, 1); (t, r) logit-normal(-0.4, 1), r = t on 75 % of steps; weight sg(1 / (squared norm of the error + 0.001)), the paper's adaptive weight with power 1 | MeanFlow 1, 2, 4 steps = 1, 2, 4 calls; Euler on u(z, t, t) 8, 32; **hybrid:** the corrected Jet2 step on u(z, t, t), 2 steps = 4 calls |
+| `fm-jetflow` | `JetFlowVideoModel`, hidden 48, two layers (210,637 parameters, of which its forward uses the backbone's 135,580) | flow matching, t uniform in (0, 1) | Euler 1, 2, 4, 8, 32; JetFlow's sampler (its Jet2 step and its latent velocity projection; its steering is the identity at default settings), 1, 2, 4 steps = 2, 4, 8 calls |
+| `fm-unet` | the compact video UNet, width 40, matched to JetFlow's backbone (152,492) | flow matching, as above | Euler 1, 2, 4, 8, 32; the Jet2 step alone, 1, 2, 4 steps; **hybrid:** JetFlow's sampler on the UNet, 2 steps = 4 calls |
+| `meanflow-unet` | the same UNet with the gap t - r embedded beside t (154,812) | MeanFlow: u(z_t, r, t) against sg(v - (t - r) du/dt), du/dt by one forward-mode product along (v, 0, 1); (t, r) logit-normal(-0.4, 1), r = t on 75 % of steps; weight sg(1 / (squared norm of the error + 0.001)), the paper's adaptive weight with power 1 | MeanFlow 1, 2, 4 steps = 1, 2, 4 calls; Euler on u(z, t, t) 8, 32; **hybrid:** the Jet2 step on u(z, t, t), 2 steps = 4 calls |
 | `meanflow-jetflow` (**hybrid**) | JetFlow's network; the gap t - r reaches it the way it reaches the UNet, added to the time embedding (a forward hook on the backbone's time embedding adds a Fourier embedding of the gap through a layer that starts at zero), so JetFlow's code is unchanged | MeanFlow as above, du/dt by a finite difference along (v, 0, 1) with step 0.001 (the target is not differentiated, so no forward-mode product is needed) | MeanFlow 1, 2, 4 steps; Euler 8, 32 |
 
-**JetFlow's step as packaged has its curvature term reversed.** `JetFlowStepper` computes the acceleration
-as (v - v_probe) / h, which is -dv/dt (found by this plan's independent review and pinned by
-`tests/test_video_flow_head_to_head.py`: on dz/dt = z one step from t = 1 lands at -0.5 z where the exact
-answer is z / e and Euler gives 0). The packaged step is scored as it is, because that is JetFlow as it
-stands; the corrected step (`jet2_corrected_step`, the same two calls) is scored beside it, because that is
-the method JetFlow means. JetFlow's package is not changed: a fix there waits for the owner's word.
+**JetFlow's step had its curvature term reversed, and is fixed.** From 6 November (commit 99f15f2) to 26
+November `JetFlowStepper` used -dv/dt in its second-order step (found by this plan's independent review:
+on dz/dt = z one step from t = 1 landed at -0.5 z, where the exact answer is z / e and Euler gives 0).
+On the owner's word of 26 November (21:56) it was fixed in the package before this plan was frozen
+(`docs/ERRATUM_JETFLOW_JET2_SIGN_2026-11-26.md`; pinned by `tests/test_jetflow_stepper_curvature.py`). This
+run scores the fixed step; no recorded JetFlow result was measured with the reversed one. The three
+rehearsals below were, and say so.
 
 ## Data
 
@@ -71,16 +72,14 @@ time) against the held-out clips' own, network calls and seconds per clip, train
 "A beats B" means: over the three seeds, A's mean FD is at most 0.9 times B's, **and** A's FD is lower
 than B's on at least two of the three seeds (paired by seed). Each expectation is read on each data set.
 
-1. **JetFlow beats plain flow matching at four calls**, read twice: (as packaged) `fm-jetflow` with its
-   sampler as packaged at two steps (four calls) beats `fm-unet` with Euler at four steps; (corrected)
-   the same with JetFlow's sampler corrected.
+1. **JetFlow beats plain flow matching at four calls:** `fm-jetflow` with its own sampler at two steps
+   (four calls) beats `fm-unet` with Euler at four steps.
 2. **MeanFlow beats plain flow matching at one call:** `meanflow-unet` at one step beats `fm-unet` with
    Euler at one step.
 3. **MeanFlow at one call is no worse than JetFlow at four:** `meanflow-unet`'s mean FD at one step is at
-   most 1/0.9 times the better of `fm-jetflow`'s two samplers (as packaged, corrected) at two steps.
-4. **The corrected Jet2 step beats Euler at four calls on the same network:** on `fm-unet` (corrected
-   Jet2, two steps, against Euler four) and on `fm-jetflow` (its corrected sampler, two steps, against
-   Euler four), read separately. The packaged step is reported beside them.
+   most 1/0.9 times `fm-jetflow`'s at two steps of its own sampler.
+4. **The Jet2 step beats Euler at four calls on the same network:** on `fm-unet` (Jet2, two steps, against
+   Euler four) and on `fm-jetflow` (its own sampler, two steps, against Euler four), read separately.
 5. **JetFlow's network beats the UNet with the same sampler:** `fm-jetflow` with Euler at 32 steps beats
    `fm-unet` with Euler at 32.
 6. **Hybrids** (on the owner's word of 26 November, 20:32: "test hybrid approach in all the suggested
@@ -88,10 +87,8 @@ than B's on at least two of the three seeds (paired by seed). Each expectation i
    a. MeanFlow helps JetFlow's network: `meanflow-jetflow` at one step beats `fm-jetflow` with Euler at
       one step;
    b. MeanFlow on JetFlow's network beats MeanFlow on the UNet at one step;
-   c. the corrected Jet2 step on MeanFlow's velocity, two steps (four calls), beats MeanFlow's own four
-      steps;
-   d. JetFlow's corrected sampler on the UNet, two steps (four calls), beats Euler at four steps on the
-      UNet.
+   c. the Jet2 step on MeanFlow's velocity, two steps (four calls), beats MeanFlow's own four steps;
+   d. JetFlow's sampler on the UNet, two steps (four calls), beats Euler at four steps on the UNet.
 
 A miss is reported as a miss. A job that fails is reported as missing; each expectation that needs it is
 then marked not read, and the others are read.
@@ -102,17 +99,15 @@ then marked not read, and the others are read.
 alone is reported and proposes a larger test of it, not its adoption; something that holds on toy worlds
 only is reported, not proposed.
 
-- **1 (as packaged or corrected) holds where it counts:** propose continuing to build the video work on
-  JetFlow, with its step corrected if only the corrected reading holds (the fix to `stepper.py` itself
-  waits for the owner's word). **1 fails on ucf101 both ways:** propose not building the video work on
-  JetFlow's approach; if 4 or 5 holds where it counts, propose keeping only that part (the corrected Jet2
-  step, or the network).
+- **1 holds where it counts:** propose continuing to build the video work on JetFlow. **1 fails on
+  ucf101:** propose not building the video work on JetFlow's approach; if 4 or 5 holds where it counts,
+  propose keeping only that part (the Jet2 step, or the network).
 - **2 and 3 hold where they count:** propose MeanFlow as the few-step training objective for the video
   package, under its own preregistration at a larger size.
 - **6a and 6b both hold where they count:** propose `meanflow-jetflow` (JetFlow's network trained by
-  MeanFlow) in place of both `fm-jetflow` and `meanflow-unet`. **6c:** propose the corrected Jet2 step in
-  place of MeanFlow's own multi-step sampler at four calls. **6d:** propose JetFlow's corrected sampler in
-  place of Euler for the UNet at four calls. Each under its own preregistration at a larger size.
+  MeanFlow) in place of both `fm-jetflow` and `meanflow-unet`. **6c:** propose the Jet2 step in
+  place of MeanFlow's own multi-step sampler at four calls. **6d:** propose JetFlow's sampler in place of
+  Euler for the UNet at four calls. Each under its own preregistration at a larger size.
 - **Nothing above holds:** plain flow matching with a many-step sampler stays the reference; nothing new
   is proposed.
 
@@ -154,7 +149,10 @@ only is reported, not proposed.
   SHA-256 is pinned. After the review's second look: the gap through the time embedding, seeded starting
   weights, the test's float tolerance. A rehearsal of all 36 jobs runs this code before freezing
   (`video-flow-smoke-4`; the second stopped on the test's tolerance, the third was cancelled for the
-  second look's changes).
+  second look's changes). Then the owner's word to fix JetFlow's step (21:56): the step is fixed in the
+  package; the comparison's own corrected copy of it and the duplicate samplers it fed are removed; every
+  expectation reads the fixed step. A last rehearsal of this code runs before freezing
+  (`video-flow-smoke-5`). All rehearsals before it used the reversed step.
 
 ## Limits
 
@@ -184,8 +182,8 @@ arm, and says so.
 **Findings of the review before freezing (26 November), and what was done:**
 
 1. *Blocks.* JetFlow's Jet2 step has its curvature term reversed (-dv/dt), worse than Euler on a curved
-   flow. *Done:* the packaged step is scored as it is and a corrected step beside it (1, 3, 4 and 6 read
-   on the corrected one, 1 on both); a test pins both; the package is not changed (owner's word).
+   flow. *Done:* first scored as packaged and corrected side by side; then, on the owner's word, fixed in
+   the package (see above), so the run scores the fixed step only.
 2. *Blocks.* `meanflow-jetflow` could not learn the gap (zero-started layers on JetFlow's token path gave
    no gradient). *Done:* the gap reaches it as a channel shift; a test from the real start shows the gap
    matters after training.

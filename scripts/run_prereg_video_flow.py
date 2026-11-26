@@ -55,13 +55,11 @@ ARMS = ("fm-jetflow", "fm-unet", "meanflow-unet", "meanflow-jetflow")   #: the l
 SEEDS = (0, 1, 2)
 GRID: dict[str, tuple[tuple[str, int], ...]] = {
     "fm-jetflow": (("euler", 1), ("euler", 2), ("euler", 4), ("euler", 8), ("euler", 32),
-                   ("jetflow-sampler", 1), ("jetflow-sampler", 2), ("jetflow-sampler", 4),
-                   ("jetflow-sampler-corrected", 1), ("jetflow-sampler-corrected", 2), ("jetflow-sampler-corrected", 4)),
+                   ("jetflow-sampler", 1), ("jetflow-sampler", 2), ("jetflow-sampler", 4)),
     "fm-unet": (("euler", 1), ("euler", 2), ("euler", 4), ("euler", 8), ("euler", 32),
-                ("jet2", 2), ("jet2-corrected", 1), ("jet2-corrected", 2), ("jet2-corrected", 4),
-                ("jetflow-sampler", 2), ("jetflow-sampler-corrected", 2)),                  # the last two: hybrids
+                ("jet2", 1), ("jet2", 2), ("jet2", 4), ("jetflow-sampler", 2)),           # the last: a hybrid
     "meanflow-unet": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32),
-                      ("jet2-corrected", 2)),                                             # the last: a hybrid
+                      ("jet2", 2)),                                                       # the last: a hybrid
     "meanflow-jetflow": (("meanflow", 1), ("meanflow", 2), ("meanflow", 4), ("euler", 8), ("euler", 32)),
 }
 UCF_REPO, UCF_FILE = "sayakpaul/ucf101-subset", "UCF101_subset.tar.gz"
@@ -194,9 +192,8 @@ def expectations(jobs: dict[tuple[str, str, int], dict[str, Any]]) -> dict[str, 
 
         def e3(kind: str = kind) -> dict[str, Any]:
             mf1, jet = fd("meanflow-unet", "meanflow", 1), fd("fm-jetflow", "jetflow-sampler", 2)
-            best_jet = min(float(np.mean(jet)), float(np.mean(fd("fm-jetflow", "jetflow-sampler-corrected", 2))))
-            return {"held": float(np.mean(mf1)) <= (1 / MARGIN) * best_jet,
-                    "mean_meanflow_1": round(float(np.mean(mf1)), 4), "best_jetflow_4_calls": round(best_jet, 4)}
+            return {"held": float(np.mean(mf1)) <= (1 / MARGIN) * float(np.mean(jet)),
+                    "mean_meanflow_1": round(float(np.mean(mf1)), 4), "mean_jetflow_4_calls": round(float(np.mean(jet)), 4)}
 
         def floor(kind: str = kind) -> float:
             vals = [jobs[(kind, a, s)]["floor_frechet_pca"] for a in ARMS for s in SEEDS if (kind, a, s) in jobs]
@@ -204,27 +201,25 @@ def expectations(jobs: dict[tuple[str, str, int], dict[str, Any]]) -> dict[str, 
                 raise KeyError(kind)
             return round(float(np.mean(vals)), 4)
         out[kind] = {
-            "E1 JetFlow beats flow matching at four calls, as packaged":
+            "E1 JetFlow beats flow matching at four calls":
                 _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler", 2), fd("fm-unet", "euler", 4))),
-            "E1 JetFlow beats flow matching at four calls, its step corrected":
-                _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler-corrected", 2), fd("fm-unet", "euler", 4))),
             "E2 MeanFlow beats flow matching at one call":
                 _read(lambda: beats(fd("meanflow-unet", "meanflow", 1), fd("fm-unet", "euler", 1))),
             "E3 MeanFlow at one call is no worse than JetFlow at four": _read(e3),
-            "E4 the corrected Jet2 step beats Euler at four calls, UNet":
-                _read(lambda: beats(fd("fm-unet", "jet2-corrected", 2), fd("fm-unet", "euler", 4))),
-            "E4 the corrected Jet2 step beats Euler at four calls, JetFlow":
-                _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler-corrected", 2), fd("fm-jetflow", "euler", 4))),
+            "E4 the Jet2 step beats Euler at four calls, UNet":
+                _read(lambda: beats(fd("fm-unet", "jet2", 2), fd("fm-unet", "euler", 4))),
+            "E4 the Jet2 step beats Euler at four calls, JetFlow":
+                _read(lambda: beats(fd("fm-jetflow", "jetflow-sampler", 2), fd("fm-jetflow", "euler", 4))),
             "E5 JetFlow's network beats the UNet, Euler 32":
                 _read(lambda: beats(fd("fm-jetflow", "euler", 32), fd("fm-unet", "euler", 32))),
             "E6a hybrid: MeanFlow helps JetFlow's network at one call":
                 _read(lambda: beats(fd("meanflow-jetflow", "meanflow", 1), fd("fm-jetflow", "euler", 1))),
             "E6b hybrid: MeanFlow on JetFlow's network beats MeanFlow on the UNet at one call":
                 _read(lambda: beats(fd("meanflow-jetflow", "meanflow", 1), fd("meanflow-unet", "meanflow", 1))),
-            "E6c hybrid: the corrected Jet2 step on MeanFlow's velocity beats MeanFlow's own four calls":
-                _read(lambda: beats(fd("meanflow-unet", "jet2-corrected", 2), fd("meanflow-unet", "meanflow", 4))),
-            "E6d hybrid: JetFlow's corrected sampler on the UNet beats Euler at four calls":
-                _read(lambda: beats(fd("fm-unet", "jetflow-sampler-corrected", 2), fd("fm-unet", "euler", 4))),
+            "E6c hybrid: the Jet2 step on MeanFlow's velocity beats MeanFlow's own four calls":
+                _read(lambda: beats(fd("meanflow-unet", "jet2", 2), fd("meanflow-unet", "meanflow", 4))),
+            "E6d hybrid: JetFlow's sampler on the UNet beats Euler at four calls":
+                _read(lambda: beats(fd("fm-unet", "jetflow-sampler", 2), fd("fm-unet", "euler", 4))),
             "floor_mean": _read(lambda: {"value": floor()}),
         }
     return out

@@ -9,8 +9,8 @@ step, because JetFlow's backbone conditions correctly only at batch one) and one
 network, the objective and the sampler differ:
 
 * ``fm-jetflow``: ``JetFlowVideoModel`` trained by flow matching, sampled by its own sampler (the Jet2
-  second-order step and its latent velocity projection; its steering is the identity at default settings),
-  as packaged and with the step's curvature sign corrected, and by plain Euler;
+  second-order step, fixed on 26 November, and its latent velocity projection; its steering is the
+  identity at default settings) and by plain Euler;
 * ``fm-unet``: the repository's compact video UNet (``diffusion_baseline``) of about the same size,
   trained by the same flow matching, sampled by Euler and by the Jet2 step alone;
 * ``meanflow-unet``: the same UNet with one more time input, trained by MeanFlow (Geng et al., 2025):
@@ -268,24 +268,12 @@ def _noise(n: int, seed: int) -> Tensor:
     return torch.randn(n, FRAMES, LATENT, SIZE // 2, SIZE // 2, generator=g)
 
 
-def jet2_corrected_step(velocity: Callable[[Tensor, float], Tensor], z: Tensor, t: float, dt: float,
-                        eps: float = 1e-3) -> Tensor:
-    """The second-order step z + dt v + dt^2 / 2 a with a = dv/dt along the flow, by one probe in the
-    direction of integration. JetFlow's ``JetFlowStepper`` computes (v - v_probe) / h, which is -dv/dt
-    (found by the independent review of 26 November); this is the step it means to take. Same two calls."""
-    v = velocity(z, t)
-    h = (-eps if t - eps >= 0.0 else eps) if dt < 0 else (eps if t + eps <= 1.0 else -eps)
-    a = (velocity(z + h * v, t + h) - v) / h
-    out: Tensor = z + dt * v + 0.5 * dt * dt * a
-    return out
-
-
 @torch.no_grad()
 def sample(model: torch.nn.Module, how: str, steps: int, n: int, seed: int, noise: Tensor | None = None) -> Tensor:
-    """``euler``; ``jet2`` (JetFlow's second-order step as packaged); ``jet2-corrected`` (the same step with
-    the curvature's sign right); ``jetflow-sampler`` (JetFlow's latent velocity projection and its step as
-    packaged: what ``generate_video`` does, from shared noise); ``jetflow-sampler-corrected``; ``meanflow``.
-    One clip at a time; returns (n, T, C, H, W) latents."""
+    """``euler``; ``jet2`` (JetFlow's second-order step); ``jetflow-sampler`` (JetFlow's latent velocity
+    projection and its step: what ``generate_video`` does, from shared noise); ``meanflow``. One clip at a
+    time; returns (n, T, C, H, W) latents. (JetFlow's step had its curvature reversed until 26 November;
+    it is fixed in ``stepper.py``.)"""
     model.eval()
     out = []
     ts = torch.linspace(1.0, 0.0, steps + 1).tolist()
@@ -307,12 +295,8 @@ def sample(model: torch.nn.Module, how: str, steps: int, n: int, seed: int, nois
                 z = z + dt * plain(z, t)
             elif how == "jet2":
                 z, _, _ = stepper.step(plain, z, t, dt)
-            elif how == "jet2-corrected":
-                z = jet2_corrected_step(plain, z, t, dt)
             elif how == "jetflow-sampler":
                 z, _, _ = stepper.step(projected, z, t, dt)
-            elif how == "jetflow-sampler-corrected":
-                z = jet2_corrected_step(projected, z, t, dt)
             elif how == "meanflow":
                 z = z + dt * model(z, t, text_tokens=TEXT, r=t_next)
             else:
