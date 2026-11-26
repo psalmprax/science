@@ -68,6 +68,13 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12), the symmetric flip walk's GitHub run recorded: nothing below 42 (2026-11-26, development; the
+  second of the four approaches).** Run 45778256979 (12 jobs, 48 walks, 209 core-hours), assembled from
+  the walk jobs' logs while the collect job was queued (`benchmarks/gf2_multiplication/orbit_walk.json`,
+  which says so). GF(2^12): from the GF(4)-type 42s, 42 in all 16 walks under x -> x^4, x^16 and x^64;
+  from the schoolbook in a normal basis 86 to 120. Where it is small it finds what is known: GF(2^8) the
+  best known 24 under x -> x^16 in 3 of 4 walks, GF(2^9) the best known 30 under x -> x^8 in 1 of 4, both
+  from a schoolbook start. Every decomposition exact.
 - **GF(4^6) over GF(4), the flip walk's GitHub run recorded: no 13 (2026-11-26, development).** Run
   45771414813 (10 jobs, 178 core-hours, 3.4e12 flips), from the collect job's record
   (`benchmarks/gf2_multiplication/gf4_flip_walk.json`): GF(4^5) from the schoolbook reaches the published
