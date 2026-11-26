@@ -30,6 +30,11 @@ inferred releases.
 
 ### Added
 
+- **PREREG-VIDEO-FLOW-2026-11 frozen and started (2026-11-26).** After the last rehearsal with JetFlow's
+  fixed Jet2 step (`benchmarks/video/video_flow_rehearsal5.json`: all 36 jobs ran, no NaN, the hybrid
+  trained), the plan's status is frozen by `preregistration/DIGEST-VIDEO-FLOW.json` (19 files) and the
+  frozen commit runs once on `video-flow-run-1`. Owner's words: "yes build it" (19:07) and "fix the bug in
+  jetflow" (21:56).
 - **The physics judge, step 1a of the physics-first video plan (2026-11-26, owner's word "so, build").**
   `apedp_dyn/epistemic/physics_judge.py` (experimental) judges one object's image track, or two for a
   collision, for six scene kinds (fall, throw, roll, bounce, pendulum, collision): pass, fail or untestable,

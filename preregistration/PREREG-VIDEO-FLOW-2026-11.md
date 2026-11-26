@@ -1,12 +1,14 @@
 # PREREG-VIDEO-FLOW-2026-11: JetFlow, plain flow matching and MeanFlow at equal training time
 
-**Status:** draft, not frozen. It will be frozen by `preregistration/DIGEST-VIDEO-FLOW.json`, which pins this
-file, `scripts/run_prereg_video_flow.py`, `packages/jetflow-video/jetflow_video/head_to_head.py`,
+**Status:** frozen on 26 November 2026 by `preregistration/DIGEST-VIDEO-FLOW.json`, which pins this file,
+`scripts/run_prereg_video_flow.py`, `packages/jetflow-video/jetflow_video/head_to_head.py`,
 `.github/workflows/video-flow.yml`, `tests/test_video_flow_head_to_head.py`, the JetFlow package files it uses
-(`model.py`, `stepper.py`, `noether.py`, `physics.py`, `diffusion_baseline.py`, `bridge.py`, `tensor_train.py`)
-and the toy worlds and split rule (`apedp_dyn/video/fluid_domain.py`, `collision_domain.py`, `eval_gate.py`),
-after the independent review below; every job also records the commit it ran. Runs once, on GitHub, by pushing the
-frozen commit to a branch `video-flow-run-1`; every job checks the digest before it reads anything.
+(`__init__.py`, `model.py`, `stepper.py`, `noether.py`, `physics.py`, `diffusion_baseline.py`, `bridge.py`,
+`tensor_train.py`, `text_encoder.py`, `depth_se3.py`, `trainer.py`) and the toy worlds and split rule
+(`apedp_dyn/video/fluid_domain.py`, `collision_domain.py`, `eval_gate.py`), after the independent review below
+and its second look; every job also records the commit it ran. Runs once, on GitHub, by pushing the frozen
+commit to a branch `video-flow-run-1`; every job checks the digest before it reads anything. Owner's words:
+"yes build it" (26 November, 19:07) and "fix the bug in jetflow" (26 November, 21:56).
 
 ## Why
 
@@ -153,6 +155,20 @@ only is reported, not proposed.
   package; the comparison's own corrected copy of it and the duplicate samplers it fed are removed; every
   expectation reads the fixed step. A last rehearsal of this code runs before freezing
   (`video-flow-smoke-5`). All rehearsals before it used the reversed step.
+- **Last rehearsal**, of the frozen code with the fixed step (run 45895464640, commit c9f53c6, development
+  splits, 120 seconds of training, 64 clips per sampler; `benchmarks/video/video_flow_rehearsal5.json`). All
+  36 jobs and the collect job ran; no FD is NaN; at most 77 seconds of generation per job for 256 clips. The
+  hybrid trained: its MeanFlow loss sits at 1.0, as the adaptive weight makes it, and its one-call FD differs
+  from its Euler rows on every job (collision seed 0: 0.85 against 1.90 at 8 calls). Mean FD over three seeds
+  (floor): fluid (15.2) JetFlow's sampler 2 steps 64.5, the UNet's Euler 4 37.5, MeanFlow 1 step 44.4 against
+  Euler 1 82.3; collision (0.61) 2.24, 1.93, 2.10 against 2.13; ucf101 (35.1) 96.8, 127.4, 129.9 against
+  163.1. The fixed Jet2 step against Euler at four calls: on JetFlow's network lower in the mean on all three
+  data sets (fluid 64.5 against 67.1, lower on 2 seeds; collision 2.24 against 2.33, 3 seeds; ucf101 96.8
+  against 109.3, 3 seeds; held by the plan's 10 % margin on ucf101 only); on the UNet lower on ucf101 only
+  (119.5 against 127.4, 3 seeds) and higher on fluid (38.5 against 37.5) and collision (2.01 against 1.93).
+  Read as the plan reads, these development numbers would hold expectation 1 on ucf101 only; 2 on fluid and
+  ucf101; 3 on fluid and collision; 4 for JetFlow's network on ucf101; 5 on ucf101; 6a on all three; 6b on
+  collision; 6c and 6d nowhere. They are rehearsal numbers, not the result.
 
 ## Limits
 
