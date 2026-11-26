@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(4^6) over GF(4) by a flip walk, toward 13 products (39 over GF(2)) (2026-11-26, development).**
+  `scripts/search_gf4_mul_flip.py` with `scripts/gf4_flip_walk.c` (the walk over GF(4) built on 26
+  November in scratch, now in the repository) and `.github/workflows/gf4-flip-walk.yml`: GF(2^12) as
+  GF(4^6), coordinates in the GF(4) basis of powers of a primitive element, walks from the schoolbook
+  and from the three decompositions of 14 the invariant search recorded, every result checked over GF(4)
+  and as 3r products over GF(2) (for GF(2^12) also by the repository's verifier). Calibration locally:
+  the published 8 and 11 for GF(4^4) and GF(4^5) from the schoolbook within a minute; from the GF(4^6)
+  schoolbook 24 to 32 in minutes, so that start is weak at this size. `gf2_invariant_search.py` gives
+  its GF(q) products by `gf_terms` (the first half of `extract`, unchanged). Tests
+  `tests/test_search_gf4_mul_flip.py` (4).
 - **GF(2^12) by GF(4), the exhaustive invariant run recorded: no 13 (2026-11-26, development).**
   `benchmarks/gf2_multiplication/invariant_search_gf4_x16.json` (run 1 of
   `.github/workflows/gf2-invariant-search.yml`, from a87f376, before steps were made absolute: the

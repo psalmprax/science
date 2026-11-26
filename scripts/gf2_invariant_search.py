@@ -285,9 +285,8 @@ def run(args: argparse.Namespace) -> int:
     return 0
 
 
-def extract(field: Field, step: int, reps: list[int]) -> tuple[list[tuple[int, int, int]], int]:
-    """The GF(2) decomposition from orbit representatives, the outputs solved; and the number of GF(q) products."""
-    n = field.n
+def gf_terms(field: Field, step: int, reps: list[int]) -> list[tuple[int, int]]:
+    """The GF(q) products (lam, c), Tr_q(lam x) Tr_q(lam y) c, of the orbits of reps, the outputs solved."""
     orbit_size = {}
     for lam in reps:
         d, t = 1, field.canon(field.frob(lam, step))
@@ -320,7 +319,13 @@ def extract(field: Field, step: int, reps: list[int]) -> tuple[list[tuple[int, i
     for k, (lam, e) in enumerate(meta):
         if tag >> k & 1:
             c_of[lam] = c_of.get(lam, 0) ^ e
-    terms = [(field.frob(lam, j * step), field.frob(c, j * step)) for lam, c in c_of.items() if c for j in range(orbit_size[lam])]
+    return [(field.frob(lam, j * step), field.frob(c, j * step)) for lam, c in c_of.items() if c for j in range(orbit_size[lam])]
+
+
+def extract(field: Field, step: int, reps: list[int]) -> tuple[list[tuple[int, int, int]], int]:
+    """The GF(2) decomposition from orbit representatives, the outputs solved; and the number of GF(q) products."""
+    n = field.n
+    terms = gf_terms(field, step, reps)
     triples = []
     for lam, c in terms:
         if field.q == 2:

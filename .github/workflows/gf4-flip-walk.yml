@@ -1,0 +1,91 @@
+name: GF(4^6) over GF(4) in 13 products, the flip walk (development)
+
+# Development, not a result: scripts/search_gf4_mul_flip.py runs scripts/gf4_flip_walk.c over GF(4) from the schoolbook
+# and from the decompositions of 14 the invariant search recorded; 13 over GF(4) would be 39 products over GF(2) for
+# GF(2^12). GF(4^5) (published 11) as calibration. Every decomposition is checked over GF(4) and, as three products each,
+# over GF(2) before anything is counted. Owner's word of 26 November ("look for the solution even if it is not
+# conventional ... do not stop until you solve the problem").
+#   push to gf4-flip-walk-run-*  -> 10 jobs of four walks of 17000 seconds, then one record.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+
+on:
+  push:
+    branches: ['gf4-flip-walk-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: 'cal5', degree: 5, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '50 51 52 53', reset: 1000000}
+          - {name: 's6-0', degree: 6, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '60 61 62 63', reset: 1000000}
+          - {name: 's6-1', degree: 6, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '64 65 66 67', reset: 10000000}
+          - {name: 's6-2', degree: 6, starts: 'schoolbook schoolbook schoolbook schoolbook', seeds: '68 69 70 71', reset: 100000000}
+          - {name: 'f14-0', degree: 6, starts: 'f14:0 f14:1 f14:2 f14:0', seeds: '140 141 142 143', reset: 1000000}
+          - {name: 'f14-1', degree: 6, starts: 'f14:1 f14:2 f14:0 f14:1', seeds: '144 145 146 147', reset: 1000000}
+          - {name: 'f14-2', degree: 6, starts: 'f14:0 f14:1 f14:2 f14:0', seeds: '148 149 150 151', reset: 10000000}
+          - {name: 'f14-3', degree: 6, starts: 'f14:1 f14:2 f14:0 f14:1', seeds: '152 153 154 155', reset: 10000000}
+          - {name: 'f14-4', degree: 6, starts: 'f14:0 f14:1 f14:2 f14:0', seeds: '156 157 158 159', reset: 100000000}
+          - {name: 'f14-5', degree: 6, starts: 'f14:2 f14:0 f14:1 f14:2', seeds: '160 161 162 163', reset: 100000000}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - name: The walk's own tests
+        run: python -m pytest tests/test_search_gf4_mul_flip.py tests/test_gf2_invariant_search.py -q
+      - name: Walk ${{ matrix.name }}
+        timeout-minutes: 310
+        env:
+          DEGREE: ${{ matrix.degree }}
+          STARTS: ${{ matrix.starts }}
+          SEEDS: ${{ matrix.seeds }}
+          RESET: ${{ matrix.reset }}
+        run: |
+          # shellcheck disable=SC2086
+          python scripts/search_gf4_mul_flip.py run --degree "$DEGREE" --starts $STARTS --seeds $SEEDS --slack 2 3 4 6 --reset "$RESET" --seconds 17000 --processes 4 --out out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gf4-flip-${{ matrix.name }}
+          path: out
+
+  collect:
+    needs: walk
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gf4-flip-*
+          path: got
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/search_gf4_mul_flip.py collect --out got
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN gf4 flip walk====="
+          if [ -f got/gf4_flip_walk.json ]; then gzip -9c got/gf4_flip_walk.json | base64 -w 60000; echo; fi
+          echo "=====END gf4 flip walk====="
