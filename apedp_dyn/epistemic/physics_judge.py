@@ -53,6 +53,7 @@ class Track:
     t: np.ndarray
     xy: np.ndarray
     size: np.ndarray | None = None
+    centre: tuple[float, float] | None = None  #: the image centre (px), where known
 
     def __post_init__(self) -> None:
         t = np.asarray(self.t, dtype=float)

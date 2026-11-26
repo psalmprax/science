@@ -204,7 +204,9 @@ def _to_tracks(clip: dict, kind: str) -> tuple[list[Track], dict]:
     phase, strength = cadence_phase(raw[0][0])
     keep = np.arange(phase, n, CADENCE)
     t = keep / clip["fps"]
-    tracks = [Track(t, xy[keep], size[keep]) for xy, size in raw]
+    shape = clip.get("shape") or [0, 0]
+    centre = (shape[1] / 2.0, shape[0] / 2.0) if shape[0] else None
+    tracks = [Track(t, xy[keep], size[keep], centre) for xy, size in raw]
     return tracks, {"cadence_phase": phase, "cadence_strength": round(strength, 2), "samples": int(keep.size)}
 
 

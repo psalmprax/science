@@ -77,7 +77,7 @@ def _track(camera: Camera, points: np.ndarray, radius: float, rng: np.random.Gen
     xy = xy + rng.normal(0.0, noise_px, xy.shape)
     size = size * (1.0 + rng.normal(0.0, 0.01, size.shape))
     t = np.arange(xy.shape[0]) / FPS
-    return Track(t, xy, size)
+    return Track(t, xy, size, (camera.cx, camera.cy))
 
 
 def make(kind: str, seed: int, noise_px: float = 0.3) -> list[Track]:

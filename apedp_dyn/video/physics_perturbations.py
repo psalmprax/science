@@ -91,7 +91,7 @@ def loses_energy(tracks: list[Track], kind: str) -> bool:
 
 
 def _with(track: Track, xy: np.ndarray, size: np.ndarray | None) -> Track:
-    return Track(track.t.copy(), xy, size)
+    return Track(track.t.copy(), xy, size, track.centre)
 
 
 def teleport(track: Track, rng: np.random.Generator) -> Track | None:
