@@ -1,0 +1,723 @@
+{
+ "tag": "DEV-GF2-HYBRID-WALKS-2026-11",
+ "development_not_a_result": true,
+ "seconds_per_arm": 40.0,
+ "all_exact": true,
+ "summary": {
+  "GF(2^8)": {
+   "known": 24,
+   "plain": [
+    31,
+    31,
+    32
+   ],
+   "plain-normal": [
+    31,
+    32,
+    32
+   ],
+   "orbit": [
+    32,
+    32,
+    33
+   ],
+   "orbit+plain": [
+    30,
+    31,
+    31
+   ],
+   "plain+sat": [
+    31,
+    32,
+    32
+   ],
+   "orbit+sat": [
+    32,
+    33,
+    36
+   ]
+  },
+  "GF(2^9)": {
+   "known": 30,
+   "plain": [
+    51,
+    52,
+    53
+   ],
+   "plain-normal": [
+    50,
+    51,
+    56
+   ],
+   "orbit": [
+    49,
+    52,
+    59
+   ],
+   "orbit+plain": [
+    48,
+    50,
+    53
+   ],
+   "plain+sat": [
+    51,
+    53,
+    55
+   ],
+   "orbit+sat": [
+    54,
+    59,
+    64
+   ]
+  },
+  "GF(2^10)": {
+   "known": 33,
+   "plain": [
+    73,
+    77,
+    90
+   ],
+   "plain-normal": [
+    78,
+    81,
+    84
+   ],
+   "orbit": [
+    60,
+    65,
+    75
+   ],
+   "orbit+plain": [
+    58,
+    64,
+    84
+   ],
+   "plain+sat": [
+    74,
+    77,
+    92
+   ],
+   "orbit+sat": [
+    60,
+    65,
+    90
+   ]
+  }
+ },
+ "rows": [
+  {
+   "arm": "plain",
+   "field": 8,
+   "step": 4,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 31,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 8,
+   "step": 4,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 31,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 8,
+   "step": 4,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 8,
+   "step": 4,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 31,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 8,
+   "step": 4,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 1,
+    "unknown": 3
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 8,
+   "step": 4,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 1,
+    "unknown": 3
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 8,
+   "step": 4,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 31,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 8,
+   "step": 4,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 8,
+   "step": 4,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 8,
+   "step": 4,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 30,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 8,
+   "step": 4,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 31,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 6,
+    "unknown": 9
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 8,
+   "step": 4,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 33,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 3,
+    "unknown": 8
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 8,
+   "step": 4,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 8,
+   "step": 4,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 8,
+   "step": 4,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 33,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 8,
+   "step": 4,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 31,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 8,
+   "step": 4,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 32,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 11
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 8,
+   "step": 4,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 36,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 3,
+    "unknown": 8
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 9,
+   "step": 3,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 52,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 9,
+   "step": 3,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 50,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 9,
+   "step": 3,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 52,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 9,
+   "step": 3,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 50,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 9,
+   "step": 3,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 55,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 5
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 9,
+   "step": 3,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 64,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 0,
+    "unknown": 5
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 9,
+   "step": 3,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 53,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 9,
+   "step": 3,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 51,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 9,
+   "step": 3,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 59,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 9,
+   "step": 3,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 53,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 9,
+   "step": 3,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 53,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 1,
+    "unknown": 11
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 9,
+   "step": 3,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 59,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 5,
+    "unknown": 8
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 9,
+   "step": 3,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 51,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 9,
+   "step": 3,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 56,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 9,
+   "step": 3,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 49,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 9,
+   "step": 3,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 48,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 9,
+   "step": 3,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 51,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 10
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 9,
+   "step": 3,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 54,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 8
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 10,
+   "step": 2,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 90,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 10,
+   "step": 2,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 78,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 10,
+   "step": 2,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 60,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 10,
+   "step": 2,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 58,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 10,
+   "step": 2,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 92,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 1,
+    "unknown": 10
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 10,
+   "step": 2,
+   "seed": 0,
+   "seconds": 40.0,
+   "best": 60,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 3,
+    "unknown": 7
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 10,
+   "step": 2,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 73,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 10,
+   "step": 2,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 81,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 10,
+   "step": 2,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 65,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 10,
+   "step": 2,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 64,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 10,
+   "step": 2,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 74,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 10
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 10,
+   "step": 2,
+   "seed": 1,
+   "seconds": 40.0,
+   "best": 65,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 7
+   }
+  },
+  {
+   "arm": "plain",
+   "field": 10,
+   "step": 2,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 77,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain-normal",
+   "field": 10,
+   "step": 2,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 84,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit",
+   "field": 10,
+   "step": 2,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 75,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "orbit+plain",
+   "field": 10,
+   "step": 2,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 84,
+   "exact": true,
+   "sat_tally": {}
+  },
+  {
+   "arm": "plain+sat",
+   "field": 10,
+   "step": 2,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 77,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 3,
+    "unknown": 10
+   }
+  },
+  {
+   "arm": "orbit+sat",
+   "field": 10,
+   "step": 2,
+   "seed": 2,
+   "seconds": 40.0,
+   "best": 90,
+   "exact": true,
+   "sat_tally": {
+    "sat": 0,
+    "unsat": 2,
+    "unknown": 7
+   }
+  }
+ ],
+ "machine": "local, two CPU cores, 26 November 2026; 40 seconds per arm, seeds 0 to 2",
+ "reading": "The symmetric walk then the plain walk is the best or level arm on every field at equal time (GF(2^8) 30 to 31 against 31 to 32 for the plain walk; GF(2^9) 48 to 53 against 51 to 53; GF(2^10) 58 to 84 against 73 to 90, the symmetric walk alone 60 to 75): a small gain in the early descent, inside the seed noise on GF(2^9). The plain walk from the normal-basis start is no better than from the schoolbook, so the gain is the symmetry's, not the start's. SAT on neighbourhoods of the walks' results found nothing in 20 seconds (no neighbourhood of 6 to 8 products could be one shorter; most undecided in 5 seconds). Every arm ends far above the known counts in 40 seconds. For GF(2^12) both parts of the best hybrid were already run from the 42s for hours with 42 unchanged, so the hybrid opens no route to 41; no GitHub run. Every decomposition exact."
+}

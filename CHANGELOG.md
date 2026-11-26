@@ -68,6 +68,11 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Hybrids of the GF(2^n) searchers measured (2026-11-26, development; on the owner's word).**
+  `scripts/study_gf2_hybrid_walks.py`, `benchmarks/gf2_multiplication/hybrid_walks_local.json`: at equal time
+  (40 s, three seeds) the symmetric walk followed by the plain walk is the best or level arm on GF(2^8) to
+  GF(2^10), a small gain in the early descent; SAT polishing of a walk's result found nothing; no route to 41
+  for GF(2^12). Not run on GitHub, since both parts already leave the 42s unchanged.
 - **Both open plans changed on their independent reviews; JetFlow's Jet2 step found to have its curvature
   reversed (2026-11-26, development; AGENTS.md 1.6).** JetFlow's `JetFlowStepper` computes the acceleration
   as (v - v_probe) / h, which is -dv/dt: on dz/dt = z one step from t = 1 lands at -0.5 z (exact z / e,
