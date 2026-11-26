@@ -68,6 +68,14 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) by GF(4), the exhaustive invariant run recorded: no 13 (2026-11-26, development).**
+  `benchmarks/gf2_multiplication/invariant_search_gf4_x16.json` (run 1 of
+  `.github/workflows/gf2-invariant-search.yml`, from a87f376, before steps were made absolute: the
+  record's `step` counts powers of x -> x^4, so its step 2 is x -> x^16 and step 1 is x -> x^4).
+  Every symmetric decomposition of GF(4^6) multiplication over GF(4) invariant under x -> x^16 was
+  enumerated at 13 and 12 GF(4) products (39 and 36 over GF(2)): none among 46.5 and 9.1 thousand
+  million choices. Under x -> x^4, the calibration: none at 12 or 13, six at 14, of which the three
+  checked give 42 products over GF(2), exact. Nothing below 42.
 - **GF(2^12): mixed subfields, and GF(4) walks from 14 (2026-11-26, development).**
   `scripts/gf2_invariant_search.py` now reads its Frobenius step as a power of the absolute Frobenius
   (x -> x^(2^step); the GF(4) classes of the first run, x -> x^4 and x -> x^16, are steps 2 and 4) and
