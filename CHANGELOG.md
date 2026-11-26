@@ -52,6 +52,10 @@ inferred releases.
 
 ### Added
 
+- **The physics judge's third PhysInOne development run (2026-11-27).** `benchmarks/physics_judge/dev_run_3.json`:
+  67 of 150 true clips pass; PhysInOne has no level static camera, its rigid bodies move unevenly in its own
+  record, its pendulums are pushed and its collisions are never side-on. Proposal in the plan, for the owner:
+  test the judge mainly on clips simulated and rendered here, PhysInOne as a second check beside gate J.
 - **PREREG-MMLM-QI-2026-11 recorded (2026-11-27).** `preregistration/RESULT-MMLM-QI-2026-11.md`: all 25 arms ran on
   the frozen commit. The best quantum-inspired byte model costs 2.61 bits per byte against 1.82 for four
   bytes of counting; it loses to a hidden Markov model of its state's size at both sizes and gets weight 0

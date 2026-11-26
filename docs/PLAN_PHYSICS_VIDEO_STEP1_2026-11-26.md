@@ -194,3 +194,21 @@ development run (`benchmarks/physics_judge/dev_run_1.json`) showed, and what was
 - Made more robust on what the data showed: noise and jump limits relative to the object's size, launches
   and speed gains counted only when substantial, durations in seconds, no "must speed up" rule for rolls
   (a roll receding from the camera slows in the image), collisions paired only when the objects touch.
+
+**Third development run** (`benchmarks/physics_judge/dev_run_3.json`; the second stopped on a file format). With
+the owner's choices in: rigid bounces, side-view collisions, the most level static camera. Of 150 true clips
+of the five kinds in gate J, 67 pass (falls 13 of 30, throws 21, rolls 13, rigid bounces 18, pendulums 2); of the
+broken ones 0 of 139 jumps, 13 of 139 holds, 20 of 95 mirrored stretches and 32 of 88 time reversals pass. None
+of the 60 collisions is seen from the side. What it showed about PhysInOne as a test set for this judge:
+
+- the most level static camera of every scene looks 30 to 33 degrees down; there is no level view;
+- the irregular steps are in the simulation's own record: the trajectory file's positions, at evenly spaced
+  times, move 0.97, 0.94, 4.58, 1.33, 4.25 cm from frame to frame in a fall; taking every third frame only
+  softens it (averaging each three frames instead helps falls and hurts throws);
+- the pendulum scenes are pushed or struck during the clip, so a growing swing is often true;
+- collisions are never side-on.
+
+Proposal for the owner: test the judge mainly on clips simulated and rendered here, the same pipeline that will
+make the training clips (exact physics, level side views, known breakages), and keep PhysInOne as a second,
+messier check reported beside gate J rather than inside it. That changes gate J's validation data, so it waits
+for the owner's word.
