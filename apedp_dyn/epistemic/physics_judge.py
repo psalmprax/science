@@ -105,6 +105,8 @@ class JudgeSettings:
     collision_event_share: float = 0.15
     energy_gain_tol: float = 0.1
     overlap_share: float = 0.5
+    touch_share: float = 1.6
+    momentum_view_share: float = 0.25
 
 
 DEVELOPMENT = JudgeSettings()
@@ -703,38 +705,54 @@ def _judge_collision(a: Track, b: Track, settings: JudgeSettings) -> Verdict:
     significant = []
     for (_segs, evs), top in zip(per, max_speed, strict=True):
         significant.append([e for e in evs if float(np.linalg.norm(e.dv)) > max(e.v_noise, settings.collision_event_share * top)])
+    ta, tb = parts[0]["t"], parts[1]["t"]
+    xa, xb = parts[0]["xy"], parts[1]["xy"]
+    sa = parts[0]["size"] if parts[0]["size"] is not None else np.full(ta.size, np.nan)
+    sb = parts[1]["size"] if parts[1]["size"] is not None else np.full(tb.size, np.nan)
+
+    def apart(time: float) -> tuple[float, float]:
+        """Centre distance and mean size of the two objects at a time (nearest seen frames)."""
+        ia, ib = int(np.argmin(np.abs(ta - time))), int(np.argmin(np.abs(tb - time)))
+        return float(np.linalg.norm(xa[ia] - xb[ib])), 0.5 * float(sa[ia] + sb[ib])
+
+    def touching(time: float) -> bool:
+        d, mean_size = apart(time)
+        return math.isfinite(mean_size) and d < settings.touch_share * mean_size
+
     pairs = []
     for ea in significant[0]:
         for eb in significant[1]:
-            if abs(ea.time - eb.time) <= settings.collision_sync_frames * dt + 1e-9:
+            if abs(ea.time - eb.time) <= settings.collision_sync_frames * dt + 1e-9 and touching(0.5 * (ea.time + eb.time)):
                 pairs.append((ea, eb))
     paired_a = {ea.frame for ea, _ in pairs}
     paired_b = {eb.frame for _, eb in pairs}
     for name, (_, evs), skip in (("A", per[0], paired_a), ("B", per[1], paired_b)):
         reasons += [f"object {name}: {r}" for r in _contact_reasons(evs, settings, skip)]
-    # Pass-through: centres closer than half the summed sizes at any common frame.
-    ta, tb = parts[0]["t"], parts[1]["t"]
+    for name, evs, skip in (("A", significant[0], paired_a), ("B", significant[1], paired_b)):
+        for e in evs:
+            if e.frame not in skip and touching(e.time):
+                reasons.append(f"object {name} changes velocity touching the other at frame {e.frame}, which does not react")
     common, ia, ib = np.intersect1d(np.round(ta, 6), np.round(tb, 6), return_indices=True)
     stats: dict[str, Any] = {"pairs": len(pairs), "events_a": [_event_summary(e) for e in per[0][1]],
                              "events_b": [_event_summary(e) for e in per[1][1]]}
-    if common.size and parts[0]["size"] is not None and parts[1]["size"] is not None:
-        dist = np.linalg.norm(parts[0]["xy"][ia] - parts[1]["xy"][ib], axis=1)
-        reach = settings.overlap_share * 0.5 * (parts[0]["size"][ia] + parts[1]["size"][ib])
+    overlap = False
+    if common.size:
+        dist = np.linalg.norm(xa[ia] - xb[ib], axis=1)
+        reach = settings.overlap_share * 0.5 * (sa[ia] + sb[ib])
         overlap = bool(np.any(dist < reach))
         stats["closest"] = round(float(np.min(dist)), 1)
-    else:
-        overlap = False
     if not pairs:
-        if overlap and not significant[0] and not significant[1]:
+        if overlap:
             reasons.append("the objects pass through each other")
-        elif significant[0] or significant[1]:
-            reasons.append("one object changes velocity and the other does not react")
         if not reasons:
-            return Verdict(kind, UNTESTABLE, ["no collision seen"], stats)
+            return Verdict(kind, UNTESTABLE, ["no collision between them seen"], stats)
         return Verdict(kind, FAIL, reasons, stats)
     for ea, eb in pairs:
         da, db = ea.dv, eb.dv
         na, nb = float(np.linalg.norm(da)), float(np.linalg.norm(db))
+        if min(na / max(max_speed[0], 1e-9), nb / max(max_speed[1], 1e-9)) < settings.momentum_view_share:
+            stats.setdefault("collisions", []).append({"momentum": "not testable from this view"})
+            continue
         cos = float(np.dot(da, -db) / max(na * nb, 1e-12))
         if cos < settings.collision_cos:
             reasons.append(f"velocity changes are not opposite at the collision (cos {cos:.2f})")
