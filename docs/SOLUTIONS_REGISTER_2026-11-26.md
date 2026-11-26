@@ -48,6 +48,12 @@ Categories:
 | **A quantum-inspired byte model** (MMLM-QI: pure and mixed states, complex and real; `PREREG-MMLM-QI-2026-11`) | mixed byte by byte with Kneser-Ney counting (expectation 7) | Best 2.77 bits per byte against a hidden Markov model's 2.50 and counting's 1.85 (10 minutes of training) | the plan's table: an expert in MMLM-CM's mixture only if the hybrid gains more than an automaton of its size would; otherwise not developed |
 | **JetFlow against plain flow matching and MeanFlow** (`PREREG-VIDEO-FLOW-2026-11`) | MeanFlow on JetFlow's network; JetFlow's sampler on the UNet; the Jet2 step on MeanFlow's velocity | JetFlow's sampler lost to plain flow matching at four calls on all three data sets (2 minutes of training). Its Jet2 step was found to have its curvature reversed since 6 November; fixed on your word, so the run scores the fixed step (no recorded result had used the reversed one) | the plan's consequences: JetFlow kept only if it (or its corrected step) beats flow matching on real footage and a toy world; a hybrid only if it beats what it would replace |
 
+## E. Planned, not built
+
+| Solution | Hybrids in the plan | Where it stands | First gate |
+| :--- | :--- | :--- | :--- |
+| **Physics-first video** (`docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md`): a physics adapter on an open pretrained model, scored by a judge built on the referee | LoRA and tensor-train adapters at equal size, a tenth-size tensor train, a LoRA/tensor-train hybrid; a LoRA on ordinary footage as the control | plan written on your word (26 Nov); the judge is built first, on CPU | gate J (the judge on a blind set), then gate 1 (a 10-point physics gain without worse pictures); numbers proposed, for your word |
+
 ## Waiting for your word, apart from the above
 
 - Earlier, unchanged: PREREG-RANKED-MEMORY-2026-11; the search-budget and kept-processes proposals; branch

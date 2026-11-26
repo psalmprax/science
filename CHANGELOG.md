@@ -30,6 +30,12 @@ inferred releases.
 
 ### Added
 
+- **A plan for physics-first video, step 1 (2026-11-26, owner's word "yes let us try in that direction").**
+  `docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md`, plan only, nothing built: a physics judge first (track
+  one object, test its law's form with the referee; gate J on a blind set with perturbations the builder
+  did not see), then a small adapter on Wan2.1-T2V-1.3B with LoRA, tensor-train and hybrid arms at equal
+  size and a control on ordinary footage (gate 1). Every threshold in it is proposed and needs the
+  owner's word and a pin before use. Listed in the solutions register under "Planned, not built".
 - **One CI status that says whether anything but the trustees' signature failed (2026-11-24).**
   The governance-manifest job is red until the trustees sign, so every run is red and a new
   failure elsewhere is easy to miss. `.github/workflows/test.yml` has a job "Everything except
