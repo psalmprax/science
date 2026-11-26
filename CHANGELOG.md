@@ -68,6 +68,13 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **GF(2^12) by large-neighbourhood SAT (2026-11-26, development; the third of the four approaches).**
+  `scripts/search_gf2_sat_lns.py`, `.github/workflows/gf2-sat-lns.yml`: after Heule, Kauers and Seidl (SAT 2019),
+  free k products of a decomposition and ask CryptoMiniSat for k - 1 with the same sum; streamlining by
+  symmetric products; neighbourhoods at random or by whole blocks of the construction; time-limited, with
+  undecided instances counted apart. Locally on the repository's 42: symmetric neighbourhoods of 6 and 7
+  products refused in 0.1 to 2.3 seconds each (none can be done with one fewer), 9 to 12 undecided after a
+  minute; so the run uses 7 to 9 with ten minutes each. Tests `tests/test_search_gf2_sat_lns.py` (4).
 - **GF(2^n) multiplication in few AND gates, a quadratic-circuit walk (2026-11-26, development; the first of the
   four approaches; not the bilinear target).** `scripts/gf2_and_walk.c`, `scripts/search_gf2_and_walk.py`,
   `.github/workflows/gf2-and-walk.yml`: gates (a.z)(b.z) whose inputs may mix bits of both factors, counted by
