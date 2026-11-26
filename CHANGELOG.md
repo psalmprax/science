@@ -68,6 +68,16 @@ inferred releases.
   behind it and the switch. The searches, their seeds, budget and order of proposals are the same.
   The frozen portfolio, search stage and runners are not edited and still build the frozen stage.
   `tests/test_hard_exit.py` (13) and `tests/test_routes_in_force.py` pin the default and the switch.
+- **Counting independent trials, tried on real prices (2026-11-26, development; on the owner's word).**
+  `scripts/study_independent_trials_real.py`, `benchmarks/referee_trials/independent_trials_real_dev.json`:
+  56 rule-based strategies in four families on six real daily series of `data/market` (the finance audits'
+  held-out panel is not read and no audit is run). With no edge (returns shifted in time against the
+  positions) 0.17 % called significant by both the referee's count and the cluster count; with a planted edge
+  of annualised Sharpe 2.5 and 3.5 the referee's count found it never, the cluster count in 52 % and 62 %
+  (plus 27 % and 35 % where a correlated strategy that shares the edge was called), the eigenvalue count in
+  under 2 %; no count called a strategy without a real share of the edge. The real searches as they are:
+  nothing called significant by any count, and the selected strategies did worse later (a loss on three of
+  six). Not wired into the referee.
 - **Counting independent trials for the deflated Sharpe ratio, built and tested (2026-11-26, development; on the
   owner's word "build and test first").** The idea found in US patent application US20190294990A1 (López de
   Prado and Lewis, 2019). `apedp_dyn/epistemic/independent_trials.py` clusters the trials' returns (ONC's

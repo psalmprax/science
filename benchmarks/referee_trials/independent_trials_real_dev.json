@@ -1,0 +1,498 @@
+{
+ "tag": "DEV-INDEPENDENT-TRIALS-REAL-2026-11",
+ "development_not_a_result": true,
+ "seed": 2026112612,
+ "repetitions_no_edge": 200,
+ "repetitions_each_edge": 100,
+ "threshold": 0.95,
+ "pooled": {
+  "no edge, rate significant": {
+   "as_referee": 0.0017,
+   "by_cluster": 0.0017,
+   "by_eigenvalues": 0.0033
+  },
+  "edge 2.5, rate found": {
+   "as_referee": 0.0,
+   "by_cluster": 0.515,
+   "by_eigenvalues": 0.0033
+  },
+  "edge 3.5, rate found": {
+   "as_referee": 0.0,
+   "by_cluster": 0.6217,
+   "by_eigenvalues": 0.0133
+  },
+  "edge 2.5, rate something else called": {
+   "as_referee": 0.0,
+   "by_cluster": 0.2667,
+   "by_eigenvalues": 0.005
+  },
+  "edge 3.5, rate something else called": {
+   "as_referee": 0.0,
+   "by_cluster": 0.35,
+   "by_eigenvalues": 0.005
+  },
+  "edge 2.5, rate called without a real edge": {
+   "as_referee": 0.0,
+   "by_cluster": 0.0,
+   "by_eigenvalues": 0.0
+  },
+  "edge 3.5, rate called without a real edge": {
+   "as_referee": 0.0,
+   "by_cluster": 0.0,
+   "by_eigenvalues": 0.0
+  }
+ },
+ "series": {
+  "S&P 500 (FRED)": {
+   "days": 1258,
+   "strategies": 56,
+   "families": 4,
+   "no edge": {
+    "as_referee": {
+     "rate_significant": 0.01,
+     "upper_95": 0.0357
+    },
+    "by_cluster": {
+     "rate_significant": 0.01,
+     "upper_95": 0.0357
+    },
+    "by_eigenvalues": {
+     "rate_significant": 0.015,
+     "upper_95": 0.0432
+    },
+    "clusters_median": 2.0
+   },
+   "edge 2.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.56,
+     "rate_other_called": 0.34,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.01,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "edge 3.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.64,
+     "rate_other_called": 0.32,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.01,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "as is": {
+    "selected": "momentum 16",
+    "family": 0,
+    "in_sample_sharpe_annual": 0.756,
+    "later_sharpe_annual": 0.248,
+    "as_referee": {
+     "dsr": 0.5792,
+     "significant": false,
+     "n_trials": 56
+    },
+    "by_cluster": {
+     "dsr": 0.5476,
+     "significant": false,
+     "n_trials": 2
+    },
+    "by_eigenvalues": {
+     "dsr": 0.6774,
+     "significant": false,
+     "n_trials": 17
+    }
+   }
+  },
+  "NASDAQ-100 (FRED)": {
+   "days": 1259,
+   "strategies": 56,
+   "families": 4,
+   "no edge": {
+    "as_referee": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_cluster": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_eigenvalues": {
+     "rate_significant": 0.005,
+     "upper_95": 0.0275
+    },
+    "clusters_median": 2.0
+   },
+   "edge 2.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.62,
+     "rate_other_called": 0.37,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "edge 3.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.71,
+     "rate_other_called": 0.29,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.02,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "as is": {
+    "selected": "momentum 16",
+    "family": 0,
+    "in_sample_sharpe_annual": 0.917,
+    "later_sharpe_annual": 0.408,
+    "as_referee": {
+     "dsr": 0.6386,
+     "significant": false,
+     "n_trials": 56
+    },
+    "by_cluster": {
+     "dsr": 0.6327,
+     "significant": false,
+     "n_trials": 2
+    },
+    "by_eigenvalues": {
+     "dsr": 0.7405,
+     "significant": false,
+     "n_trials": 17
+    }
+   }
+  },
+  "BTC (Binance)": {
+   "days": 844,
+   "strategies": 56,
+   "families": 4,
+   "no edge": {
+    "as_referee": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_cluster": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_eigenvalues": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "clusters_median": 2.0
+   },
+   "edge 2.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.43,
+     "rate_other_called": 0.33,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "edge 3.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.55,
+     "rate_other_called": 0.42,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.02,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "as is": {
+    "selected": "crossover 5/150",
+    "family": 1,
+    "in_sample_sharpe_annual": 1.226,
+    "later_sharpe_annual": 0.559,
+    "as_referee": {
+     "dsr": 0.4917,
+     "significant": false,
+     "n_trials": 56
+    },
+    "by_cluster": {
+     "dsr": 0.5758,
+     "significant": false,
+     "n_trials": 2
+    },
+    "by_eigenvalues": {
+     "dsr": 0.6055,
+     "significant": false,
+     "n_trials": 20
+    }
+   }
+  },
+  "ETH (Binance)": {
+   "days": 844,
+   "strategies": 56,
+   "families": 4,
+   "no edge": {
+    "as_referee": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_cluster": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_eigenvalues": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "clusters_median": 2.0
+   },
+   "edge 2.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.59,
+     "rate_other_called": 0.2,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.01,
+     "rate_other_called": 0.01,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "edge 3.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.65,
+     "rate_other_called": 0.33,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.01,
+     "rate_other_called": 0.02,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "as is": {
+    "selected": "momentum 13",
+    "family": 0,
+    "in_sample_sharpe_annual": 1.285,
+    "later_sharpe_annual": -0.753,
+    "as_referee": {
+     "dsr": 0.614,
+     "significant": false,
+     "n_trials": 56
+    },
+    "by_cluster": {
+     "dsr": 0.526,
+     "significant": false,
+     "n_trials": 2
+    },
+    "by_eigenvalues": {
+     "dsr": 0.6992,
+     "significant": false,
+     "n_trials": 21
+    }
+   }
+  },
+  "SPY (Yahoo)": {
+   "days": 502,
+   "strategies": 56,
+   "families": 4,
+   "no edge": {
+    "as_referee": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_cluster": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_eigenvalues": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "clusters_median": 2.0
+   },
+   "edge 2.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.39,
+     "rate_other_called": 0.2,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "edge 3.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.6,
+     "rate_other_called": 0.35,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.02,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "as is": {
+    "selected": "reversal 3",
+    "family": 2,
+    "in_sample_sharpe_annual": 1.441,
+    "later_sharpe_annual": -0.23,
+    "as_referee": {
+     "dsr": 0.4851,
+     "significant": false,
+     "n_trials": 56
+    },
+    "by_cluster": {
+     "dsr": 0.5998,
+     "significant": false,
+     "n_trials": 2
+    },
+    "by_eigenvalues": {
+     "dsr": 0.6099,
+     "significant": false,
+     "n_trials": 20
+    }
+   }
+  },
+  "AAPL (Yahoo)": {
+   "days": 502,
+   "strategies": 56,
+   "families": 4,
+   "no edge": {
+    "as_referee": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_cluster": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "by_eigenvalues": {
+     "rate_significant": 0.0,
+     "upper_95": 0.0183
+    },
+    "clusters_median": 2.0
+   },
+   "edge 2.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.5,
+     "rate_other_called": 0.16,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.01,
+     "rate_other_called": 0.01,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "edge 3.5": {
+    "as_referee": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.0,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_cluster": {
+     "rate_edge_found": 0.58,
+     "rate_other_called": 0.39,
+     "rate_called_without_real_edge": 0.0
+    },
+    "by_eigenvalues": {
+     "rate_edge_found": 0.0,
+     "rate_other_called": 0.01,
+     "rate_called_without_real_edge": 0.0
+    }
+   },
+   "as is": {
+    "selected": "reversal 3",
+    "family": 2,
+    "in_sample_sharpe_annual": 1.53,
+    "later_sharpe_annual": -2.46,
+    "as_referee": {
+     "dsr": 0.4225,
+     "significant": false,
+     "n_trials": 56
+    },
+    "by_cluster": {
+     "dsr": 0.5138,
+     "significant": false,
+     "n_trials": 2
+    },
+    "by_eigenvalues": {
+     "dsr": 0.5609,
+     "significant": false,
+     "n_trials": 21
+    }
+   }
+  }
+ },
+ "seconds": 40.5
+}
