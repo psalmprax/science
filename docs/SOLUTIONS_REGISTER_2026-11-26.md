@@ -91,7 +91,12 @@ re-reading counts only if the law it reports was handed in, and handed laws take
 families, 240 tables): the route table by table 118 laws; the family route 124; the control 120; with the
 fallbacks 129; none inaccurate. So siblings' shapes add little (6 tables against 2). The reason: of the
 122 tables without a law, the referee already had an accurate law among its own candidates on 91.
-Candidates are not what those tables lack. The wider law: the family's own construction 12 of 48 family
+~~Candidates are not what those tables lack.~~ **Corrected 2026-11-28:** that sentence was wrong for low
+noise. Handed the true form, the route reports 64 of the 122 (25 of 27 at 1 % noise): the accurate laws it
+had were approximations, and the law itself was what was missing. At 5 % and 10 % the last checks withhold
+even the true form (52 readings), mostly for lack of power at that noise. And in 13 readings a class's
+shortest member failed the residual check and the true form beside it was never tried
+(`docs/OUTSIDE_PROPOSALS_CHECKED_2026-11-28.md`, section 1; `scripts/study_handed_truth.py`). The wider law: the family's own construction 12 of 48 family
 readings, a direct search of the pooled table at equal search time 22, both 24, all accurate. Those 24
 laws cover 120 tables, 42 of them without a law of their own (26 at 10 % noise); that last step, a table
 taking its law from its family's, is not built or measured. The tensor-train fallback added 4 laws, three

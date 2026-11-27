@@ -1,0 +1,1506 @@
+{
+ "tag": "DEV-OUTSIDE-PROPOSALS-2026-11",
+ "development_not_a_result": true,
+ "what": "kill tests of four outside proposals, on generated rows and the three real development tables",
+ "implicit": [
+  {
+   "law": "time dilation a*(sqrt(1 - v^2/b^2) - 1)",
+   "rows": 7,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": 30,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "time dilation a*(sqrt(1 - v^2/b^2) - 1)",
+   "rows": 7,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": 20,
+   "own_form_in_first_three": 24,
+   "accurate_inside": 26,
+   "accurate_outside": 6,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "time dilation a*(sqrt(1 - v^2/b^2) - 1)",
+   "rows": 7,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": 9,
+   "own_form_in_first_three": 17,
+   "accurate_inside": 5,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "time dilation a*(sqrt(1 - v^2/b^2) - 1)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "time dilation a*(sqrt(1 - v^2/b^2) - 1)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 6,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "time dilation a*(sqrt(1 - v^2/b^2) - 1)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 1,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Langmuir a*p/(1 + b*p)",
+   "rows": 17,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": 30,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Langmuir a*p/(1 + b*p)",
+   "rows": 17,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": 25,
+   "own_form_in_first_three": 28,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "Langmuir a*p/(1 + b*p)",
+   "rows": 17,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": 24,
+   "own_form_in_first_three": 28,
+   "accurate_inside": 26,
+   "accurate_outside": 25,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "Langmuir a*p/(1 + b*p)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Langmuir a*p/(1 + b*p)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Langmuir a*p/(1 + b*p)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Kepler with two masses c*d^1.5/sqrt(m1 + m2)",
+   "rows": 12,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": 30,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Kepler with two masses c*d^1.5/sqrt(m1 + m2)",
+   "rows": 12,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": 29,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 29,
+   "accurate_outside": 29,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Kepler with two masses c*d^1.5/sqrt(m1 + m2)",
+   "rows": 12,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": 27,
+   "own_form_in_first_three": 28,
+   "accurate_inside": 20,
+   "accurate_outside": 20,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Kepler with two masses c*d^1.5/sqrt(m1 + m2)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Kepler with two masses c*d^1.5/sqrt(m1 + m2)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Kepler with two masses c*d^1.5/sqrt(m1 + m2)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": 5,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 5,
+   "accurate_outside": 5,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "Hubble a*D",
+   "rows": 32,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": 30,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    2
+   ]
+  },
+  {
+   "law": "Hubble a*D",
+   "rows": 32,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": 0,
+   "own_form_in_first_three": 0,
+   "accurate_inside": 29,
+   "accurate_outside": 27,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "Hubble a*D",
+   "rows": 32,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": 0,
+   "own_form_in_first_three": 0,
+   "accurate_inside": 26,
+   "accurate_outside": 26,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "Hubble a*D",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    2
+   ]
+  },
+  {
+   "law": "Hubble a*D",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": 0,
+   "own_form_in_first_three": 0,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "Hubble a*D",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": 0,
+   "own_form_in_first_three": 0,
+   "accurate_inside": 7,
+   "accurate_outside": 6,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "lens u*v/(u + v)",
+   "rows": 20,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": 30,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "lens u*v/(u + v)",
+   "rows": 20,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": 22,
+   "own_form_in_first_three": 27,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "lens u*v/(u + v)",
+   "rows": 20,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": 22,
+   "own_form_in_first_three": 26,
+   "accurate_inside": 27,
+   "accurate_outside": 28,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "lens u*v/(u + v)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "lens u*v/(u + v)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "lens u*v/(u + v)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "energy sqrt(p^2 + m^2)",
+   "rows": 20,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": 30,
+   "own_form_in_first_three": 30,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "energy sqrt(p^2 + m^2)",
+   "rows": 20,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": 18,
+   "own_form_in_first_three": 26,
+   "accurate_inside": 30,
+   "accurate_outside": 30,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "energy sqrt(p^2 + m^2)",
+   "rows": 20,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": 21,
+   "own_form_in_first_three": 25,
+   "accurate_inside": 26,
+   "accurate_outside": 23,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "energy sqrt(p^2 + m^2)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "energy sqrt(p^2 + m^2)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "energy sqrt(p^2 + m^2)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": 7,
+   "own_form_in_first_three": 7,
+   "accurate_inside": 7,
+   "accurate_outside": 7,
+   "terms_chosen": [
+    3
+   ]
+  },
+  {
+   "law": "control: exponential 2*exp(-0.7*x)",
+   "rows": 20,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 29,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: exponential 2*exp(-0.7*x)",
+   "rows": 20,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 30,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: exponential 2*exp(-0.7*x)",
+   "rows": 20,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 26,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: exponential 2*exp(-0.7*x)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 7,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: exponential 2*exp(-0.7*x)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 7,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: exponential 2*exp(-0.7*x)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 7,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: logarithm a*log(x) + b (Tully and Fisher's form)",
+   "rows": 18,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 30,
+   "accurate_outside": 14,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: logarithm a*log(x) + b (Tully and Fisher's form)",
+   "rows": 18,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 30,
+   "accurate_outside": 10,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: logarithm a*log(x) + b (Tully and Fisher's form)",
+   "rows": 18,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 22,
+   "accurate_outside": 3,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: logarithm a*log(x) + b (Tully and Fisher's form)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 7,
+   "accurate_outside": 1,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: logarithm a*log(x) + b (Tully and Fisher's form)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 7,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: logarithm a*log(x) + b (Tully and Fisher's form)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 7,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: sine sin(1.3*x) + 2",
+   "rows": 20,
+   "noise": 0.0,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 0,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "control: sine sin(1.3*x) + 2",
+   "rows": 20,
+   "noise": 0.01,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 0,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    3,
+    4
+   ]
+  },
+  {
+   "law": "control: sine sin(1.3*x) + 2",
+   "rows": 20,
+   "noise": 0.05,
+   "draws": 30,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 0,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: sine sin(1.3*x) + 2",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 0,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: sine sin(1.3*x) + 2",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 0,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  },
+  {
+   "law": "control: sine sin(1.3*x) + 2",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 7,
+   "own_form_first": null,
+   "own_form_in_first_three": null,
+   "accurate_inside": 0,
+   "accurate_outside": 0,
+   "terms_chosen": [
+    4
+   ]
+  }
+ ],
+ "real": [
+  {
+   "table": "kepler_solar_system",
+   "rows": 8,
+   "known_law": "a*d**1.5",
+   "supports_ranked": 145,
+   "own_form_rank": 1,
+   "own_form_rank_among_its_size": 1,
+   "supports_of_its_size": 33,
+   "own_form_distance": 0.0068,
+   "best_distance": 0.0068,
+   "terms_of_the_best": 2
+  },
+  {
+   "table": "langmuir_table_ix",
+   "rows": 10,
+   "known_law": "a*p/(1 + b*p)",
+   "supports_ranked": 353,
+   "own_form_rank": 65,
+   "own_form_rank_among_its_size": 4,
+   "supports_of_its_size": 112,
+   "own_form_distance": 0.0393,
+   "best_distance": 0.0197,
+   "terms_of_the_best": 4
+  },
+  {
+   "table": "leavitt",
+   "rows": 26,
+   "known_law": "a*logP + b",
+   "supports_ranked": 353,
+   "own_form_rank": 145,
+   "own_form_rank_among_its_size": 15,
+   "supports_of_its_size": 112,
+   "own_form_distance": 0.0178,
+   "best_distance": 0.0099,
+   "terms_of_the_best": 4
+  }
+ ],
+ "gradient": [
+  {
+   "law": "sin(x1*x2)*x3 + x4",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0,
+   "smallest_for_another": 0.1142,
+   "smallest_for_another_with_the_exact_gradient": 0.1142,
+   "gradient_relative_error": 0.0001
+  },
+  {
+   "law": "sin(x1*x2)*x3 + x4",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0043,
+   "smallest_for_another": 0.1163,
+   "smallest_for_another_with_the_exact_gradient": 0.1142,
+   "gradient_relative_error": 0.0059
+  },
+  {
+   "law": "sin(x1*x2)*x3 + x4",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0097,
+   "smallest_for_another": 0.122,
+   "smallest_for_another_with_the_exact_gradient": 0.1142,
+   "gradient_relative_error": 0.0203
+  },
+  {
+   "law": "x4/sqrt(x1^2 + x2^2 + x3^2)",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 4,
+   "others": 6,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0018,
+   "smallest_for_another": 0.0593,
+   "smallest_for_another_with_the_exact_gradient": 0.0596,
+   "gradient_relative_error": 0.0005
+  },
+  {
+   "law": "x4/sqrt(x1^2 + x2^2 + x3^2)",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 4,
+   "others": 6,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.017,
+   "smallest_for_another": 0.0649,
+   "smallest_for_another_with_the_exact_gradient": 0.0596,
+   "gradient_relative_error": 0.0117
+  },
+  {
+   "law": "x4/sqrt(x1^2 + x2^2 + x3^2)",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 4,
+   "others": 6,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0471,
+   "smallest_for_another": 0.0673,
+   "smallest_for_another_with_the_exact_gradient": 0.0596,
+   "gradient_relative_error": 0.0327
+  },
+  {
+   "law": "exp(-(x1 + 2*x2))*x3^2 + x4",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 4,
+   "others": 6,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0004,
+   "smallest_for_another": 0.0359,
+   "smallest_for_another_with_the_exact_gradient": 0.0359,
+   "gradient_relative_error": 0.0001
+  },
+  {
+   "law": "exp(-(x1 + 2*x2))*x3^2 + x4",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 4,
+   "others": 6,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0197,
+   "smallest_for_another": 0.0384,
+   "smallest_for_another_with_the_exact_gradient": 0.0359,
+   "gradient_relative_error": 0.0071
+  },
+  {
+   "law": "exp(-(x1 + 2*x2))*x3^2 + x4",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 4,
+   "others": 6,
+   "told_apart": false,
+   "share_of_pairs_in_the_right_order": 0.9583333333333334,
+   "largest_for_a_composition": 0.052,
+   "smallest_for_another": 0.0406,
+   "smallest_for_another_with_the_exact_gradient": 0.0359,
+   "gradient_relative_error": 0.0256
+  },
+  {
+   "law": "log(1 + x1*x2)*(x3 + x4)",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0001,
+   "smallest_for_another": 0.0349,
+   "smallest_for_another_with_the_exact_gradient": 0.0349,
+   "gradient_relative_error": 0.0001
+  },
+  {
+   "law": "log(1 + x1*x2)*(x3 + x4)",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.003,
+   "smallest_for_another": 0.0347,
+   "smallest_for_another_with_the_exact_gradient": 0.0349,
+   "gradient_relative_error": 0.007
+  },
+  {
+   "law": "log(1 + x1*x2)*(x3 + x4)",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0144,
+   "smallest_for_another": 0.0321,
+   "smallest_for_another_with_the_exact_gradient": 0.0349,
+   "gradient_relative_error": 0.025
+  },
+  {
+   "law": "sin(x1*x2 + x3) + x4",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0001,
+   "smallest_for_another": 0.108,
+   "smallest_for_another_with_the_exact_gradient": 0.108,
+   "gradient_relative_error": 0.0001
+  },
+  {
+   "law": "sin(x1*x2 + x3) + x4",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0059,
+   "smallest_for_another": 0.105,
+   "smallest_for_another_with_the_exact_gradient": 0.108,
+   "gradient_relative_error": 0.0094
+  },
+  {
+   "law": "sin(x1*x2 + x3) + x4",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0215,
+   "smallest_for_another": 0.1115,
+   "smallest_for_another_with_the_exact_gradient": 0.108,
+   "gradient_relative_error": 0.031
+  },
+  {
+   "law": "x3*cos(x1^2 + x2^2) + x4*x5",
+   "inputs": 5,
+   "noise": 0.0,
+   "compositions": 3,
+   "others": 17,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0005,
+   "smallest_for_another": 0.1493,
+   "smallest_for_another_with_the_exact_gradient": 0.149,
+   "gradient_relative_error": 0.0008
+  },
+  {
+   "law": "x3*cos(x1^2 + x2^2) + x4*x5",
+   "inputs": 5,
+   "noise": 0.01,
+   "compositions": 3,
+   "others": 17,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0072,
+   "smallest_for_another": 0.1525,
+   "smallest_for_another_with_the_exact_gradient": 0.149,
+   "gradient_relative_error": 0.0137
+  },
+  {
+   "law": "x3*cos(x1^2 + x2^2) + x4*x5",
+   "inputs": 5,
+   "noise": 0.05,
+   "compositions": 3,
+   "others": 17,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0298,
+   "smallest_for_another": 0.1452,
+   "smallest_for_another_with_the_exact_gradient": 0.149,
+   "gradient_relative_error": 0.0455
+  },
+  {
+   "law": "sqrt(x1*x2 + x3)/(1 + x4)",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0002,
+   "smallest_for_another": 0.0817,
+   "smallest_for_another_with_the_exact_gradient": 0.0816,
+   "gradient_relative_error": 0.0003
+  },
+  {
+   "law": "sqrt(x1*x2 + x3)/(1 + x4)",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.005,
+   "smallest_for_another": 0.0808,
+   "smallest_for_another_with_the_exact_gradient": 0.0816,
+   "gradient_relative_error": 0.008
+  },
+  {
+   "law": "sqrt(x1*x2 + x3)/(1 + x4)",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0129,
+   "smallest_for_another": 0.0735,
+   "smallest_for_another_with_the_exact_gradient": 0.0816,
+   "gradient_relative_error": 0.0216
+  },
+  {
+   "law": "tanh(x1 - x2) + x3*x4",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0001,
+   "smallest_for_another": 0.0802,
+   "smallest_for_another_with_the_exact_gradient": 0.0802,
+   "gradient_relative_error": 0.0004
+  },
+  {
+   "law": "tanh(x1 - x2) + x3*x4",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0043,
+   "smallest_for_another": 0.0824,
+   "smallest_for_another_with_the_exact_gradient": 0.0802,
+   "gradient_relative_error": 0.0077
+  },
+  {
+   "law": "tanh(x1 - x2) + x3*x4",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0143,
+   "smallest_for_another": 0.0789,
+   "smallest_for_another_with_the_exact_gradient": 0.0802,
+   "gradient_relative_error": 0.0283
+  },
+  {
+   "law": "(x1^2 + x2^2)*exp(-x3) + x4",
+   "inputs": 4,
+   "noise": 0.0,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0001,
+   "smallest_for_another": 0.1319,
+   "smallest_for_another_with_the_exact_gradient": 0.1319,
+   "gradient_relative_error": 0.0001
+  },
+  {
+   "law": "(x1^2 + x2^2)*exp(-x3) + x4",
+   "inputs": 4,
+   "noise": 0.01,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0043,
+   "smallest_for_another": 0.1317,
+   "smallest_for_another_with_the_exact_gradient": 0.1319,
+   "gradient_relative_error": 0.0063
+  },
+  {
+   "law": "(x1^2 + x2^2)*exp(-x3) + x4",
+   "inputs": 4,
+   "noise": 0.05,
+   "compositions": 2,
+   "others": 8,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0131,
+   "smallest_for_another": 0.1337,
+   "smallest_for_another_with_the_exact_gradient": 0.1319,
+   "gradient_relative_error": 0.0218
+  },
+  {
+   "law": "x4*exp(-x1*x2/x3) + x5",
+   "inputs": 5,
+   "noise": 0.0,
+   "compositions": 4,
+   "others": 16,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0018,
+   "smallest_for_another": 0.1088,
+   "smallest_for_another_with_the_exact_gradient": 0.1088,
+   "gradient_relative_error": 0.0009
+  },
+  {
+   "law": "x4*exp(-x1*x2/x3) + x5",
+   "inputs": 5,
+   "noise": 0.01,
+   "compositions": 4,
+   "others": 16,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0138,
+   "smallest_for_another": 0.1024,
+   "smallest_for_another_with_the_exact_gradient": 0.1088,
+   "gradient_relative_error": 0.0111
+  },
+  {
+   "law": "x4*exp(-x1*x2/x3) + x5",
+   "inputs": 5,
+   "noise": 0.05,
+   "compositions": 4,
+   "others": 16,
+   "told_apart": true,
+   "share_of_pairs_in_the_right_order": 1.0,
+   "largest_for_a_composition": 0.0275,
+   "smallest_for_another": 0.0956,
+   "smallest_for_another_with_the_exact_gradient": 0.1088,
+   "gradient_relative_error": 0.0342
+  }
+ ],
+ "weak": [
+  {
+   "positions": "evenly spaced",
+   "rows": 50,
+   "noise": 0.0,
+   "draws": 300,
+   "a_true_equation_first": 240,
+   "by_family": {
+    "sine": "60 of 60",
+    "exponential": "60 of 60",
+    "pole": "60 of 60",
+    "logarithm": "0 of 60",
+    "root": "60 of 60"
+   }
+  },
+  {
+   "positions": "evenly spaced",
+   "rows": 50,
+   "noise": 0.01,
+   "draws": 300,
+   "a_true_equation_first": 174,
+   "by_family": {
+    "sine": "55 of 60",
+    "exponential": "60 of 60",
+    "pole": "26 of 60",
+    "logarithm": "0 of 60",
+    "root": "33 of 60"
+   }
+  },
+  {
+   "positions": "evenly spaced",
+   "rows": 50,
+   "noise": 0.05,
+   "draws": 300,
+   "a_true_equation_first": 80,
+   "by_family": {
+    "sine": "33 of 60",
+    "exponential": "20 of 60",
+    "pole": "3 of 60",
+    "logarithm": "0 of 60",
+    "root": "24 of 60"
+   }
+  },
+  {
+   "positions": "evenly spaced",
+   "rows": 500,
+   "noise": 0.0,
+   "draws": 300,
+   "a_true_equation_first": 300,
+   "by_family": {
+    "sine": "60 of 60",
+    "exponential": "60 of 60",
+    "pole": "60 of 60",
+    "logarithm": "60 of 60",
+    "root": "60 of 60"
+   }
+  },
+  {
+   "positions": "evenly spaced",
+   "rows": 500,
+   "noise": 0.01,
+   "draws": 300,
+   "a_true_equation_first": 209,
+   "by_family": {
+    "sine": "60 of 60",
+    "exponential": "60 of 60",
+    "pole": "41 of 60",
+    "logarithm": "0 of 60",
+    "root": "48 of 60"
+   }
+  },
+  {
+   "positions": "evenly spaced",
+   "rows": 500,
+   "noise": 0.05,
+   "draws": 300,
+   "a_true_equation_first": 160,
+   "by_family": {
+    "sine": "48 of 60",
+    "exponential": "57 of 60",
+    "pole": "22 of 60",
+    "logarithm": "0 of 60",
+    "root": "33 of 60"
+   }
+  },
+  {
+   "positions": "random",
+   "rows": 50,
+   "noise": 0.0,
+   "draws": 300,
+   "a_true_equation_first": 33,
+   "by_family": {
+    "sine": "15 of 60",
+    "exponential": "9 of 60",
+    "pole": "6 of 60",
+    "logarithm": "0 of 60",
+    "root": "3 of 60"
+   }
+  },
+  {
+   "positions": "random",
+   "rows": 50,
+   "noise": 0.01,
+   "draws": 300,
+   "a_true_equation_first": 37,
+   "by_family": {
+    "sine": "17 of 60",
+    "exponential": "9 of 60",
+    "pole": "5 of 60",
+    "logarithm": "0 of 60",
+    "root": "6 of 60"
+   }
+  },
+  {
+   "positions": "random",
+   "rows": 50,
+   "noise": 0.05,
+   "draws": 300,
+   "a_true_equation_first": 26,
+   "by_family": {
+    "sine": "16 of 60",
+    "exponential": "7 of 60",
+    "pole": "0 of 60",
+    "logarithm": "0 of 60",
+    "root": "3 of 60"
+   }
+  },
+  {
+   "positions": "random",
+   "rows": 500,
+   "noise": 0.0,
+   "draws": 300,
+   "a_true_equation_first": 240,
+   "by_family": {
+    "sine": "60 of 60",
+    "exponential": "60 of 60",
+    "pole": "60 of 60",
+    "logarithm": "0 of 60",
+    "root": "60 of 60"
+   }
+  },
+  {
+   "positions": "random",
+   "rows": 500,
+   "noise": 0.01,
+   "draws": 300,
+   "a_true_equation_first": 205,
+   "by_family": {
+    "sine": "60 of 60",
+    "exponential": "60 of 60",
+    "pole": "37 of 60",
+    "logarithm": "0 of 60",
+    "root": "48 of 60"
+   }
+  },
+  {
+   "positions": "random",
+   "rows": 500,
+   "noise": 0.05,
+   "draws": 300,
+   "a_true_equation_first": 137,
+   "by_family": {
+    "sine": "45 of 60",
+    "exponential": "49 of 60",
+    "pole": "7 of 60",
+    "logarithm": "0 of 60",
+    "root": "36 of 60"
+   }
+  },
+  {
+   "true_equations_of_120_supports": {
+    "sin(1.0*z + 0.3)": 24,
+    "sin(2.0*z + 1.0)": 24,
+    "sin(3.5*z)": 24,
+    "exp(0.5*z)": 66,
+    "exp(-1.2*z)": 66,
+    "exp(-0.3*z)": 66,
+    "(z + 1)^-2": 4,
+    "(z + 0.5)^-2": 4,
+    "(z - 6)^-2": 4,
+    "log(z + 1)": 2,
+    "log(2*z + 0.5)": 2,
+    "log(0.5*z + 3)": 2,
+    "sqrt(1 - z^2)": 1,
+    "sqrt(4 - z^2)": 1,
+    "sqrt(1 - z^2/9)": 1
+   }
+  }
+ ],
+ "lagrangian": [
+  {
+   "system": "pendulum: qdd = -2.25*sin(q)",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 20,
+   "own_terms_first": 20,
+   "constant_error_weak_form": 0.0,
+   "constant_error_second_derivative": 0.0
+  },
+  {
+   "system": "pendulum: qdd = -2.25*sin(q)",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0015,
+   "constant_error_second_derivative": 0.0023
+  },
+  {
+   "system": "pendulum: qdd = -2.25*sin(q)",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.01,
+   "constant_error_second_derivative": 0.0271
+  },
+  {
+   "system": "pendulum: qdd = -2.25*sin(q)",
+   "rows": 2000,
+   "noise": 0.0,
+   "draws": 20,
+   "own_terms_first": 20,
+   "constant_error_weak_form": 0.0,
+   "constant_error_second_derivative": 0.0
+  },
+  {
+   "system": "pendulum: qdd = -2.25*sin(q)",
+   "rows": 2000,
+   "noise": 0.01,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0003,
+   "constant_error_second_derivative": 0.0008
+  },
+  {
+   "system": "pendulum: qdd = -2.25*sin(q)",
+   "rows": 2000,
+   "noise": 0.05,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0022,
+   "constant_error_second_derivative": 0.0087
+  },
+  {
+   "system": "double well: qdd = q - q^3",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0002,
+   "constant_error_second_derivative": 0.0
+  },
+  {
+   "system": "double well: qdd = q - q^3",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0141,
+   "constant_error_second_derivative": 0.0184
+  },
+  {
+   "system": "double well: qdd = q - q^3",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0731,
+   "constant_error_second_derivative": 0.1722
+  },
+  {
+   "system": "double well: qdd = q - q^3",
+   "rows": 2000,
+   "noise": 0.0,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0,
+   "constant_error_second_derivative": 0.0
+  },
+  {
+   "system": "double well: qdd = q - q^3",
+   "rows": 2000,
+   "noise": 0.01,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0025,
+   "constant_error_second_derivative": 0.0051
+  },
+  {
+   "system": "double well: qdd = q - q^3",
+   "rows": 2000,
+   "noise": 0.05,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0242,
+   "constant_error_second_derivative": 0.0457
+  },
+  {
+   "system": "soft spring: qdd = -q - 0.5*q^3",
+   "rows": 200,
+   "noise": 0.0,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.001,
+   "constant_error_second_derivative": 0.0
+  },
+  {
+   "system": "soft spring: qdd = -q - 0.5*q^3",
+   "rows": 200,
+   "noise": 0.01,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.6903,
+   "constant_error_second_derivative": 0.1446
+  },
+  {
+   "system": "soft spring: qdd = -q - 0.5*q^3",
+   "rows": 200,
+   "noise": 0.05,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 1.5314,
+   "constant_error_second_derivative": 0.7991
+  },
+  {
+   "system": "soft spring: qdd = -q - 0.5*q^3",
+   "rows": 2000,
+   "noise": 0.0,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.0,
+   "constant_error_second_derivative": 0.0
+  },
+  {
+   "system": "soft spring: qdd = -q - 0.5*q^3",
+   "rows": 2000,
+   "noise": 0.01,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 0.1249,
+   "constant_error_second_derivative": 0.0103
+  },
+  {
+   "system": "soft spring: qdd = -q - 0.5*q^3",
+   "rows": 2000,
+   "noise": 0.05,
+   "draws": 20,
+   "own_terms_first": 0,
+   "constant_error_weak_form": 1.1554,
+   "constant_error_second_derivative": 0.2179
+  }
+ ]
+}

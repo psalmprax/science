@@ -190,6 +190,32 @@ inferred releases.
 
 ### Added
 
+- **Four outside notes on the search, checked and tested (2026-11-28, development; owner's words
+  "can you check this also" and "look at these as you continue to test").** An outside assistant read
+  the second family run's count (an accurate candidate before the referee on 91 of 122 unreported
+  tables) as a fault of selection, and proposed new engines with "kill tests".
+  **The count, tested** (`scripts/study_handed_truth.py`,
+  `benchmarks/family_stream/dev_handed_truth.json`): handed the true form, with no search, the route
+  in force reports 64 of the 122, and 25 of 27 at 1 % noise. So at low noise the law itself was what
+  those tables lacked; the accurate candidates were approximations, which the referee declined. At
+  5 % and 10 % the last checks withhold even the true form (52 readings), 38 by the power rule.
+  Contrast confirmation never eliminated the true form. One fault of selection was found: when the
+  shortest of several indistinguishable laws fails the residual check the reading ends and the
+  others are not tried (13 readings, the true form in the class each time). `main_search.py` is
+  frozen and in force, so that is the owner's to decide. The register's sentence "candidates are
+  not what those tables lack" is corrected.
+  **The kill tests** (`scripts/probe_outside_proposals.py`,
+  `benchmarks/outside_proposals/dev_probes.json`): a law written as a relation P(x, y) = 0 has its
+  own form first in 20 to 29 of 30 draws at 1 % noise for five algebraic laws at 7 to 20 rows, and
+  Kepler's first of 145 on the solar system's 8 rows; it adds terms to a straight line and
+  counterfeits an exponential inside the measured range; Langmuir's and Leavitt's forms are 65th
+  and 145th on their real tables. Compositions are told apart by the rank of a fitted gradient on
+  10 of 10 laws at 1 % noise and 9 of 10 at 5 %, which detects structure and does not search the
+  parts. The weak form for one input fails on 50 rows at random positions without any noise. The
+  weak Lagrangian gave better constants for two of three systems and no terms under noise; the
+  note's formula has the wrong sign. Account: `docs/OUTSIDE_PROPOSALS_CHECKED_2026-11-28.md`.
+  Development, not a result; reviewed by nobody but the author; nothing in force.
+  `tests/test_study_handed_truth.py` (8), `tests/test_probe_outside_proposals.py` (7).
 - **Families of tables read together, with the other three kept items as fallbacks (2026-11-27, the owner's
   word of 18:01: "build the best of the above and make the others fallback").** Experimental and **not in
   force**: the route in force for a table is unchanged, and nothing calls the new modules but their study
