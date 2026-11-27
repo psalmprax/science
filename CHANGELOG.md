@@ -2388,6 +2388,20 @@ inferred releases.
 
 ### Fixed
 
+- **Two frozen video tests that fail depending on which tests share their process (found and fixed
+  27 November).** They came to light once stage's suite ran to its end again, and they correct the entry
+  below: something *had* gone wrong behind the hidden test. (1) The video comparison module keys its call
+  counters by `id(model)` and never forgets one; in a test process a new model can be given a freed model's
+  id, inherits its counter and counts no calls. `tests/test_video_hybrid_prereg.py` failed that way on the
+  push after the repair (Python 3.11, run 45996673701) after passing on all three versions one push
+  earlier. (2) The larger test sets the clip size on the module for good, and every sampler test of
+  `tests/test_video_flow_head_to_head.py` that then runs in the same process fails; reproduced here by
+  running the two files in that order. Which tests share a process is decided by pytest-xdist at run time.
+  The module and both test files are frozen and are not edited. `tests/conftest.py` now empties the
+  counters before every test and puts the module's `FRAMES`, `SIZE` and `JETFLOW` back after it; new
+  `tests/test_video_state_between_tests.py` (7) pins both. The preregistered runs build one model in one
+  process at one size, so no recorded number is affected.
+
 - **Stage's test job stopped at one failing test from 26 to 27 November and ran nothing after it (found
   27 November; my error).** Commit 595c4a6 (26 November, the video comparison) put
   `packages/jetflow-video/jetflow_video/head_to_head.py` into the package that is standalone by contract,

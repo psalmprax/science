@@ -127,3 +127,48 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     if not target or hasattr(session.config, "workerinput"):  # not from an xdist worker
         return
     Path(target).write_text("\n".join(sorted(sys.modules)) + "\n", encoding="utf-8")
+
+
+# The video comparison module (packages/jetflow-video/jetflow_video/head_to_head.py)
+# keeps process-wide state that two frozen test files share, and both leaks were
+# found on stage on 27 November 2026 once the suite ran to its end again.
+#
+# 1. One call counter per model, in a dictionary keyed by ``id(model)`` that never
+#    forgets one. A preregistered job builds one model in one process, so nothing
+#    is wrong there. A test process builds many: when a model is freed, the next
+#    one can be given the same id, finds the dead model's counter under it and
+#    counts no calls. tests/test_video_hybrid_prereg.py failed that way (Python
+#    3.11, run 45996673701: "calls_per_clip == 0.0"); it keeps only its own models
+#    alive, not those of the tests before it.
+# 2. The clip size. The larger test sets ``FRAMES``, ``SIZE`` and JetFlow's width
+#    on the module (``run_prereg_video_hybrid.set_size``), for good. Every test of
+#    tests/test_video_flow_head_to_head.py that then runs in the same process
+#    fails ("size of tensor a (16) must match the size of tensor b (8)"). Which
+#    tests share a process is decided by pytest-xdist at run time, so it passed on
+#    some pushes and would have failed on others.
+#
+# The module and both test files are frozen by the runs' digests, so the cure is
+# here: neither a counter nor a size outlives the test that made it.
+VIDEO_COMPARISON = "jetflow_video.head_to_head"
+VIDEO_SETTINGS = ("FRAMES", "SIZE", "JETFLOW")
+
+
+def forget_video_call_counters() -> int:
+    """Empty the video comparison module's call counters; how many there were (0 if it is not loaded)."""
+    counters = getattr(sys.modules.get(VIDEO_COMPARISON), "_COUNTERS", None)
+    if not counters:
+        return 0
+    forgotten = len(counters)
+    counters.clear()
+    return forgotten
+
+
+@pytest.fixture(autouse=True)
+def _video_comparison_state_does_not_outlive_a_test():
+    forget_video_call_counters()
+    module = sys.modules.get(VIDEO_COMPARISON)
+    before = {name: getattr(module, name) for name in VIDEO_SETTINGS if hasattr(module, name)}
+    yield
+    if module is not None and sys.modules.get(VIDEO_COMPARISON) is module:
+        for name, value in before.items():
+            setattr(module, name, value)
