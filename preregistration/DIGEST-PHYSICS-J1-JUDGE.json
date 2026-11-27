@@ -1,0 +1,13 @@
+{
+ "preregistration": "PREREG-PHYSICS-J1-2026-11",
+ "sha256": {
+  ".github/workflows/physics-j1.yml": "d708b48f32ee9a4c9bbe379f7dbdd447168c370feadff32673272c91c56b3378",
+  "apedp_dyn/epistemic/physics_judge.py": "99d11d2d7697736b5af655f910673297c7665e24bafeb5affb275605410a2287",
+  "apedp_dyn/video/physics_clips_pybullet.py": "58f09686d1beb35095345b30c644bfe904ea977aa81aac378fb76d2b946423b3",
+  "apedp_dyn/video/physics_perturbations.py": "8cf360feaae65de14f55b86f4e8b0c188250d6f26dcded30a843e8c2e7637014",
+  "preregistration/PREREG-PHYSICS-J1-2026-11.md": "5f0138e6b84a8bda037788858994323323a6bff8e85fb89a957d8dd4888ce9e2",
+  "scripts/run_physics_judge_dev.py": "22e56ebec9a23bd314f7f0f0816e3e1d4789e85cec8f0e8dce62a97077e6c621",
+  "scripts/run_prereg_physics_j1.py": "a6c3bbd3f8336c36ce99b81a5941518857cf9294ca220a47b2dde3fcaaaf8366",
+  "tests/test_physics_j1_prereg.py": "164aa0bf1a885a78790878acdb6ad5e080303d629df9d00d913261687f772a55"
+ }
+}

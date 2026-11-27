@@ -43,6 +43,20 @@ inferred releases.
 
 ### Changed
 
+- **PREREG-PHYSICS-J1-2026-11, stage 1 frozen (2026-11-27).** `preregistration/DIGEST-PHYSICS-J1-JUDGE.json`
+  freezes the judge, its breakages, the generator, the plan, the runner, the workflow and the tests. It follows
+  the reviewer's check of the revision, which found three blocking points and five more:
+  - the gate said "holds" when the pooled reading failed;
+  - the git history did not catch a rewrite;
+  - the reading would have been chosen after the result. It is now the owner's choice, recorded in
+    `PHYSICS-J1-READING.json` before stage 2. The run refuses to start without it, and both readings are always
+    reported.
+  - also fixed: error rows for clips that fail to render, the stage-2 digest in one canonical form, reviewer kinds
+    applied to at least 30 clips, the two floating mirrored misses named, and the seed refusal worded as the code
+    has it.
+
+  Stage 2 (the reviewer's breakages, the reading, then the stage-2 digest) waits for the owner's choice of
+  reading.
 - **PREREG-PHYSICS-J1-2026-11 and the physics judge, revised after the independent review (2026-11-27).**
   - **Breakages.** Two changes made that day had set applicability by the judge's own tolerances (a swing loses
     energy below three quarters; a mirror only where the object keeps moving vertically). They are replaced by

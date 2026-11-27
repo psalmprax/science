@@ -11,9 +11,11 @@ Freezing has two stages:
 1. **The judge.** After a check of this revision, `preregistration/DIGEST-PHYSICS-J1-JUDGE.json` freezes the
    judge, its breakages, the generator, this plan, the runner, the workflow and the tests. It is the pin of
    gate J's numbers for this run.
-2. **The breakages it was not developed against.** The independent reviewer writes them after the stage-1
-   commit, aimed at the frozen judge. `preregistration/DIGEST-PHYSICS-J1.json` then freezes them with everything
-   in stage 1, the stage-1 digest included.
+2. **The breakages it was not developed against, and the reading.** The independent reviewer writes the
+   breakages after the stage-1 commit, aimed at the frozen judge. The owner's choice of reading is written to
+   `preregistration/PHYSICS-J1-READING.json`. The reviewer then writes and commits
+   `preregistration/DIGEST-PHYSICS-J1.json` in its canonical form. It freezes the breakages and the reading with
+   everything in stage 1, the stage-1 digest included.
 
 The test then runs once on a branch `physics-j1-run-1`. Its blind seeds are used up afterwards.
 
@@ -33,16 +35,20 @@ hold.
 00:07 kept collisions out "until they pass in development". On the development clips rendered here they now do: 28
 of 30 true clips pass, and no broken one passes above the limit. So they join, and the owner can take them out.
 
-**How the counts are read.** Gate J's text does not say whether a kind of breakage is counted over all scene kinds
-together or for each one. This test reads it **for each scene kind**: every scene kind's true clips, and every
-scene kind against every kind of breakage. The pooled reading is reported beside. The outcome follows from both
-readings:
+**How the counts are read: the owner's choice, made before stage 2.** Gate J's text does not say whether a kind of
+breakage is counted over all scene kinds together or for each scene kind. Both readings are computed and reported
+in every case; the owner chooses which one decides, and the choice is written to
+`preregistration/PHYSICS-J1-READING.json`. That file is frozen in stage 2, and the run refuses to start without it.
 
-| Per scene kind | Pooled | State |
-| :--- | :--- | :--- |
-| holds | holds | holds |
-| fails | holds | the owner decides |
-| fails | fails | fails |
+| Reading | Holds when |
+| :--- | :--- |
+| `per_kind` | every scene kind holds on its own (its true clips, and every kind of breakage), **and** the pooled reading holds (small cells can each hold while their sum fails) |
+| `pooled` | the pooled reading holds: all six scene kinds together, for true clips and for every kind of breakage |
+
+On the development numbers the two readings already disagree: `per_kind` would fail on mirrored falls and throws,
+and `pooled` would hold (Disclosed, below). The choice is asked of the owner now, before any blind clip exists, not
+after the run. The builder recommended `per_kind`, the stricter one, because pooling can hide a scene kind the judge
+fails.
 
 ## The judge, its breakages and the clips
 
@@ -56,9 +62,11 @@ Every development change is in `CHANGELOG.md`.
 
 **The clips.** `apedp_dyn/video/physics_clips_pybullet.py` renders them: our own generator, PyBullet rigid bodies
 at 240 Hz, 320 x 240 frames at 30 per second, a nearly level side camera, exact segmentation masks.
-- **60 blind clips of each scene kind.** Their seeds start at a base derived from the stage-2 digest
-  (`seeds("final")`), so no blind clip existed before stage 2. The module refuses seeds from 1,000,000 up
-  unless a frozen run asks.
+- **60 blind clips of each scene kind.** Their seeds start at a base derived from the stage-2 digest's bytes
+  (`seeds("final")`), so no blind clip existed before stage 2. The digest must be in its one canonical byte form
+  (indent 1, sorted keys, a final newline, no other keys), and the reviewer writes and commits it, so its writer
+  cannot choose the seeds by its formatting. The generator refuses seeds from 1,000,000 up unless the caller
+  passes `allow_blind=True`. Only the frozen runner does, in final mode, after `check_frozen`.
 
 **The development breakages** (`apedp_dyn/video/physics_perturbations.py`):
 - a jump of three object sizes;
@@ -86,8 +94,9 @@ draws from its own stream, named by a hash of the breakage, and gets its own cop
    judge's declared invariances: a time scaling, a changed g or a left-right mirror are lawful and not allowed.
 5. **Size.** The breakage moves the track by at least 5 px and 10 noise widths, a floor independent of the judge.
 6. **Testability.** A broken clip the judge calls untestable counts as not caught, so "untestable" is no escape.
-7. **Coverage.** At least two kinds, covering different laws. Every one of them must apply to some clip in the
-   blind run, or part 1 is not read.
+7. **Coverage.** At least two kinds, covering different laws. Every one of them must apply to at least 30 clips
+   over all scene kinds in the blind run, or part 1 is not read. The reviewer checks this on the development
+   seeds before stage 2.
 
 The reviewer may look beyond the blind spots the review of this plan named. The builder fixed some of those before
 stage 1, so the traps must reach further.
@@ -112,11 +121,18 @@ Clopper-Pearson bounds are reported beside every share, and untestable counts be
 bounds are not read: reading the limits on the bounds would change gate J's meaning, and that is the owner's to
 decide.
 
-**Not read.** The run is not read in four cases:
+**Not read.** The run is not read in five cases:
 - a clip or a breakage row is missing or duplicated;
 - a shard did not finish;
 - a loaded file differs from the checkout;
-- fewer than two reviewer kinds were read, or git history does not show the reviewer's file after stage 1.
+- fewer than two reviewer kinds applied to 30 clips each;
+- git history does not show the freeze as written. Each digest must come from exactly one commit, the reviewer's
+  file must be first added after stage 1, stage 2 must come after the reviewer's last change, and between stage 1
+  and the run no frozen or loaded file may change except the reviewer's file and the stage-2 digest. The run
+  branch is cut from the stage-2 commit.
+
+A clip that fails to render gets an error row for its true version and every breakage. Those count against the
+judge (not passing, not caught), so no row is left out.
 
 A run that is not read is void. A new run would draw fresh seeds from a new stage-2 digest.
 
@@ -127,8 +143,6 @@ A run that is not read is void. A new run would draw fresh seeds from a new stag
   stays experimental and no route reads it.
 - **Fails:** the plan's stop rule applies, step 1 stops here and the result is recorded. The judge is listed as
   retired (deprecated, kept for replication), under the owner's standing word of 27 November 00:41.
-- **The owner decides:** the pooled reading holds and a scene kind fails. Whether gate J is pooled is the owner's
-  to say. Nothing is retired and nothing proceeds until they do.
 - **Not read:** void, as above.
 
 ## Limits
@@ -143,10 +157,13 @@ A run that is not read is void. A new run would draw fresh seeds from a new stag
 - **Exact masks.** Tracks come from the renderer's segmentation buffer. A generated video would need a tracker,
   whose errors this test does not see; part 2 does.
 - **Narrow scenes.** One object (two for collisions), a plain floor, a side view, three seconds.
-- **Some breakages look lawful.** A stretch mirrored at the moment of landing mostly moves where the object comes
-  to rest, or makes a small bounce. In development, 9 of 138 mirrored falls, throws and bounces were of this
-  kind and were not caught. The rule that applies a mirror wherever it moves the object 5 px counts them anyway,
-  as the review asked.
+- **Mirrors at landing.** A stretch mirrored at the moment of landing mostly moves where the object comes to rest,
+  or makes a small bounce. In development, 9 of 138 mirrored falls, throws and bounces were of this kind and not
+  caught. Seven of them leave the object within about one size of where it really rests. Two leave it floating
+  about two sizes above: free_fall seed 7 (34 px) and throw seed 8 (23 px). Those are clearly broken, and the
+  judge misses them. A rule "comes to rest above its lowest point" was tried in development and rejected, because
+  true clips rest up to 0.57 sizes above their lowest point. The rule that applies a mirror wherever it moves the
+  object 5 px counts all nine, as the review asked.
 - **The development arms' outcome is largely foreseeable.** In development, true clips pass 177 of 180, and the
   development breakages are not caught in 0 to 14 % of a cell. The reviewer's kinds are what this test really
   tests.
@@ -164,8 +181,10 @@ A run that is not read is void. A new run would draw fresh seeds from a new stag
   | pendulums | 30 | 0 of 30 | 0 of 30 | 0 of 26 | 0 of 20 |
   | collisions | 28 of 30 | 0 of 30 | 1 of 30 | none apply | 0 of 29 |
 
-  The broken columns count clips not caught. Read per scene kind, mirrored falls (4 of 28) would already miss
-  the 10 % limit. Pooled, mirrored stretches are 9 of 138 not caught.
+  The broken columns count clips not caught. Read per scene kind, development would already miss: mirrored falls,
+  4 of 28, are over 10 % of a cell of 30 clips or so, and mirrored throws, 3 of 29, are over the count of 2 for a
+  small cell. Pooled, mirrored stretches are 9 of 138 not caught, which holds. So on development numbers the state
+  would differ by reading. That is why the reading is put to the owner before stage 2, not after the run.
 - **The independent review of 27 November** found twelve problems. Each was addressed:
   - **Rules that excused the judge.** Two changes to the breakages that day had set their applicability at the
     judge's own tolerances. A swing then lost energy only below three quarters of its first. A mirrored stretch
@@ -198,6 +217,16 @@ A run that is not read is void. A new run would draw fresh seeds from a new stag
 - **Pendulum scene and loss rule changed earlier on 27 November, before the review.** After untestable clips, the
   pendulum scene's length (0.35 to 0.8 m) and damping (0 to 0.4) were changed so that clips turn at least three
   times and some lose energy visibly.
+- **The same reviewer checked the revision** and found three blocking points and five more:
+  - the gate said "holds" when the pooled reading failed (now it fails);
+  - git history did not catch a rewrite after stage 2 (now the checks above);
+  - "the owner decides" was already the development outcome, so the reading is now the owner's choice, made before
+    stage 2 and frozen with it, and that state is gone;
+  - a rendering error voided the run (now error rows count against the judge);
+  - the stage-2 digest's formatting could choose the seeds (now one canonical form, written by the reviewer);
+  - a reviewer kind applied to two clips could be read (now 30 pooled);
+  - the two floating mirrored misses were not named (now in Limits);
+  - the seed refusal was overstated (now worded as the code has it).
 - **Thresholds.** The judge's settings are its development numbers, and none is pinned. Gate J's two numbers are
   the plan's, kept by the owner. The 30-clip floor, the 2-clip count for small cells, the two reviewer kinds and
   the 5 px and noise floors are this test's own. The stage-1 digest pins them all.

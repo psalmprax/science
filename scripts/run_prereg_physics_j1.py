@@ -54,7 +54,10 @@ JUDGE_FILES = (
 )
 UNSEEN_MODULE = "apedp_dyn.video.physics_perturbations_unseen"   #: written by the independent reviewer after stage 1
 UNSEEN_FILE = "apedp_dyn/video/physics_perturbations_unseen.py"
-STAGE2_FILES = (*JUDGE_FILES, "preregistration/DIGEST-PHYSICS-J1-JUDGE.json", UNSEEN_FILE)
+READING_FILE = ROOT / "preregistration" / "PHYSICS-J1-READING.json"   #: the owner's choice of reading, before stage 2
+READINGS = ("per_kind", "pooled")
+STAGE2_FILES = (*JUDGE_FILES, "preregistration/DIGEST-PHYSICS-J1-JUDGE.json", UNSEEN_FILE,
+                "preregistration/PHYSICS-J1-READING.json")
 GATE_KINDS = ("free_fall", "throw", "roll", "bounce", "pendulum", "collision")
 PER_KIND = {"dev": 30, "final": 60}
 TRUE_PASS_MIN = 0.80        #: gate J (the plan's proposed numbers, kept by the owner on 27 November 00:07)
@@ -84,6 +87,11 @@ def seeds(mode: str) -> list[int]:
     return [base + i for i in range(PER_KIND["final"])]
 
 
+def canonical(record: dict[str, Any]) -> bytes:
+    """The one byte form a digest file may have (indent 1, sorted keys, a final newline)."""
+    return (json.dumps(record, indent=1, sort_keys=True) + "\n").encode()
+
+
 def digests(files: tuple[str, ...]) -> dict[str, str]:
     return {f: hashlib.sha256((ROOT / f).read_bytes()).hexdigest() for f in files}
 
@@ -93,7 +101,10 @@ def check_frozen() -> None:
     stage1 = json.loads(JUDGE_DIGEST.read_text(encoding="utf-8"))["sha256"]
     if stage1 != digests(JUDGE_FILES):
         raise SystemExit("the judge changed since it was frozen (stage 1)")
-    stage2 = json.loads(DIGEST.read_text(encoding="utf-8"))["sha256"]
+    record = json.loads(DIGEST.read_text(encoding="utf-8"))
+    if DIGEST.read_bytes() != canonical(record) or set(record) != {"preregistration", "sha256"}:
+        raise SystemExit("the stage-2 digest is not in its canonical form (its bytes set the blind seeds)")
+    stage2 = record["sha256"]
     if stage2 != digests(STAGE2_FILES):
         raise SystemExit("the plan, the stage-1 digest or the reviewer's breakages changed since stage 2")
     module = importlib.import_module(UNSEEN_MODULE)
@@ -101,23 +112,40 @@ def check_frozen() -> None:
         raise SystemExit("the reviewer's breakages do not name the stage-1 digest they were written against")
 
 
-def history() -> dict[str, Any]:
-    """Whether the reviewer's file first appeared in a commit after the one that froze stage 1 (git history)."""
+def history(loaded: set[str] | None = None) -> dict[str, Any]:
+    """The freeze's history in git: each digest written by exactly one commit; the reviewer's file first added after
+    stage 1; stage 2 after the reviewer's last change; and from stage 1 to HEAD no frozen or loaded file changed but
+    the reviewer's file and the stage-2 digest."""
     git_bin = shutil.which("git") or "git"
 
     def git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
         return subprocess.run(  # noqa: S603 - fixed argv (git and this repository's paths), no shell
             [git_bin, "-C", str(ROOT), *args], capture_output=True, text=True, check=check)
 
+    def commits(path: str) -> list[str]:
+        return git("log", "--format=%H", "--", path).stdout.split()
+
+    def descends(old: str, new: str) -> bool:
+        return git("merge-base", "--is-ancestor", old, new, check=False).returncode == 0
+
     try:
-        stage1 = git("log", "--diff-filter=A", "--format=%H", "--",
-                     str(JUDGE_DIGEST.relative_to(ROOT))).stdout.strip().splitlines()[-1]
-        unseen_commit = git("log", "--diff-filter=A", "--format=%H", "--", UNSEEN_FILE).stdout.strip().splitlines()[-1]
-        after = git("merge-base", "--is-ancestor", stage1, unseen_commit, check=False).returncode == 0 \
-            and stage1 != unseen_commit
-    except (subprocess.CalledProcessError, IndexError, FileNotFoundError) as exc:
+        stage1_path, stage2_path = (str(p.relative_to(ROOT)) for p in (JUDGE_DIGEST, DIGEST))
+        stage1, stage2, unseen_all = commits(stage1_path), commits(stage2_path), commits(UNSEEN_FILE)
+        changed = set(git("diff", "--name-only", stage1[-1], "HEAD").stdout.split()) if stage1 else set()
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         return {"checked": False, "why": f"{type(exc).__name__}: {exc}"[:200]}
-    return {"checked": True, "stage1_commit": stage1, "unseen_commit": unseen_commit, "unseen_after_stage1": after}
+    watched = set(JUDGE_FILES) | set(loaded or ())
+    moved = sorted((changed & watched) - {UNSEEN_FILE, stage2_path, str(READING_FILE.relative_to(ROOT))})
+    checks = {
+        "stage1_one_commit": len(stage1) == 1,
+        "stage2_one_commit": len(stage2) == 1,
+        "unseen_after_stage1": bool(stage1 and unseen_all) and descends(stage1[0], unseen_all[-1])
+        and unseen_all[-1] != stage1[0],
+        "stage2_after_unseen": bool(stage2 and unseen_all) and descends(unseen_all[0], stage2[0]),
+        "nothing_else_changed_since_stage1": not moved,
+    }
+    return {"checked": True, **checks, "holds": all(checks.values()), "changed_since_stage1": moved,
+            "stage1_commit": stage1[0] if stage1 else None, "stage2_commit": stage2[0] if stage2 else None}
 
 
 def unseen() -> tuple[tuple[str, ...], Any, dict[str, str]]:
@@ -193,6 +221,8 @@ def cmd_rendered(args: argparse.Namespace) -> int:
     kinds_unseen, perturb_unseen, _ = unseen() if args.mode == "final" else ((), None, {})
     if args.mode == "final" and len(kinds_unseen) < MIN_UNSEEN_KINDS:
         raise SystemExit("the reviewer's breakages are missing")
+    if args.mode == "final" and reading() is None:
+        raise SystemExit("the owner has not chosen the reading of gate J (PHYSICS-J1-READING.json)")
     k, n = (int(v) for v in args.shard.split("/"))
     units = [(kind, s) for kind in GATE_KINDS for s in seeds(args.mode)]
     rows: list[dict[str, Any]] = []
@@ -203,9 +233,12 @@ def cmd_rendered(args: argparse.Namespace) -> int:
             continue
         try:
             tracks, facts = make_clip(kind, seed, allow_blind=args.mode == "final")
-        except (ValueError, RuntimeError, OSError) as exc:
-            rows.append({"source": "rendered", "kind": kind, "seed": seed, "variant": "true", "outcome": "error",
-                         "reasons": [f"rendering: {type(exc).__name__}: {exc}"[:200]]})
+        except (ValueError, RuntimeError, OSError) as exc:     # counted against the judge: no row is left out
+            why = [f"rendering: {type(exc).__name__}: {exc}"[:200]]
+            for variant in ("true", *PERTURBATIONS, *kinds_unseen):
+                rows.append({"source": "rendered", "kind": kind, "seed": seed, "variant": variant, "outcome": "error",
+                             "reasons": why, **({} if variant == "true" else {"group": "unseen" if variant in kinds_unseen
+                                                                             else "development"})})
             continue
         for row in verdicts(kind, tracks, seed, kinds_unseen, perturb_unseen):
             if row["variant"] == "true":
@@ -320,13 +353,23 @@ def _misses(variants: dict[str, Any], label: str) -> list[str]:
     return failures
 
 
-def gate(rows: list[dict[str, Any]], expected: dict[str, list[int]] | None = None,
-         kinds_unseen: tuple[str, ...] = ()) -> dict[str, Any]:
-    """Gate J part 1: holds, fails, the owner decides, or not read.
+def reading() -> str | None:
+    """The owner's choice of reading for gate J, recorded before stage 2, or ``None`` if not yet given."""
+    if not READING_FILE.exists():
+        return None
+    chosen = json.loads(READING_FILE.read_text(encoding="utf-8")).get("reading")
+    if chosen not in READINGS:
+        raise SystemExit(f"{READING_FILE.name} must name one of {READINGS}")
+    return str(chosen)
 
-    Read per scene kind (every scene kind and every kind of breakage), with the pooled reading beside. Holds if
-    the per-kind reading holds; fails if the pooled reading fails; where the pooled reading holds and a scene kind
-    fails, gate J's text (which does not say whether it is pooled) leaves the reading to the owner.
+
+def gate(rows: list[dict[str, Any]], expected: dict[str, list[int]] | None = None,
+         kinds_unseen: tuple[str, ...] = (), chosen: str | None = None) -> dict[str, Any]:
+    """Gate J part 1: holds, fails, or not read; both readings are always reported.
+
+    ``per_kind``: holds only if every scene kind holds and the pooled reading holds (small cells can each hold while
+    their sum fails). ``pooled``: holds if the pooled reading holds. Gate J's text does not say which; the owner
+    chooses before stage 2. Without a choice the state is "no reading chosen".
     """
     rendered = [r for r in rows if r["source"] == "rendered"]
     if expected is not None:
@@ -338,14 +381,17 @@ def gate(rows: list[dict[str, Any]], expected: dict[str, list[int]] | None = Non
     table = tables(rendered, GATE_KINDS)
     per_kind = [m for kind in GATE_KINDS for m in _misses(table[kind], kind)]
     pooled = _misses(table["pooled"], "pooled")
-    read_unseen = [h for h in kinds_unseen if table["pooled"].get(h, {}).get("applied", 0)]
+    read_unseen = [h for h in kinds_unseen if table["pooled"].get(h, {}).get("applied", 0) >= MIN_APPLIED]
     limits = {"true_pass_min": TRUE_PASS_MIN, "broken_pass_max": BROKEN_PASS_MAX, "min_applied": MIN_APPLIED,
               "small_cell_misses": SMALL_CELL_MISSES, "min_unseen_kinds": MIN_UNSEEN_KINDS}
     base = {"per_kind_failures": per_kind, "pooled_failures": pooled, "table": table, "limits": limits}
     if expected is not None and (len(kinds_unseen) < MIN_UNSEEN_KINDS or len(read_unseen) != len(kinds_unseen)):
-        return {"state": "not read", "why": "fewer than two reviewer kinds, or one applied to no clip", **base}
-    state = "holds" if not per_kind else "fails" if pooled else "the owner decides"
-    return {"state": state, **base}
+        return {"state": "not read", "why": f"fewer than two reviewer kinds, or one applied to fewer than {MIN_APPLIED} clips",
+                **base}
+    by_reading = {"per_kind": "holds" if not per_kind and not pooled else "fails",
+                  "pooled": "holds" if not pooled else "fails"}
+    state = by_reading[chosen] if chosen in by_reading else "no reading chosen"
+    return {"state": state, "reading": chosen, "by_reading": by_reading, **base}
 
 
 def cmd_collect(args: argparse.Namespace) -> int:
@@ -359,26 +405,26 @@ def cmd_collect(args: argparse.Namespace) -> int:
                       if not (ROOT / f).is_file() or hashlib.sha256((ROOT / f).read_bytes()).hexdigest() != h})
     kinds_unseen = unseen()[0] if args.mode == "final" else ()
     expected = {k: seeds(args.mode) for k in GATE_KINDS}
-    reading = gate(rows, expected, kinds_unseen) if args.mode == "final" else gate(rows, expected)
+    reading_ = gate(rows, expected, kinds_unseen, reading()) if args.mode == "final" else gate(rows, expected)
     if not complete or changed:
-        reading = {**reading, "state": "not read",
+        reading_ = {**reading_, "state": "not read",
                    "why": "a shard did not finish" if not complete else "loaded files differ from the checkout",
                    "changed": changed[:10]}
     record: dict[str, Any] = {
         "preregistration": PREREGISTRATION_ID, "mode": args.mode, "rows": len(rows), "generator": "own, exact masks",
-        "gate_j_part_1": reading, "laws_broken": unseen()[2] if args.mode == "final" else {},
+        "gate_j_part_1": reading_, "laws_broken": unseen()[2] if args.mode == "final" else {},
         "physinone_beside": tables([r for r in rows if r["source"] == "physinone"], GATE_KINDS),
         "versions": sorted({json.dumps(part.get("versions"), sort_keys=True) for part in parts if part.get("versions")}),
-        "history": history() if args.mode == "final" else None,
+        "history": history({f for part in parts for f in (part.get("loaded") or {})}) if args.mode == "final" else None,
         "misses": [{k: r.get(k) for k in ("source", "kind", "seed", "scene", "variant", "outcome", "reasons")}
                    for r in rows if (r["variant"] == "true") == (r["outcome"] != PASS)
                    and r["outcome"] not in NOT_COUNTED],
     }
     if args.mode == "final":
         record["frozen"] = digests(STAGE2_FILES)
-        if not (record["history"] or {}).get("unseen_after_stage1"):
+        if not (record["history"] or {}).get("holds"):
             record["gate_j_part_1"] = {**record["gate_j_part_1"], "state": "not read",
-                                       "why": "git history does not show the reviewer's file after stage 1"}
+                                       "why": "git history does not show the freeze as the plan requires"}
     (args.out / "results.json").write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
     shown = {k: v for k, v in record["gate_j_part_1"].items() if k != "table"}
     print(json.dumps(shown, indent=1)[:6000])
