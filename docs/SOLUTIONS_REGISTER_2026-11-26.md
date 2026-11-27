@@ -15,6 +15,8 @@ Categories:
 - **C. Do not add** — tested; no gain, or unsafe.
 - **D. Waiting for results** — its decisive run has not finished; the category it moves to is fixed in
   advance by its preregistration.
+- **F. Kept, with a design** (added 27 November) — showed no gain, put up for retirement, and kept on the
+  owner's word with a redesign that is not built.
 
 ## A. To add, on your word
 
@@ -63,7 +65,26 @@ files are never edited or moved). Nothing in force used any of them.
 | :--- | :--- | :--- | :--- |
 | **Physics-first video** (`docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md`): a physics adapter on an open pretrained model, scored by a judge built on the referee | LoRA and tensor-train adapters at equal size, a tenth-size tensor train, a LoRA/tensor-train hybrid; a LoRA on ordinary footage as the control | plan written on your word (26 Nov); the judge is built first, on CPU | gate J (the judge on a blind set), then gate 1 (a 10-point physics gain without worse pictures); numbers proposed, for your word |
 
+## F. Put up for retirement, kept on your word, with a design for each (27 November)
+
+On 27 November four things that had shown no gain were put to you for retirement. Your word (10:23): do
+not retire them, find a solution for each. The designs are in
+`docs/SOLUTIONS_FOR_NO_GAIN_ITEMS_2026-11-27.md`. None is built, none is in force; each has a first look
+that can stop it and a rule that retires it.
+
+| Thing | What was measured | The design | First look | Retired if |
+| :--- | :--- | :--- | :--- | :--- |
+| **The learning loop** (`discovery_l2/learning_loop.py`) | no gain on invented laws or the two formula benchmarks; 8 gained and 2 lost on ODE systems (p = 0.055), where parts recur | learn across tables: a confirmed shape tried on its siblings, siblings searched together with constants of their own, the constants read as a table and the wider law refereed on all rows; a remembered part becomes an operator only if it beats a random part of the same size | six families at 5 % and 10 % noise, searched singly and together (CPU) | the joint search beats neither the single searches nor tables grouped at random |
+| **A language model steering the search** (`proposers/llm_controller.py`) | 173 of 266 against 174; the two runs together 191 | a second reader: its plan added as one more member, never in place of one; a computed dossier instead of twelve rows; rounds on what is left over; a harness learned on invented laws and frozen | at most 120 calls on tables the route has missed: can it name the shape there? | its member does not beat a member planned at random at equal CPU |
+| **A language model shown solved cases** (`proposers/experience.py`) | solved on the list for 13 (model), 10 (cases, no model), 7 (model shown the cases) of 60; the two lists joined 19 | the cases as a proposer of their own; a likeness of tables that is learned; a model sees a case only as evidence fitted to the table, and its list is joined | nearest cases against random cases on the 60 problems (CPU, hours) | nearest are no better than random |
+| **The tensor-train equation model** (`apedp_mmlm`) | 376 bits a held-out law, 40.8 repaired, against 33.7 for counting; and the best prior bought no law | A: built from the counted automaton, so it cannot cost more bits (an hour; buys no law). B: a tensor train fitted to the real rows of a wide table and read as a formula | **done** (`benchmarks/symbolic_tensor_train/dev_probe_1.json`): at 1 % noise at the table's noise on 14 of 20 wide tables in about 8 s, one law of four inputs read exactly; not ahead of the split search, and behind it at 5 % noise (6 accurate against 13) | the stage with it reports no more accurate wide laws than the stage in force, or the split search does all it does |
+
 ## Waiting for your word, apart from the above
 
+- Section F: which of the four designs to build, and in what order. Proposed: the cases as a proposer;
+  families in the learning loop; the tensor-train reading's missing parts and its test beside the split
+  search; the language model as a second reader last (it is the one that costs calls).
+- Gate J part 1 of the physics judge: the reading of its blind test, each scene kind on its own or pooled
+  (`preregistration/PREREG-PHYSICS-J1-2026-11.md`); stage 2 and the run wait for it.
 - Earlier, unchanged: PREREG-RANKED-MEMORY-2026-11; the search-budget and kept-processes proposals; branch
   protection on `master`; the trustees' signatures; the dashboard's remint; the two finance audits ("run it").

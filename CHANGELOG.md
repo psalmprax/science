@@ -149,6 +149,24 @@ inferred releases.
 
 ### Added
 
+- **A design for each of the four things that showed no gain, and one feasibility check (2026-11-27, the
+  owner's word of 10:23: do not retire them, find a solution).** New
+  `docs/SOLUTIONS_FOR_NO_GAIN_ITEMS_2026-11-27.md`: for the learning loop, the language model steering the
+  search, the language model shown solved cases and the tensor-train equation model, the measured cause, a
+  redesign, a first look that can stop it, a test with a matched random control, and the rule that retires
+  it. What the four share by the records: they reordered or replaced candidates the searches already
+  produce, on laws the route already reaches; the designs add candidates and templates instead, and are
+  tested where the route misses. Proposals only: nothing is built or in force, and the four are not
+  retired (`docs/SOLUTIONS_REGISTER_2026-11-26.md`, new section F). **The one check run**
+  (`scripts/study_symbolic_tensor_train.py`, `benchmarks/symbolic_tensor_train/dev_probe_1.json`;
+  development, not a result): a tensor train of one-input splines fitted to the real rows of the 40 wide
+  development tables. At 1 % noise it reaches the table's noise on 14 of 20 tables in about 8 seconds
+  each, its cores hold the law's one-input functions within 5 % on 12 of those 14, and of the five laws
+  that are products all were read accurately and one, of four inputs, as the law itself. It is not ahead
+  of the split search (an accurate proposal for 16 of the same 20 in about 107 seconds), and at 5 % noise
+  it is behind (6 accurate against 13), because its rank choice under-reads; formulas are read at rank
+  one only. `tests/test_study_symbolic_tensor_train.py` (6).
+
 - **PREREG-PHYSICS-J1-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The physics judge's
   blind test on clips rendered here, which is part 1 of gate J. It reads 60 blind clips of each gate kind, the
   development breakages, and the independent reviewer's unseen breakages. Collisions and PhysInOne's blind pool
