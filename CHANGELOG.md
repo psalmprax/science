@@ -30,6 +30,16 @@ inferred releases.
 
 ### Deprecated
 
+- **MeanFlow on JetFlow's network retired as a video approach (2026-11-27, the owner's standing word of 00:41).**
+  The larger preregistered test (`preregistration/RESULT-VIDEO-HYBRID-2026-11.md`, run 45936568502) gave no
+  proposal under the plan's rules:
+  - at one call the hybrid kept a lower FD on real footage, but its clips were 3.1 times as rough as plain flow
+    matching's, so the flicker guard failed;
+  - at four calls it was only 2.5 % better than flow matching.
+
+  It is listed as retired in the solutions register. The frozen comparison module is unchanged, and nothing in
+  force changes. An independent reviewer checked every number.
+
 - **Retired what did not meet its expectations (2026-11-27, owner's word, 00:41).** Marked `deprecated` in
   `docs/DOCUMENTATION.md` and listed as retired in the solutions register: the quantum-inspired byte models
   (`apedp_mmlm/quantum_inspired.py`, `scripts/run_prereg_mmlm_qi.py`, its workflow), the language model
