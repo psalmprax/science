@@ -252,3 +252,22 @@ def test_units_read_again_in_another_run_are_merged_and_a_unit_read_twice_is_ref
     assert study.main(["merge", "--out", str(tmp_path), "--families", "32", "--skip", "16",
                        "--records", str(tmp_path / "a.json"), str(tmp_path / "b.json")]) == 0
     assert __import__("json").loads((tmp_path / "family_stream_merged.json").read_text())["units_found"] == 2
+
+
+def test_the_second_run_s_summary_is_what_its_two_records_give() -> None:
+    """Two of the second run's units failed in the route's own fitting step and were read again in a third run. The
+    summary kept beside the two records is the merge of their rows, and its headline counts are pinned here."""
+    folder = Path(__file__).resolve().parents[1] / "benchmarks" / "family_stream"
+    names = ["dev_run2_as_run.json", "dev_run3_two_units.json"]
+    records = [__import__("json").loads((folder / name).read_text()) for name in names]
+    assert [r["units_found"] for r in records] == [22, 2] and [len(r["units_failed"]) for r in records] == [2, 0]
+    got = study.merged(records, names, 24)
+    kept = __import__("json").loads((folder / "dev_run2_summary.json").read_text())
+    assert got["complete"] and got["units_found"] == 24 and kept["summary"] == got["summary"] and kept["merged_from"] == got["merged_from"]
+    cell = got["summary"]["all noise levels"]
+    assert cell["members"] == 240 and cell["families"] == 48
+    assert {arm: cell[arm]["reported"] for arm in study.ARMS} == {"A": 118, "B": 124, "F": 129, "R": 120, "O": 118, "B1": 138, "R1": 133}
+    assert {arm: cell[arm]["reported_and_not_accurate"] for arm in study.ARMS} == {"A": 0, "B": 0, "F": 0, "R": 0, "O": 0, "B1": 0, "R1": 2}
+    assert cell["first_build_origin"] == {"B1": {"handed": 10, "own": 10}, "R1": {"handed": 4, "own": 11}}
+    assert {way: cell["wider"][way]["reported"] for way in study.WAYS} == {"alone": 12, "searched": 22, "final": 24}
+    assert cell["members_without_a_first_report"]["an_accurate_law_was"]["among_its_referee_s_candidates"] == 91

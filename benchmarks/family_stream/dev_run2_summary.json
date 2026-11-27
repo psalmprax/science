@@ -1,0 +1,1204 @@
+{
+ "complete": true,
+ "development_not_a_result": true,
+ "merged_from": [
+  {
+   "record": "dev_run2_as_run.json",
+   "units_failed": [
+    {
+     "noise": 0.1,
+     "pair": [
+      28,
+      29
+     ]
+    },
+    {
+     "noise": 0.1,
+     "pair": [
+      30,
+      31
+     ]
+    }
+   ],
+   "units_found": 22
+  },
+  {
+   "record": "dev_run3_two_units.json",
+   "units_failed": [],
+   "units_found": 2
+  }
+ ],
+ "rows": "the tables' and families' rows are in the two records this is merged from; `scripts/study_family_stream.py merge` rebuilds this summary from them",
+ "settings": {
+  "families_drawn": 32,
+  "families_read": [
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31
+  ],
+  "families_skipped": 16,
+  "levels": [
+   1,
+   2,
+   3
+  ],
+  "members": 5,
+  "noises": [
+   0.01,
+   0.05,
+   0.1
+  ],
+  "pooled_search_times": 5,
+  "searches": [
+   30.0
+  ],
+  "seed": 2026112811,
+  "store": 60,
+  "store_seed": 2026112812
+ },
+ "summary": {
+  "all noise levels": {
+   "A": {
+    "reported": 118,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 29
+   },
+   "B": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 2,
+      "gained": 3,
+      "lost": 0,
+      "sign_test_p_over_families": 0.5
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 3,
+      "gained": 6,
+      "lost": 0,
+      "sign_test_p_over_families": 0.25
+     }
+    },
+    "reported": 124,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 32
+   },
+   "B1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 4,
+      "gained": 6,
+      "lost": 0,
+      "sign_test_p_over_families": 0.125
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 10,
+      "gained": 20,
+      "lost": 0,
+      "sign_test_p_over_families": 0.00195
+     }
+    },
+    "reported": 138,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 35
+   },
+   "B1_against_R1": {
+    "recovered": {
+     "families_with_fewer": 1,
+     "families_with_more": 4,
+     "gained": 6,
+     "lost": 1,
+     "sign_test_p_over_families": 0.375
+    },
+    "reported": {
+     "families_with_fewer": 4,
+     "families_with_more": 7,
+     "gained": 13,
+     "lost": 8,
+     "sign_test_p_over_families": 0.54883
+    }
+   },
+   "B_against_R": {
+    "recovered": {
+     "families_with_fewer": 0,
+     "families_with_more": 2,
+     "gained": 3,
+     "lost": 0,
+     "sign_test_p_over_families": 0.5
+    },
+    "reported": {
+     "families_with_fewer": 1,
+     "families_with_more": 3,
+     "gained": 6,
+     "lost": 2,
+     "sign_test_p_over_families": 0.625
+    }
+   },
+   "F": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 3,
+      "gained": 6,
+      "lost": 0,
+      "sign_test_p_over_families": 0.25
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 6,
+      "gained": 11,
+      "lost": 0,
+      "sign_test_p_over_families": 0.03125
+     }
+    },
+    "reported": 129,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 35
+   },
+   "O": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 118,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 29
+   },
+   "R": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 2,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 120,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 29
+   },
+   "R1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 1,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 8,
+      "gained": 15,
+      "lost": 0,
+      "sign_test_p_over_families": 0.00781
+     }
+    },
+    "reported": 133,
+    "reported_and_not_accurate": 2,
+    "reported_and_the_law_itself": 30
+   },
+   "fallbacks": {
+    "solved cases": {
+     "another_law_reported_and_passed_over": 8,
+     "its_own_law_reported": 1,
+     "of_those_accurate": 1,
+     "of_those_the_law_itself": 0,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 116
+    },
+    "tensor train": {
+     "another_law_reported_and_passed_over": 1,
+     "its_own_law_reported": 4,
+     "of_those_accurate": 4,
+     "of_those_the_law_itself": 3,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 69
+    }
+   },
+   "families": 48,
+   "first_build_origin": {
+    "B1": {
+     "handed": 10,
+     "own": 10
+    },
+    "R1": {
+     "handed": 4,
+     "own": 11
+    }
+   },
+   "members": 240,
+   "members_without_a_first_report": {
+    "an_accurate_law_was": {
+     "among_its_referee_s_candidates": 91,
+     "among_the_first_three_handed": 96,
+     "among_the_laws_handed": 97,
+     "on_its_own_search_s_list": 92
+    },
+    "count": 122,
+    "first_action": {
+     "equivalent_class": 46,
+     "not_run": 2,
+     "widen_search": 74
+    },
+    "handed_at_least_one_law": 122,
+    "the_law_itself_was": {
+     "among_its_referee_s_candidates": 30,
+     "among_the_first_three_handed": 25,
+     "among_the_laws_handed": 29,
+     "on_a_sibling_s_lists": 45,
+     "on_its_own_search_s_list": 30
+    }
+   },
+   "passed_over": {
+    "control": 7,
+    "siblings": 8,
+    "wider law": 1
+   },
+   "sources": {
+    "None": 111,
+    "route": 118,
+    "siblings": 6,
+    "solved cases": 1,
+    "tensor train": 4
+   },
+   "wider": {
+    "alone": {
+     "accurate": 12,
+     "accurate_between": 12,
+     "recovered": 0,
+     "reported": 12,
+     "reported_and_not_accurate": 0
+    },
+    "alone_and_searched": {
+     "both": 10,
+     "only_alone": 2,
+     "only_searched": 12
+    },
+    "an_accurate_law_among_those_handed": 24,
+    "families_handed_a_wider_law": 47,
+    "final": {
+     "accurate": 24,
+     "accurate_between": 24,
+     "recovered": 6,
+     "reported": 24,
+     "reported_and_not_accurate": 0
+    },
+    "final_and_searched": {
+     "both": 22,
+     "only_final": 2,
+     "only_searched": 0
+    },
+    "final_source": {
+     "None": 24,
+     "family": 2,
+     "pooled search": 22
+    },
+    "not_writable": {
+     "alone": 3,
+     "families": 24,
+     "final": 11,
+     "searched": 11
+    },
+    "passed_over": 2,
+    "searched": {
+     "accurate": 22,
+     "accurate_between": 22,
+     "recovered": 6,
+     "reported": 22,
+     "reported_and_not_accurate": 0
+    },
+    "the_law_itself_among_those_handed": 0,
+    "writable": {
+     "alone": 9,
+     "families": 24,
+     "final": 13,
+     "searched": 11
+    }
+   }
+  },
+  "noise 0.01": {
+   "A": {
+    "reported": 53,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 18
+   },
+   "B": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 2,
+      "gained": 2,
+      "lost": 0,
+      "sign_test_p_over_families": 0.5
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 3,
+      "gained": 3,
+      "lost": 0,
+      "sign_test_p_over_families": 0.25
+     }
+    },
+    "reported": 56,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 20
+   },
+   "B1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 4,
+      "gained": 5,
+      "lost": 0,
+      "sign_test_p_over_families": 0.125
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 9,
+      "gained": 12,
+      "lost": 0,
+      "sign_test_p_over_families": 0.00391
+     }
+    },
+    "reported": 65,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 23
+   },
+   "B1_against_R1": {
+    "recovered": {
+     "families_with_fewer": 1,
+     "families_with_more": 4,
+     "gained": 5,
+     "lost": 1,
+     "sign_test_p_over_families": 0.375
+    },
+    "reported": {
+     "families_with_fewer": 2,
+     "families_with_more": 6,
+     "gained": 7,
+     "lost": 2,
+     "sign_test_p_over_families": 0.28906
+    }
+   },
+   "B_against_R": {
+    "recovered": {
+     "families_with_fewer": 0,
+     "families_with_more": 2,
+     "gained": 2,
+     "lost": 0,
+     "sign_test_p_over_families": 0.5
+    },
+    "reported": {
+     "families_with_fewer": 0,
+     "families_with_more": 3,
+     "gained": 3,
+     "lost": 0,
+     "sign_test_p_over_families": 0.25
+    }
+   },
+   "F": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 2,
+      "gained": 3,
+      "lost": 0,
+      "sign_test_p_over_families": 0.5
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 3,
+      "gained": 4,
+      "lost": 0,
+      "sign_test_p_over_families": 0.25
+     }
+    },
+    "reported": 57,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 21
+   },
+   "O": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 53,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 18
+   },
+   "R": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 53,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 18
+   },
+   "R1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 1,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 6,
+      "gained": 7,
+      "lost": 0,
+      "sign_test_p_over_families": 0.03125
+     }
+    },
+    "reported": 60,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 19
+   },
+   "fallbacks": {
+    "solved cases": {
+     "another_law_reported_and_passed_over": 4,
+     "its_own_law_reported": 0,
+     "of_those_accurate": 0,
+     "of_those_the_law_itself": 0,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 24
+    },
+    "tensor train": {
+     "another_law_reported_and_passed_over": 1,
+     "its_own_law_reported": 1,
+     "of_those_accurate": 1,
+     "of_those_the_law_itself": 1,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 15
+    }
+   },
+   "families": 16,
+   "first_build_origin": {
+    "B1": {
+     "handed": 7,
+     "own": 5
+    },
+    "R1": {
+     "handed": 0,
+     "own": 7
+    }
+   },
+   "members": 80,
+   "members_without_a_first_report": {
+    "an_accurate_law_was": {
+     "among_its_referee_s_candidates": 21,
+     "among_the_first_three_handed": 23,
+     "among_the_laws_handed": 23,
+     "on_its_own_search_s_list": 21
+    },
+    "count": 27,
+    "first_action": {
+     "equivalent_class": 8,
+     "widen_search": 19
+    },
+    "handed_at_least_one_law": 27,
+    "the_law_itself_was": {
+     "among_its_referee_s_candidates": 5,
+     "among_the_first_three_handed": 9,
+     "among_the_laws_handed": 9,
+     "on_a_sibling_s_lists": 9,
+     "on_its_own_search_s_list": 5
+    }
+   },
+   "passed_over": {
+    "control": 4,
+    "siblings": 4,
+    "wider law": 1
+   },
+   "sources": {
+    "None": 23,
+    "route": 53,
+    "siblings": 3,
+    "tensor train": 1
+   },
+   "wider": {
+    "alone": {
+     "accurate": 2,
+     "accurate_between": 2,
+     "recovered": 0,
+     "reported": 2,
+     "reported_and_not_accurate": 0
+    },
+    "alone_and_searched": {
+     "both": 1,
+     "only_alone": 1,
+     "only_searched": 4
+    },
+    "an_accurate_law_among_those_handed": 9,
+    "families_handed_a_wider_law": 15,
+    "final": {
+     "accurate": 7,
+     "accurate_between": 7,
+     "recovered": 2,
+     "reported": 7,
+     "reported_and_not_accurate": 0
+    },
+    "final_and_searched": {
+     "both": 5,
+     "only_final": 2,
+     "only_searched": 0
+    },
+    "final_source": {
+     "None": 9,
+     "family": 2,
+     "pooled search": 5
+    },
+    "not_writable": {
+     "alone": 0,
+     "families": 8,
+     "final": 3,
+     "searched": 3
+    },
+    "passed_over": 1,
+    "searched": {
+     "accurate": 5,
+     "accurate_between": 5,
+     "recovered": 2,
+     "reported": 5,
+     "reported_and_not_accurate": 0
+    },
+    "the_law_itself_among_those_handed": 0,
+    "writable": {
+     "alone": 2,
+     "families": 8,
+     "final": 4,
+     "searched": 2
+    }
+   }
+  },
+  "noise 0.05": {
+   "A": {
+    "reported": 47,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 11
+   },
+   "B": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 1,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 1,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 48,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 12
+   },
+   "B1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 1,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 2,
+      "gained": 2,
+      "lost": 0,
+      "sign_test_p_over_families": 0.5
+     }
+    },
+    "reported": 49,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 12
+   },
+   "B1_against_R1": {
+    "recovered": {
+     "families_with_fewer": 0,
+     "families_with_more": 1,
+     "gained": 1,
+     "lost": 0,
+     "sign_test_p_over_families": 1.0
+    },
+    "reported": {
+     "families_with_fewer": 3,
+     "families_with_more": 1,
+     "gained": 1,
+     "lost": 4,
+     "sign_test_p_over_families": 0.625
+    }
+   },
+   "B_against_R": {
+    "recovered": {
+     "families_with_fewer": 0,
+     "families_with_more": 1,
+     "gained": 1,
+     "lost": 0,
+     "sign_test_p_over_families": 1.0
+    },
+    "reported": {
+     "families_with_fewer": 1,
+     "families_with_more": 1,
+     "gained": 1,
+     "lost": 2,
+     "sign_test_p_over_families": 1.0
+    }
+   },
+   "F": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 2,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 3,
+      "gained": 4,
+      "lost": 0,
+      "sign_test_p_over_families": 0.25
+     }
+    },
+    "reported": 51,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 13
+   },
+   "O": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 47,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 11
+   },
+   "R": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 2,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 49,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 11
+   },
+   "R1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 4,
+      "gained": 5,
+      "lost": 0,
+      "sign_test_p_over_families": 0.125
+     }
+    },
+    "reported": 52,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 11
+   },
+   "fallbacks": {
+    "solved cases": {
+     "another_law_reported_and_passed_over": 2,
+     "its_own_law_reported": 1,
+     "of_those_accurate": 1,
+     "of_those_the_law_itself": 0,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 32
+    },
+    "tensor train": {
+     "another_law_reported_and_passed_over": 0,
+     "its_own_law_reported": 2,
+     "of_those_accurate": 2,
+     "of_those_the_law_itself": 1,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 16
+    }
+   },
+   "families": 16,
+   "first_build_origin": {
+    "B1": {
+     "handed": 1,
+     "own": 1
+    },
+    "R1": {
+     "handed": 2,
+     "own": 3
+    }
+   },
+   "members": 80,
+   "members_without_a_first_report": {
+    "an_accurate_law_was": {
+     "among_its_referee_s_candidates": 25,
+     "among_the_first_three_handed": 26,
+     "among_the_laws_handed": 27,
+     "on_its_own_search_s_list": 25
+    },
+    "count": 33,
+    "first_action": {
+     "equivalent_class": 10,
+     "widen_search": 23
+    },
+    "handed_at_least_one_law": 33,
+    "the_law_itself_was": {
+     "among_its_referee_s_candidates": 6,
+     "among_the_first_three_handed": 8,
+     "among_the_laws_handed": 8,
+     "on_a_sibling_s_lists": 15,
+     "on_its_own_search_s_list": 6
+    }
+   },
+   "passed_over": {
+    "control": 1,
+    "siblings": 0,
+    "wider law": 0
+   },
+   "sources": {
+    "None": 29,
+    "route": 47,
+    "siblings": 1,
+    "solved cases": 1,
+    "tensor train": 2
+   },
+   "wider": {
+    "alone": {
+     "accurate": 4,
+     "accurate_between": 4,
+     "recovered": 0,
+     "reported": 4,
+     "reported_and_not_accurate": 0
+    },
+    "alone_and_searched": {
+     "both": 4,
+     "only_alone": 0,
+     "only_searched": 5
+    },
+    "an_accurate_law_among_those_handed": 8,
+    "families_handed_a_wider_law": 16,
+    "final": {
+     "accurate": 9,
+     "accurate_between": 9,
+     "recovered": 2,
+     "reported": 9,
+     "reported_and_not_accurate": 0
+    },
+    "final_and_searched": {
+     "both": 9,
+     "only_final": 0,
+     "only_searched": 0
+    },
+    "final_source": {
+     "None": 7,
+     "pooled search": 9
+    },
+    "not_writable": {
+     "alone": 1,
+     "families": 8,
+     "final": 5,
+     "searched": 5
+    },
+    "passed_over": 0,
+    "searched": {
+     "accurate": 9,
+     "accurate_between": 9,
+     "recovered": 2,
+     "reported": 9,
+     "reported_and_not_accurate": 0
+    },
+    "the_law_itself_among_those_handed": 0,
+    "writable": {
+     "alone": 3,
+     "families": 8,
+     "final": 4,
+     "searched": 4
+    }
+   }
+  },
+  "noise 0.1": {
+   "A": {
+    "reported": 18,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 0
+   },
+   "B": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 2,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 20,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 0
+   },
+   "B1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 3,
+      "gained": 6,
+      "lost": 0,
+      "sign_test_p_over_families": 0.25
+     }
+    },
+    "reported": 24,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 0
+   },
+   "B1_against_R1": {
+    "recovered": {
+     "families_with_fewer": 0,
+     "families_with_more": 0,
+     "gained": 0,
+     "lost": 0,
+     "sign_test_p_over_families": 1.0
+    },
+    "reported": {
+     "families_with_fewer": 1,
+     "families_with_more": 3,
+     "gained": 5,
+     "lost": 2,
+     "sign_test_p_over_families": 0.625
+    }
+   },
+   "B_against_R": {
+    "recovered": {
+     "families_with_fewer": 0,
+     "families_with_more": 0,
+     "gained": 0,
+     "lost": 0,
+     "sign_test_p_over_families": 1.0
+    },
+    "reported": {
+     "families_with_fewer": 0,
+     "families_with_more": 1,
+     "gained": 2,
+     "lost": 0,
+     "sign_test_p_over_families": 1.0
+    }
+   },
+   "F": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 1,
+      "gained": 1,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 2,
+      "gained": 3,
+      "lost": 0,
+      "sign_test_p_over_families": 0.5
+     }
+    },
+    "reported": 21,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 1
+   },
+   "O": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 18,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 0
+   },
+   "R": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     }
+    },
+    "reported": 18,
+    "reported_and_not_accurate": 0,
+    "reported_and_the_law_itself": 0
+   },
+   "R1": {
+    "against_A": {
+     "recovered": {
+      "families_with_fewer": 0,
+      "families_with_more": 0,
+      "gained": 0,
+      "lost": 0,
+      "sign_test_p_over_families": 1.0
+     },
+     "reported": {
+      "families_with_fewer": 0,
+      "families_with_more": 2,
+      "gained": 3,
+      "lost": 0,
+      "sign_test_p_over_families": 0.5
+     }
+    },
+    "reported": 21,
+    "reported_and_not_accurate": 2,
+    "reported_and_the_law_itself": 0
+   },
+   "fallbacks": {
+    "solved cases": {
+     "another_law_reported_and_passed_over": 2,
+     "its_own_law_reported": 0,
+     "of_those_accurate": 0,
+     "of_those_the_law_itself": 0,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 60
+    },
+    "tensor train": {
+     "another_law_reported_and_passed_over": 0,
+     "its_own_law_reported": 1,
+     "of_those_accurate": 1,
+     "of_those_the_law_itself": 1,
+     "of_those_where_the_shape_was_a_solved_case": 0,
+     "tried": 38
+    }
+   },
+   "families": 16,
+   "first_build_origin": {
+    "B1": {
+     "handed": 2,
+     "own": 4
+    },
+    "R1": {
+     "handed": 2,
+     "own": 1
+    }
+   },
+   "members": 80,
+   "members_without_a_first_report": {
+    "an_accurate_law_was": {
+     "among_its_referee_s_candidates": 45,
+     "among_the_first_three_handed": 47,
+     "among_the_laws_handed": 47,
+     "on_its_own_search_s_list": 46
+    },
+    "count": 62,
+    "first_action": {
+     "equivalent_class": 28,
+     "not_run": 2,
+     "widen_search": 32
+    },
+    "handed_at_least_one_law": 62,
+    "the_law_itself_was": {
+     "among_its_referee_s_candidates": 19,
+     "among_the_first_three_handed": 8,
+     "among_the_laws_handed": 12,
+     "on_a_sibling_s_lists": 21,
+     "on_its_own_search_s_list": 19
+    }
+   },
+   "passed_over": {
+    "control": 2,
+    "siblings": 4,
+    "wider law": 0
+   },
+   "sources": {
+    "None": 59,
+    "route": 18,
+    "siblings": 2,
+    "tensor train": 1
+   },
+   "wider": {
+    "alone": {
+     "accurate": 6,
+     "accurate_between": 6,
+     "recovered": 0,
+     "reported": 6,
+     "reported_and_not_accurate": 0
+    },
+    "alone_and_searched": {
+     "both": 5,
+     "only_alone": 1,
+     "only_searched": 3
+    },
+    "an_accurate_law_among_those_handed": 7,
+    "families_handed_a_wider_law": 16,
+    "final": {
+     "accurate": 8,
+     "accurate_between": 8,
+     "recovered": 2,
+     "reported": 8,
+     "reported_and_not_accurate": 0
+    },
+    "final_and_searched": {
+     "both": 8,
+     "only_final": 0,
+     "only_searched": 0
+    },
+    "final_source": {
+     "None": 8,
+     "pooled search": 8
+    },
+    "not_writable": {
+     "alone": 2,
+     "families": 8,
+     "final": 3,
+     "searched": 3
+    },
+    "passed_over": 1,
+    "searched": {
+     "accurate": 8,
+     "accurate_between": 8,
+     "recovered": 2,
+     "reported": 8,
+     "reported_and_not_accurate": 0
+    },
+    "the_law_itself_among_those_handed": 0,
+    "writable": {
+     "alone": 4,
+     "families": 8,
+     "final": 5,
+     "searched": 5
+    }
+   }
+  }
+ },
+ "tag": "DEV-FAMILY-STREAM-2026-11",
+ "units_expected": 24,
+ "units_found": 24,
+ "what": "development: families of invented laws read by the route table by table (A), as families under the two rules (B), with the fallbacks behind (F), with the wrong family as control (R), their own laws replayed (O), the first build's way (B1, R1), and the wider law alone, by a search of the pooled table, and by both"
+}

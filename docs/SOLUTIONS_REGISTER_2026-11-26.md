@@ -87,6 +87,16 @@ does not belong to reported 98. What the referee reports on a table depends on t
 it, and the build read again only the tables without a law and counted whatever was then reported. Now a
 re-reading counts only if the law it reports was handed in, and handed laws take turns with the table's own.
 
+**The second run, with the repaired route** (`benchmarks/family_stream/dev_run2_summary.json`; 16 new
+families, 240 tables): the route table by table 118 laws; the family route 124; the control 120; with the
+fallbacks 129; none inaccurate. So siblings' shapes add little (6 tables against 2). The reason: of the
+122 tables without a law, the referee already had an accurate law among its own candidates on 91.
+Candidates are not what those tables lack. The wider law: the family's own construction 12 of 48 family
+readings, a direct search of the pooled table at equal search time 22, both 24, all accurate. Those 24
+laws cover 120 tables, 42 of them without a law of their own (26 at 10 % noise); that last step, a table
+taking its law from its family's, is not built or measured. The tensor-train fallback added 4 laws, three
+the law itself, all products.
+
 | Thing | What was measured | The design | First look | Retired if |
 | :--- | :--- | :--- | :--- | :--- |
 | **The learning loop** (`discovery_l2/learning_loop.py`) | no gain on invented laws or the two formula benchmarks; 8 gained and 2 lost on ODE systems (p = 0.055), where parts recur | learn across tables: a confirmed shape tried on its siblings, siblings searched together with constants of their own, the constants read as a table and the wider law refereed on all rows; a remembered part becomes an operator only if it beats a random part of the same size | six families at 5 % and 10 % noise, searched singly and together (CPU) | the joint search beats neither the single searches nor tables grouped at random |
@@ -97,8 +107,11 @@ re-reading counts only if the law it reports was handed in, and handed laws take
 ## Waiting for your word, apart from the above
 
 - Section F: decided on 27 November at 18:01 (the families built as the primary, the other three as
-  fallbacks). What waits now: whether the arrangement gets a preregistered test, which is the only way it
-  could come into force.
+  fallbacks). Built, repaired and measured twice in development. Not proposed for a preregistered test
+  as it stands: against its control it adds too little. What waits for your word: whether to build and
+  measure the one part that looked worth it, a table taking its law from the law its family's pooled
+  table was given (a change in what counts as reported for a table, so yours to allow); and whether to
+  look at why the referee declines accurate laws it already has (91 of 122 tables).
 - Gate J part 1 of the physics judge: the reading of its blind test, each scene kind on its own or pooled
   (`preregistration/PREREG-PHYSICS-J1-2026-11.md`); stage 2 and the run wait for it.
 - Earlier, unchanged: PREREG-RANKED-MEMORY-2026-11; the search-budget and kept-processes proposals; branch

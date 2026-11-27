@@ -204,8 +204,25 @@ inferred releases.
     that show the first build's effect beside the changed route.
   - *The wider law in the first run*: reported for 13 of 48 family readings, all accurate at values of
     the condition no row was measured at, against 9 for searching the pooled table directly (6 only by
-    the family, 2 only by the search; p = 0.29). Not a fair comparison yet: that search had 30 seconds
+    the family, 2 only by the search; p = 0.29). Not a fair comparison: that search had 30 seconds
     where the members together had 150.
+  - *The second run, with the changed route* (`benchmarks/family_stream/dev_run2_summary.json`; 16 new
+    families, 240 tables; two units failed in the route's own fitting step and were read again, records
+    `dev_run2_as_run.json` and `dev_run3_two_units.json`). The route table by table 118 laws; a table's
+    own laws replayed 118. The first build's way 138 with the table's own family and 133 with the wrong
+    one (2 inaccurate); of what it added, 10 of 20 and 11 of 15 were the table's own laws. Under the two
+    rules: the family route 124, the control 120; with the fallbacks 129 (the tensor-train reading 4,
+    three of them the law itself, all products; the solved cases 1). None inaccurate under the rules.
+  - *Why the family adds so little to single tables*: of the 122 tables without a law, the referee
+    already had an accurate law among its own candidates on 91, and the law itself on 30. More
+    candidates are not what those tables lack.
+  - *The wider law at equal search time*: the family's own laws alone 12 of 48, the pooled table
+    searched directly 22 (6 the law itself), both 24; all accurate, also between the measured values of
+    the condition. The pooled search is ahead of building the law from constants. Those 24 laws cover
+    120 tables, 42 of them without a law of their own (26 at 10 % noise); accuracy on each such table by
+    itself was not measured.
+  - *Open, in the route in force and known before* (whiteboard row 38): a reading can end in a fitting
+    error on a law a search proposed. Two of this run's 240 first readings did.
 
 - **A design for each of the four things that showed no gain, and one feasibility check (2026-11-27, the
   owner's word of 10:23: do not retire them, find a solution).** New

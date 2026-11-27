@@ -395,6 +395,36 @@ turns with the table's own. A lesson for the other three designs as well: a rout
 again must not count a change of verdict on the laws the table already had, and a control with the wrong
 source is what shows whether a gain is the source's.
 
+**What the second run says about section 2** (`benchmarks/family_stream/dev_run2_summary.json`; 16 new
+families, 240 tables, the changed route):
+
+| | Laws reported, of 240 tables | Not accurate |
+| :--- | ---: | ---: |
+| The route table by table | 118 | 0 |
+| A table's own laws replayed | 118 | 0 |
+| The family route | 124 | 0 |
+| The control: a family the table does not belong to | 120 | 0 |
+| The family route, then the fallbacks | 129 | 0 |
+| The first build's way, own family | 138 | 0 |
+| The first build's way, wrong family | 133 | 2 |
+
+- *Siblings' shapes add little:* 6 tables against 2 for the control.
+- *The reason is not a lack of candidates.* Of the 122 tables without a law, the referee already had an
+  accurate law among its own candidates on 91, and the law itself on 30. Section 1's lesson (the route is
+  saturated on laws it reaches) is sharper than it was written: on these tables the candidates are there
+  and the referee declines them. No added source of candidates, sibling, case, tensor train or language
+  model, can move those tables.
+- *The wider law is better searched than built.* On the pooled table, with the condition as one more
+  input: the family's own laws 12 of 48, a direct search with the same total search time 22, both 24. The
+  sentence in section 2 that a law of three inputs is best found as a law of two and a law of one did not
+  hold here, where the pooled table has two or three inputs. It was written for tables too wide for the
+  search, and that case is not measured.
+- *Where a family does pay is the pooling itself.* The 24 laws over inputs and condition cover 120
+  tables, 42 of them without a law of their own, 26 of those at 10 % noise, where single tables get a law
+  on 18 of 80. Whether the family's law is accurate on each such table by itself was not measured.
+- *The tensor-train fallback did what it was designed for:* 4 laws on 69 tables tried, three the law
+  itself, every one a product of functions of one input.
+
 ## Sources
 
 In this repository: `preregistration/RESULT-MMLM-ORDER-2026-11.md`,
