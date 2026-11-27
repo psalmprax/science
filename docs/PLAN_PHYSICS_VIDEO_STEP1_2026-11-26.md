@@ -214,3 +214,63 @@ Proposal for the owner: test the judge mainly on clips simulated and rendered he
 make the training clips (exact physics, level side views, known breakages), and keep PhysInOne as a second,
 messier check reported beside gate J rather than inside it. That changes gate J's validation data, so it waits
 for the owner's word.
+
+## Development on clips rendered here, 27 November (owner's word "go ahead to test all")
+
+The owner's word took up the proposal above. The judge is now developed and tested mainly on clips simulated and
+rendered here (`apedp_dyn/video/physics_clips_pybullet.py`), and PhysInOne is a second check reported beside the
+gate.
+
+The clips are PyBullet rigid bodies at 240 Hz, drawn by its software renderer at 320 x 240 and 30 frames per
+second from a nearly level side camera. Tracks come from exact segmentation masks.
+
+The first pass over 20 development clips per kind showed six misses, each fixed (details in `CHANGELOG.md`):
+
+- a slow slide that suddenly flew off passed;
+- pendulum turns fitted as a moment of rest were missed;
+- a camera at an angle made a true swing look as if it grew;
+- holds at a swing's turn passed;
+- a landed cube settling looked like upward acceleration;
+- mirrored stretches begun at a landing mirrored into a lawful bounce.
+
+The pendulum scene was also changed so that every clip turns at least three times.
+
+After those changes, on 30 development clips per kind (seeds 0 to 29), with the falls, throws, rolls, bounces
+and pendulums of the gate pooled. This is the runner's development tally (`physics-j1-smoke-1`, run
+45933096286), recorded in `benchmarks/physics_judge/dev_rendered_1.json`:
+
+| Variant | Passing |
+| :--- | :--- |
+| true clips | 149 of 150 (one cube's fall: a 2.4 px jump at landing against 2.0 allowed) |
+| jumps | 2 of 150 (a roll and a bounce) |
+| holds | 0 of 150 |
+| mirrored stretches | 4 of 122 (all rolls, whose vertical acceleration on a gentle slope is barely visible) |
+| time reversals | 0 of 102 |
+
+Collisions, beside the gate: 28 of 30 true clips pass, 0 of 30 jumps, 0 of 30 holds, 0 of 29 time reversals.
+
+On PhysInOne's development scenes the same judge (fourth development run, `benchmarks/physics_judge/dev_run_4.json`)
+passes 70 of 150 true clips, against 67 before the changes. Of the broken clips, these pass:
+
+| Breakage | Run 4 | Before the changes |
+| :--- | :--- | :--- |
+| jumps | 1 of 139 | — |
+| holds | 10 of 139 | 13 |
+| mirrored stretches | 3 of 58 | 20 of 95 |
+| time reversals | 23 of 68 | 32 of 88 |
+
+Fewer mirrored stretches apply now, because a stretch must keep moving vertically for half its length.
+
+These are development numbers on the generator the judge is now tuned on. The record of the development tally
+is `scripts/run_prereg_physics_j1.py --mode dev`.
+
+**Gate J is now in two parts.**
+
+- **Part 1**, `preregistration/PREREG-PHYSICS-J1-2026-11.md`, reads gate J's first two numbers:
+  - 60 blind rendered clips of each gate kind, seeds from 1,000,000;
+  - the development breakages;
+  - the breakages an independent reviewer writes after the judge is frozen, aimed at it.
+- **Part 2** reads the third number, agreement with human labels. The judge reads tracks, and generated or real
+  footage has no masks, so part 2 needs an object tracker on generated video first.
+
+Gate J holds only if both parts hold. The stop rule applies to each.

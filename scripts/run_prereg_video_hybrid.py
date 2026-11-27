@@ -82,7 +82,7 @@ JETFLOW_FEW = (("euler", 1), ("euler", 4), ("jetflow-sampler", 2))   #: JetFlow'
 SECONDS, N_GEN = 2700.0, 256      #: the final run's training seconds and clips per sampler
 NUMERICAL_ALWAYS = (FloatingPointError, ArithmeticError, np.linalg.LinAlgError)
 NUMERICAL_IF_SAID = (RuntimeError, ValueError)   #: counted only when the message names a numerical breakdown
-NUMERICAL_WORDS = re.compile(r"\bnan\b|\binf|not finite|non-finite|converge|singular", re.IGNORECASE)
+NUMERICAL_WORDS = re.compile(r"\b(nan|infs?|infinite|infinity)\b|not finite|non-finite|converge|singular", re.IGNORECASE)
 THREADS = 4
 EXPECTATIONS = {
     "H1": "the hybrid at one call beats MeanFlow on the UNet at one call",
@@ -254,6 +254,7 @@ def run_job(args: argparse.Namespace) -> int:
     if broke is None and not _weights_finite(model):
         broke = "training broke down: weights not finite"
     record["training"] = {**fit, "breakdown": broke is not None}
+    record["loaded"] = _loaded_digests()         # also on a job stopped part way: what it loaded by now
     write()
     print(f"{args.data} {args.arm} seed {args.seed}: {fit}", flush=True)
     for how, steps in GRID[args.arm]:
@@ -427,8 +428,8 @@ def outcome(exp: dict[str, Any]) -> dict[str, Any]:
     proposals: list[str] = []
     if held("ucf101", "H1") is None or held("ucf101", "H2") is None:
         rules.append(2)
-        proposals.append("no one-call proposal: H1 or H2 not read on ucf101; a rerun of the missing jobs is put "
-                         "to the owner")
+        proposals.append("no one-call proposal: H1 or H2 not read on ucf101; a rerun of the missing or broken-down "
+                         "jobs is put to the owner")
     else:
         rules.append(3)
         if not any(held(t, "H1") and held(t, "H2") for t in toys):
@@ -514,6 +515,10 @@ def collect(args: argparse.Namespace) -> int:
     record: dict[str, Any] = {"preregistration": PREREGISTRATION_ID, "mode": args.mode, "missing_jobs": missing,
                               "rejected_or_partial_jobs": rejected, "expectations_wording": EXPECTATIONS,
                               "jobs": [jobs[k] for k in sorted(jobs)]}
+    if args.mode == "final" and len(commits) > 1:
+        record["not_read"] = f"the jobs ran on {len(commits)} commits: every job is rejected"
+    if args.mode == "final" and len(ucf_counts) > 1:
+        record["ucf101_not_read"] = f"the ucf101 jobs disagree on their clip counts: {sorted(ucf_counts)}"
     if jobs:
         record["expectations"] = expectations(jobs)
         record["outcome"] = outcome(record["expectations"])

@@ -1,9 +1,9 @@
 # PREREG-VIDEO-HYBRID-2026-11: MeanFlow on JetFlow's network against its parents, larger
 
-**Status:** draft, not frozen. Written 27 November 2026 on the owner's word "go ahead to test all" (02:32
-Berlin time), which answered the proposal of `RESULT-VIDEO-FLOW-2026-11`: a larger preregistered test of its
-hybrid. It is frozen by `preregistration/DIGEST-VIDEO-HYBRID.json` after the independent review and a
-rehearsal, and run once on a branch `video-hybrid-run-1`.
+**Status:** frozen on 27 November 2026 by `preregistration/DIGEST-VIDEO-HYBRID.json`, after two independent
+reviews, a third check of the fixes and two rehearsals; run once on a branch `video-hybrid-run-1`. Written on
+27 November on the owner's word "go ahead to test all" (02:32 Berlin time), which answered the proposal of
+`RESULT-VIDEO-FLOW-2026-11`: a larger preregistered test of its hybrid.
 
 ## Why
 
@@ -98,7 +98,7 @@ same toy world.
 | Order | When | Proposal |
 | :--- | :--- | :--- |
 | 1 | H1 or H2 is read and fails on ucf101 | List the hybrid as retired (deprecated, kept for replication; nothing in force changes), under the owner's standing word of 27 November 00:41 ("retire anything that does not meet our expectation"). Nothing else is read. |
-| 2 | Otherwise, H1 or H2 is not read on ucf101 | No one-call proposal; a rerun of the missing jobs is put to the owner. Rule 4 is still read. |
+| 2 | Otherwise, H1 or H2 is not read on ucf101 | No one-call proposal; a rerun of the missing or broken-down jobs is put to the owner. Rule 4 is still read. This includes a comparator that broke down on two of the three seeds, even where the hybrid lost the one comparable seed: a comparator that unreliable does not decide the hybrid's fate either way. |
 | 3 | Otherwise (H1 and H2 hold on ucf101) | If they also hold together on a toy world and H4-1 holds on ucf101: name the hybrid as the video package's few-step model at one call (its README and `docs/DOCUMENTATION.md` row, experimental). If they hold together on no toy world: a further test is proposed. If H4-1 does not hold: no one-call proposal, and the flicker is reported; if it is not read, that is said. |
 | 4 | Unless rule 1 applied | If H3 holds on ucf101 and on a toy world and H4-4 holds on ucf101: name the hybrid as the package's model at four calls. H3 on ucf101 alone: a further test. Otherwise no four-call proposal, saying whether H3 or H4-4 failed or was not read. |
 
@@ -166,3 +166,17 @@ into a larger build, not that any of them makes good video.
   - **H4-1 cuts the other way.** The hybrid's roughness at one call was 0.114, 0.082 and 0.124 against flow
     matching's 0.057, 0.042 and 0.070 at four calls: about twice, so H4-1 failed on all three data sets.
   A second rehearsal runs the revised runner before freezing.
+- **A third check by the same reviewer** found the round-two fixes sound and four minor points, fixed: the
+  breakdown pattern matched words such as "Inference" (now whole words only); rule 2's wording and its case of
+  a comparator broken on two seeds (above); a job stopped part way did not record its loaded files (now written
+  after training too); and a record rejected whole for mixed commits or ucf101 counts now says why at the top.
+- **Rehearsal 2** (`video-hybrid-smoke-2`, run 45932074892, the revised runner) stopped one job in its tests:
+  the grid test counted 0 calls for `fm-jetflow` on one runner. The frozen comparison module keys its call
+  counters by `id(model)`, and a freed model's id can be reused by the next model built in the same process,
+  which then gets the dead model's counter. A job builds one model, so the run cannot meet it; the test now keeps
+  every model alive. The module is frozen by DIGEST-VIDEO-FLOW and is not edited. The other 35 jobs and the
+  collection finished. The stopped job (ucf101, the hybrid, seed 1) left H1 to H4 not read on ucf101, so
+  `outcome` gave rules 2 and 4 (no one-call proposal, a rerun put to the owner; no four-call proposal, H3 not
+  read): the machinery behaved as written. Every record named its processor and OpenCV 5.1.0 and listed 148
+  loaded repository files. The benchmark took 0.18 to 0.33 seconds across runners, and the ucf101 jobs agreed on
+  988 training and 244 held-out windows (development groups).

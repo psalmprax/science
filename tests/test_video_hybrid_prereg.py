@@ -31,9 +31,14 @@ def test_every_arm_and_sampler_of_the_grid_builds_trains_and_samples_at_the_larg
     rh.set_size()
     train, held = rh._toy("fluid", "dev")
     latents = rh.h.encode(train[:8])
+    # The comparison module keys its call counters by id(model); a freed model's id can be reused by the next one,
+    # which then gets the dead model's counter (0 calls). Each job builds one model, so only this test can meet it:
+    # keep every model alive.
+    alive = []
     for arm in rh.ARMS:
         torch.manual_seed(0)
         model = rh.h.build(arm)
+        alive.append(model)
         trainer = rh.h.train_meanflow if arm.startswith("meanflow") else rh.h.train_flow_matching
         trainer(model, latents, 2.0, lr=1e-3, seed=0)
         for how, steps in rh.GRID[arm]:
@@ -76,9 +81,11 @@ def test_a_breakdown_of_the_hybrid_is_a_loss_and_one_of_a_comparator_is_a_lost_s
 
     rh.set_size()
     train, held = rh._toy("fluid", "dev")
+    alive = []
     for arm in ("meanflow-jetflow", "fm-unet"):          # weights gone to NaN, as when training blows up
         torch.manual_seed(0)
         model = rh.h.build(arm)
+        alive.append(model)
         with torch.no_grad():
             for p in model.parameters():
                 p.fill_(float("nan"))

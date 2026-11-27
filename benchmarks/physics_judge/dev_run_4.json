@@ -1,0 +1,99 @@
+{
+ "against_run_3": "true 67 -> 70 of 150; holds 13 -> 10 of 139 passing; mirrored stretches 20 of 95 -> 3 of 58 (fewer apply: a stretch must keep moving vertically for half its length); time reversals 32 of 88 -> 23 of 68; jumps 0 of 139 -> 1 of 139. No collision seen from the side.",
+ "commit": "fc7c789",
+ "counts": {
+  "bounce": {
+   "freeze|fail": 24,
+   "freeze|pass": 3,
+   "freeze|untestable": 2,
+   "teleport|fail": 25,
+   "teleport|untestable": 4,
+   "time_reversal|fail": 12,
+   "time_reversal|not applicable": 10,
+   "time_reversal|pass": 6,
+   "time_reversal|untestable": 1,
+   "true|fail": 6,
+   "true|pass": 18,
+   "true|untestable": 6,
+   "vertical_reversal|fail": 7,
+   "vertical_reversal|not applicable": 17,
+   "vertical_reversal|pass": 1,
+   "vertical_reversal|untestable": 4
+  },
+  "collision": {
+   "true|excluded": 60
+  },
+  "free_fall": {
+   "freeze|fail": 20,
+   "freeze|not applicable": 8,
+   "freeze|pass": 1,
+   "freeze|untestable": 1,
+   "teleport|fail": 19,
+   "teleport|not applicable": 8,
+   "teleport|untestable": 3,
+   "time_reversal|fail": 15,
+   "time_reversal|not applicable": 6,
+   "time_reversal|pass": 9,
+   "true|fail": 12,
+   "true|pass": 15,
+   "true|untestable": 3,
+   "vertical_reversal|fail": 9,
+   "vertical_reversal|not applicable": 11,
+   "vertical_reversal|pass": 2,
+   "vertical_reversal|untestable": 8
+  },
+  "pendulum": {
+   "freeze|fail": 29,
+   "freeze|untestable": 1,
+   "teleport|fail": 29,
+   "teleport|pass": 1,
+   "time_reversal|fail": 4,
+   "time_reversal|not applicable": 26,
+   "true|fail": 28,
+   "true|pass": 2,
+   "vertical_reversal|fail": 10,
+   "vertical_reversal|not applicable": 20
+  },
+  "roll": {
+   "freeze|fail": 28,
+   "freeze|pass": 2,
+   "teleport|fail": 22,
+   "teleport|untestable": 8,
+   "time_reversal|fail": 5,
+   "time_reversal|not applicable": 20,
+   "time_reversal|pass": 5,
+   "true|fail": 8,
+   "true|pass": 14,
+   "true|untestable": 8,
+   "vertical_reversal|fail": 2,
+   "vertical_reversal|not applicable": 20,
+   "vertical_reversal|untestable": 8
+  },
+  "throw": {
+   "freeze|fail": 23,
+   "freeze|pass": 4,
+   "freeze|untestable": 1,
+   "teleport|fail": 25,
+   "teleport|untestable": 3,
+   "time_reversal|fail": 9,
+   "time_reversal|not applicable": 15,
+   "time_reversal|pass": 3,
+   "time_reversal|untestable": 1,
+   "true|fail": 3,
+   "true|pass": 21,
+   "true|untestable": 6,
+   "vertical_reversal|fail": 4,
+   "vertical_reversal|not applicable": 21,
+   "vertical_reversal|untestable": 3
+  }
+ },
+ "pooled_gate_kinds": {
+  "freeze": "10 of 139 pass",
+  "teleport": "1 of 139 pass",
+  "time_reversal": "23 of 68 pass",
+  "true": "70 of 150 pass (23 untestable)",
+  "vertical_reversal": "3 of 58 pass"
+ },
+ "run": 45932451960,
+ "what": "Fourth PhysInOne development run of the physics judge, with the judge and perturbations as changed on 27 November after the rendered development clips (CHANGELOG). 30 development scenes per kind (60 collision scenes), the most level static camera, every third frame. Counts only: no PhysInOne track is kept (CC BY-NC-SA 4.0)."
+}

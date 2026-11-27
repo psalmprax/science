@@ -74,7 +74,7 @@ jobs:
         if: always()
         with:
           name: mmlm-order-shard-${{ matrix.k }}
-          path: order-out/*.jsonl
+          path: order-out/*
           if-no-files-found: error
 
   collect:

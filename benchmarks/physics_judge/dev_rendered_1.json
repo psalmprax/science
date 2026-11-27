@@ -1,0 +1,451 @@
+{
+ "gate_j_part_1": null,
+ "misses": [
+  {
+   "kind": "roll",
+   "outcome": "pass",
+   "reasons": [],
+   "scene": null,
+   "seed": 12,
+   "source": "rendered",
+   "variant": "vertical_reversal"
+  },
+  {
+   "kind": "roll",
+   "outcome": "pass",
+   "reasons": [],
+   "scene": null,
+   "seed": 25,
+   "source": "rendered",
+   "variant": "teleport"
+  },
+  {
+   "kind": "free_fall",
+   "outcome": "fail",
+   "reasons": [
+    "position jumps 2.4 px at frame 25 (allowed 2.0)"
+   ],
+   "scene": null,
+   "seed": 26,
+   "source": "rendered",
+   "variant": "true"
+  },
+  {
+   "kind": "roll",
+   "outcome": "pass",
+   "reasons": [],
+   "scene": null,
+   "seed": 26,
+   "source": "rendered",
+   "variant": "vertical_reversal"
+  },
+  {
+   "kind": "collision",
+   "outcome": "fail",
+   "reasons": [
+    "object B: starts moving from rest by itself at frame 73 (24.3 px/s)",
+    "object B changes velocity touching the other at frame 73, which does not react"
+   ],
+   "scene": null,
+   "seed": 20,
+   "source": "rendered",
+   "variant": "true"
+  },
+  {
+   "kind": "collision",
+   "outcome": "fail",
+   "reasons": [
+    "object A changes velocity touching the other at frame 62, which does not react",
+    "object B changes velocity touching the other at frame 68, which does not react"
+   ],
+   "scene": null,
+   "seed": 21,
+   "source": "rendered",
+   "variant": "true"
+  },
+  {
+   "kind": "roll",
+   "outcome": "pass",
+   "reasons": [],
+   "scene": null,
+   "seed": 6,
+   "source": "rendered",
+   "variant": "vertical_reversal"
+  },
+  {
+   "kind": "bounce",
+   "outcome": "pass",
+   "reasons": [],
+   "scene": null,
+   "seed": 13,
+   "source": "rendered",
+   "variant": "teleport"
+  },
+  {
+   "kind": "roll",
+   "outcome": "pass",
+   "reasons": [],
+   "scene": null,
+   "seed": 9,
+   "source": "rendered",
+   "variant": "vertical_reversal"
+  }
+ ],
+ "mode": "dev",
+ "physinone_beside": {
+  "bounce": {},
+  "collision": {},
+  "free_fall": {},
+  "pendulum": {},
+  "roll": {},
+  "throw": {}
+ },
+ "preregistration": "PREREG-PHYSICS-J1-2026-11",
+ "rendered_by_kind": {
+  "bounce": {
+   "freeze": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "teleport": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 29,
+     "pass": 1
+    },
+    "pass": 1,
+    "share_passing": 0.0333
+   },
+   "time_reversal": {
+    "applied": 29,
+    "group": "development",
+    "outcomes": {
+     "fail": 29,
+     "not applicable": 1
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "true": {
+    "applied": 30,
+    "group": "true",
+    "outcomes": {
+     "pass": 30
+    },
+    "pass": 30,
+    "share_passing": 1.0
+   },
+   "vertical_reversal": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   }
+  },
+  "collision": {
+   "freeze": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 29,
+     "untestable": 1
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "teleport": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "time_reversal": {
+    "applied": 29,
+    "group": "development",
+    "outcomes": {
+     "fail": 29,
+     "not applicable": 1
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "true": {
+    "applied": 30,
+    "group": "true",
+    "outcomes": {
+     "fail": 2,
+     "pass": 28
+    },
+    "pass": 28,
+    "share_passing": 0.9333
+   },
+   "vertical_reversal": {
+    "applied": 0,
+    "group": "development",
+    "outcomes": {
+     "not applicable": 30
+    },
+    "pass": 0,
+    "share_passing": null
+   }
+  },
+  "free_fall": {
+   "freeze": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "teleport": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "time_reversal": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "true": {
+    "applied": 30,
+    "group": "true",
+    "outcomes": {
+     "fail": 1,
+     "pass": 29
+    },
+    "pass": 29,
+    "share_passing": 0.9667
+   },
+   "vertical_reversal": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   }
+  },
+  "pendulum": {
+   "freeze": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "teleport": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "time_reversal": {
+    "applied": 13,
+    "group": "development",
+    "outcomes": {
+     "fail": 13,
+     "not applicable": 17
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "true": {
+    "applied": 30,
+    "group": "true",
+    "outcomes": {
+     "pass": 30
+    },
+    "pass": 30,
+    "share_passing": 1.0
+   },
+   "vertical_reversal": {
+    "applied": 2,
+    "group": "development",
+    "outcomes": {
+     "fail": 2,
+     "not applicable": 28
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   }
+  },
+  "roll": {
+   "freeze": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "teleport": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 29,
+     "pass": 1
+    },
+    "pass": 1,
+    "share_passing": 0.0333
+   },
+   "time_reversal": {
+    "applied": 0,
+    "group": "development",
+    "outcomes": {
+     "not applicable": 30
+    },
+    "pass": 0,
+    "share_passing": null
+   },
+   "true": {
+    "applied": 30,
+    "group": "true",
+    "outcomes": {
+     "pass": 30
+    },
+    "pass": 30,
+    "share_passing": 1.0
+   },
+   "vertical_reversal": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 26,
+     "pass": 4
+    },
+    "pass": 4,
+    "share_passing": 0.1333
+   }
+  },
+  "throw": {
+   "freeze": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "teleport": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "time_reversal": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   },
+   "true": {
+    "applied": 30,
+    "group": "true",
+    "outcomes": {
+     "pass": 30
+    },
+    "pass": 30,
+    "share_passing": 1.0
+   },
+   "vertical_reversal": {
+    "applied": 30,
+    "group": "development",
+    "outcomes": {
+     "fail": 30
+    },
+    "pass": 0,
+    "share_passing": 0.0
+   }
+  }
+ },
+ "rendered_gate_kinds": {
+  "freeze": {
+   "applied": 150,
+   "group": "development",
+   "outcomes": {
+    "fail": 150
+   },
+   "pass": 0,
+   "share_passing": 0.0
+  },
+  "teleport": {
+   "applied": 150,
+   "group": "development",
+   "outcomes": {
+    "fail": 148,
+    "pass": 2
+   },
+   "pass": 2,
+   "share_passing": 0.0133
+  },
+  "time_reversal": {
+   "applied": 102,
+   "group": "development",
+   "outcomes": {
+    "fail": 102,
+    "not applicable": 48
+   },
+   "pass": 0,
+   "share_passing": 0.0
+  },
+  "true": {
+   "applied": 150,
+   "group": "true",
+   "outcomes": {
+    "fail": 1,
+    "pass": 149
+   },
+   "pass": 149,
+   "share_passing": 0.9933
+  },
+  "vertical_reversal": {
+   "applied": 122,
+   "group": "development",
+   "outcomes": {
+    "fail": 118,
+    "not applicable": 28,
+    "pass": 4
+   },
+   "pass": 4,
+   "share_passing": 0.0328
+  }
+ },
+ "rows": 900
+}

@@ -43,6 +43,11 @@ inferred releases.
 
 ### Changed
 
+- **PREREG-VIDEO-HYBRID-2026-11 frozen (2026-11-27).** `preregistration/DIGEST-VIDEO-HYBRID.json` was written
+  after two independent reviews, a third check of the fixes (four minor points, fixed) and two rehearsals. The
+  second rehearsal lost one job to a test that met the frozen comparison module's reuse of `id(model)` for its
+  call counters. The test now keeps its models alive; the module is not edited. The test runs once on
+  `video-hybrid-run-1`.
 - **The physics judge, developed on clips rendered here (2026-11-27).** On 20 to 30 development clips per kind
   from `apedp_dyn/video/physics_clips_pybullet.py`, these are the misses and what was done about them:
   - A slow slide that suddenly flew off passed. It fell between "starts from rest" and "speed grows", because
