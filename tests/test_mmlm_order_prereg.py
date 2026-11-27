@@ -60,9 +60,11 @@ def test_the_guard_leaves_out_the_memory_test_laws(final: dict) -> None:
 
 
 def test_both_noise_levels_of_a_law_share_a_shard() -> None:
-    dealt = mo.shards(False, 20)
-    sizes = Counter(dealt.values())
-    assert max(sizes.values()) - min(sizes.values()) <= 1
+    for rehearsal in (False, True):
+        dealt = mo.shards(rehearsal, 20)
+        sizes = Counter(dealt.values())
+        assert max(sizes.values()) - min(sizes.values()) <= 1
+        assert all(e["name"] in dealt for e, _ in mo.units(rehearsal))      # every unit has its shard
 
 
 def _row(arm: str, problem: str, s: str, symbolic: bool, seconds: float = 10.0, noise: float = 0.0,

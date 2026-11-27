@@ -210,7 +210,8 @@ def entries(rehearsal: bool = False) -> dict[str, dict[str, Any]]:
                  if grammar.structure(sp.sympify(e["formula"])) not in final_guard][:REHEARSAL_LAWS]
         reach = {_key(e["formula"]) for e in final.values() if e["set"] in FAMILIAR}
         laws = [*guard, *power_laws(REHEARSAL_POWER_SEED, REHEARSAL_LAWS, reach)]
-        return {e["name"]: {**e, "name": f"rehearsal_{e['name']}"} for e in laws}
+        renamed = [{**e, "name": f"rehearsal_{e['name']}"} for e in laws]
+        return {e["name"]: e for e in renamed}
     taken: set[Any] = set()
     fields = other_field_laws(taken)
     odes = odebench_laws(taken)
