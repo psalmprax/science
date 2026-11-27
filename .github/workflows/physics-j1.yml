@@ -2,6 +2,7 @@
 # clips rendered here, gate J part 1, on the owner's word of 27 November ("go ahead to test all").
 #   push to physics-j1-smoke-*  -> the tests, then the development tally on development seeds (no blind clip).
 #   push to physics-j1-run-*    -> the one run: blind rendered clips in 12 shards and PhysInOne's blind pool beside.
+# Logs and artifacts carry verdicts, reasons, counts and PhysInOne's scene names only (CC BY-NC-SA; the repository is public).
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
 name: Physics judge, gate J part 1
 
@@ -27,7 +28,7 @@ jobs:
           python-version: '3.12'
           cache: pip
       - name: Install dependencies and PyBullet
-        run: python -m pip install -e ".[dev,test]" pybullet==3.2.6
+        run: python -m pip install -e ".[dev,test]" numpy==2.5.5 pybullet==3.2.6
       - name: The tests
         run: python -m pytest tests/test_physics_judge.py tests/test_physics_clips_pybullet.py tests/test_physics_j1_prereg.py -q
       - name: Rendered clips, shard ${{ matrix.k }} of 12
@@ -65,7 +66,7 @@ jobs:
           python-version: '3.12'
           cache: pip
       - name: Install dependencies
-        run: python -m pip install -e ".[dev,test]" huggingface_hub
+        run: python -m pip install -e ".[dev,test]" numpy==2.5.5 pybullet==3.2.6 huggingface_hub
       - name: PhysInOne's blind pool, ${{ matrix.kind }} (verdicts and scene names only)
         timeout-minutes: 45
         env:
@@ -91,12 +92,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0          # the collection checks that the reviewer's file came after stage 1
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
       - name: Install dependencies
-        run: python -m pip install -e ".[dev,test]"
+        run: python -m pip install -e ".[dev,test]" numpy==2.5.5 pybullet==3.2.6
       - uses: actions/download-artifact@v8
         with:
           pattern: physics-j1-*
@@ -114,3 +117,8 @@ jobs:
           echo "=====BEGIN physics j1====="
           if [ -f j1-out/results.json ]; then gzip -9c j1-out/results.json | base64 -w 60000; echo; fi
           echo "=====END physics j1====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: physics-j1-results
+          path: j1-out/results.json

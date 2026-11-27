@@ -99,7 +99,9 @@ class JudgeSettings:
     pendulum_velocity_jump: float = 0.35
     pendulum_window_seconds: float = 0.2
     period_tol: float = 0.2
-    amplitude_growth_tol: float = 0.15
+    rise_speed_gain: float = 0.25             # rising while the speed grows by more than this share: energy from nowhere
+    amplitude_growth_sigmas: float = 4.0      # a swing may look larger by this many noise widths (two readings) ...
+    amplitude_growth_share: float = 0.03      # ... or this share of itself, whichever is more; never by more
     turning_prominence: float = 0.2
     collision_sync_frames: int = 2
     collision_cos: float = 0.5
@@ -543,6 +545,19 @@ def _judge_gravity(track: Track, kind: str, settings: JudgeSettings) -> Verdict:
             continue
         if a < -settings.accel_z * se and -a > limit:
             reasons.append(f"accelerates upward ({a:.0f} px/s^2) over frames {seg.start}-{seg.stop}")
+    # A passive object cannot gain speed while it rises: both its kinetic and its potential energy would grow.
+    v_noise = settings.speed_noise_sigma * sigma / max(dt, 1e-9) / math.sqrt(max(least, 1))
+    for seg in segments:
+        if seg.stop - seg.start + 1 < least:
+            continue
+        ends = np.array([t[seg.start], t[seg.stop]])
+        v0, v1 = (float(np.linalg.norm(v)) for v in seg.vel(ends))
+        rise = float(xy[seg.start, 1] - xy[seg.stop, 1])          # image y grows downward
+        floor = max(size_med if math.isfinite(size_med) else 0.0, settings.jump_sigma * sigma)
+        if rise > floor and v1 > (1.0 + settings.rise_speed_gain) * v0 + v_noise:
+            reasons.append(f"speeds up while rising over frames {seg.start}-{seg.stop}: {v0:.0f} -> {v1:.0f} px/s, "
+                           f"{rise:.1f} px up")
+            break
     if kind in ("free_fall", "throw", "bounce") and not down:
         reasons.append("no segment shows a downward acceleration")
     stats = {"sigma": round(sigma, 3), "segments": [[s.start, s.stop] for s in segments],
@@ -559,6 +574,11 @@ def _judge_gravity(track: Track, kind: str, settings: JudgeSettings) -> Verdict:
 
 def _conic_residual(xy: np.ndarray) -> float:
     """Robust spread (px) of the points about the best conic, Taubin's fit (a circle seen in projection)."""
+    return float(1.4826 * np.median(_conic_distances(xy)))
+
+
+def _conic_distances(xy: np.ndarray) -> np.ndarray:
+    """Each point's distance (px) from the best conic, Taubin's fit (a circle seen in projection)."""
     mu = xy.mean(axis=0)
     sc = float(max(np.abs(xy - mu).max(), 1e-9))
     z = (xy - mu) / sc
@@ -582,8 +602,8 @@ def _conic_residual(xy: np.ndarray) -> float:
     coef = np.concatenate([head, tail])
     f = d @ coef
     grad = np.sqrt((dx @ coef) ** 2 + (dy @ coef) ** 2)
-    geo = np.abs(f) / np.maximum(grad, 1e-12)
-    return float(1.4826 * np.median(geo) * sc)
+    geo: np.ndarray = np.abs(f) / np.maximum(grad, 1e-12) * sc
+    return geo
 
 
 def _local_breaks(t: np.ndarray, xy: np.ndarray, sigma: float, window: int) -> list[dict[str, float]]:
@@ -617,6 +637,17 @@ def _judge_pendulum(track: Track, settings: JudgeSettings) -> Verdict:
     conic = _conic_residual(xy)
     if conic > settings.pendulum_conic_sigma * sigma:
         reasons.append(f"the bob leaves its arc: {conic:.2f} px off the best conic (noise {sigma:.2f})")
+    else:
+        # A stretch off the arc: the spread above is robust and so blind to a part of the clip; here each window's
+        # median distance from the conic is read on its own.
+        dist = _conic_distances(xy)
+        w = _frames(settings.pendulum_window_seconds, dt, 4)
+        if dist.size >= w:
+            local = np.array([np.median(dist[i:i + w]) for i in range(dist.size - w + 1)])
+            worst = int(np.argmax(local))
+            if local[worst] > settings.pendulum_conic_sigma * sigma:
+                reasons.append(f"the bob leaves its arc over frames {worst}-{worst + w - 1}: {local[worst]:.2f} px off "
+                               f"the best conic (noise {sigma:.2f})")
     breaks = _local_breaks(t, xy, sigma, _frames(settings.pendulum_window_seconds, dt, 4))
     for b in breaks:
         if b["dp"] > settings.jump_sigma * b["sp"] + settings.jump_speed_frames * b["speed"] * dt:
@@ -709,7 +740,8 @@ def _judge_pendulum(track: Track, settings: JudgeSettings) -> Verdict:
     # looks larger than the far side, so only extremes two apart are compared (with two, the only pair).
     step = 2 if amps.size >= 3 else 1
     for k in range(step, amps.size):
-        if amps[k] > (1.0 + settings.amplitude_growth_tol) * amps[k - step]:
+        allowed = max(settings.amplitude_growth_share * amps[k - step], settings.amplitude_growth_sigmas * math.sqrt(2.0) * sigma)
+        if amps[k] > amps[k - step] + allowed:
             reasons.append(f"the swing grows: {amps[k - step]:.1f} -> {amps[k]:.1f} px")
     return Verdict(kind, FAIL if reasons else PASS, reasons, stats)
 

@@ -43,6 +43,30 @@ inferred releases.
 
 ### Changed
 
+- **PREREG-PHYSICS-J1-2026-11 and the physics judge, revised after the independent review (2026-11-27).**
+  - **Breakages.** Two changes made that day had set applicability by the judge's own tolerances (a swing loses
+    energy below three quarters; a mirror only where the object keeps moving vertically). They are replaced by
+    physics-and-noise rules (`physics_perturbations.py`): a loss of a tenth and four noise widths; a mirror
+    wherever it moves the object 5 px, contacts included.
+  - **The judge, on what those rules exposed (development):**
+    - each window of a swing is read against the arc, not only the whole clip's robust spread (mirrored pendulums
+      10 of 26 passing, then 0);
+    - a swing's growth is allowed by its noise, four widths or 3 %, instead of 15 % (reversed swings 2 of 20, then
+      0; true swings here never grew);
+    - a new rule: nothing speeds up while it rises (mirrored rolls 3 of 26, then 0).
+  - **Development tally (30 clips per kind)**, counting clips not caught: true clips pass 177 of 180; jumps 0;
+    holds 3 of 180; mirrored stretches 9 of 164 (falls 4 of 28); time reversals 0 of 138.
+  - **The plan:**
+    - it reads every scene kind (pooled beside; where they disagree, the owner decides);
+    - collisions join under the owner's own rule;
+    - only a fail catches a broken clip;
+    - cells under 30 clips are read by count;
+    - at least two reviewer kinds, every one read, under rules written in the plan;
+    - completeness and "not read" states;
+    - the freeze is chained (stage 2 includes the stage-1 digest, the reviewer's module names it, git history is
+      checked);
+    - blind seeds come from the stage-2 digest;
+    - bounds are reported beside.
 - **PREREG-VIDEO-HYBRID-2026-11 frozen (2026-11-27).** `preregistration/DIGEST-VIDEO-HYBRID.json` was written
   after two independent reviews, a third check of the fixes (four minor points, fixed) and two rehearsals. The
   second rehearsal lost one job to a test that met the frozen comparison module's reuse of `id(model)` for its

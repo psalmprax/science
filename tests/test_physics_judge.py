@@ -182,3 +182,36 @@ def test_a_slow_slide_that_suddenly_flies_off_fails() -> None:
     xy = np.concatenate([slide, fly]) + np.random.default_rng(1).normal(0, 0.2, (60, 2))
     v = judge("throw", [Track(t, xy, np.full(60, 8.0))])
     assert v.outcome == FAIL and any("speed grows" in r or "from rest" in r for r in v.reasons), v.reasons
+
+
+def test_a_stretch_of_swing_moved_off_its_arc_fails() -> None:
+    track = _pendulum_track()
+    assert judge("pendulum", [track]).outcome == PASS
+    xy = track.xy.copy()
+    y = xy[:, 1].copy()
+    xy[30:48, 1] = 2.0 * y[30] - y[30:48]               # the vertical motion mirrored for a stretch
+    xy[48:, 1] = y[48:] - 2.0 * (y[47] - y[30])
+    v = judge("pendulum", [Track(track.t, xy, track.size)])
+    assert v.outcome == FAIL, v.stats
+
+
+def test_a_swing_that_grows_a_little_each_time_fails() -> None:
+    # A damped swing run backwards: about 12 % larger each swing, below the old 15 % limit.
+    t = np.arange(90) / 30.0
+    amp = 30.0 * np.exp(0.18 * t)
+    x = 160 + amp * np.cos(2 * np.pi * t / 1.4)
+    y = 120 + 0.15 * amp * (1 - np.cos(4 * np.pi * t / 1.4)) / 2
+    xy = np.stack([x, y], axis=1) + np.random.default_rng(5).normal(0, 0.2, (90, 2))
+    v = judge("pendulum", [Track(t, xy, np.full(90, 8.0))])
+    assert v.outcome == FAIL and any("grows" in r for r in v.reasons), v.reasons
+
+
+def test_rising_while_speeding_up_fails() -> None:
+    # Up a straight slope, faster and faster: energy from nowhere.
+    t = np.arange(60) / 30.0
+    s = 20 * t + 40 * t**2
+    xy = np.stack([60 + s, 200 - 0.4 * s], axis=1) + np.random.default_rng(2).normal(0, 0.2, (60, 2))
+    v = judge("roll", [Track(t, xy, np.full(60, 8.0))])
+    assert v.outcome == FAIL and any("speeds up while rising" in r for r in v.reasons), v.reasons
+    down = np.stack([60 + s, 120 + 0.4 * s], axis=1) + np.random.default_rng(2).normal(0, 0.2, (60, 2))
+    assert judge("roll", [Track(t, down, np.full(60, 8.0))]).outcome == PASS     # down the slope is lawful

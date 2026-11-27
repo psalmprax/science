@@ -17,61 +17,92 @@ assert _spec is not None and _spec.loader is not None
 j1 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(j1)
 
-
-def test_blind_and_development_seeds_are_apart() -> None:
-    from apedp_dyn.video.physics_clips_pybullet import BLIND_FROM
-
-    dev, final = set(j1.seeds("dev")), set(j1.seeds("final"))
-    assert not dev & final and min(final) >= BLIND_FROM and max(dev) < BLIND_FROM
-    assert len(final) == 60 and len(dev) == 30
+DEV = ("teleport", "freeze", "vertical_reversal", "time_reversal")
 
 
-def _rows(true_pass: int, broken_pass: dict[str, int], n: int = 60, unseen: str = "smear") -> list[dict]:
+def test_development_seeds_and_streams() -> None:
+    assert j1.seeds("dev") == list(range(30))
+    # Streams are named by a hash of the breakage, so two names of one length do not share one.
+    a = j1.stream(3, "freeze").random(4)
+    b = j1.stream(3, "smear6").random(4)
+    assert (a != b).any()
+    assert (j1.stream(3, "freeze").random(4) == a).all()
+
+
+def _rows(per_kind: dict[str, tuple[int, dict[str, int]]], n: int = 60, unseen: tuple[str, ...] = ("smear", "drift"),
+          ) -> list[dict]:
     rows = []
     for kind in j1.GATE_KINDS:
+        true_pass, missed = per_kind.get(kind, per_kind["*"])
         for s in range(n):
             rows.append({"source": "rendered", "kind": kind, "seed": s, "variant": "true",
                          "outcome": "pass" if s < true_pass else "fail"})
-            for how, k in broken_pass.items():
+            for how in (*DEV, *unseen):
                 rows.append({"source": "rendered", "kind": kind, "seed": s, "variant": how,
-                             "group": "unseen" if how == unseen else "development",
-                             "outcome": "pass" if s < k else "fail"})
+                             "group": "unseen" if how in unseen else "development",
+                             "outcome": "pass" if s < missed.get(how, 0) else "fail"})
     return rows
 
 
-def test_the_gate_reads_both_expectations() -> None:
-    ok = j1.gate(_rows(55, {"teleport": 2, "smear": 5}))
-    assert ok["true_holds"] and ok["part_1_holds"]
-    assert not j1.gate(_rows(45, {"teleport": 2, "smear": 5}))["part_1_holds"]        # 75 % of true clips
-    bad = j1.gate(_rows(55, {"teleport": 2, "smear": 7}))                             # 11.7 % of one kind
-    assert not bad["broken_holds"]["smear"] and not bad["part_1_holds"]
+def _expected(n: int = 60) -> dict[str, list[int]]:
+    return {k: list(range(n)) for k in j1.GATE_KINDS}
 
 
-def test_without_a_reviewer_kind_part_1_is_not_read() -> None:
-    out = j1.gate(_rows(55, {"teleport": 0}, unseen="none"))
-    assert not out["unseen_kinds_read"] and not out["part_1_holds"]
+def test_the_gate_reads_every_scene_kind() -> None:
+    ok = j1.gate(_rows({"*": (55, {"teleport": 2, "smear": 5})}), _expected(), ("smear", "drift"))
+    assert ok["state"] == "holds", ok["per_kind_failures"]
+    # One scene kind's true clips at 75 %: the pooled reading still holds, so the owner decides.
+    one = j1.gate(_rows({"*": (55, {}), "pendulum": (45, {})}), _expected(), ("smear", "drift"))
+    assert one["state"] == "the owner decides" and one["per_kind_failures"] and not one["pooled_failures"]
+    # Everywhere 7 of 60 of a kind not caught: the pooled reading fails too.
+    bad = j1.gate(_rows({"*": (55, {"smear": 7})}), _expected(), ("smear", "drift"))
+    assert bad["state"] == "fails" and bad["pooled_failures"]
 
 
-def test_a_kind_applied_to_fewer_than_twenty_clips_is_reported_not_read() -> None:
-    rows = _rows(55, {"teleport": 0, "smear": 0})
+def test_a_broken_clip_is_caught_only_by_a_fail() -> None:
+    rows = _rows({"*": (55, {})})
     for r in rows:
-        if r["variant"] == "smear" and r["seed"] >= 3:
-            r["outcome"] = "not applicable"                   # applies to 3 clips per kind: 15 in all
-    out = j1.gate(rows)
-    assert "smear" not in out["broken_holds"] and not out["unseen_kinds_read"]
+        if r["variant"] == "smear" and r["seed"] < 7:
+            r["outcome"] = "untestable"                   # untestable is not caught
+    out = j1.gate(rows, _expected(), ("smear", "drift"))
+    assert out["state"] == "fails"
+
+
+def test_without_two_reviewer_kinds_it_is_not_read() -> None:
+    rows = _rows({"*": (55, {})}, unseen=("smear",))
+    assert j1.gate(rows, _expected(), ("smear",))["state"] == "not read"
+
+
+def test_a_missing_clip_leaves_it_not_read() -> None:
+    rows = _rows({"*": (55, {})})
+    rows = [r for r in rows if not (r["kind"] == "roll" and r["seed"] == 7)]
+    assert j1.gate(rows, _expected(), ("smear", "drift"))["state"] == "not read"
+
+
+def test_a_small_cell_fails_on_three_misses() -> None:
+    rows = _rows({"*": (55, {"smear": 3})})
+    for r in rows:
+        if r["variant"] == "smear" and r["seed"] >= 20:
+            r["outcome"] = "not applicable"               # applies to 20 clips per kind: a small cell
+    out = j1.gate(rows, _expected(), ("smear", "drift"))
+    assert any("small cell" in f for f in out["per_kind_failures"])
 
 
 def test_untestable_true_clips_count_as_not_passing() -> None:
-    rows = _rows(60, {"teleport": 0, "smear": 0})
+    rows = _rows({"*": (60, {})})
     for r in rows:
         if r["variant"] == "true" and r["seed"] < 13:
             r["outcome"] = "untestable"
-    assert not j1.gate(rows)["true_holds"]                   # 47 of 60 pass
+    assert j1.gate(rows, _expected(), ("smear", "drift"))["state"] == "fails"
+
+
+def test_bounds() -> None:
+    assert j1.bound(0, 0, upper=True) is None
+    assert 0.04 < j1.bound(0, 60, upper=True) < 0.05
+    assert 0.75 < j1.bound(240, 300, upper=False) < 0.77
 
 
 def test_the_final_run_refuses_a_changed_judge() -> None:
-    if not j1.JUDGE_DIGEST.exists():
+    if not j1.JUDGE_DIGEST.exists() or not j1.DIGEST.exists():
         pytest.skip("not frozen yet")
-    if not j1.DIGEST.exists():
-        pytest.skip("stage 2 not frozen yet")
     j1.check_frozen()

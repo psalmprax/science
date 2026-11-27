@@ -5,9 +5,14 @@ Status: experimental. Four ways to break a clip's physics, applied to its object
 - ``teleport``: from one frame on, the object is shifted by three times its size (a jump in position);
 - ``freeze``: the object stops for a while and then carries on as if nothing happened (a hold);
 - ``vertical_reversal``: for part of the clip the vertical motion runs mirrored (it accelerates upward),
-  with the position kept continuous at both ends;
+  with the position kept continuous at both ends; applied where it moves the object at least
+  ``MIN_SHIFT_PX``, contacts included;
 - ``time_reversal``: the clip runs backwards; applied only to clips that lose energy (they end at rest,
-  or their swing decays), because a clip without losses looks lawful backwards too.
+  or their swing decays by a tenth and four noise widths), because a clip without losses looks lawful
+  backwards too.
+
+Where each applies is set by the physics and the track's noise, not by the judge's own tolerances (the
+independent review of 27 November found two rules of that day that had been).
 
 These are the development kinds. The blind test adds kinds the judge was not developed against, written
 by the independent reviewer (AGENTS.md 1.6); they are not in this file.
@@ -20,6 +25,20 @@ import numpy as np
 from apedp_dyn.epistemic.physics_judge import Track
 
 PERTURBATIONS = ("teleport", "freeze", "vertical_reversal", "time_reversal")
+MIN_SHIFT_PX = 5.0      #: a mirrored stretch must move the object at least this far: a floor set apart from the judge
+LOSS_SHARE = 0.10       #: a swing loses energy when its last swing is at least this share below its first ...
+NOISE_SIGMAS = 4.0      #: ... and by at least this many widths of the track's own noise
+
+
+def _noise_px(track: Track) -> float:
+    """The track's position noise, from its second differences (median absolute deviation), in pixels."""
+    ok = np.all(np.isfinite(track.xy), axis=1)
+    xy = track.xy[ok]
+    if xy.shape[0] < 5:
+        return 0.0
+    d2 = np.diff(xy, n=2, axis=0)
+    mad = np.median(np.abs(d2 - np.median(d2, axis=0)), axis=0)
+    return float(np.mean(1.4826 * mad / np.sqrt(6.0)))
 
 
 def _speed(track: Track) -> np.ndarray:
@@ -80,14 +99,17 @@ def loses_energy(tracks: list[Track], kind: str) -> bool:
         centred = xy - xy.mean(axis=0)
         _, _, vt = np.linalg.svd(centred, full_matrices=False)
         s = centred @ vt[0]
-        # The swing's amplitude at its extremes (local extremes of the position along the swing), first against last:
-        # a loss shows only where whole swings are compared, not parts of one.
+        # The swing's amplitude at its extremes (local extremes of the position along the swing), the first against
+        # the last on the same side (a camera at an angle makes the near side look larger). A loss counts when it is
+        # a tenth of the swing and four noise widths: set by the physics and the noise, not by the judge's limits.
         mid = 0.5 * (float(s.max()) + float(s.min()))
         a = np.abs(s - mid)
         peaks = [k for k in range(1, a.size - 1) if a[k] >= a[k - 1] and a[k] >= a[k + 1] and a[k] > 0.3 * a.max()]
-        if len(peaks) < 3:
+        side = [k for k in peaks if np.sign(s[k] - mid) == np.sign(s[peaks[0]] - mid)] if peaks else []
+        if len(side) < 2:
             return False
-        return float(a[peaks[-1]]) < 0.75 * float(a[peaks[0]])
+        first, last = float(a[side[0]]), float(a[side[-1]])
+        return last <= (1.0 - LOSS_SHARE) * first and first - last >= NOISE_SIGMAS * _noise_px(tr)
     for tr in tracks:
         sp = _speed(tr)
         if not np.any(np.isfinite(sp)):
@@ -133,7 +155,7 @@ def freeze(track: Track, rng: np.random.Generator) -> Track | None:
 def vertical_reversal(track: Track, rng: np.random.Generator) -> Track | None:
     n = track.t.size
     length = max(10, n // 5)
-    k = _moving_frame(track, rng, 0.05, 0.7, vertical=True, span=length)
+    k = _moving_frame(track, rng, 0.05, 0.7, vertical=True)
     if k is None:
         return None
     if k + length >= n:
@@ -142,8 +164,8 @@ def vertical_reversal(track: Track, rng: np.random.Generator) -> Track | None:
     y = track.xy[:, 1]
     xy[k:k + length, 1] = 2.0 * y[k] - y[k:k + length]
     xy[k + length:, 1] = y[k + length:] - 2.0 * (y[k + length - 1] - y[k])
-    if np.nanmax(y[k:k + length]) - np.nanmin(y[k:k + length]) < _size(track):
-        return None  # barely any vertical motion inside the stretch to mirror: not a test of anything
+    if not np.nanmax(np.abs(xy[:, 1] - y)) >= MIN_SHIFT_PX:
+        return None  # the mirror moves the object by less than the floor: not a test of anything
     return _with(track, xy, None if track.size is None else track.size.copy())
 
 
