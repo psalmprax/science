@@ -80,6 +80,13 @@ and only for a table that still has no law: solved cases, the tensor-train readi
 redesigns in the table below. Experimental, not in force: the route in force is unchanged. What of the
 designs is not built is listed in section 9 of the design document.
 
+**Its first development run showed a flaw in the build, which is repaired**
+(`benchmarks/family_stream/dev_run1.json`; 16 families, 240 tables). The route table by table reported
+85 laws, the family route 104, with the fallbacks 116, none inaccurate; but a table put into a family it
+does not belong to reported 98. The laws handed in had stood in place of the table's own best laws, and
+before weaker rivals the referee reported laws it had refused at first. Now handed laws take turns with
+the table's own, and a re-reading counts only if the law it reports was handed in.
+
 | Thing | What was measured | The design | First look | Retired if |
 | :--- | :--- | :--- | :--- | :--- |
 | **The learning loop** (`discovery_l2/learning_loop.py`) | no gain on invented laws or the two formula benchmarks; 8 gained and 2 lost on ODE systems (p = 0.055), where parts recur | learn across tables: a confirmed shape tried on its siblings, siblings searched together with constants of their own, the constants read as a table and the wider law refereed on all rows; a remembered part becomes an operator only if it beats a random part of the same size | six families at 5 % and 10 % noise, searched singly and together (CPU) | the joint search beats neither the single searches nor tables grouped at random |

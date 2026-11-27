@@ -36,6 +36,10 @@ def test_the_families_are_the_same_every_time_and_come_in_pairs_with_the_same_in
     assert len({curriculum.structure(sp.sympify(f["shape"])) for f in families}) == study.FAMILIES
     assert not {curriculum.fingerprint(sp.sympify(f["shape"])) for f in families} & held_back
     assert len(study.units(families)) == (study.FAMILIES // 2) * len(study.NOISES)
+    more = study.draw_families(2 * study.FAMILIES)                  # the second run's families follow the first run's
+    assert more[: study.FAMILIES] == families and [f["family"] for f in more] == list(range(2 * study.FAMILIES))
+    assert len({curriculum.structure(sp.sympify(f["shape"])) for f in more}) == 2 * study.FAMILIES
+    assert not {curriculum.fingerprint(sp.sympify(f["shape"])) for f in more} & held_back
 
 
 def test_a_member_s_law_is_the_wide_law_at_its_value_and_the_members_differ(families: list[dict[str, Any]]) -> None:
@@ -107,13 +111,16 @@ def test_the_store_holds_other_laws_of_one_and_two_inputs() -> None:
     assert [case.law for case in store.cases] == [case.law for case in study.store(12).cases]
 
 
-def test_every_arm_of_a_unit_is_counted_from_the_same_readings(families: list[dict[str, Any]], monkeypatch: pytest.MonkeyPatch) -> None:
-    """A stand-in for the route that reports a law exactly when one of the true shape (or the true wide law) is handed over."""
-    pair = families[2:4]                                           # two inputs, laws of the condition it cannot write
-    keys = {}
+def _stand_in(pair: list[dict[str, Any]]) -> Any:
+    """In place of the route. It reports a law of the family's true shape whenever one is among the laws it is given.
+    Given none, it does what the first run showed the route doing: if the laws at the head of the list are not the
+    table's own (the first build's way), it reports the table's own first law, which it had refused before."""
+    shapes, wide = {}, {}
     for spec in pair:
         names = [f"x{i}" for i in range(spec["inputs"])]
-        keys[spec["family"]] = {at.shape_of(law, names).key for law in spec["laws"]}
+        shapes[spec["family"]] = {at.shape_of(law, names).key for law in spec["laws"]}
+        wide[spec["family"]] = at.shape_of(spec["wide"], [*names, study.CONDITION], 60).key
+    own: dict[str, list[str]] = {}
 
     def read(table: at.Table, proposer: Any, *, noise: str = "absolute", seed: int = 0) -> dict[str, Any]:
         formulas: list[str] = []
@@ -121,60 +128,107 @@ def test_every_arm_of_a_unit_is_counted_from_the_same_readings(families: list[di
             frame = pd.DataFrame({**table.columns(), "__target__": table.y})
             formulas = [str(p.formula) for p in proposer.fit_and_propose(frame, target_col="__target__")]
         family = int(table.key.split(",")[0].split("|")[0].removeprefix("family "))
-        right = [f for f in formulas if study.CONDITION not in table.names and at.shape_of(f, table.names).key in keys[family]]
-        law = right[0] if right else None
-        return {"record": {"vouching": {}, "measured_range": {}}, "reported": law is not None, "law": law, "tentative_law": None,
-                "action": "confirmed" if law else "widen_search", "formulas": formulas, "listed": list(formulas),
-                "rows_read": 30, "seconds": 0.0}
+        if study.CONDITION in table.names:                         # the pooled table: the wide law or nothing
+            right = [f for f in formulas if (shape := at.shape_of(f, table.names, 60)) is not None and shape.key == wide[family]]
+            law = right[0] if right else None
+        else:
+            mine = own.setdefault(table.key, list(formulas))
+            right = [f for f in formulas if (shape := at.shape_of(f, table.names)) is not None and shape.key in shapes[family]]
+            law = right[0] if right else mine[0] if formulas and formulas[0] not in mine else None
+        return {"record": {"vouching": {}, "measured_range": {}}, "reported": law is not None, "law": law, "confirmed_as": law,
+                "tentative_law": None, "action": "confirmed" if law else "widen_search", "formulas": formulas,
+                "listed": list(formulas), "rows_read": 30, "seconds": 0.0}
 
-    monkeypatch.setattr(family_route, "read", read)
+    return read
+
+
+def test_every_arm_of_a_unit_is_counted_from_the_same_readings(families: list[dict[str, Any]], monkeypatch: pytest.MonkeyPatch) -> None:
+    pair = families[2:4]                                           # two inputs, laws of the condition it cannot write
+    monkeypatch.setattr(family_route, "read", _stand_in(pair))
+    by_family = {spec["family"]: spec for spec in pair}
 
     def stage(table: at.Table) -> Any:
-        # each family's search finds the shape on its first member only; on the pooled table it finds nothing
-        if study.CONDITION in table.names:
-            return replayed(["0.5*x0 - 0.2*x1 + 0.1*c"])
-        family = int(table.key.split(",")[0].removeprefix("family "))
-        first = min(pair[[s["family"] for s in pair].index(family)]["values"])
-        return replayed([pair[[s["family"] for s in pair].index(family)]["laws"][0] if table.conditions[study.CONDITION] == first
-                         else "0.5*x0 - 0.2*x1"])
+        # each family's search finds the shape on its first member only
+        spec = by_family[int(table.key.split(",")[0].removeprefix("family "))]
+        return replayed([spec["laws"][0] if table.conditions[study.CONDITION] == min(spec["values"]) else "0.5*x0 - 0.2*x1"])
 
-    got = study.run_unit(pair, 0.01, 0.0, seed=1, stage=stage, cases=study.store(6))
+    def pooled_stage(table: at.Table) -> Any:
+        # the pooled table's search finds the wide law of the first family and misses the second's
+        spec = by_family[int(table.key.split("|")[0].removeprefix("family "))]
+        return replayed([spec["wide"] if spec is pair[0] else "0.5*x0 - 0.2*x1 + 0.1*c"])
+
+    got = study.run_unit(pair, 0.01, 0.0, seed=1, stage=stage, pooled_stage=pooled_stage, cases=study.store(6))
     members, fams = got["members"], got["families"]
     assert len(members) == 2 * study.MEMBERS and len(fams) == 2
-    assert sum(m["A"]["reported"] for m in members) == 2            # the route alone: the one member a family
-    assert sum(m["B"]["reported"] for m in members) == 10           # with its siblings: every member
-    assert all(m["B"]["accurate"] and m["B"]["recovered"] for m in members)
+    count = lambda arm, key="reported": sum(bool(m[arm][key]) for m in members)
+    assert count("A") == 2                                          # the route alone: the one member a family
+    assert count("B") == 10 and count("B", "recovered") == 10       # with its siblings, beside its own law: every member
     assert {m["source"] for m in members} == {"route", "siblings"} and all(m["fallbacks"] == [] for m in members)
     assert [m["F"] for m in members] == [m["B"] for m in members]   # nothing was left for a fallback
-    assert sum(m["R"]["reported"] for m in members) == 2            # the wrong family hands shapes, and none is the law
-    assert all(m["R"]["handed"] >= 1 and m["R"]["readings"] == 1 for m in members if not m["A"]["reported"])
-    assert all(not f["W"]["reported"] and f["readings"] >= 9 for f in fams)
-    summary = study.summarise(members, fams)["noise 0.01"]
-    assert summary["members"] == 10 and summary["families"] == 2
-    assert summary["B"]["against_A"]["reported"] == {"gained": 8, "lost": 0, "families_with_more": 2, "families_with_fewer": 0,
-                                                     "sign_test_p_over_families": 0.5}
-    assert summary["R"]["against_A"]["reported"]["gained"] == 0 and summary["B_against_R"]["reported"]["gained"] == 8
-    assert summary["sources"] == {"route": 2, "siblings": 8}
-    assert summary["fallbacks"]["solved cases"] == {"tried": 0, "led_to_a_reported_law": 0, "of_those_accurate": 0}
-    assert summary["wider_W"]["reported"] == 0 and summary["wider_B_not_writable"]["families"] == 2
+    assert count("R") == 2 and count("O") == 2                      # the wrong family brings nothing, nor does reading again
+    missed = [m for m in members if not m["A"]["reported"]]
+    assert all(m["R"]["handed"] >= 1 and m["R"]["passed_over"] == 0 for m in missed)
+    # the control is also handed the wrong family's wider law where that family has one: a second reading
+    assert {m["family"]: m["R"]["readings"] for m in missed} == {pair[0]["family"]: 1, pair[1]["family"]: 2}
+    # the first build's way: with its own family the handed law is reported; with the wrong family at the head of the
+    # list the referee reports the member's own law, which is not the law
+    assert count("B1") == 10 and all(m["B1"]["origin"] == "handed" for m in missed)
+    assert count("R1") == 10 and count("R1", "accurate") == 2 and all(m["R1"]["origin"] == "own" for m in missed)
+    assert all(m["where"]["on_a_sibling_s_lists"]["law_itself"] and m["where"]["among_the_first_three_handed"]["law_itself"]
+               and not m["where"]["among_its_referee_s_candidates"]["law_itself"] for m in missed)
+    wider = [f["wider"] for f in fams]
+    assert [w["searched"]["reported"] for w in wider] == [True, False] and [w["final"]["reported"] for w in wider] == [True, False]
+    assert wider[0]["source"] == "pooled search" and wider[0]["final"]["recovered"] and wider[0]["final"]["accurate_between"]
+    assert not any(w["alone"]["reported"] for w in wider)           # a sine of the condition is not a law it can write
+    summary = study.summarise(members, fams)
+    assert set(summary) == {"all noise levels", "noise 0.01"} and summary["all noise levels"] == summary["noise 0.01"]
+    cell = summary["noise 0.01"]
+    assert cell["members"] == 10 and cell["families"] == 2
+    assert cell["B"]["against_A"]["reported"] == {"gained": 8, "lost": 0, "families_with_more": 2, "families_with_fewer": 0,
+                                                  "sign_test_p_over_families": 0.5}
+    assert cell["R"]["against_A"]["reported"]["gained"] == 0 and cell["B_against_R"]["reported"]["gained"] == 8
+    assert cell["R1"]["reported_and_not_accurate"] == 8 and cell["B1_against_R1"]["reported"]["gained"] == 0
+    assert cell["first_build_origin"] == {"B1": {"handed": 8, "own": 0}, "R1": {"handed": 0, "own": 8}}
+    assert cell["sources"] == {"route": 2, "siblings": 8} and cell["passed_over"] == {"siblings": 0, "wider law": 0, "control": 0}
+    assert cell["fallbacks"]["solved cases"] == {"tried": 0, "its_own_law_reported": 0, "of_those_accurate": 0,
+                                                 "of_those_where_the_shape_was_a_solved_case": 0, "of_those_the_law_itself": 0,
+                                                 "another_law_reported_and_passed_over": 0}
+    assert not any(m["shape_among_the_solved_cases"] for m in members)
+    known = study.store()                                          # the full store holds the shape of two later families
+    solved = {curriculum.structure(sp.sympify(case.law)) for case in known.cases}
+    assert [f["family"] for f in study.draw_families(32) if curriculum.structure(sp.sympify(f["shape"])) in solved] == [16, 24]
+    lost = cell["members_without_a_first_report"]
+    assert lost["count"] == 8 and lost["first_action"] == {"widen_search": 8} and lost["handed_at_least_one_law"] == 8
+    assert lost["the_law_itself_was"] == {"among_its_referee_s_candidates": 0, "on_its_own_search_s_list": 0,
+                                          "on_a_sibling_s_lists": 8, "among_the_laws_handed": 8, "among_the_first_three_handed": 8}
+    assert cell["wider"]["searched"]["reported"] == 1 and cell["wider"]["final"]["reported"] == 1
+    assert cell["wider"]["final_source"] == {"None": 1, "pooled search": 1}
+    assert cell["wider"]["final_and_searched"] == {"both": 1, "only_final": 0, "only_searched": 0}
+    assert cell["wider"]["not_writable"] == {"families": 2, "alone": 0, "searched": 1, "final": 1}
+    nothing = [{**m, "source": None} for m in members[:3]]
+    assert study.summarise(nothing, fams)["noise 0.01"]["sources"] == {"None": 3}      # a member with no law is counted too
 
 
 def test_a_unit_that_fails_is_written_down_and_the_rest_still_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     calls = []
 
     def run_unit(pair: Any, noise: float, searches: float, **_: Any) -> dict[str, Any]:
-        calls.append(noise)
+        calls.append((pair[0]["family"], noise))
         if noise == study.NOISES[0]:
             raise RuntimeError("the search could not start")
-        return {"members": [], "families": []}
+        return {"members": [], "families": [{"family": pair[0]["family"]}, {"family": pair[1]["family"]}]}
 
     monkeypatch.setattr(study, "run_unit", run_unit)
     monkeypatch.setattr(study, "store", lambda *a, **k: None)
-    assert study.main(["run", "--out", str(tmp_path), "--limit", "3", "--searches", "0"]) == 1          # the first pair at each noise
-    assert calls == list(study.NOISES)
-    assert len(list(tmp_path.glob("unit_*.json"))) == 2 and len(list(tmp_path.glob("failed_*.json"))) == 1
-    assert study.main(["collect", "--out", str(tmp_path)]) == 0
+    args = ["--out", str(tmp_path), "--families", "32", "--skip", "16"]      # the second run's families
+    assert study.main(["run", *args, "--limit", "3", "--searches", "0"]) == 1          # the first pair at each noise
+    assert calls == [(16, noise) for noise in study.NOISES]
+    assert sorted(path.name for path in tmp_path.glob("*.json")) == ["failed_16_0.01.json", "unit_16_0.05.json", "unit_16_0.1.json"]
+    assert study.main(["collect", *args]) == 0
     record = __import__("json").loads((tmp_path / "family_stream.json").read_text())
     assert record["complete"] is False and record["units_found"] == 2 and record["units_expected"] == 24
-    assert record["units_failed"][0]["noise"] == study.NOISES[0] and "could not start" in record["units_failed"][0]["error"]
-    assert record["development_not_a_result"] is True
+    assert record["units_failed"][0]["pair"] == [16, 17] and "could not start" in record["units_failed"][0]["error"]
+    assert record["families"] == [{"family": 16}, {"family": 17}] * 2          # each unit's family rows, kept as rows
+    assert record["development_not_a_result"] is True and record["settings"]["families_read"] == list(range(16, 32))
+    with pytest.raises(SystemExit):
+        study.main(["run", "--out", str(tmp_path), "--skip", "3"])           # the families come in pairs

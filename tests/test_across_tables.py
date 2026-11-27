@@ -151,6 +151,27 @@ def test_the_wider_law_is_the_shape_with_the_constants_laws_put_in(family: at.Fa
     assert how[0]["relative_error"] < 0.03 and how[0]["constants"]["moving"] == [True, False]
 
 
+def test_laws_handed_in_take_turns_with_a_table_s_own_and_each_law_comes_once() -> None:
+    assert at.beside(["a", "b", "c"], ["x", "y"]) == ["a", "x", "b", "y", "c"]
+    assert at.beside([], ["x", "y"]) == ["x", "y"] and at.beside(["a"], []) == ["a"]
+    assert at.beside(["a", "x"], ["x", "y", "z"]) == ["a", "x", "y", "z"]
+
+
+def test_a_shape_a_search_proposed_too_low_to_reach_the_referee_is_scored_and_can_be_handed_back(family: at.Family) -> None:
+    names = family.names
+    right, wrong = "1.0*x0**2/(x1 + 2.0)", "0.5*x0**2 - 0.3*x1"
+    listed = [[wrong] for _ in family.tables]                       # every referee had only the wrong law before it
+    unseen = [[right] if i == 2 else [] for i in range(len(family.tables))]     # one search had the shape, low on its list
+    scored = at.score_shapes(family, listed, [None] * len(family.tables), unseen=unseen)
+    best = scored[0]
+    assert best.shape.key == at.shape_of(right, names).key and best.from_members == {2} and best.seen_on == set()
+    for member in range(len(family.tables)):                        # handed to all, the member whose search had it too
+        handed = at.sibling_laws(family, scored, member)
+        assert at.shape_of(handed[0], names).key == best.shape.key
+    assert at.score_shapes(family, listed, [None] * len(family.tables))[0].shape.key == at.shape_of(wrong, names).key
+    assert len(at.score_shapes(family, listed, [None] * len(family.tables), unseen=unseen, max_unseen=0)) == 1
+
+
 def test_too_few_members_give_no_wider_law(family: at.Family) -> None:
     small = at.Family("small", family.tables[:3])
     scored = at.score_shapes(small, [["1.0*x0**2/(x1 + 2.0)"], [], []], [None] * 3)

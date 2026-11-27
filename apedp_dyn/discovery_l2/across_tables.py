@@ -63,6 +63,7 @@ from scipy.optimize import least_squares
 MAX_LEVELS = 12        #: an input with at most this many values in a table can be read as a condition
 MIN_ROWS = 30          #: rows a value needs, among the rows to fit on and among the pool, to be a member of its own
 MAX_SHAPES = 30        #: shapes scored across a family
+MAX_UNSEEN = 20        #: further shapes scored from laws the searches proposed and the referee never had before it
 HANDED = 6             #: laws a member is handed from its siblings
 STARTS = 3             #: starts of a refit beside the ones it is given
 MAX_CONSTANTS = 10     #: a law with more fitted constants than this is not read as a shape
@@ -321,8 +322,9 @@ class Scored:
 
     shape: Shape
     fits: list[Fit | None]
-    from_members: set[int]         #: the members whose own lists held it
+    from_members: set[int]         #: the members whose lists or searches held it
     reported_on: set[int]          #: the members on which the referee reported it
+    seen_on: set[int] = field(default_factory=set)   #: the members on which the referee has had it among its candidates
 
     @property
     def score(self) -> float:
@@ -330,37 +332,47 @@ class Scored:
         return math.inf if any(f is None for f in self.fits) else float(sum(f.bic() for f in self.fits if f is not None))
 
 
-def score_shapes(family: Family, listed: Sequence[Sequence[str]], reported: Sequence[str | None], *, seed: int = 0,
-                 max_shapes: int = MAX_SHAPES) -> list[Scored]:
+def score_shapes(family: Family, listed: Sequence[Sequence[str]], reported: Sequence[str | None], *,
+                 unseen: Sequence[Sequence[str]] = (), seed: int = 0, max_shapes: int = MAX_SHAPES,
+                 max_unseen: int = MAX_UNSEEN) -> list[Scored]:
     """Every shape the route listed for any member, fitted on every member, best first.
 
-    ``listed[i]`` are member ``i``'s laws in the route's order and ``reported[i]`` the law the referee reported on it,
-    if any. Shapes reported on a member come first (more members first), then the rest; inside each group by the sum
-    of the members' BIC. At most ``max_shapes`` are scored: every reported shape, then each member's first ones in turn.
+    ``listed[i]`` are member ``i``'s laws in the route's order: the candidates its referee had before it.
+    ``reported[i]`` is the law the referee reported on it, if any. ``unseen[i]`` are further laws member ``i``'s
+    search proposed that never reached its referee (the route keeps about six of a search's laws): their shapes are
+    scored too, because a shape that was ninth on one member's list can be first by all the family's rows.
+
+    Shapes reported on a member come first (more members first), then the rest; inside each group by the sum of the
+    members' BIC. At most ``max_shapes`` are scored from the lists (every reported shape, then each member's first
+    ones in turn) and ``max_unseen`` more from the unseen laws.
     """
     names = family.names
     wanted: dict[str, Scored] = {}
 
-    def take(law: str, member: int, is_reported: bool) -> None:
+    def take(law: str, member: int, is_reported: bool, seen: bool, limit: int) -> None:
         shape = shape_of(law, names)
         if shape is None:
             return
         if shape.key not in wanted:
-            if len(wanted) >= max_shapes and not is_reported:
+            if len(wanted) >= limit and not is_reported:
                 return
             wanted[shape.key] = Scored(shape, [], set(), set())
         wanted[shape.key].from_members.add(member)
+        if seen:
+            wanted[shape.key].seen_on.add(member)
         if is_reported:
             wanted[shape.key].reported_on.add(member)
 
     for member, law in enumerate(reported):
         if law:
-            take(law, member, True)
-    longest = max((len(laws) for laws in listed), default=0)
-    for place in range(longest):
-        for member, laws in enumerate(listed):
-            if place < len(laws):
-                take(laws[place], member, False)
+            take(law, member, True, True, max_shapes)
+    for seen, lists, room in ((True, listed, 0), (False, unseen, max_unseen)):
+        limit = max_shapes if seen else len(wanted) + room
+        longest = max((len(laws) for laws in lists), default=0)
+        for place in range(longest):
+            for member, laws in enumerate(lists):
+                if place < len(laws):
+                    take(laws[place], member, False, seen, limit)
     for item in wanted.values():
         previous: tuple[float, ...] | None = None
         for index, table in enumerate(family.tables):
@@ -371,15 +383,36 @@ def score_shapes(family: Family, listed: Sequence[Sequence[str]], reported: Sequ
 
 
 def sibling_laws(family: Family, scored: Sequence[Scored], member: int, handed: int = HANDED) -> list[str]:
-    """What member ``member`` is handed: the best shapes its own list did not hold, refitted on its own rows."""
+    """What member ``member`` is handed: the best shapes its referee has not had before it, refitted on its own rows.
+
+    That is a sibling's shape, or a shape the member's own search proposed too low on its list to reach the referee
+    and that all the family's rows put first.
+    """
     out: list[str] = []
     for item in scored:
         if len(out) >= handed:
             break
         fit = item.fits[member] if member < len(item.fits) else None
-        if fit is None or member in item.from_members:
-            continue                      # it cannot be fitted here, or the member's own list already holds the shape
+        if fit is None or member in item.seen_on:
+            continue                      # it cannot be fitted here, or the member's referee already had the shape
         out.append(item.shape.law(family.names, fit.theta))
+    return out
+
+
+def beside(own: Sequence[str], new: Sequence[str]) -> list[str]:
+    """``own`` and ``new`` in turn, ``own`` first, each law once.
+
+    The route in force gives a search stage about six of the twelve candidates its referee contrasts
+    (``refined_search`` takes the stage's laws and the polynomial library's in turn, eleven in all, and
+    ``main_search`` adds the first pass). A list with the new laws at its head is therefore read *in place of* a
+    table's own best laws, and the referee is asked an easier question than on the first reading. Taking turns
+    keeps the table's own best laws before the referee as rivals of what is handed in.
+    """
+    out: list[str] = []
+    for index in range(max(len(own), len(new))):
+        for laws in (own, new):
+            if index < len(laws) and laws[index] not in out:
+                out.append(laws[index])
     return out
 
 

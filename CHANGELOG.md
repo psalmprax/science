@@ -161,7 +161,7 @@ inferred releases.
     found. A shape's constants are read along the family's condition, and the wider law over the inputs
     and the condition is judged by the route on the pooled table.
   - *The route* (`apedp_dyn/discovery_l2/family_route.py`): each member by the route in force as today;
-    then its siblings' shapes; then the wider law; then the fallbacks. A member whose first reading
+    then the family's shapes; then the wider law; then the fallbacks. A member whose first reading
     reported a law keeps it and is never read again. Later readings replay laws and run no search.
   - *The other three, as fallbacks* (`apedp_dyn/discovery_l2/fallbacks.py`), tried in this order and only
     for a member still without a law: solved cases (`proposers/experience.py`); the tensor-train reading
@@ -172,13 +172,34 @@ inferred releases.
   - *What is not built of the designs*: the joint template search (the shapes scored are those the
     single searches listed); remembered parts as operators; more than one condition; and the redesigns of
     the three fallbacks, which stand in their 27 November forms.
-  - *Tests*: `tests/test_across_tables.py` (14), `tests/test_family_route.py` (7, one through the route
-    in force), `tests/test_fallbacks.py` (6), `tests/test_tensor_train_reading.py` (6),
+  - *Tests*: `tests/test_across_tables.py` (16), `tests/test_family_route.py` (9, one through the route
+    in force), `tests/test_fallbacks.py` (7), `tests/test_tensor_train_reading.py` (6),
     `tests/test_study_symbolic_tensor_train.py` (now 2), `tests/test_study_family_stream.py` (9).
   - *The measurement* (development, not a result): `scripts/study_family_stream.py` and
-    `.github/workflows/family-stream.yml`. Sixteen families of five tables at 1 %, 5 % and 10 % noise,
-    read table by table, as families, with the fallbacks, with the wrong family as the control, and by
-    searching the pooled table directly.
+    `.github/workflows/family-stream.yml`. Families of five tables at 1 %, 5 % and 10 % noise, read table
+    by table, as families, with the fallbacks, with the wrong family as the control, and with the pooled
+    table searched directly.
+  - *The first run, and the flaw it showed in the build*
+    (`benchmarks/family_stream/dev_run1.json`; 16 families, 240 tables). Laws reported: the route table
+    by table 85, the family route 104, with the fallbacks 116, none inaccurate. But the control, each
+    table put into a family it does not belong to, reported 98. Against it the family gained 10 tables
+    and lost 4 (p = 0.18 over hidden shapes). Of the 19 the family route added, 6 were a sibling's shape,
+    and of the 12 the fallbacks added, 1 was by the record a fallback's own law. Cause: the laws handed
+    in stood at the head of each list. The route gives a search about six of the twelve candidates its
+    referee contrasts, so they took those places from the table's own best laws, and before weaker
+    rivals the referee reported laws it had refused on the first reading. The build broke its own rule
+    (added, never in place).
+  - *Changed for it, the same day*: laws handed in take turns with the table's own, the table's own
+    first (`across_tables.beside`); a re-reading counts only if the law it reports is one that was
+    handed in for it, judged on the law as the referee confirmed it (`family_route.brought_in`, and the
+    same in `fallbacks.try_in_order`), and anything else it reports is written down as passed over; a
+    family also scores shapes a member's search proposed too low on its list to reach its referee; the
+    pooled table can be searched too, the family's wider laws standing beside that search
+    (`pooled_stage`). The study gained arms that show the first build's effect beside the changed route.
+  - *The wider law in the first run*: reported for 13 of 48 family readings, all accurate at values of
+    the condition no row was measured at, against 9 for searching the pooled table directly (6 only by
+    the family, 2 only by the search; p = 0.29). Not a fair comparison yet: that search had 30 seconds
+    where the members together had 150.
 
 - **A design for each of the four things that showed no gain, and one feasibility check (2026-11-27, the
   owner's word of 10:23: do not retire them, find a solution).** New

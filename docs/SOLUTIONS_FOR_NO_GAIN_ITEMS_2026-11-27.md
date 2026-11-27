@@ -383,6 +383,17 @@ Nothing is in force. The order of section 7 is superseded by this for what is bu
 the three fallbacks stay to be built in that order if the arrangement earns its test. The development
 measurement is `scripts/study_family_stream.py`.
 
+**The first measurement broke the first rule of section 1, and the build was changed for it.** Rule 1 is
+"added, never in place". The route in force gives a search about six of the twelve candidates its referee
+contrasts. The build put the laws it handed in at the head of each table's list, so they stood in place of
+the table's own best laws. The control of rule 3 caught it: a table put into a family it does not belong
+to gained a law almost as often as one in its own (98 laws reported against 104, the route alone 85;
+`benchmarks/family_stream/dev_run1.json`). Before weaker rivals the referee had reported laws it refused
+on the first reading. The route now lets handed laws take turns with the table's own, and counts a
+re-reading only if the law it reports is one that was handed in. A lesson for the other three designs as
+well: on this route "added" has to mean a place among the twelve, and a control with the wrong source is
+what shows whether a gain is the source's.
+
 ## Sources
 
 In this repository: `preregistration/RESULT-MMLM-ORDER-2026-11.md`,

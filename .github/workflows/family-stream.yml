@@ -5,7 +5,8 @@ name: Families of tables read together (development)
 # table by table, as families (apedp_dyn/discovery_l2/family_route.py), with the fallbacks behind, with
 # the wrong family as the control, and by searching the pooled table directly. Every arm goes through the
 # product's own search stage and the referee. No language model is called: nothing here needs a key.
-# Started by pushing a branch family-stream-run-*.
+# Started by pushing a branch family-stream-run-*. The first run read families 0 to 15 of the study's seed
+# with the route as first built; from the second run on it reads families 16 to 31 with the changed route.
 
 on:
   push:
@@ -39,7 +40,7 @@ jobs:
           SHARD: ${{ matrix.shard }}
           # search processes that cannot stop a reading for ever, as in force for the product since 25 November
           APEDP_SEARCH_PROCESSES: leave_hard
-        run: python scripts/study_family_stream.py run --out out --searches 30 --shard "$SHARD" --shards 24
+        run: python scripts/study_family_stream.py run --out out --searches 30 --families 32 --skip 16 --shard "$SHARD" --shards 24
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -67,7 +68,7 @@ jobs:
           path: got
           merge-multiple: true
       - name: Collect
-        run: python scripts/study_family_stream.py collect --out got
+        run: python scripts/study_family_stream.py collect --out got --families 32 --skip 16
       - name: Print the record
         if: always()
         run: |

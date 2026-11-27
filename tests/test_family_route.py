@@ -66,11 +66,12 @@ def test_a_member_whose_search_missed_the_shape_gets_it_from_a_sibling_and_is_re
     assert [m["source"] for m in out["members"]] == ["route", "siblings", "siblings", "siblings"]
     assert [key for key, _ in referee.calls] == ["c=1", "c=2", "c=3", "c=4", "c=2", "c=3", "c=4"]      # c=1 is not read again
     again = referee.calls[4][1]
-    assert at.shape_of(again[0], ["x0", "x1"]).key == RIGHT_KEY and again[-1] == WRONG   # siblings' first, then its own
-    assert out["members"][1]["handed_from_siblings"] == again[:-1] and out["members"][0]["handed_from_siblings"] == []
+    assert again[0] == WRONG and at.shape_of(again[1], ["x0", "x1"]).key == RIGHT_KEY   # its own first, a sibling's beside it
+    assert out["members"][1]["handed_from_siblings"] == again[1:] and out["members"][0]["handed_from_siblings"] == []
+    assert all(m["passed_over"] == [] for m in out["members"])
     assert out["readings"] == 7 and out["wider"] is None
     assert out["shapes"][0]["shape"] == RIGHT_KEY and out["shapes"][0]["reported_on"] == [0, 1, 2, 3]
-    assert out["shapes"][0]["from_members"] == [0]
+    assert out["shapes"][0]["from_members"] == [0] and out["shapes"][0]["seen_on"] == [0]
 
 
 def test_with_siblings_switched_off_it_is_the_route_table_by_table(referee: _Referee) -> None:
@@ -105,8 +106,55 @@ def test_the_wider_law_is_read_on_the_pooled_table_and_then_written_out_for_a_me
     assert pooled_call == wide["handed"]
     assert [m["source"] for m in out["members"]] == ["route", "siblings", "wider law", "siblings"]
     last_key, last_laws = referee.calls[-1]
-    assert last_key == "c=3" and "T" not in last_laws[0] and at.shape_of(last_laws[0], ["x0", "x1"]) is not None
+    assert last_key == "c=3" and last_laws[0] == WRONG                      # its own law first, the wider law beside it
+    assert "T" not in last_laws[1] and at.shape_of(last_laws[1], ["x0", "x1"]).key == RIGHT_KEY and len(last_laws) == 2
     assert out["reported_final"] == 4 and out["readings"] == 4 + 3 + 1 + 1
+    assert wide["source"] == "family" and wide["alone"]["reported"] and wide["searched"] is None and wide["beside"] is None
+
+
+def test_a_re_reading_that_reports_one_of_the_member_s_own_laws_is_not_counted(monkeypatch: pytest.MonkeyPatch) -> None:
+    """What the first development run showed: read again before other rivals, the referee may report a law it refused
+    the first time. That is not something the family brought, and the member stays as its first reading left it."""
+    calls: list[tuple[str, list[str]]] = []
+
+    def lenient(table: at.Table, proposer: Any, *, noise: str = "absolute", seed: int = 0) -> dict[str, Any]:
+        frame = pd.DataFrame({**table.columns(), "__target__": table.y})
+        formulas = [str(p.formula) for p in proposer.fit_and_propose(frame, target_col="__target__")]
+        first_reading = sum(key == table.key for key, _ in calls) == 0
+        calls.append((table.key, formulas))
+        # c=1 has the law. Every other member is refused at first; read again it gets its own law back, not the handed one
+        law = RIGHT if table.key == "c=1" else None if first_reading else WRONG
+        return {"record": {"vouching": {}, "measured_range": {}}, "reported": law is not None, "law": law, "confirmed_as": law,
+                "tentative_law": None, "action": "confirmed" if law else "widen_search", "formulas": formulas,
+                "listed": list(formulas), "rows_read": 30, "seconds": 0.0}
+
+    monkeypatch.setattr(family_route, "read", lenient)
+    out = family_route.discover_family(_family(), _stage({"c=1"}), wider=False)
+    assert out["reported_first"] == 1 and out["reported_final"] == 1
+    assert [m["source"] for m in out["members"]] == ["route", None, None, None]
+    assert [m["final"]["reported"] for m in out["members"]] == [True, False, False, False]
+    assert all(m["passed_over"] == [{"reading": "siblings", "law": WRONG}] for m in out["members"][1:])
+    # and the same law, had it been handed in, would have counted
+    assert family_route.brought_in({"reported": True, "law": WRONG, "confirmed_as": WRONG}, [WRONG], ["x0", "x1"])
+    assert not family_route.brought_in({"reported": True, "law": WRONG, "confirmed_as": WRONG}, [RIGHT], ["x0", "x1"])
+    assert not family_route.brought_in({"reported": False, "law": None}, [WRONG], ["x0", "x1"])
+    # what the referee confirmed decides, not the form the route rewrote it into
+    assert family_route.brought_in({"reported": True, "law": WRONG, "confirmed_as": RIGHT}, [RIGHT], ["x0", "x1"])
+
+
+def test_the_pooled_table_can_be_searched_too_and_the_family_s_law_then_stands_beside_that_search(referee: _Referee) -> None:
+    searched_and_missed: family_route.Stage = lambda table: replayed(["0.4*x0 + 0.1*T"])
+    out = family_route.discover_family(_family(), _stage({"c=1"}), pooled_stage=searched_and_missed)
+    wide = out["wider"]
+    assert wide["searched"]["reported"] is False and wide["alone"]["reported"] and wide["beside"]["reported"]
+    assert wide["reported"] and wide["source"] == "family" and "T" in wide["law"]
+    beside_call = [formulas for key, formulas in referee.calls if key.endswith("pooled over T")][-1]
+    assert beside_call[0] == "0.4*x0 + 0.1*T" and beside_call[1] == wide["handed"][0]     # the search's law first
+    found: family_route.Stage = lambda table: replayed(["0.9*T*x0**2/(x1 + 1.0)"])
+    other = family_route.discover_family(_family(), _stage({"c=1"}), pooled_stage=found)
+    assert other["wider"]["source"] == "pooled search" and other["wider"]["beside"] is None
+    assert other["wider"]["law"] == "0.9*T*x0**2/(x1 + 1.0)"
+    assert other["readings"] == out["readings"] - 1                 # no reading of the two side by side was needed
 
 
 class _Fallback:

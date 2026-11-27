@@ -110,10 +110,26 @@ def test_fallbacks_are_tried_in_order_and_the_chain_stops_at_the_first_reported_
     assert [step["tried"] for step in trail] == [False, True, True, True, True]
     assert trail[0]["why_not"] == "not for this table" and "the service is down" in trail[1]["error"]
     assert trail[2]["proposed"] == 0 and trail[3]["proposed"] == 1 and trail[3]["reported"] is False
-    assert trail[4]["reported"] is True and trail[4]["the_reported_law_is_one_of_its_own"] is True
-    # what is handed to the route: the fallback's own laws first, then what the table had already been given
-    assert handed == [["0.5*x + 1.5*z", "0.1*x - 0.2*z"], ["1.9*x**2*z", "0.1*x - 0.2*z"]]
+    assert trail[4]["reported"] is True and trail[4]["passed_over"] is None
+    # what is handed to the route: the table's own laws first, each fallback's beside them
+    assert handed == [["0.1*x - 0.2*z", "0.5*x + 1.5*z"], ["0.1*x - 0.2*z", "1.9*x**2*z"]]
     assert chain[0].asked == 0 and chain[5].asked == 0
+
+
+def test_a_reading_that_reports_a_law_the_fallback_did_not_supply_is_passed_over() -> None:
+    """Read again before other rivals, the referee may report a law of the table's own that it refused before. That
+    is not the fallback's doing: it is written down, not counted, and the next fallback is still tried."""
+    table = _table(["x", "z"], lambda a, b: 2.0 * a ** 2 * b)
+    own = "0.1*x - 0.2*z"
+    chain = [_Stub("one", ["0.5*x*z"]), _Stub("two", ["1.9*x**2*z"])]
+    reading, trail = fallbacks.try_in_order(table, [own], chain, lambda t, laws: {"reported": True, "law": own, "confirmed_as": own})
+    assert reading is None and chain[1].asked == 1
+    assert [step["reported"] for step in trail] == [False, False] and all(step["law"] is None for step in trail)
+    assert [step["passed_over"] for step in trail] == [own, own]
+    # the form the referee confirmed decides, not the form the route rewrote it into
+    reading, trail = fallbacks.try_in_order(table, [own], chain,
+                                            lambda t, laws: {"reported": True, "law": own, "confirmed_as": "0.7*x*z"})
+    assert reading is not None and trail[0]["reported"] is True and len(trail) == 1
 
 
 def test_a_chain_that_reports_nothing_says_what_each_did() -> None:

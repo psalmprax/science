@@ -12,9 +12,12 @@ of tables (``across_tables.py``). This module is the rest of that sentence: the 
 behind it, tried one after another and only where nothing before them led to a reported law.
 
 **Each fallback proposes and nothing more** (AGENTS.md 1.1). It reads the rows a proposer may read and
-hands over laws. Those laws go to the route in force *beside* the laws the table was already given, never
-in their place, and the referee decides. The chain stops at the first fallback after which the route
-reports a law.
+hands over laws. Those laws go to the route in force *beside* the laws the table's own search proposed,
+taking turns with them, and the referee decides. The chain stops at the first fallback whose own law the
+route reports. A reading in which the referee reports some other law is not counted: in the first
+development run (``benchmarks/family_stream/dev_run1.json``) the fallbacks' laws stood at the head of the
+list, in place of the table's own, and by that record 11 of the 12 laws reported after a fallback were
+not the fallback's.
 
 **The order**, cheapest first, the one that costs calls last:
 
@@ -44,7 +47,7 @@ import numpy as np
 import pandas as pd
 import sympy as sp
 
-from apedp_dyn.discovery_l2.across_tables import Table, shape_of
+from apedp_dyn.discovery_l2.across_tables import Table, beside, shape_of
 from apedp_dyn.proposers import experience, llm_proposer
 
 MAX_PERMUTED_INPUTS = 3      #: up to this many inputs a case's law is tried with its inputs in every order
@@ -151,11 +154,15 @@ class LanguageModel:
 
 def try_in_order(table: Table, known: Sequence[str], fallbacks: Sequence[Fallback],
                  read: Callable[[Table, list[str]], dict[str, Any]]) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
-    """Each fallback in turn until the route reports a law: the reading that reported (or ``None``) and what each did.
+    """Each fallback in turn until the route reports one of its laws: that reading (or ``None``) and what each did.
 
-    ``known`` are the laws the table was already given; they are handed over again beside each fallback's own, so the
-    referee meets the same rivals. ``read(table, laws)`` is the route in force on those laws. A fallback that raises is
-    written down and passed over; it does not stop the chain.
+    ``known`` are the laws the table's own search proposed. They take turns with each fallback's laws, the table's
+    own first (``across_tables.beside``), so the referee keeps the table's best laws before it as rivals: the route
+    gives a search about six of its twelve candidates, and a fallback's laws at the head of the list would stand in
+    place of them. A reading counts only if the law it reports is one of the fallback's own; if the referee reports
+    another law, one it did not report before, that is written down (``passed_over``) and the next fallback is tried.
+    ``read(table, laws)`` is the route in force on those laws. A fallback that raises is written down and passed over;
+    it does not stop the chain.
     """
     trail: list[dict[str, Any]] = []
     for fallback in fallbacks:
@@ -175,12 +182,14 @@ def try_in_order(table: Table, known: Sequence[str], fallbacks: Sequence[Fallbac
         if not laws:
             step["seconds"] = round(time.perf_counter() - started, 2)
             continue
-        reading = read(table, [*laws, *known])
+        reading = read(table, beside(known, laws))
         own = {shape.key for shape in (shape_of(law, table.names, ANY_CONSTANTS) for law in laws) if shape is not None}
-        reported_shape = shape_of(str(reading.get("law")), table.names, ANY_CONSTANTS) if reading.get("reported") else None
-        step.update({"reported": bool(reading.get("reported")), "law": reading.get("law") if reading.get("reported") else None,
-                     "the_reported_law_is_one_of_its_own": bool(reported_shape is not None and reported_shape.key in own),
+        confirmed = reading.get("confirmed_as") or reading.get("law")      # as the referee confirmed it, before pruning
+        reported_shape = shape_of(str(confirmed), table.names, ANY_CONSTANTS) if reading.get("reported") else None
+        its_own = bool(reported_shape is not None and reported_shape.key in own)
+        step.update({"reported": its_own, "law": reading.get("law") if its_own else None,
+                     "passed_over": reading.get("law") if reading.get("reported") and not its_own else None,
                      "seconds": round(time.perf_counter() - started, 2)})
-        if reading.get("reported"):
+        if its_own:
             return reading, trail
     return None, trail
