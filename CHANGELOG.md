@@ -102,6 +102,22 @@ inferred releases.
   - Part 2, agreement with human labels, needs an object tracker on generated video.
   - Files: `preregistration/PREREG-PHYSICS-J1-2026-11.md`, `scripts/run_prereg_physics_j1.py`,
     `.github/workflows/physics-j1.yml`, `tests/test_physics_j1_prereg.py`.
+- **PREREG-MMLM-ORDER-2026-11, revised after its independent review (2026-11-27).** The review found thirteen
+  problems, listed in the plan. Among them:
+  - the timed part was a few percent of a discovery;
+  - the other-field laws were development material for MMLM-L;
+  - one arm's error erased the other's row;
+  - a failed search counted as normal;
+  - the route was not the route in force.
+
+  The revision makes these changes:
+  - It tests the claim made to the owner, that MMLM helps on familiar ground. It uses three familiar sets (23
+    other-field laws, 12 reachable ODEBench laws, 30 reachable power laws) and a guard of 30 invented laws.
+  - It runs the table route in force with the last checks.
+  - The search runs once per unit, seeded with both first-pass laws, and each arm runs in its own process.
+  - The expectations are now a gain by sign test, no harm on the guard, no more wrong laws, and not slower end to
+    end.
+  - A pass only proposes a blind test.
 - **PREREG-MMLM-ORDER-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The route in force
   with MMLM's law model as its guided search's prior, against the size prior in force. The same searched
   candidates are replayed to both arms, on 50 invented laws drawn at run time from a seed no other test uses and

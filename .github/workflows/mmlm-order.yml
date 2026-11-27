@@ -1,11 +1,11 @@
-# PREREG-MMLM-ORDER-2026-11: the default route with and without MMLM's order of candidates
+# PREREG-MMLM-ORDER-2026-11: MMLM's prior against the size prior in the table route in force
 # (scripts/run_prereg_mmlm_order.py), on the owner's word of 27 November ("go ahead to test all").
-#   push to mmlm-order-smoke-*  -> the tests, two laws with a short real search, then a rehearsal: 15 invented laws
-#                                  of the rehearsal's own seed, 60 s of search (no law of the final sets).
-#   push to mmlm-order-run-*    -> smoke, then the preregistered run on 74 laws, once.
+#   push to mmlm-order-smoke-*  -> the tests, two laws with a short real search, then a rehearsal: 16 laws of the
+#                                  rehearsal's own seeds and shapes, 60 s of search (no shape of the final sets).
+#   push to mmlm-order-run-*    -> smoke, then the preregistered run on 95 laws, once.
 # Every shard prints its rows between markers too, so the record can be rebuilt from the logs.
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
-name: MMLM's order in the default route
+name: MMLM's prior in the table route
 
 on:
   push:
@@ -28,6 +28,8 @@ jobs:
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Start Julia once (so no unit pays for installing it)
+        run: python -c "import numpy as np; from pysr import PySRRegressor; PySRRegressor(niterations=1, progress=False, verbosity=0).fit(np.random.rand(30, 1), np.random.rand(30))"
       - name: The test's own tests
         run: python -m pytest tests/test_mmlm_order_prereg.py -q
       - name: Two laws, a short real search, both arms
@@ -52,6 +54,8 @@ jobs:
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Start Julia once (so no unit pays for installing it)
+        run: python -c "import numpy as np; from pysr import PySRRegressor; PySRRegressor(niterations=1, progress=False, verbosity=0).fit(np.random.rand(30, 1), np.random.rand(30))"
       - name: Shard ${{ matrix.k }} of 20
         env:
           SHARD: ${{ matrix.k }}
@@ -68,7 +72,7 @@ jobs:
           SHARD: ${{ matrix.k }}
         run: |
           echo "=====BEGIN mmlm order shard====="
-          for f in order-out/runs-shard-*.jsonl; do [ -f "$f" ] && gzip -9c "$f" | base64 -w 60000; echo; done
+          for f in order-out/runs-shard-*.jsonl order-out/loaded-shard-*.json; do [ -f "$f" ] && gzip -9c "$f" | base64 -w 60000; echo; done
           echo "=====END mmlm order shard====="
       - uses: actions/upload-artifact@v7
         if: always()
@@ -98,7 +102,14 @@ jobs:
           path: order-out
           merge-multiple: true
       - name: Collect
-        run: python scripts/run_prereg_mmlm_order.py collect --out order-out
+        env:
+          REF: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF" == mmlm-order-run-* ]]; then
+            python scripts/run_prereg_mmlm_order.py collect --out order-out
+          else
+            python scripts/run_prereg_mmlm_order.py collect --out order-out --rehearsal
+          fi
       - name: Print the record
         if: always()
         run: |

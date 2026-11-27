@@ -3,8 +3,8 @@ name: Physics judge, development runs on PhysInOne
 # docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md, part 1a, on the owner's word of 26 November ("so, build").
 # One runner per scene kind: scripts/run_physics_judge_dev.py reads the masks of 30 development scenes (60 for collisions, most are not side views) of
 # the kind's phenomenon from PhysInOne on the Hugging Face Hub (range requests, nothing kept), makes the
-# object tracks, and prints the judge's verdicts on the true clips and on four development perturbations,
-# with the tracks, between markers in the log. Development pool only: the blind pool (backgrounds that are
+# object tracks, and prints the judge's verdicts on the true clips and on four development perturbations
+# between markers in the log (verdicts, reasons and scene names; no tracks: the licence, and the repository is public). Development pool only: the blind pool (backgrounds that are
 # multiples of five) is refused by the script.
 #   push to physics-judge-dev-*  -> one development run.
 # Branch pushes start it because workflow_dispatch only reaches the default branch.
@@ -55,10 +55,13 @@ jobs:
           import json, os, pathlib
           kind = os.environ["KIND"]
           rec = {}
-          for name in (f"tracks_{kind}.json", f"verdicts_{kind}.json"):
-              p = pathlib.Path(name)
-              if p.exists():
-                  rec[name.split("_")[0]] = json.loads(p.read_text())
+          # Verdicts, reasons and scene names only: PhysInOne is CC BY-NC-SA 4.0 and this repository is public, so
+          # no track (and no statistic of one) is printed. Until 27 November the tracks were printed too.
+          p = pathlib.Path(f"verdicts_{kind}.json")
+          if p.exists():
+              data = json.loads(p.read_text())
+              rows = [{k: r.get(k) for k in ("scene", "variant", "outcome", "reasons")} for r in data["rows"]]
+              rec["verdicts"] = {"kind": data["kind"], "rows": rows}
           pathlib.Path("record.json").write_text(json.dumps(rec))
           EOF
           echo "=====BEGIN physics judge ${KIND}====="
