@@ -20,6 +20,46 @@
    "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
    "test_id": "B310",
    "test_name": "blacklist"
+  },
+  {
+   "code": "78         CACHE.mkdir(parents=True, exist_ok=True)\n79         with urllib.request.urlopen(ODEBENCH_URL, timeout=120) as response:\n80             path.write_bytes(response.read())\n",
+   "col_offset": 13,
+   "end_col_offset": 62,
+   "filename": "apedp_mmlm/law_corpora.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 79,
+   "line_range": [
+    79
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "31         CACHE.mkdir(parents=True, exist_ok=True)\n32         with urllib.request.urlopen(f\"{SOURCE}/{name}.txt\", timeout=120) as response:  # noqa: S310 - fixed https host\n33             path.write_bytes(response.read())\n",
+   "col_offset": 13,
+   "end_col_offset": 72,
+   "filename": "apedp_mmlm/text_corpus.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 32,
+   "line_range": [
+    32
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
   }
  ]
 }

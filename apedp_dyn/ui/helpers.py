@@ -14,6 +14,7 @@ from __future__ import annotations
 import hmac
 import logging
 import os
+import threading
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -36,6 +37,12 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 _LOOPBACK_PEERS = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
 
+# Headers a reverse proxy adds when it passes a request on. A proxy on the same machine makes every outside caller
+# look like a loopback peer, so without a key a request that carries one of these is not served (outside audit of
+# 27 November 2026). A proxy that adds none of them is not caught: any deployment behind one must set APEDP_API_KEY.
+_FORWARDING_HEADERS = ("forwarded", "x-forwarded-for", "x-forwarded-host", "x-forwarded-proto", "x-real-ip",
+                       "x-original-forwarded-for", "cf-connecting-ip", "true-client-ip", "via")
+
 
 def _require_api_key(request: Request) -> None:
     """API-key gate for /api/*.
@@ -57,6 +64,11 @@ def _require_api_key(request: Request) -> None:
                 status_code=401,
                 detail="APEDP_API_KEY is not set; only loopback clients are served",
             )
+        if any(request.headers.get(name) for name in _FORWARDING_HEADERS):
+            raise HTTPException(
+                status_code=401,
+                detail="APEDP_API_KEY is not set and the request came through a proxy; set the key to serve it",
+            )
         return
     auth = request.headers.get("authorization", "")
     bearer = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
@@ -76,12 +88,18 @@ _AUDIT_LOG = Path(os.environ.get("APEDP_AUDIT_LOG",
 _LOG = logging.getLogger("apedp_dyn.ui.server")
 
 
+_AUDIT_WRITE_LOCK = threading.Lock()
+
+
 def _audit(endpoint: str, payload: dict[str, Any]) -> None:
     """Append-only audit record for every discovery/recommendation response.
 
     Records what was asked, what verdict was returned, and what (if
     anything) was promoted -- the minimum required to reconstruct, after
     the fact, every actionable output this server ever produced.
+
+    One record is one line, written whole: a lock keeps this process's threads apart and, where the system has
+    one, a file lock keeps other server processes apart (outside audit of 27 November 2026: there was neither).
     """
     import datetime
     import json
@@ -89,8 +107,19 @@ def _audit(endpoint: str, payload: dict[str, Any]) -> None:
     _AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
     rec = {"ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
            "endpoint": endpoint, **payload}
-    with open(_AUDIT_LOG, "a", encoding="utf-8") as f:
-        f.write(json.dumps(rec, default=str) + "\n")
+    line = json.dumps(rec, default=str) + "\n"
+    with _AUDIT_WRITE_LOCK, open(_AUDIT_LOG, "a", encoding="utf-8") as f:
+        try:
+            import fcntl
+        except ImportError:                                    # no file locks on this system (Windows)
+            f.write(line)
+            return
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+        try:
+            f.write(line)
+            f.flush()
+        finally:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
 
 def to_jsonable(obj: Any) -> Any:

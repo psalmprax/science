@@ -60,6 +60,23 @@ def test_dockerfile_does_not_hide_a_failing_build_step():
     assert not any(line.startswith("COPY tests/") for line in instructions)
 
 
+def test_the_kernel_build_has_the_workspace_manifest_and_its_lock_file():
+    """``--locked`` on a workspace member needs the workspace's own manifest and lock file in the build context.
+
+    The builder stage copied ``rust/`` alone, so the image could not be built at all (outside audit of 27 November
+    2026). Nobody saw it because the job that builds the image waits for the trustees' signature.
+    """
+    instructions = _dockerfile_instructions()
+    build = next(index for index, line in enumerate(instructions) if "maturin build" in line)
+    stage = max(index for index, line in enumerate(instructions[:build]) if line.startswith("FROM "))
+    copied = " ".join(line for line in instructions[stage:build] if line.startswith("COPY "))
+    assert "--locked" in instructions[build] and "rust/apedp-kernel/Cargo.toml" in instructions[build]
+    assert " Cargo.toml " in copied and " Cargo.lock " in copied and "rust/" in copied
+    workspace = (REPO_ROOT / "Cargo.toml").read_text()
+    assert '"rust/apedp-kernel"' in workspace and (REPO_ROOT / "Cargo.lock").exists()
+    assert not (REPO_ROOT / "rust" / "apedp-kernel" / "Cargo.lock").exists()      # the crate has no lock file of its own
+
+
 def test_create_app_returns_a_servable_app(monkeypatch):
     """The object uvicorn's factory flag is handed must be a routable app."""
     monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
@@ -624,3 +641,16 @@ def test_deliberate_singular_evaluations_are_silent_but_real_ones_are_not():
         np.sqrt(np.array([-1.0]))  # outside the probe: still reported
     runtime = [w for w in caught if issubclass(w.category, RuntimeWarning)]
     assert len(runtime) == 1
+
+
+def test_the_wheel_is_given_the_page_the_ui_server_sends():
+    """An installed copy has to be able to serve its page (outside audit of 27 November 2026: the wheel had no data
+    file of ``apedp_dyn`` at all). ``pyproject.toml`` is frozen by a preregistration, so the files are named in
+    ``MANIFEST.in``; that only reaches the wheel while ``include-package-data`` is left at its default."""
+    named = [line.split()[1] for line in (REPO_ROOT / "MANIFEST.in").read_text().splitlines() if line.startswith("include ")]
+    assert "apedp_dyn/ui/dashboard.html" in named and "apedp_dyn/sandbox/APEDPX_FROZEN_v1_18.json" in named
+    assert all((REPO_ROOT / name).is_file() for name in named)
+    assert "include-package-data" not in (REPO_ROOT / "pyproject.toml").read_text()
+    from apedp_dyn.ui import helpers
+
+    assert helpers.STATIC_HTML_PATH == REPO_ROOT / "apedp_dyn" / "ui" / "dashboard.html"

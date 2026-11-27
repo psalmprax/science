@@ -15,6 +15,47 @@ inferred releases.
 
 ### Security
 
+- **An outside audit's findings, checked and repaired where no frozen file or referee rule is
+  involved (2026-11-27, audit M-39 to M-44).** Each finding was first reproduced here.
+  **A column's name was run as code.** `POST /api/discover/route` took column names as sent, and the
+  route in force reads formulas containing them back with `sympy.sympify`; a column named
+  `q.subs(q, 7)` changed the law that came out. `safety.plain_names` now checks every name where it
+  enters (`ui/route_endpoint.py`, and the older API's `/discover/regress`).
+  **The formula parser kept builtins within reach.** On Python 3.11 and earlier, which the image
+  uses, a builtin spelled in look-alike letters inside an f-string passed every check and was
+  called. The parser now evaluates in a namespace without builtins and refuses quotes, braces,
+  attribute access and text that changes under NFKC before parsing; it also parses `.5`, `1.e-5`
+  and `Piecewise`, and a non-expression is a `ValueError`. `apedp/safety.py`, a drifted second
+  copy, is now a re-export of it. The repaired parser was then attacked with 4,144 payloads it
+  was not developed against, on Python 3.13 and 3.11: nothing got through, and the sweep found
+  one more fault of its own, a number such as `1e999999999` that held a worker for over ten
+  minutes; a literal's decimal exponent is now bounded.
+  **The physics page granted evidence it had not measured.** "Interventional invariance" came from
+  the request (an amplitude of 1.5 or more, or the kinetic system) with no intervention run, so a
+  clean run read as the causal tier, C4. Every flag is now measured; the causal flag is never
+  added, and a clean run reads C3 at most (C2 for a law nothing was compared with, such as the
+  kinetic energy). `eight_invariants_verified` is true only when the stage that audits them ran.
+  **The page's server.** Without a key a request that came through a proxy is no longer served;
+  the audit log is written under a lock; the registry route's search settings have ceilings and
+  its error replies carry no exception text; and `ui/request_limits.py` puts a body-size limit, a
+  bound on `n_seeds` (the length of a loop that had none), a limit on requests in flight, a
+  per-minute limit for callers from elsewhere and the removal of old scratch directories in front
+  of every route, without touching the frozen `ui/server.py`.
+  **Delivery.** The Docker image could not be built (the builder stage lacked the workspace
+  manifest and lock file) and no job ever built it (the job that would waits for the trustees'
+  signature and for a branch named `main`); the builder now copies both files and a new workflow,
+  `docker-build-check.yml`, builds and starts the image without pushing it. A tag no longer
+  publishes the kernel wheel before the checks pass. `MANIFEST.in` puts the page into the wheel.
+  CI's security scan now reads `apedp_referee/` and `apedp_mmlm/` too.
+  **Left for the owner**, because each is a referee rule, a frozen file or an outward action: the
+  referee's Stage 5 on zero turnover, an annualisation factor on trial records, Stage 1's reading
+  of Lean sources and signed receipts, a non-linear novelty check, hash chains on the trial ledger
+  and the promotion journal, `sympify` inside the frozen route modules, `vouching_v2.gradient()`,
+  the `license` field and command-line entry points, which branch is built and deployed, and the
+  split of the repository. New tests: `tests/test_formula_and_name_safety.py` (99),
+  `tests/test_physics_endpoint_evidence.py` (12), `tests/test_ui_request_limits.py` (53), and
+  additions to `tests/test_system_flaws_audit.py` and `tests/test_security_scan_baseline.py`.
+  `tests/test_dyn_ui_studio.py` pinned the asserted C4 and now pins what is measured.
 - **A candidate ID is immutable in the referee's experiment ledger (2026-11-24, outside audit).**
   `FullLineageExperimentLedger.register_candidate` overwrote the node of an ID that was already
   registered, so another formula could take over an ID and with it a clean history, while the

@@ -307,6 +307,152 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-44 the image could not be built and no job built it; a tag published
+  without waiting for the tests; the wheel carried no data file — FOUND BY AN
+  OUTSIDE AUDIT 2026-11-27, PARTLY REPAIRED.** (a) The Dockerfile's builder
+  stage copied `rust/` alone and then ran `maturin build --locked` on a crate
+  that is a member of the root workspace: cargo stopped at "cannot create the
+  lock file ... because --locked was passed" (reproduced with `cargo metadata
+  --locked` in the same set of files; it resolves once the root `Cargo.toml`
+  and `Cargo.lock` are there). Nobody saw it because the only job that builds
+  the image (`build` in `test.yml`) waits for the trustees' signature and runs
+  only on a branch named `main`, which this repository does not have (its
+  branches are `stage` and `master`); `deploy` has the same condition. So the
+  image has never been built by CI. (b) `publish-kernel-wheel` needed only the
+  wheel's own build: a tag would have published whatever the tests said.
+  (c) A wheel of `apedp` built from the tree held no data file of `apedp_dyn`:
+  an installed copy could not send the page. **Repair:** the builder stage
+  copies the workspace manifest and lock file; a new workflow,
+  `docker-build-check.yml`, builds the image and starts it without pushing,
+  whenever a file the image is built from changes; the publish job waits for
+  `all-but-signature`; `MANIFEST.in` names the page and the v1.18 freeze
+  record, which reaches the wheel because include-package-data is on by
+  default (`pyproject.toml` is frozen by a preregistration and is unchanged).
+  **Not repaired, the owner's to decide:** which branch the image is built and
+  deployed from, and whether to deploy at all; whether the image starts the
+  older API (as now, pinned by a test) or the page's server; whether a release
+  should also wait for the trustees' signature; the missing `license` field
+  and command-line entry points (both in the frozen `pyproject.toml`); a wheel
+  of the referee core in `wheels.yml`; and the specifications under
+  `specifications/`, which lie outside every package, so an installed wheel
+  cannot load `apedp_dyn.conf.discovery_checks`.
+- **M-43 the page's server trusted a proxy's callers, ran a loop as long as
+  a request said, and answered with exception text — FOUND BY AN OUTSIDE
+  AUDIT 2026-11-27, REPAIRED OUTSIDE THE FROZEN FILE.** Without
+  `APEDP_API_KEY` the server served any loopback peer; behind a proxy on the
+  same machine that is every caller. `n_seeds` of the stability audit was the
+  length of a loop of whole discovery runs with no upper bound, and the
+  registry route passed its three search budgets and its operator list to the
+  engine as they came. Two error replies carried the exception's own text.
+  The audit log was appended without a lock. Scratch directories of the
+  external-benchmark route were never removed. There was no limit on a body's
+  size or on requests in flight. **Repair:** `ui/helpers.py` refuses, without
+  a key, a request that carries a forwarding header, and writes the audit log
+  under a thread lock and a file lock; `ui/registry_endpoint.py` checks its
+  settings before any work (`search_request`: depth 3, term complexity 8,
+  4 terms at most, known operators; over a ceiling is a 422, not a quietly
+  smaller search) and no longer puts exception text in a reply;
+  `ui/request_limits.py` is one layer in front of every route (body size,
+  `n_seeds` 1 to 50, requests in flight, a per-minute limit for callers from
+  elsewhere, the cause's text cut out of any 5xx reply, old scratch
+  directories removed). The layer is installed from `route_endpoint.mount`,
+  so `ui/server.py`, which the v1.18 freeze record pins, is unchanged
+  (`tests/test_ui_request_limits.py`). **What this does not repair:** a proxy
+  that adds no forwarding header is not recognised, so any deployment behind
+  one must set the key; the server still starts without a key for local use
+  (the older API refuses to); and the same limits written into `server.py`'s
+  own request models would need a remint of the freeze record.
+- **M-42 the physics page granted evidence it had not measured — FOUND BY AN
+  OUTSIDE AUDIT 2026-11-27 AND REPAIRED.** `ui/physics_endpoint.py` added
+  "interventional invariance" to the evidence of every uniquely supported
+  result whose request had a pendulum amplitude of 1.5 or more, or named the
+  kinetic system. No intervention was run. The amplitude's default is 1.8, so
+  the other systems were granted it too, and the page reported the causal tier
+  (C4) for a clean run of any of them. The two fit flags hung on one fixed
+  number (a holdout error under 0.25) whatever the scale: the right law at a
+  noise of 0.5 on an acceleration near 9 was refused its fit evidence and
+  still handed the causal flag. `eight_invariants_verified` was `True`
+  whether or not the stage that audits those invariants had run. A verdict of
+  two indistinguishable laws was filed under "insufficient support" because
+  the code compared with a verdict name that does not exist. **Repair:** every
+  flag is something the run measured: the fit converged; the engine's own
+  holdout gate passed for this candidate; a rival was compared on held-out
+  rows and lost by more than the engine's margin. The causal flag is never
+  added, so the ladder answers `CAUSAL_UNRESOLVED` and the claim is calibrated
+  down (C3 at most). A law that stands alone because nothing was left to
+  compare reads C2: that includes the kinetic energy, whose units leave one
+  shape, and it includes what the template engine promotes under heavy noise,
+  where it was seen to promote `-5.64*theta` for a pendulum at a noise of 5
+  (`tests/test_physics_endpoint_evidence.py`, 12). **Not repaired:** a real
+  intervention (the same law, constants fixed, on a run from another starting
+  state) needs a named tolerance, which is the owner's to set; and the
+  template engine's sole-survivor promotion under heavy noise is M-10's open
+  part, unchanged.
+- **M-41 the formula parser kept Python's builtins within reach — FOUND BY
+  AN OUTSIDE AUDIT 2026-11-27 AND REPAIRED.** `safe_parse_expr` called
+  sympy's parser without a `global_dict`, and sympy then copies every builtin
+  function into the namespace it evaluates in. The checks in front of it
+  looked at identifiers in the text. On Python 3.11 and earlier the tokenizer
+  hands an f-string to sympy as one opaque string token, and Python folds
+  look-alike (full-width) letters to ASCII when it compiles a name, so a
+  builtin spelled in such letters inside an f-string passed every check and
+  was called (confirmed here with a harmless call on 3.11; on 3.13 the same
+  text was neutralised). The image is built on 3.11. The parser also refused
+  `.5`, `1.e-5` and `Piecewise`, and ended in an `AttributeError` on anything
+  that evaluated to something other than an expression. `apedp/safety.py` was
+  a second copy of 514 lines that had drifted from this one, although the
+  documentation called it a façade. **Repair** (`apedp_dyn/safety.py`): the
+  namespace has no builtins and only the names the parser's own rewriting
+  needs; text that changes under NFKC, any quote, brace, bracket, backslash,
+  colon or `#`, and any string token or attribute access are refused before
+  parsing; the three forms parse; a non-expression is a `ValueError`.
+  `apedp/safety.py` re-exports it, so the older API's routes are covered by
+  the same change (`tests/test_formula_and_name_safety.py`, 99; 1,231 tests of
+  the older package unchanged). **Then attacked with what it was not
+  developed against (2026-11-28), by the author of the repair and nobody
+  else yet:** 4,144 ways to write a call of a function
+  placed in builtins (72 wrappers, 4 call forms, 7 spellings, both parsers),
+  on Python 3.13 and on 3.11. The function was never called, every refusal
+  was a `ValueError`, and nothing but an expression came back. The sweep's
+  resource traps found one thing the audit had not: `1e999999999`, twelve
+  characters, held a worker for more than ten minutes, because sympy builds
+  the power of ten exactly. The parser had always done that. A number
+  literal's decimal exponent is now bounded at 9999 by the token check. A
+  504-payload form of the sweep is kept as a test. **What this does not
+  repair:** the frozen
+  route modules call `sympy.sympify` directly on text they produce
+  themselves; see M-40 for why no outside text reaches them now.
+- **M-40 a column's name was run as code — FOUND BY AN OUTSIDE AUDIT
+  2026-11-27 AND REPAIRED AT THE DOOR.** `POST /api/discover/route` took
+  column names as sent. The route in force builds formulas that contain those
+  names and reads them back with `sympy.sympify`, which evaluates text. A
+  column named `q.subs(q, 7)` turned the first pass's law `2.0*a + 3.0*(...)`
+  into `2.0*a + 21.0` (the harmless probe used here); any expression could
+  stand in its place. Anyone who could reach the endpoint could run code in
+  the server: without a key that is local callers and, behind a proxy on the
+  same machine, everyone (M-43). **Repair:** `safety.plain_names` (ASCII
+  letters, digits and underscores, a letter first, at most 64 characters, no
+  Python keyword, no double underscore, none twice) is applied to the columns
+  before any route runs (`ui/route_endpoint._clean`: such a table is written
+  down as `not_run` with the reason) and to the older API's
+  `/discover/regress` (a 422). **What this does not repair:** `sympify` on
+  internal text is still spread over `main_search.py`, `refined_search.py`,
+  `route.py`, `series_route.py`, `vouching_v2.py`, `measured_range.py` and
+  others. Most are frozen by preregistrations and are in force; replacing the
+  calls means reminting them, which is the owner's decision. Until then the
+  protection is the check on names where they enter, and a new entry point
+  that forgets it would reopen this.
+- **M-39 the security scan left out two packages — FOUND BY AN OUTSIDE AUDIT
+  2026-11-27 AND REPAIRED.** CI ran bandit over `apedp/` and `apedp_dyn/`
+  only. It now also reads `apedp_referee/` (nothing found at the level the
+  scan fails on) and `apedp_mmlm/` (two findings, both B310, the same kind as
+  M-21's): `apedp_mmlm/law_corpora.py` and `apedp_mmlm/text_corpus.py` each
+  download one file from a fixed https address and check its bytes against a
+  pinned SHA-256 before use. Both files are frozen by preregistrations, so an
+  inline marker is not possible; the two findings are listed in
+  `scripts/bandit_baseline.json`, and `tests/test_security_scan_baseline.py`
+  pins the list at three entries and checks that both addresses are https and
+  both downloads are hash-checked. `scripts/` is still not scanned.
 - **M-38 the circuit judge could be won by drawing its cost again — FOUND
   AND REPAIRED 2026-11-23 BY A SCRIPTED ADVERSARY; not yet met by a real
   model.** The checker's cost is one draw seeded by the circuit's bytes. A

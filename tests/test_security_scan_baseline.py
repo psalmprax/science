@@ -13,12 +13,40 @@ ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / "scripts" / "bandit_baseline.json"
 
 
-def test_the_baseline_holds_one_finding_and_it_is_the_documented_one():
-    """A baseline that grows quietly is a gate switched off; each entry needs an audit entry."""
+def test_the_baseline_holds_three_findings_and_each_is_a_documented_one():
+    """A baseline that grows quietly is a gate switched off; each entry needs an audit entry.
+
+    The second and third came in on 27 November 2026, when the scan was widened to the referee core and the
+    language-model package (M-39): two downloads from fixed https addresses whose bytes are checked against a pinned
+    SHA-256 before use, in files frozen by a preregistration and therefore not open to an inline marker.
+    """
     results = json.loads(BASELINE.read_text(encoding="utf-8"))["results"]
-    assert [(r["filename"], r["test_id"]) for r in results] == [("apedp_dyn/proposers/llm_clients.py", "B310")]
+    assert [(r["filename"], r["test_id"]) for r in results] == [
+        ("apedp_dyn/proposers/llm_clients.py", "B310"),
+        ("apedp_mmlm/law_corpora.py", "B310"),
+        ("apedp_mmlm/text_corpus.py", "B310"),
+    ]
     audit = (ROOT / "docs" / "SYSTEM_FLAWS_AUDIT.md").read_text(encoding="utf-8")
     assert "M-21" in audit and "bandit_baseline.json" in audit
+    assert "M-39" in audit and "apedp_mmlm/law_corpora.py" in audit and "apedp_mmlm/text_corpus.py" in audit
+
+
+def test_the_two_downloads_in_the_baseline_are_https_and_checked_against_a_pinned_hash():
+    from apedp_mmlm import law_corpora, text_corpus
+
+    assert law_corpora.ODEBENCH_URL.startswith("https://") and text_corpus.SOURCE.startswith("https://")
+    assert len(law_corpora.ODEBENCH_SHA256) == 64 and all(len(digest) == 64 for digest in text_corpus.SHA256.values())
+    for module in (law_corpora, text_corpus):
+        source = Path(module.__file__).read_text(encoding="utf-8")
+        assert source.count("urllib.request.urlopen(") == 1 and "does not match its pinned SHA-256" in source
+
+
+def test_the_scan_covers_the_four_packages():
+    workflow = yaml.load((ROOT / ".github" / "workflows" / "test.yml").read_text(), Loader=yaml.BaseLoader)  # noqa: S506
+    script = "\n".join(step.get("run", "") for step in workflow["jobs"]["test"]["steps"])
+    scan = next(line for line in script.splitlines() if line.strip().startswith("bandit "))
+    for package in ("apedp/", "apedp_dyn/", "apedp_referee/", "apedp_mmlm/"):
+        assert f" {package}" in scan
 
 
 def test_the_scan_uses_the_baseline_and_still_fails_on_anything_new():

@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from apedp.core import ClosedLoopAssuranceSystem, DimensionalAssuranceEngine
 from apedp.discovery import BayesianRefinementEngine, MultiVariableSRE, check_data_adequacy
+from apedp.safety import plain_names
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -96,6 +97,12 @@ class BayesRequest(BaseModel):
 
 @router.post("/discover/regress", response_model=RegressionResponse)
 async def symbolic_regression(req: RegressionRequest) -> RegressionResponse:
+    try:
+        # A variable's name ends up inside formulas that are evaluated; it must be a name and nothing more.
+        plain_names(req.variables)
+        plain_names(req.data)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     try:
         x_data = {k: np.asarray(v, dtype=float) for k, v in req.data.items()}
     except (TypeError, ValueError) as e:

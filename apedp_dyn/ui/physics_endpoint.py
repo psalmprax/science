@@ -391,16 +391,30 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
             "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else 0.05,
         }
     )
-    if top_cand and top_cand.holdout_rmse is not None and top_cand.holdout_rmse < 0.25:
+    # Every piece of evidence below is something this run measured (outside audit, 27 November 2026). Before, the
+    # two fit flags hung on one fixed number (a holdout error under 0.25, whatever the scale of the quantity), and
+    # interventional invariance was granted from the request alone (a pendulum amplitude of 1.5 or more, or the
+    # kinetic system) although no intervention was ever run; the amplitude's default granted it to the other
+    # systems too. A fit flag now rests on the engine's own fit and on its own holdout gate for this candidate.
+    # No intervention is run here, so that flag is never added and a causal claim (C4) is never justified by this
+    # route: the ladder answers ``CAUSAL_UNRESOLVED`` and the claim is calibrated down to what was measured.
+    top_fit = getattr(top_cand, "fit", None) if top_cand is not None else None
+    top_gate = top_cand.provenance.get("gate4_status", {}) if top_cand is not None else {}
+    if top_fit is not None and bool(getattr(top_fit, "success", False)) and np.isfinite(float(top_fit.train_loss)):
         bundle.add(EvidenceRequirement.IN_SAMPLE_CONVERGENCE)
-        bundle.add(EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT)
+        if bool(top_gate.get("passed", False)):
+            bundle.add(EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT)
 
-    if adj.status.value == "unique_support":
+    # "Rivals rejected" means a rival structure was compared on the held-out rows and lost by more than the engine's
+    # own margin. A law that stands alone because nothing else was left to compare (other shapes ruled out by their
+    # units, or by heavy noise) has rejected no rival: it keeps its prediction evidence and is not called structural.
+    rival_compared = (getattr(adj, "rival", None) is not None and adj.delta_rmse is not None
+                      and adj.tau_epi is not None and float(adj.delta_rmse) > float(adj.tau_epi))
+    if adj.status.value == "unique_support" and rival_compared:
         bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
-        # In large amplitude nonlinear regime (theta0 >= 1.5) or kinetic energy, mechanistic invariance holds
-        if getattr(req, "theta0", 1.8) >= 1.5 or req.system == "kinetic":
-            bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
-    elif adj.status.value == "multi_support":
+    elif adj.status.value == "unique_support":
+        bundle.failures.append("sole_survivor_no_rival_compared")
+    elif adj.status.value == "multi_hypothesis":
         bundle.failures.append("multi_hypothesis_identifiability_barrier")
     else:
         bundle.failures.append("insufficient_empirical_support")
@@ -478,7 +492,12 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
             "eedr_repair": eedr_record,
             "aeh_manifest_hash": pkg.manifest.manifest_hash,
             "aeh_ledger_hash": pkg.ledger_hash,
-            "eight_invariants_verified": True,
+            # The harness audits the eight repair invariants inside the repair stage and raises if one fails, so
+            # they are verified exactly when that stage ran. It used to say True whether or not it had.
+            "eight_invariants_verified": eedr_record is not None,
+            "evidence": sorted(item.value for item in bundle.verified_evidence),
+            "evidence_failures": list(bundle.failures),
+            "intervention_run": False,
         },
         "plot_series": {
             "t": t,

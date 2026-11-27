@@ -5,7 +5,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl build-esse
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.99.0
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-COPY pyproject.toml README.md ./
+# The kernel crate is a member of the workspace declared in the root Cargo.toml, and `--locked` needs that
+# workspace's Cargo.lock. Without these two files the build stopped at "cannot create the lock file ... because
+# --locked was passed" (outside audit of 27 November 2026); the release profile is read from the root manifest too.
+COPY pyproject.toml README.md Cargo.toml Cargo.lock ./
 COPY rust/ ./rust/
 RUN pip install --no-cache-dir "maturin>=1.7,<2.0" && \
     maturin build --release --locked --manifest-path rust/apedp-kernel/Cargo.toml --out /build/wheels

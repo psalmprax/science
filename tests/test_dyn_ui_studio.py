@@ -324,8 +324,14 @@ def test_sandbox_upload_endpoint_is_wired():
         assert data["promotion_confidence"] is None  # margin is not thin
 
     def test_physics_discovery_epistemic_framework_and_aeh_integration(self, client):
-        """Verifies Physics Lab endpoint emits Claim Ladder, EEDR, and AEH audit provenance."""
-        # 1. Large-angle nonlinear pendulum: Promoted at C4 Mechanistic Invariance
+        """Verifies Physics Lab endpoint emits Claim Ladder, EEDR, and AEH audit provenance.
+
+        Until 27 November 2026 this test pinned ``justified_tier == C4_CAUSAL_MECHANISTIC`` for the large-angle
+        pendulum. That tier was granted from the request (an amplitude of 1.5 or more) with no intervention run
+        (outside audit of that day). The route runs no intervention, so the causal claim is now calibrated down to
+        what was measured: a law that predicts held-out rows and beat a compared rival.
+        """
+        # 1. Large-angle nonlinear pendulum: claimed C4, justified C3 (no intervention is run by this route)
         resp = client.post("/api/discover/physics", json={
             "system": "pendulum",
             "theta0": 2.0,
@@ -340,12 +346,13 @@ def test_sandbox_upload_endpoint_is_wired():
         assert ef["version"] == "APEDP-X v1.0-FROZEN"
         assert ef["autonomy_level"] == "LEVEL_1_SELF_CORRECTING_REFEREE"
         assert ef["claimed_tier"] == "C4_CAUSAL_MECHANISTIC"
-        assert ef["justified_tier"] == "C4_CAUSAL_MECHANISTIC"
-        assert ef["referee_verdict"] == "PROMOTED"
-        assert ef["eedr_status"] == "PROMOTED_ORIGINAL"
+        assert ef["justified_tier"] == "C3_STRUCTURAL"
+        assert ef["referee_verdict"] == "CAUSAL_UNRESOLVED"
+        assert ef["eedr_status"] == "PROMOTED_REPAIRED"
+        assert ef["intervention_run"] is False and "interventional_invariance" not in ef["evidence"]
         assert len(ef["aeh_manifest_hash"]) == 64
         assert len(ef["aeh_ledger_hash"]) == 64
-        assert ef["eight_invariants_verified"] is True
+        assert ef["eight_invariants_verified"] is True        # audited by the repair stage, which ran
 
         # 2. Small-angle quasi-linear pendulum: Triggers EEDR Claim Calibration or Multi-Hypothesis
         resp_small = client.post("/api/discover/physics", json={

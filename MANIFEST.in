@@ -1,0 +1,12 @@
+# Data files that live inside the packages and are read at run time.
+#
+# A wheel built from this tree carried none of them (outside audit of 27 November 2026): the page the UI server
+# sends was missing, so an installed copy could not serve it. setuptools puts a file named here into the wheel when
+# it lies inside a package, because include-package-data is on by default. The package-data table of pyproject.toml
+# would be the usual place; that file is frozen by a preregistration, so it is done here.
+#
+# Not solved by this file: the specifications under specifications/ lie outside every package, so an installed
+# wheel still cannot load apedp_dyn.conf.discovery_checks. Use a checkout (pip install -e .) until that is decided.
+include apedp_dyn/ui/dashboard.html
+include apedp_dyn/sandbox/APEDPX_FROZEN_v1_18.json
+include LICENSE

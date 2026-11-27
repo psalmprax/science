@@ -13,6 +13,53 @@ from fastapi import HTTPException
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryResult
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermDiscoveryResult, MultiTermL2Engine
 
+# What a request may ask of the search (outside audit of 27 November 2026: the three budgets and the operator list
+# were passed to the engine as they came, so one request could hold a worker for hours). These are limits on work,
+# not scientific thresholds. The ceilings are the heaviest setting this route was ever run with, the RIME-era
+# (depth 3, term complexity 8, 4 terms), which already took minutes; the defaults stay the engine's own (2, 4, 3).
+# A request above a ceiling is refused with a 422 and is not quietly made smaller: a lighter search than the one
+# asked for, returned without a word, would mislead.
+MAX_DEPTH_CEILING = 3
+MAX_TERM_COMPLEXITY_CEILING = 8
+MAX_TERMS_CEILING = 4
+KNOWN_OPERATORS = frozenset({"+", "-", "*", "/", "pow", "exp", "log", "sin", "cos", "abs", "sat", "inv_quad",
+                             "rollmean", "rollrank", "rollzscore", "expanding_zscore"})
+MAX_NOISE = 10.0                # times the target's spread; beyond that nothing is left to find
+DEFAULT_OPERATORS = ("+", "-", "*", "/", "pow", "sin", "cos", "abs")
+
+
+def _whole_number(req: Any, name: str, default: int, lowest: int, highest: int) -> int:
+    raw = req.get(name, default)
+    try:
+        value = int(raw)
+        if isinstance(raw, bool) or float(raw) != value:
+            raise ValueError(name)
+    except (TypeError, ValueError, OverflowError) as e:
+        raise HTTPException(status_code=422, detail=f"{name} must be a whole number") from e
+    if not lowest <= value <= highest:
+        raise HTTPException(status_code=422, detail=f"{name} must be between {lowest} and {highest}")
+    return value
+
+
+def search_request(req: Any) -> dict[str, Any]:
+    """The request's search settings, checked. Raises a 422 that names the setting and its limits."""
+    try:
+        noise = float(req.get("noise", 0.0))
+    except (TypeError, ValueError) as e:
+        raise HTTPException(status_code=422, detail="noise must be a number") from e
+    if not (np.isfinite(noise) and 0.0 <= noise <= MAX_NOISE):
+        raise HTTPException(status_code=422, detail=f"noise must be between 0 and {MAX_NOISE:g}")
+    operators = req.get("operators", DEFAULT_OPERATORS)
+    if (isinstance(operators, (str, bytes)) or not isinstance(operators, (list, tuple))
+            or not operators or len(operators) > len(KNOWN_OPERATORS)
+            or any(not isinstance(op, str) or op not in KNOWN_OPERATORS for op in operators)):
+        raise HTTPException(status_code=422, detail=f"operators must be a list drawn from {sorted(KNOWN_OPERATORS)}")
+    return {"noise": noise, "seed": _whole_number(req, "seed", 42, 0, 2 ** 32 - 1),
+            "max_terms": _whole_number(req, "max_terms", 3, 1, MAX_TERMS_CEILING),
+            "max_depth": _whole_number(req, "max_depth", 2, 1, MAX_DEPTH_CEILING),
+            "max_term_complexity": _whole_number(req, "max_term_complexity", 4, 1, MAX_TERM_COMPLEXITY_CEILING),
+            "operators": tuple(dict.fromkeys(operators))}
+
 
 def run_registry_discovery(req: Any) -> dict[str, Any]:
     """Generic L2 discovery on any registered problem module.
@@ -30,16 +77,20 @@ def run_registry_discovery(req: Any) -> dict[str, Any]:
     modname = str(req.get("system", ""))
     mods = _problem_modules()
     if modname not in mods:
-        raise HTTPException(status_code=404, detail=f"Unknown problem module {modname}.")
+        raise HTTPException(status_code=404, detail="Unknown problem module.")
+    asked = search_request(req)                 # before any work, and outside the engine's catch-all below
     try:
         prob = finalize(mods[modname].spec())
     except (AssertionError, ValueError) as e:
         # Bad problem spec (e.g. truth trajectory blows up): client got a
         # problem the server cannot build truth for -> 422, not engine 500.
+        # The reason goes to the audit log and the server's log, not to the caller: an exception's text can carry
+        # paths and internals (outside audit of 27 November 2026).
         _audit("discover/registry", {"system": modname, "verdict": "error",
                                      "reason": f"truth generation failed: {e}"})
+        _LOG.warning("registry problem %s cannot generate ground truth: %s", modname, e)
         raise HTTPException(status_code=422,
-                            detail=f"Problem {modname} cannot generate ground truth: {e}") from e
+                            detail=f"Problem {modname} cannot generate ground truth; the audit log has the reason.") from e
     res: MultiTermDiscoveryResult | L2DiscoveryResult
     try:
         Y = np.asarray(prob.train["truth_y"], dtype=float)
@@ -63,10 +114,10 @@ def run_registry_discovery(req: Any) -> dict[str, Any]:
                                                   getattr(u, "name", "?"), exc)
                 continue
         target = np.gradient(Y[:, -1], t)
-        noise_level = float(req.get("noise", 0.0))
+        noise_level = float(asked["noise"])
         noise_sigma = None
         if noise_level > 0.0:
-            rng = np.random.default_rng(int(req.get("seed", 42)))
+            rng = np.random.default_rng(int(asked["seed"]))
             t_std = float(np.std(target))
             noise_sigma = noise_level * (t_std if t_std > 1e-12 else 1.0)
             target = target + rng.normal(0, noise_sigma, size=len(target))
@@ -106,10 +157,10 @@ def run_registry_discovery(req: Any) -> dict[str, Any]:
             # (3, 8, 4) triple expanded generation ~50x (extra powers) and
             # pushed single requests into minute-scale runs. Callers can still
             # raise any cap explicitly for a heavier search.
-            max_terms = int(req.get("max_terms", 3))
-            max_depth = int(req.get("max_depth", 2))
-            max_term_complexity = int(req.get("max_term_complexity", 4))
-            operators = tuple(req.get("operators", ('+', '-', '*', '/', 'pow', 'sin', 'cos', 'abs')))
+            max_terms = int(asked["max_terms"])
+            max_depth = int(asked["max_depth"])
+            max_term_complexity = int(asked["max_term_complexity"])
+            operators = tuple(asked["operators"])
             m_eng = MultiTermL2Engine(
                 max_depth=max_depth,
                 max_term_complexity=max_term_complexity,
@@ -149,8 +200,10 @@ def run_registry_discovery(req: Any) -> dict[str, Any]:
     except Exception as e:  # engine failure must be a 500 with reason, never empty
         _audit("discover/registry", {"system": modname, "verdict": "error",
                                      "reason": f"{type(e).__name__}: {e}"})
+        _LOG.exception("registry discovery failed for %s", modname)
         raise HTTPException(status_code=500,
-                            detail=f"Discovery failed for {modname}: {type(e).__name__}: {e}") from e
+                            detail=(f"Discovery failed for {modname} ({type(e).__name__}); "
+                                    "the audit log has the reason.")) from e
     adj = res.adjudication
     pareto_cands = res.pareto_candidates
     n = len(t)

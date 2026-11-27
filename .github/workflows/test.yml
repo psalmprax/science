@@ -422,7 +422,8 @@ jobs:
           source .venv/bin/activate
           # scripts/bandit_baseline.json lists the findings that are accepted, each with an audit entry
           # (tests/test_security_scan_baseline.py pins what is in it). Anything else fails the step.
-          bandit -r apedp/ apedp_dyn/ -ll -b scripts/bandit_baseline.json \
+          # The referee core and the language-model package are scanned too since 27 November 2026 (outside audit).
+          bandit -r apedp/ apedp_dyn/ apedp_referee/ apedp_mmlm/ -ll -b scripts/bandit_baseline.json \
             --exclude apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src
 
       - name: Classify test-job failure
@@ -559,7 +560,10 @@ jobs:
           if-no-files-found: error
 
   publish-kernel-wheel:
-    needs: build-kernel-wheel
+    # A tag used to publish as soon as the wheel was built, whatever the tests said (outside audit, 27 November
+    # 2026). It now waits for every check except the trustees' signature. Whether a release should also wait for
+    # the signature is the owner's decision: that job is red until the trustees sign, so it would stop every release.
+    needs: [build-kernel-wheel, all-but-signature]
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'push' &&

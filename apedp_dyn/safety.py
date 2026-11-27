@@ -16,11 +16,15 @@ This module is deliberately dependency-free (stdlib + sympy only).
 from __future__ import annotations
 
 import contextlib
+import io
+import keyword
 import logging
 import re
 import threading
+import tokenize
+import unicodedata
 import warnings
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from typing import Any
 
 import sympy as sp
@@ -30,9 +34,11 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "MAX_FORMULA_LENGTH",
+    "MAX_NAME_LENGTH",
     "FormulaResourceError",
     "LimitTimeout",
     "limit_with_timeout",
+    "plain_names",
     "quiet_float_warnings",
     "safe_parse_expr",
     "safe_parse_pde",
@@ -167,17 +173,111 @@ SAFE_FUNCTIONS = _SAFE_FUNCS
 
 _TRANSFORMATIONS = (*standard_transformations, convert_xor)
 
+#: Characters that have no place in a formula. Quotes make text literals and, with a prefix, f-strings, whose contents
+#: Python evaluates as code and which the tokenizer of Python 3.11 and earlier hands to the parser as one opaque token,
+#: so no check on identifiers ever sees inside. Braces and brackets make sets, dictionaries, lists and comprehensions.
+#: A colon makes a lambda, a slice or an assignment expression. A backslash continues a line.
+_FORBIDDEN_CHARACTERS = frozenset("'\"{}[]\\:#@$?")
+
+#: What the parser's rewritten source may name besides the caller's symbols and the functions of the allowlist: the
+#: constructors SymPy's own token and tree rewriting emit (also with ``evaluate=False``). Nothing else, and no builtin.
+_PARSER_NAMESPACE: dict[str, Any] = {
+    name: getattr(sp, name) for name in (
+        "Integer", "Float", "Rational", "Number", "Symbol", "Function", "Lambda", "I", "oo", "nan", "zoo",
+        "factorial", "factorial2", "Add", "Mul", "Pow", "And", "Or", "Not", "Eq", "Ne", "Lt", "Le", "Gt", "Ge")
+}
+
+
+def _parser_globals() -> dict[str, Any]:
+    """The namespace a formula is evaluated in: SymPy's constructors, and no Python builtin.
+
+    ``sympy.parse_expr`` runs the rewritten formula through ``eval``. Left to itself it does that in a namespace into
+    which it has copied every builtin function (``eval``, ``open``, ``getattr`` and the rest), and ``eval`` adds
+    ``__builtins__`` to any namespace that lacks it. A formula that got a call past the checks above would reach them.
+    Here ``__builtins__`` is empty and the only names are the ones the rewriting needs. A new dictionary each time:
+    ``eval`` may write to it.
+    """
+    return {"__builtins__": {}, **_PARSER_NAMESPACE}
+
+
+# A number such as ``1e999999999`` is twelve characters and held a worker for more than ten minutes: sympy builds the
+# power of ten exactly (found by this module's own adversarial sweep, 28 November 2026; it was so before the audit's
+# repairs too). A literal's decimal exponent is bounded like any other numeric exponent here; the limit is on work.
+_LITERAL_EXPONENT_LIMIT = 9999
+_MAX_EXPONENT_DIGITS = len(str(_LITERAL_EXPONENT_LIMIT))
+_DECIMAL_EXPONENT = re.compile(r"[eE]([+-]?[0-9_]+)[jJ]?\Z")
+
+
+def _token_objection(s: str) -> str | None:
+    """Why the tokens of ``s`` are not a formula's, or ``None``.
+
+    Read with Python's own tokenizer, so ``.5`` and ``1.e-5`` are numbers and ``x.real`` is attribute access; a check
+    on the text cannot tell these apart, and the earlier one refused the two numbers. Text literals of every kind are
+    refused here as well as by character, whatever their prefix.
+    """
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(s).readline))
+    except (tokenize.TokenError, SyntaxError, IndentationError) as exc:
+        return f"Unparseable formula {s!r}: {exc}"
+    for token in tokens:
+        kind = tokenize.tok_name.get(token.type, "")
+        if token.type == tokenize.OP and token.string in (".", "..."):
+            return "Attribute access ('.') is not allowed in formulas"
+        if token.type == tokenize.STRING or kind.startswith("FSTRING") or kind.startswith("TSTRING"):
+            return "Text literals are not allowed in formulas"
+        if token.type == tokenize.NUMBER and token.string[:2].lower() not in ("0x", "0o", "0b"):
+            exponent = _DECIMAL_EXPONENT.search(token.string)
+            if exponent is not None and len(exponent.group(1).replace("_", "").lstrip("+-0")) > _MAX_EXPONENT_DIGITS:
+                return (f"The number {token.string[:24]!r} has a decimal exponent beyond 1e{_LITERAL_EXPONENT_LIMIT}; "
+                        "sympy would build it digit by digit")
+    return None
+
 
 def _rejects_attribute_access(s: str) -> bool:
-    """Return True if the string contains attribute access beyond float literals.
+    """Return True if the string contains attribute access. Floats such as ``3.14``, ``.5`` and ``1.e-5`` do not."""
+    return _token_objection(s) == "Attribute access ('.') is not allowed in formulas"
 
-    Floats like ``3.14`` contain a dot between digits and are allowed.
-    Anything else with ``.`` (e.g. ``x.__class__``) is rejected.
+
+MAX_NAME_LENGTH = 64
+_PLAIN_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\Z")
+
+
+def plain_names(names: Iterable[Any]) -> list[str]:
+    """``names`` as a list of strings, if every one is a plain name; otherwise ``ValueError`` naming the first that is not.
+
+    **Why.** The name of a column ends up inside formulas, and the discovery routes read formulas with
+    ``sympy.sympify``, which evaluates them as Python. A "name" that is more than a name (``a+b``, ``f(1)``,
+    ``x.real``) is therefore run as code. The route modules that do this are frozen by preregistrations and cannot be
+    changed, so the rule is enforced where names come in: every place that takes column names from outside calls this
+    first.
+
+    **A plain name** is ASCII letters, digits and underscores, starting with a letter, at most ``MAX_NAME_LENGTH``
+    long, not a Python keyword (``lambda``, ``in``, ``is``: a formula cannot use those as symbols), without a double
+    underscore, and not used twice. A leading underscore is refused because the system's own fitted parameters are
+    named that way (``_c0``, ``_k1``), and a column of that name would be taken for one of them.
     """
-    # Remove digit.digit float patterns, then any remaining dot is suspicious.
-    without_floats = re.sub(r"\d\.\d", "", s)
-    return "." in without_floats
+    out: list[str] = []
+    for raw in names:
+        name = raw if isinstance(raw, str) else str(raw)
+        if not _PLAIN_NAME.match(name) or len(name) > MAX_NAME_LENGTH or "__" in name or keyword.iskeyword(name):
+            raise ValueError(
+                f"column name {name[:40]!r} is not a plain name: use letters, digits and underscores, starting with a "
+                "letter (not a Python keyword, no double underscore)")
+        if name in out:
+            raise ValueError(f"column name {name!r} is used twice")
+        out.append(name)
+    return out
 
+
+#: Function heads a parsed formula may contain. ``Piecewise`` is in the table of names a formula may use above; it
+#: was missing here, so every formula that used it was refused after it had parsed.
+_ALLOWED_FUNCTION_NAMES = frozenset({
+    "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
+    "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
+    "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
+    "erf", "erfc", "gamma", "zeta",
+    "besselj", "bessely", "besseli", "besselk", "Piecewise",
+})
 
 #: Names the parser itself needs to resolve; never shadowed with Symbols.
 _PARSER_INTERNALS = frozenset({"Integer", "Float", "Rational", "Symbol", "I", "oo", "nan", "zoo"})
@@ -204,6 +304,14 @@ def _validate_formula_string(formula_str: str, max_length: int) -> str:
         raise ValueError("Empty formula string")
     if len(s) > max_length:
         raise ValueError(f"Formula exceeds max length {max_length} (got {len(s)})")
+    # Python reads identifiers in normal form NFKC: full-width or mathematical letters are the plain ones to the
+    # compiler and other letters to every check on the text. A formula that changes under that normal form is refused,
+    # not rewritten: ``x²`` must not quietly become a symbol named ``x2``.
+    if unicodedata.normalize("NFKC", s) != s:
+        raise ValueError("Formula contains look-alike characters (it is not in Unicode normal form NFKC)")
+    bad = sorted(set(s) & _FORBIDDEN_CHARACTERS)
+    if bad:
+        raise ValueError(f"Forbidden character in formula: {bad[0]!r}")
     lowered = s.lower()
     for token in _FORBIDDEN_SUBSTRINGS:
         if token.lower() in lowered:
@@ -211,8 +319,9 @@ def _validate_formula_string(formula_str: str, max_length: int) -> str:
     for identifier in _FORBIDDEN_IDENTIFIERS:
         if re.search(rf"\b{identifier}\b", lowered):
             raise ValueError(f"Forbidden identifier in formula: {identifier!r}")
-    if _rejects_attribute_access(s):
-        raise ValueError("Attribute access ('.') is not allowed in formulas")
+    objection = _token_objection(s)
+    if objection is not None:
+        raise ValueError(objection)
     return s
 
 
@@ -291,7 +400,8 @@ def _assert_bounded_evaluation(s: str, local_dict: dict[str, object]) -> None:
     """
     try:
         unevaluated = sp.parse_expr(
-            s, local_dict=dict(local_dict), transformations=_TRANSFORMATIONS, evaluate=False
+            s, local_dict=dict(local_dict), global_dict=_parser_globals(), transformations=_TRANSFORMATIONS,
+            evaluate=False,
         )
         _guarded_rebuild(unevaluated)
     except FormulaResourceError:
@@ -331,22 +441,20 @@ def safe_parse_expr(
             local_dict[ident] = sp.Symbol(ident)
     _assert_bounded_evaluation(s, local_dict)
     try:
-        expr = sp.parse_expr(s, local_dict=local_dict, transformations=_TRANSFORMATIONS)
+        expr = sp.parse_expr(s, local_dict=local_dict, global_dict=_parser_globals(), transformations=_TRANSFORMATIONS)
     except Exception as e:
         raise ValueError(f"Unparseable formula {s!r}: {e}") from e
+    if not isinstance(expr, sp.Basic):
+        # A tuple, a truth value, a number of Python's own: evaluated, and not a formula. Without this check the
+        # caller got an AttributeError from the next line instead of the ValueError it handles.
+        raise ValueError(f"Unparseable formula {s!r}: it does not evaluate to an expression")
     # Post-check: no unexpected function applications survived (allowlist by name).
     for atom in expr.atoms(sp.Function):
         func_type = type(atom)
         if func_type not in {type(v) for v in _SAFE_FUNCS.values() if isinstance(v, sp.FunctionClass | type)}:
             # Allowlist by name instead of fragile type comparison.
             name = getattr(func_type, "__name__", str(func_type))
-            if name not in {
-                "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
-                "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
-                "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
-                "erf", "erfc", "gamma", "zeta",
-                "besselj", "bessely", "besseli", "besselk",
-            }:
+            if name not in _ALLOWED_FUNCTION_NAMES:
                 raise ValueError(f"Function {name!r} is not in the allowlist")
     return expr
 
@@ -382,19 +490,15 @@ def safe_parse_pde(
             local_dict[ident] = sp.Symbol(ident)
     _assert_bounded_evaluation(s, local_dict)
     try:
-        expr = sp.parse_expr(s, local_dict=local_dict, transformations=_TRANSFORMATIONS)
+        expr = sp.parse_expr(s, local_dict=local_dict, global_dict=_parser_globals(), transformations=_TRANSFORMATIONS)
     except Exception as e:
         raise ValueError(f"Unparseable PDE formula {s!r}: {e}") from e
+    if not isinstance(expr, sp.Basic):
+        raise ValueError(f"Unparseable PDE formula {s!r}: it does not evaluate to an expression")
     for atom in expr.atoms(sp.Function):
         func_type = type(atom)
         name = getattr(func_type, "__name__", str(func_type))
-        if name in {
-            "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
-            "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
-            "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
-            "erf", "erfc", "gamma", "zeta",
-            "besselj", "bessely", "besseli", "besselk", "Derivative",
-        }:
+        if name in _ALLOWED_FUNCTION_NAMES or name == "Derivative":
             continue
         # Undefined functions (T, u, psi, ...) are the point of PDE input.
         from sympy.core.function import AppliedUndef

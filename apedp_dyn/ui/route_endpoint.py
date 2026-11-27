@@ -56,6 +56,7 @@ from fastapi import Depends, FastAPI
 from apedp_dyn.discovery_l2 import default_route, series_route, vouched_route_v2
 from apedp_dyn.market.assets import compute_strictly_causal_features, load_series_with_dates
 from apedp_dyn.orchestration.competition import RETIRED_ENGINES
+from apedp_dyn.safety import plain_names
 from apedp_dyn.ui.helpers import _audit, _json_obj, _require_api_key
 
 SEARCH_SECONDS_VARIABLE = "APEDP_UI_SEARCH_SECONDS"
@@ -133,7 +134,9 @@ def _search_processes() -> dict[str, Any]:
 
 
 def _clean(X: Mapping[str, Any], y: Any) -> tuple[list[str], np.ndarray, np.ndarray]:
-    names = [str(n) for n in X]
+    # A column's name ends up inside formulas the routes evaluate, so it must be a name and nothing more
+    # (``safety.plain_names``; outside audit of 27 November 2026: a name such as ``q.subs(q, 7)`` was run as code).
+    names = plain_names(X)
     columns = np.column_stack([np.asarray(X[n], dtype=float).ravel() for n in X]) if names else np.empty((0, 0))
     target = np.asarray(y, dtype=float).ravel()
     if not names or len(target) != len(columns):
@@ -252,7 +255,14 @@ def discover_route(req: dict[str, Any]) -> dict[str, Any]:
 
 
 def mount(app: FastAPI) -> None:
-    """Register this module's endpoint on the UI app, behind the same key check as the others."""
+    """Register this module's endpoint on the UI app, behind the same key check as the others.
+
+    Also puts the request limits in front of every route of the app (``request_limits``): the server module that
+    declares the other routes is pinned by the v1.18 freeze record and calls this function while it is built.
+    """
+    from apedp_dyn.ui import request_limits
+
+    request_limits.install(app)
     app.post("/api/discover/route", dependencies=[Depends(_require_api_key)])(discover_route)
 
 
