@@ -1,6 +1,7 @@
 # PREREG-MMLM-ORDER-2026-11: MMLM's prior against the size prior, in the table route in force
 
-**Status:** draft, not frozen; revised after the independent review of 27 November (below). Written on 27 November
+**Status:** frozen on 27 November 2026 by `preregistration/DIGEST-MMLM-ORDER.json`, after an independent review,
+a check of its revision and five rehearsals; run once on `mmlm-order-run-1`. Written on 27 November
 2026, on the owner's word "go ahead to test all" (02:32 Berlin time).
 
 That word followed the owner's question whether MMLM is a reliable model for APEDP-X. The answer given was that it
@@ -214,6 +215,18 @@ The following are reported beside, and not read:
   seconds of search): both arms recovered 4 of 30 runs, with no run-for-run difference. MMLM's arm was slower, with
   a median of 5.09 against 4.48 seconds. It reported 11 laws in each arm, none wrong. These are development numbers
   on other laws. A second rehearsal runs the revised runner before freezing.
+- **Rehearsals 2 to 5.** Rehearsal 2 and rehearsal 3 stopped on a fault in the rehearsal's shard keys (fixed,
+  with a test), and rehearsal 3 was then cancelled for the second revision. Rehearsal 4 loaded the route in the
+  parent before forking. Both arms of a smoke law then failed in a least-squares fit inside their forks, so the
+  units' processes now report what they load instead.
+
+  **Rehearsal 5** (`mmlm-order-smoke-5`, run 45947143250, the frozen runner, 16 rehearsal laws, 60 seconds of
+  search) finished all 32 units, every unit and arm exactly once, with no failed search and no failed arm. It
+  recorded 263 loaded repository files, alike across shards. Both arms recovered 21 of 32 and reported 24, none
+  wrong, with no run-for-run difference. MMLM's first pass evaluated a median of 9,560 candidates against 29,593
+  and stopped early in 11 units against 8. The first-pass laws differed in 2 units. The median end-to-end time was
+  144.4 against 143.5 seconds. On these numbers expectation 1 would fail for want of a gain, as the Power paragraph
+  says. These are development numbers on laws of other shapes, not a reading of this test.
 - Seeds 20261203 and 20261204, first written into the draft, are drawn by `scripts/run_vouching_v2_blind.py`. They
   were replaced before anything ran.
 - Smoke checks (local, no search engine: the proxy blocks Julia's download): both arms recovered both smoke laws. A

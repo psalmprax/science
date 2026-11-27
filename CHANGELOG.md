@@ -126,6 +126,10 @@ inferred releases.
   - Part 2, agreement with human labels, needs an object tracker on generated video.
   - Files: `preregistration/PREREG-PHYSICS-J1-2026-11.md`, `scripts/run_prereg_physics_j1.py`,
     `.github/workflows/physics-j1.yml`, `tests/test_physics_j1_prereg.py`.
+- **PREREG-MMLM-ORDER-2026-11 frozen (2026-11-27).** `preregistration/DIGEST-MMLM-ORDER.json` was written after
+  rehearsal 5 (run 45947143250), which finished every unit and arm, with no failed search and no failed arm. Both
+  arms recovered 21 of 32, with no run-for-run difference. MMLM's first pass evaluated a median of 9,560 candidates
+  against 29,593. The test runs once on `mmlm-order-run-1`.
 - **PREREG-MMLM-ORDER-2026-11, second revision (2026-11-27), after the reviewer's check of the first.**
   - Where the two arms' first-pass laws differ, the search runs once per arm, each seeded with its own law;
     seeding one search with both had pushed the arms together.
