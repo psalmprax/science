@@ -89,6 +89,14 @@ inferred releases.
 
 ### Added
 
+- **PREREG-PHYSICS-J1-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The physics judge's
+  blind test on clips rendered here, which is part 1 of gate J. It reads 60 blind clips of each gate kind, the
+  development breakages, and the independent reviewer's unseen breakages. Collisions and PhysInOne's blind pool
+  are reported beside.
+  - Freezing has two stages: the judge, then the reviewer's breakages.
+  - Part 2, agreement with human labels, needs an object tracker on generated video.
+  - Files: `preregistration/PREREG-PHYSICS-J1-2026-11.md`, `scripts/run_prereg_physics_j1.py`,
+    `.github/workflows/physics-j1.yml`, `tests/test_physics_j1_prereg.py`.
 - **PREREG-MMLM-ORDER-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The route in force
   with MMLM's law model as its guided search's prior, against the size prior in force. The same searched
   candidates are replayed to both arms, on 50 invented laws drawn at run time from a seed no other test uses and
