@@ -125,8 +125,11 @@ def test_security_scans_cover_dynamic_package_for_high_severity_findings():
     )
     # Both packages at medium severity and above (-ll). Until the 2026-11-19
     # stage merge apedp_dyn was scanned at high only (-lll); one combined scan
-    # at -ll covers strictly more.
-    assert re.search(r"bandit -r apedp/ apedp_dyn/ -ll(?!l)", script), script
+    # at -ll covers strictly more. Since 2026-11-27 the referee core and the
+    # language-model package are scanned in the same command (audit M-39); the
+    # first push of that change failed here because this line still pinned
+    # the two-package command.
+    assert re.search(r"bandit -r apedp/ apedp_dyn/ apedp_referee/ apedp_mmlm/ -ll(?!l)", script), script
 
 
 def test_strict_mypy_scope_includes_the_d5_conf_benchmark():
