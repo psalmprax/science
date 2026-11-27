@@ -4,8 +4,8 @@
   "basis": "A module counts as referenced when a tests/ source names its dotted path, imports it, or imports its name from its package -- including a from-import that continues across lines inside parentheses. A bare word match does not count: prose and unrelated identifiers are not coverage. Import coverage from test_smoke_imports.py is separate and is not counted here, because importing a module is not testing it.",
   "pinned_ceiling": 52,
   "totals": {
-    "modules": 495,
-    "referenced": 443,
+    "modules": 499,
+    "referenced": 447,
     "unreferenced": 52
   },
   "unreferenced": [

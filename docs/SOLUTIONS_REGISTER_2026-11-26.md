@@ -69,8 +69,16 @@ files are never edited or moved). Nothing in force used any of them.
 
 On 27 November four things that had shown no gain were put to you for retirement. Your word (10:23): do
 not retire them, find a solution for each. The designs are in
-`docs/SOLUTIONS_FOR_NO_GAIN_ITEMS_2026-11-27.md`. None is built, none is in force; each has a first look
-that can stop it and a rule that retires it.
+`docs/SOLUTIONS_FOR_NO_GAIN_ITEMS_2026-11-27.md`. None is in force; each has a first look that can stop
+it and a rule that retires it.
+
+**Built on your word of 18:01 ("build the best of the above and make the others fallback").** The best is
+the first row, learning across tables: `apedp_dyn/discovery_l2/across_tables.py` and `family_route.py`.
+The other three stand behind it as fallbacks (`apedp_dyn/discovery_l2/fallbacks.py`), tried in this order
+and only for a table that still has no law: solved cases, the tensor-train reading, a language model
+(only with a key; no call has been made). They are the fallbacks as they stood on 27 November, not the
+redesigns in the table below. Experimental, not in force: the route in force is unchanged. What of the
+designs is not built is listed in section 9 of the design document.
 
 | Thing | What was measured | The design | First look | Retired if |
 | :--- | :--- | :--- | :--- | :--- |
@@ -81,9 +89,9 @@ that can stop it and a rule that retires it.
 
 ## Waiting for your word, apart from the above
 
-- Section F: which of the four designs to build, and in what order. Proposed: the cases as a proposer;
-  families in the learning loop; the tensor-train reading's missing parts and its test beside the split
-  search; the language model as a second reader last (it is the one that costs calls).
+- Section F: decided on 27 November at 18:01 (the families built as the primary, the other three as
+  fallbacks). What waits now: whether the arrangement gets a preregistered test, which is the only way it
+  could come into force.
 - Gate J part 1 of the physics judge: the reading of its blind test, each scene kind on its own or pooled
   (`preregistration/PREREG-PHYSICS-J1-2026-11.md`); stage 2 and the run wait for it.
 - Earlier, unchanged: PREREG-RANKED-MEMORY-2026-11; the search-budget and kept-processes proposals; branch

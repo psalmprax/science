@@ -149,6 +149,37 @@ inferred releases.
 
 ### Added
 
+- **Families of tables read together, with the other three kept items as fallbacks (2026-11-27, the owner's
+  word of 18:01: "build the best of the above and make the others fallback").** Experimental and **not in
+  force**: the route in force for a table is unchanged, and nothing calls the new modules but their study
+  and their tests.
+  - *The best, built as the primary*: the learning loop's redesign, learning across tables
+    (`apedp_dyn/discovery_l2/across_tables.py`). A family is a set of tables with the same inputs that
+    are said to belong together, or one table split by an input that takes few values. Every law the
+    route listed for any member is refitted on every member with constants of its own, and the shapes are
+    ordered by all the family's rows. A member without a law is handed the best shapes its siblings
+    found. A shape's constants are read along the family's condition, and the wider law over the inputs
+    and the condition is judged by the route on the pooled table.
+  - *The route* (`apedp_dyn/discovery_l2/family_route.py`): each member by the route in force as today;
+    then its siblings' shapes; then the wider law; then the fallbacks. A member whose first reading
+    reported a law keeps it and is never read again. Later readings replay laws and run no search.
+  - *The other three, as fallbacks* (`apedp_dyn/discovery_l2/fallbacks.py`), tried in this order and only
+    for a member still without a law: solved cases (`proposers/experience.py`); the tensor-train reading
+    (new `apedp_dyn/proposers/tensor_train_reading.py`, the fit and reading of the feasibility check moved
+    out of its script unchanged, with `read_product`); a language model, only when a client is given
+    (two calls a table; none has been made). Each only adds laws beside those the table already had; the
+    referee decides.
+  - *What is not built of the designs*: the joint template search (the shapes scored are those the
+    single searches listed); remembered parts as operators; more than one condition; and the redesigns of
+    the three fallbacks, which stand in their 27 November forms.
+  - *Tests*: `tests/test_across_tables.py` (14), `tests/test_family_route.py` (7, one through the route
+    in force), `tests/test_fallbacks.py` (6), `tests/test_tensor_train_reading.py` (6),
+    `tests/test_study_symbolic_tensor_train.py` (now 2), `tests/test_study_family_stream.py` (9).
+  - *The measurement* (development, not a result): `scripts/study_family_stream.py` and
+    `.github/workflows/family-stream.yml`. Sixteen families of five tables at 1 %, 5 % and 10 % noise,
+    read table by table, as families, with the fallbacks, with the wrong family as the control, and by
+    searching the pooled table directly.
+
 - **A design for each of the four things that showed no gain, and one feasibility check (2026-11-27, the
   owner's word of 10:23: do not retire them, find a solution).** New
   `docs/SOLUTIONS_FOR_NO_GAIN_ITEMS_2026-11-27.md`: for the learning loop, the language model steering the

@@ -51,7 +51,6 @@ and unmixing them is the part of the proposal that is not written.
 from __future__ import annotations
 
 import argparse
-import copy
 import hashlib
 import json
 import sys
@@ -64,144 +63,32 @@ from typing import Any
 
 import numpy as np
 import sympy as sp
-from scipy.interpolate import BSpline
-from scipy.optimize import least_squares
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from apedp_dyn.proposers.tensor_train_reading import (  # noqa: E402 - after the path is set
+    FOLDS,
+    GRID,
+    LAMBDA,
+    MARGIN,
+    N_BASIS,
+    RANK_MAX,
+    STARTS,
+    Z_BETTER,
+    Train,
+    basis,
+    choose,
+    polish,
+    read_core,
+)
+
 TAG = "DEV-SYMBOLIC-TENSOR-TRAIN-2026-11"
 ROWS = 700                 #: the rows a proposer has (as in ``study_split_search.py``)
-KNOTS_INSIDE, DEGREE = 10, 3
-LAMBDA = 1.0e-3            #: weight of the smoothness penalty (second differences of the spline's coefficients)
-RANK_MAX = 3
-FOLDS, STARTS, SWEEPS = 5, 3, 60
-Z_BETTER = 2.0             #: a higher rank is taken only if it is better on left-out rows by this many standard errors
 AT_THE_FLOOR = 1.5         #: left-out error over the table's noise below which a fit is said to reach the noise
 SPACE_TOL = 0.02           #: directions of a function space smaller than this share of the largest are not counted
-GRID, DECOYS = 200, 200
-MARGIN = 1.02
-
-
-def basis(x: np.ndarray, low: float, high: float) -> np.ndarray:
-    """Cubic B-splines on ``[low, high]``: one column a spline, one row a value of the input."""
-    knots = np.r_[[low] * DEGREE, np.linspace(low, high, KNOTS_INSIDE + 2), [high] * DEGREE]
-    return np.asarray(BSpline.design_matrix(np.clip(x, low, high), knots, DEGREE).toarray())
-
-
-N_BASIS = KNOTS_INSIDE + DEGREE + 1
-_D2 = np.diff(np.eye(N_BASIS), 2, axis=0)
-_PENALTY = _D2.T @ _D2
-
-
-class Train:
-    """A tensor train whose cores hold splines of one input: ``cores[i][a, j, b]`` is the weight of spline ``j`` in entry ``(a, b)``."""
-
-    def __init__(self, inputs: int, ranks: Sequence[int], seed: int = 0) -> None:
-        self.inputs, self.ranks = inputs, [1, *ranks, 1]
-        rng = np.random.default_rng(seed)
-        self.cores = []
-        for i in range(inputs):
-            core = 0.3 * rng.standard_normal((self.ranks[i], N_BASIS, self.ranks[i + 1]))
-            core[0, :, 0] += 1.0                      # B-splines sum to one: the constant function
-            self.cores.append(core)
-
-    def _matrices(self, bases: Sequence[np.ndarray], i: int) -> np.ndarray:
-        return np.einsum("ajb,nj->nab", self.cores[i], bases[i])
-
-    def predict(self, bases: Sequence[np.ndarray]) -> np.ndarray:
-        left = np.ones((len(bases[0]), 1))
-        for i in range(self.inputs):
-            left = np.einsum("na,nab->nb", left, self._matrices(bases, i))
-        return np.asarray(left[:, 0])
-
-    def fit(self, bases: Sequence[np.ndarray], y: np.ndarray, sweeps: int = 40, tol: float = 1.0e-9) -> Train:
-        """Alternating least squares from the cores as they are: one core at a time, the others held."""
-        n, last = len(y), np.inf
-        order = [*range(self.inputs), *range(self.inputs - 2, 0, -1)]
-        for _ in range(sweeps):
-            for i in order:
-                left = np.ones((n, 1))
-                for k in range(i):
-                    left = np.einsum("na,nab->nb", left, self._matrices(bases, k))
-                right = np.ones((n, 1))
-                for k in range(self.inputs - 1, i, -1):
-                    right = np.einsum("nab,nb->na", self._matrices(bases, k), right)
-                ra, rb = self.ranks[i], self.ranks[i + 1]
-                design = np.einsum("na,nj,nb->najb", left, bases[i], right).reshape(n, ra * N_BASIS * rb)
-                scale = float(np.sqrt(np.mean(design ** 2))) + 1.0e-300
-                design = design / scale
-                penalty = np.kron(np.kron(np.eye(ra), _PENALTY), np.eye(rb))
-                gram = design.T @ design / n + LAMBDA * penalty + 1.0e-10 * np.eye(design.shape[1])
-                self.cores[i] = (np.linalg.solve(gram, design.T @ y / n) / scale).reshape(ra, N_BASIS, rb)
-                # the whole is unchanged when a factor moves from one core to its neighbour: keep the cores of one size
-                size = float(np.sqrt(np.mean(self.cores[i] ** 2))) + 1.0e-300
-                neighbour = i + 1 if i + 1 < self.inputs else i - 1
-                self.cores[i] /= size
-                self.cores[neighbour] *= size
-            error = float(np.mean((self.predict(bases) - y) ** 2))
-            if abs(last - error) < tol * max(error, 1.0e-300):
-                break
-            last = error
-        return self
-
-
-def add(first: Train, second: Train) -> Train:
-    """The sum of two tensor trains is a tensor train: the cores side by side, joined at the two ends."""
-    out = Train(first.inputs, [a + b for a, b in zip(first.ranks[1:-1], second.ranks[1:-1], strict=True)])
-    for i in range(first.inputs):
-        one, two = first.cores[i], second.cores[i]
-        if i == 0:
-            core = np.concatenate([one, two], axis=2)
-        elif i == first.inputs - 1:
-            core = np.concatenate([one, two], axis=0)
-        else:
-            core = np.zeros((one.shape[0] + two.shape[0], N_BASIS, one.shape[2] + two.shape[2]))
-            core[: one.shape[0], :, : one.shape[2]] = one
-            core[one.shape[0]:, :, one.shape[2]:] = two
-        out.cores[i] = core
-    return out
-
-
-def _mse(model: Train, bases: Sequence[np.ndarray], y: np.ndarray) -> float:
-    return float(np.mean((model.predict(bases) - y) ** 2))
-
-
-def grown(bases: Sequence[np.ndarray], y: np.ndarray, rank_max: int = RANK_MAX, starts: int = STARTS) -> list[Train]:
-    """Models of rank 1 to ``rank_max`` at every cut: one more product fitted to what is left, then every core refined."""
-    inputs, out, current, left = len(bases), [], None, y.copy()
-    for _ in range(rank_max):
-        one = min((Train(inputs, [1] * (inputs - 1), seed=s).fit(bases, left) for s in range(starts)),
-                  key=lambda m: _mse(m, bases, left))
-        current = one if current is None else add(current, one)
-        current.fit(bases, y, sweeps=SWEEPS)
-        out.append(copy.deepcopy(current))
-        left = y - current.predict(bases)
-    return out
-
-
-def choose(bases: Sequence[np.ndarray], y: np.ndarray, rank_max: int = RANK_MAX, folds: int = FOLDS,
-           seed: int = 1) -> dict[str, Any]:
-    """The smallest rank that no higher rank beats on rows left out of the fit; the model of that rank fitted on all rows."""
-    n = len(y)
-    size = float(np.sqrt(np.mean(y ** 2)))
-    order = np.random.default_rng(seed).permutation(n)
-    squared = np.zeros((rank_max, n))
-    for fold in range(folds):
-        test = order[fold::folds]
-        train = np.setdiff1d(order, test)
-        for r, model in enumerate(grown([b[train] for b in bases], y[train] / size, rank_max)):
-            squared[r, test] = (size * model.predict([b[test] for b in bases]) - y[test]) ** 2
-    rank = 0
-    for higher in range(1, rank_max):
-        gain = squared[rank] - squared[higher]
-        if gain.mean() / (gain.std() / np.sqrt(n) + 1.0e-300) > Z_BETTER:
-            rank = higher
-    model = grown(bases, y / size, rank + 1)[rank]
-    model.cores[0] = model.cores[0] * size
-    return {"rank": rank + 1, "model": model, "left_out_rmse": float(np.sqrt(squared[rank].mean())),
-            "left_out_rmse_by_rank": [float(np.sqrt(row.mean())) for row in squared]}
+DECOYS = 200
 
 
 def _space(columns: np.ndarray, tol: float = SPACE_TOL) -> np.ndarray:
@@ -249,60 +136,6 @@ def decoys(grid: np.ndarray, constants: Sequence[float], rng: np.random.Generato
         values = families[int(rng.integers(len(families)))](float(rng.choice(constants)))
         out.append(values - values.mean())
     return out
-
-
-def stand_in(scored: Sequence[tuple[float, int, bool, str]], yard: float, margin: float = MARGIN) -> tuple[str | None, bool]:
-    """Of ``(error on the real rows, blocks, has an additive constant, law)``: the simplest within the yardstick, else the best fit.
-
-    Simplest: fewest blocks, then no additive constant, then the smaller error.
-    """
-    passing = [item for item in scored if item[0] <= margin * yard]
-    if passing:
-        return min(passing, key=lambda item: (item[1], item[2], item[0]))[3], True
-    return (min(scored, key=lambda item: item[0])[3], False) if scored else (None, False)
-
-
-def read_core(i: int, X: np.ndarray, y: np.ndarray, model: Train, bases: Sequence[np.ndarray], grid: np.ndarray,
-              low: float, high: float, yard: float) -> tuple[str | None, bool]:
-    """A law of one input in place of core ``i`` of a rank-one model, the other cores as fitted, judged on the real rows."""
-    from apedp_dyn.proposers import block_search
-
-    others = np.ones(len(y))
-    for k in range(model.inputs):
-        if k != i:
-            others = others * (bases[k] @ model.cores[k][0, :, 0])
-    on_grid = basis(grid, low, high) @ model.cores[i][0, :, 0]
-    name = sp.Symbol(f"x{i}")
-    scored = []
-    for _, law, blocks in block_search.search(grid, on_grid / float(np.sqrt(np.mean(on_grid ** 2))), name=str(name)):
-        with np.errstate(all="ignore"):
-            values = np.asarray(sp.lambdify(name, sp.sympify(law, locals={str(name): name}), "numpy")(X[:, i]),
-                                dtype=float) * np.ones(len(y))
-        if not np.all(np.isfinite(values)):
-            continue
-        whole = others * values
-        factor = float(np.dot(whole, y) / (np.dot(whole, whole) + 1.0e-300))
-        scored.append((float(np.sqrt(np.mean((factor * whole - y) ** 2))), int(blocks), not law.startswith("("), law))
-    return stand_in(scored, yard)
-
-
-def polish(expr: sp.Expr, names: Sequence[str], X: np.ndarray, y: np.ndarray) -> tuple[sp.Expr, float]:
-    """Every constant of ``expr`` but the exponents refitted on the rows given."""
-    exponents = {e for power in expr.atoms(sp.Pow) for e in power.exp.atoms(sp.Float)}
-    floats = sorted(set(expr.atoms(sp.Float)) - exponents, key=str)
-    params = [sp.Symbol(f"_p{k}") for k in range(len(floats))]
-    template = expr.xreplace(dict(zip(floats, params, strict=True)))
-    fn = sp.lambdify([*params, *[sp.Symbol(n) for n in names]], template, "numpy")
-    size = float(np.sqrt(np.mean(y ** 2)))
-
-    def residual(theta: np.ndarray) -> np.ndarray:
-        with np.errstate(all="ignore"):
-            values = np.asarray(fn(*theta, *X.T), dtype=float) * np.ones(len(y))
-        return np.asarray(np.where(np.isfinite(values), values, 1.0e6 * size) - y)
-
-    fit = least_squares(residual, np.array([float(f) for f in floats]), max_nfev=400)
-    return (template.xreplace({p: sp.Float(float(v)) for p, v in zip(params, fit.x, strict=True)}),
-            float(np.sqrt(np.mean(fit.fun ** 2))))
 
 
 def table(job: dict[str, Any]) -> dict[str, Any]:

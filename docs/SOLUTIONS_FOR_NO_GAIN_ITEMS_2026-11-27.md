@@ -366,6 +366,23 @@ owner's decision. Part A of section 5 (an hour) can run at any time.
   the forms apart (idea C2 of 25 November), and a product of one-input functions makes those rows
   cheap to name.
 
+## 9. What was built the same day (owner's word, 18:01)
+
+"Build the best of the above and make the others fallback." Read as: the best is section 2, the one
+design whose gain follows by arithmetic wherever families exist; the other three stand behind it and
+are tried, in the order of what they cost, only for a table that still has no law.
+
+| Built | Where | How it differs from the design above |
+| :--- | :--- | :--- |
+| Families: siblings' shapes, constants read along a condition, the wider law judged on all rows | `apedp_dyn/discovery_l2/across_tables.py`, `family_route.py` | the shapes scored are those the single searches listed: the joint template search of section 2 is not built, nor are parts as operators; one condition only |
+| Fallback 1: solved cases as a proposer of their own | `apedp_dyn/discovery_l2/fallbacks.SolvedCases` | point 1 of section 4 only; the likeness is the hand-written signature, not a learned one |
+| Fallback 2: the tensor-train reading | `apedp_dyn/proposers/tensor_train_reading.py`, `fallbacks.TensorTrain` | part B as the feasibility check left it: products only, and it under-reads at 5 % noise |
+| Fallback 3: a language model's shapes | `fallbacks.LanguageModel` | the proposer of 20 November asked once; no dossier, no rounds, no harness; needs a key and has made no call |
+
+Nothing is in force. The order of section 7 is superseded by this for what is built; the redesigns of
+the three fallbacks stay to be built in that order if the arrangement earns its test. The development
+measurement is `scripts/study_family_stream.py`.
+
 ## Sources
 
 In this repository: `preregistration/RESULT-MMLM-ORDER-2026-11.md`,
