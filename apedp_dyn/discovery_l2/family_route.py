@@ -23,17 +23,23 @@ fallback"; the designs are ``docs/SOLUTIONS_FOR_NO_GAIN_ITEMS_2026-11-27.md``).
    tensor-train reading, a language model, in the order given and only as far as needed.
 
 **Two rules for every reading after the first**, both learned from the first development run
-(``benchmarks/family_stream/dev_run1.json``), in which the route as first built broke the first of them:
+(``benchmarks/family_stream/dev_run1.json``), in which a member put into a family it did not belong to
+gained a law almost as often as one in its own:
 
-* *Beside, never in place.* The route gives a search stage about six of the twelve candidates its referee
-  contrasts. Laws handed in at the head of a list push the table's own best laws out of those places, and
-  the referee then answers an easier question than on the first reading. So the table's own laws and the
-  laws handed in take turns, the table's own first (``across_tables.beside``).
-* *A re-reading brings in only what was handed in for it.* If the referee, read again, reports one of the
-  table's own laws that it did not report the first time, that is the same candidates before a different
-  set of rivals, not new knowledge, and it is not counted: the member stays as its first reading left it,
-  and the record says a law was passed over (``passed_over``). In that run a member put into a family it
-  did not belong to gained a law almost as often as one in its own family, and that was why.
+* *A re-reading brings in only what was handed in for it.* What the referee reports on a table depends on
+  the list of laws before it. With six unrelated laws added to a fixed list, some tables it had refused
+  get a law and some it had reported lose theirs (``benchmarks/family_stream/dev_list_sensitivity.json``:
+  3 gained and 5 lost of 160). The route as first built read again only the tables without a law and
+  counted whatever was then reported, so it could collect only changes of the first kind. Now a re-reading
+  counts only if the law it reports is one that was handed in for it (``brought_in``). If the referee
+  reports one of the table's own laws instead, that is the same candidates before other rivals, not new
+  knowledge: the member stays as its first reading left it, and the record says a law was passed over
+  (``passed_over``).
+* *Beside, never in place.* The route gives a search stage ten of the twelve candidates its referee
+  contrasts, in the order given, the first its starting champion. The route as first built put the laws it
+  handed in at the head of the list, where six of them led it and left room for the table's first four.
+  Now the table's own laws and the laws handed in take turns, the table's own first
+  (``across_tables.beside``), so the table's own first five stay before the referee as rivals.
 
 **What decides.** The referee, on a member's rows for a member's law and on the family's rows for the
 wider law. Nothing here reports a law the referee did not confirm, and a member whose first reading
@@ -67,11 +73,23 @@ SHAPES_RECORDED = 5
 
 def read(table: Table, proposer: ProposerBase | None, *, noise: str = "absolute", seed: int = 0) -> dict[str, Any]:
     """One table by the route in force. Beside its record: the laws its stage proposed, the laws it listed, and the
-    reported law in the form the referee confirmed it (``confirmed_as``), before the route pruned and rewrote it."""
+    reported law in the form the referee confirmed it (``confirmed_as``), before the route pruned and rewrote it.
+
+    A reading the route cannot make is written down, not raised, as the product does
+    (``ui/route_endpoint.route_reading``): no law, action ``not_run``, and the error. The route in force can end in
+    a fitting error on a law a search proposed (the second development run lost a unit of ten tables to one), and
+    one member's failed reading must not cost its family the others.
+    """
     stage = Recording(proposer) if proposer is not None else None
     started = time.perf_counter()
-    record = vouched_route_v2.discover_law(table.columns(), table.y, table.pool_X, table.measure, proposer=stage,
-                                           noise=noise, seed=seed)
+    try:
+        record = vouched_route_v2.discover_law(table.columns(), table.y, table.pool_X, table.measure, proposer=stage,
+                                               noise=noise, seed=seed)
+    except Exception as exc:  # noqa: BLE001 - whatever stops a reading is that table's answer: no law, and why
+        error = f"{type(exc).__name__}: {exc}"[:300]
+        return {"record": {"error": error}, "reported": False, "law": None, "confirmed_as": None, "tentative_law": None,
+                "action": "not_run", "error": error, "formulas": list(stage.formulas) if stage is not None else [],
+                "listed": [], "rows_read": None, "seconds": round(time.perf_counter() - started, 2)}
     path = record.get("main_search")
     listed = [str(c["formula"]) for c in (getattr(path, "candidates", None) or [])]
     reported = bool(record.get("reported") and record.get("law"))
@@ -90,7 +108,8 @@ def summary(reading: dict[str, Any] | None) -> dict[str, Any] | None:
     record = reading["record"]
     vouching = record.get("vouching") or {}
     return {"reported": reading["reported"], "law": reading["law"], "tentative_law": reading["tentative_law"],
-            "action": reading["action"], "listed": len(reading["listed"]), "rows_read": reading["rows_read"],
+            "action": reading["action"], "error": reading.get("error"), "listed": len(reading["listed"]),
+            "rows_read": reading["rows_read"],
             "last_checks": {key: vouching.get(key) for key in ("in_force", "applied", "version") if key in vouching},
             "measured_range": (record.get("measured_range") or {}).get("state"), "seconds": reading["seconds"]}
 

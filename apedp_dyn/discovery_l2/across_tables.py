@@ -339,7 +339,7 @@ def score_shapes(family: Family, listed: Sequence[Sequence[str]], reported: Sequ
 
     ``listed[i]`` are member ``i``'s laws in the route's order: the candidates its referee had before it.
     ``reported[i]`` is the law the referee reported on it, if any. ``unseen[i]`` are further laws member ``i``'s
-    search proposed that never reached its referee (the route keeps about six of a search's laws): their shapes are
+    search proposed that never reached its referee (the route keeps the first ten of a search's laws): their shapes are
     scored too, because a shape that was ninth on one member's list can be first by all the family's rows.
 
     Shapes reported on a member come first (more members first), then the rest; inside each group by the sum of the
@@ -402,11 +402,12 @@ def sibling_laws(family: Family, scored: Sequence[Scored], member: int, handed: 
 def beside(own: Sequence[str], new: Sequence[str]) -> list[str]:
     """``own`` and ``new`` in turn, ``own`` first, each law once.
 
-    The route in force gives a search stage about six of the twelve candidates its referee contrasts
-    (``refined_search`` takes the stage's laws and the polynomial library's in turn, eleven in all, and
-    ``main_search`` adds the first pass). A list with the new laws at its head is therefore read *in place of* a
-    table's own best laws, and the referee is asked an easier question than on the first reading. Taking turns
-    keeps the table's own best laws before the referee as rivals of what is handed in.
+    The route in force gives a search stage ten of the twelve candidates its referee contrasts, in the order
+    given (``refined_search`` takes the stage's laws and the polynomial library's one law in turn, eleven in
+    all, and ``main_search`` adds the first pass), and the first of them is the referee's starting champion.
+    Laws handed in at the head of a list therefore lead it and push the table's own lower laws out: six of
+    them leave room for the table's first four. Taking turns keeps the table's own first law at the head and
+    its first five before the referee, as rivals of what is handed in.
     """
     out: list[str] = []
     for index in range(max(len(own), len(new))):

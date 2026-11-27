@@ -20,10 +20,11 @@ first run read families 0 to 15, the second 16 to 31.
 
 **Two runs, two versions of the route.** The first run (``benchmarks/family_stream/dev_run1.json``, made by
 this script as it stood at commit e38a897) read the route as first built, which put the laws it handed in
-at the head of a member's list. Its control showed that most of what it gained was not the family's: the
-handed laws stood in place of the member's own best laws, and before weaker rivals the referee reported
-laws it had refused at first. The route was changed (``family_route.py``: beside, never in place; a
-re-reading brings in only what was handed in for it) and this script now reads the changed route, with
+at the head of a member's list and counted whatever law a re-reading then reported. Its control showed
+that most of what it gained was not the family's. What the referee reports on a table depends on the list
+before it (``scripts/study_list_sensitivity.py``), and a route that reads again only the tables without a
+law collects the changes in its favour. The route was changed (``family_route.py``: a re-reading brings in
+only what was handed in for it; beside, never in place) and this script now reads the changed route, with
 arms that show the first build's effect beside it.
 
 **What is read, each through the route in force with the product's own search stage:**
@@ -56,6 +57,7 @@ sibling's lists, among the laws it was handed.
 
     python scripts/study_family_stream.py run --out DIR --shard 0 --shards 24 --searches 30 --families 32 --skip 16
     python scripts/study_family_stream.py collect --out DIR --families 32 --skip 16
+    python scripts/study_family_stream.py merge --out DIR --families 32 --skip 16 --records A.json B.json
 """
 from __future__ import annotations
 
@@ -489,9 +491,30 @@ def summarise(members: Sequence[dict[str, Any]], families: Sequence[dict[str, An
     return out
 
 
+def merged(records: Sequence[dict[str, Any]], names: Sequence[str], expected: int) -> dict[str, Any]:
+    """Records of runs that read different units of the same families, as one: units that failed in one run and were
+    read again in another. A unit (a family at a noise level) found in two records is refused: nothing is chosen
+    between two readings of the same unit."""
+    members = [row for record in records for row in record["members"]]
+    fams = [row for record in records for row in record["families"]]
+    keys = [(row["family"], row["noise"]) for row in fams]
+    twice = sorted({key for key in keys if keys.count(key) > 1})
+    if twice:
+        raise ValueError(f"read in more than one record, family and noise: {twice}")
+    first = records[0]
+    return {"tag": first["tag"], "development_not_a_result": True, "what": first["what"],
+            "merged_from": [{"record": name, "units_found": record["units_found"],
+                             "units_failed": [{k: f[k] for k in ("pair", "noise")} for f in record.get("units_failed", [])]}
+                            for name, record in zip(names, records, strict=True)],
+            "settings": first["settings"], "units_expected": expected, "units_found": len(fams) // 2,
+            "complete": len(fams) // 2 == expected,
+            "summary": summarise(members, fams) if members else {}, "families": fams, "members": members}
+
+
 def main(argv: list[str] | None = None, stage: Callable[[float], family_route.Stage] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
-    parser.add_argument("command", choices=("run", "collect", "families"))
+    parser.add_argument("command", choices=("run", "collect", "families", "merge"))
+    parser.add_argument("--records", type=Path, nargs="*", default=[], help="for merge: records of runs of the same families")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--searches", type=float, default=30.0)
     parser.add_argument("--shard", type=int, default=0)
@@ -506,6 +529,13 @@ def main(argv: list[str] | None = None, stage: Callable[[float], family_route.St
     families = draw_families(args.families)[args.skip:]
     if args.command == "families":
         (args.out / "families.json").write_text(json.dumps(families, indent=1) + "\n")
+        return 0
+    if args.command == "merge":
+        record = merged([json.loads(path.read_text()) for path in args.records], [path.name for path in args.records],
+                        len(units(families)))
+        (args.out / "family_stream_merged.json").write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+        print(json.dumps({"units": f"{record['units_found']} of {record['units_expected']}",
+                          "summary": record["summary"].get("all noise levels")}, indent=1))
         return 0
     if args.command == "run":
         mine = [unit for index, unit in enumerate(units(families)) if index % args.shards == args.shard]

@@ -83,9 +83,9 @@ designs is not built is listed in section 9 of the design document.
 **Its first development run showed a flaw in the build, which is repaired**
 (`benchmarks/family_stream/dev_run1.json`; 16 families, 240 tables). The route table by table reported
 85 laws, the family route 104, with the fallbacks 116, none inaccurate; but a table put into a family it
-does not belong to reported 98. The laws handed in had stood in place of the table's own best laws, and
-before weaker rivals the referee reported laws it had refused at first. Now handed laws take turns with
-the table's own, and a re-reading counts only if the law it reports was handed in.
+does not belong to reported 98. What the referee reports on a table depends on the list of laws before
+it, and the build read again only the tables without a law and counted whatever was then reported. Now a
+re-reading counts only if the law it reports was handed in, and handed laws take turns with the table's own.
 
 | Thing | What was measured | The design | First look | Retired if |
 | :--- | :--- | :--- | :--- | :--- |

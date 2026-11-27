@@ -25,16 +25,36 @@ jobs:
         # one unit a shard: a pair of families at one noise level
         shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
     steps:
+      - name: Is this shard asked for
+        id: pick
+        env:
+          BRANCH: ${{ github.ref_name }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # a branch family-stream-run-3-only-5-23 runs shards 5 and 23, to read again units that failed;
+          # any other branch runs every shard
+          only="${BRANCH#*-only-}"
+          if [ "$only" = "$BRANCH" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif printf '%s\n' "$only" | tr '-' '\n' | grep -qx "$SHARD"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v7
+        if: steps.pick.outputs.run == 'true'
       - uses: actions/setup-python@v7
+        if: steps.pick.outputs.run == 'true'
         with:
           python-version: '3.12'
           cache: pip
       - name: Install dependencies and PySR
+        if: steps.pick.outputs.run == 'true'
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test]" pysr==2.7.2
       - name: Shard ${{ matrix.shard }} of 24
+        if: steps.pick.outputs.run == 'true'
         timeout-minutes: 330
         env:
           SHARD: ${{ matrix.shard }}
@@ -42,7 +62,7 @@ jobs:
           APEDP_SEARCH_PROCESSES: leave_hard
         run: python scripts/study_family_stream.py run --out out --searches 30 --families 32 --skip 16 --shard "$SHARD" --shards 24
       - uses: actions/upload-artifact@v7
-        if: always()
+        if: always() && steps.pick.outputs.run == 'true'
         with:
           name: family-stream-${{ matrix.shard }}
           path: out

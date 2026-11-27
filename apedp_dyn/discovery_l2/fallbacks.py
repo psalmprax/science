@@ -14,10 +14,10 @@ behind it, tried one after another and only where nothing before them led to a r
 **Each fallback proposes and nothing more** (AGENTS.md 1.1). It reads the rows a proposer may read and
 hands over laws. Those laws go to the route in force *beside* the laws the table's own search proposed,
 taking turns with them, and the referee decides. The chain stops at the first fallback whose own law the
-route reports. A reading in which the referee reports some other law is not counted: in the first
-development run (``benchmarks/family_stream/dev_run1.json``) the fallbacks' laws stood at the head of the
-list, in place of the table's own, and by that record 11 of the 12 laws reported after a fallback were
-not the fallback's.
+route reports. A reading in which the referee reports some other law is not counted: what the referee
+reports on a table depends on the list before it, and a table read again and again gets more chances. In
+the first development run (``benchmarks/family_stream/dev_run1.json``), which counted whatever was
+reported, by that record 11 of the 12 laws reported after a fallback were not the fallback's.
 
 **The order**, cheapest first, the one that costs calls last:
 
@@ -157,9 +157,9 @@ def try_in_order(table: Table, known: Sequence[str], fallbacks: Sequence[Fallbac
     """Each fallback in turn until the route reports one of its laws: that reading (or ``None``) and what each did.
 
     ``known`` are the laws the table's own search proposed. They take turns with each fallback's laws, the table's
-    own first (``across_tables.beside``), so the referee keeps the table's best laws before it as rivals: the route
-    gives a search about six of its twelve candidates, and a fallback's laws at the head of the list would stand in
-    place of them. A reading counts only if the law it reports is one of the fallback's own; if the referee reports
+    own first (``across_tables.beside``), so the referee keeps the table's first laws before it as rivals: the route
+    gives a search ten of its twelve candidates in the order given, and a fallback's laws at the head of the list
+    would lead it. A reading counts only if the law it reports is one of the fallback's own; if the referee reports
     another law, one it did not report before, that is written down (``passed_over``) and the next fallback is tried.
     ``read(table, laws)`` is the route in force on those laws. A fallback that raises is written down and passed over;
     it does not stop the chain.

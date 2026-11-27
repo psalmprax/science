@@ -232,3 +232,23 @@ def test_a_unit_that_fails_is_written_down_and_the_rest_still_run(tmp_path: Path
     assert record["development_not_a_result"] is True and record["settings"]["families_read"] == list(range(16, 32))
     with pytest.raises(SystemExit):
         study.main(["run", "--out", str(tmp_path), "--skip", "3"])           # the families come in pairs
+
+
+def test_units_read_again_in_another_run_are_merged_and_a_unit_read_twice_is_refused(tmp_path: Path) -> None:
+    row = lambda family, noise: {"family": family, "noise": noise}
+    one = {"tag": study.TAG, "what": "w", "settings": {"seed": 1}, "units_found": 1, "members": [],
+           "families": [row(16, 0.01), row(17, 0.01)], "units_failed": [{"pair": [18, 19], "noise": 0.1, "error": "x"}]}
+    two = {"tag": study.TAG, "what": "w", "settings": {"seed": 1}, "units_found": 1, "members": [],
+           "families": [row(18, 0.1), row(19, 0.1)], "units_failed": []}
+    got = study.merged([one, two], ["a.json", "b.json"], 24)
+    assert got["units_found"] == 2 and got["complete"] is False and got["development_not_a_result"] is True
+    assert got["merged_from"] == [{"record": "a.json", "units_found": 1, "units_failed": [{"pair": [18, 19], "noise": 0.1}]},
+                                  {"record": "b.json", "units_found": 1, "units_failed": []}]
+    assert [f["family"] for f in got["families"]] == [16, 17, 18, 19]
+    with pytest.raises(ValueError, match="more than one record"):
+        study.merged([one, one], ["a.json", "a.json"], 24)
+    for name, record in (("a.json", one), ("b.json", two)):
+        (tmp_path / name).write_text(__import__("json").dumps(record))
+    assert study.main(["merge", "--out", str(tmp_path), "--families", "32", "--skip", "16",
+                       "--records", str(tmp_path / "a.json"), str(tmp_path / "b.json")]) == 0
+    assert __import__("json").loads((tmp_path / "family_stream_merged.json").read_text())["units_found"] == 2

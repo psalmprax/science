@@ -383,16 +383,17 @@ Nothing is in force. The order of section 7 is superseded by this for what is bu
 the three fallbacks stay to be built in that order if the arrangement earns its test. The development
 measurement is `scripts/study_family_stream.py`.
 
-**The first measurement broke the first rule of section 1, and the build was changed for it.** Rule 1 is
-"added, never in place". The route in force gives a search about six of the twelve candidates its referee
-contrasts. The build put the laws it handed in at the head of each table's list, so they stood in place of
-the table's own best laws. The control of rule 3 caught it: a table put into a family it does not belong
-to gained a law almost as often as one in its own (98 laws reported against 104, the route alone 85;
-`benchmarks/family_stream/dev_run1.json`). Before weaker rivals the referee had reported laws it refused
-on the first reading. The route now lets handed laws take turns with the table's own, and counts a
-re-reading only if the law it reports is one that was handed in. A lesson for the other three designs as
-well: on this route "added" has to mean a place among the twelve, and a control with the wrong source is
-what shows whether a gain is the source's.
+**The first measurement showed a flaw in the build, and the build was changed for it.** The control of
+rule 3 caught it: a table put into a family it does not belong to gained a law almost as often as one in
+its own (98 laws reported against 104, the route alone 85; `benchmarks/family_stream/dev_run1.json`). The
+cause, as far as it is known: what the referee reports on a table depends on the list of laws before it
+(`benchmarks/family_stream/dev_list_sensitivity.json`: with six unrelated laws added, 3 of 160 tables
+gained a report and 5 lost theirs). The build read again only the tables without a law, with the handed
+laws at the head of the list, and counted whatever was then reported, so it collected the changes in its
+favour. Now a re-reading counts only if the law it reports is one that was handed in, and handed laws take
+turns with the table's own. A lesson for the other three designs as well: a route that reads a table
+again must not count a change of verdict on the laws the table already had, and a control with the wrong
+source is what shows whether a gain is the source's.
 
 ## Sources
 

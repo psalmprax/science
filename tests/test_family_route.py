@@ -218,3 +218,31 @@ def test_a_family_through_the_route_in_force() -> None:
     law = sp.lambdify([sp.Symbol(n) for n in ("x0", "x1", "T")], sp.sympify(wide["law"]), "numpy")
     truth = (0.7 + 0.5 * X[:, 2]) * X[:, 0] ** 2 / (X[:, 1] + 2.3)
     assert float(np.sqrt(np.mean((np.asarray(law(*X.T), dtype=float) - truth) ** 2)) / np.sqrt(np.mean(truth ** 2))) < 0.01
+
+
+def test_a_reading_the_route_cannot_make_is_written_down_and_the_family_goes_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The route in force can end in a fitting error on a law a search proposed. That table then has no law, as in
+    the product, and its siblings are still read."""
+    real = family_route.vouched_route_v2.discover_law
+    broken: list[str] = []
+
+    def discover_law(X: Any, Y: Any, pool_X: Any, measure: Any, **kwargs: Any) -> dict[str, Any]:
+        if len(broken) < 1:                          # the first reading of the first member cannot be made
+            broken.append("c=1")
+            kwargs["proposer"].fit_and_propose(pd.DataFrame({**X, "__target__": Y}), target_col="__target__")
+            raise np.linalg.LinAlgError("SVD did not converge in Linear Least Squares")
+        return real(X, Y, pool_X, measure, **kwargs)
+
+    monkeypatch.setattr(family_route.vouched_route_v2, "discover_law", discover_law)
+    family = _family(members=4, seed=1)
+    reading = family_route.read(family.tables[0], replayed([WRONG]))
+    assert reading["reported"] is False and reading["action"] == "not_run" and reading["law"] is None
+    assert reading["error"] == "LinAlgError: SVD did not converge in Linear Least Squares"
+    assert reading["formulas"] == [WRONG] and reading["listed"] == []      # what its search proposed is kept
+    assert family_route.summary(reading)["error"] == reading["error"]
+    broken.clear()
+    out = family_route.discover_family(family, _stage({"c=2"}), wider=False)
+    first = out["members"][0]["first"]
+    assert first["action"] == "not_run" and "SVD did not converge" in first["error"] and out["reported_first"] == 1
+    assert out["members"][1]["source"] == "route" and out["reported_final"] == 4       # the others, and then this one too
+    assert out["members"][0]["source"] == "siblings" and out["members"][0]["final"]["error"] is None
