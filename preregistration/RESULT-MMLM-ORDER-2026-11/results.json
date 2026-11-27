@@ -1,0 +1,312 @@
+{
+ "frozen": {
+  ".github/workflows/mmlm-order.yml": "4bd0e5686a334d6cac3803ca80b6d51add2af9553ecdf1df3913b34e25a187f6",
+  "apedp_dyn/conf/discovery_checks.py": "a0f3d417dffc7cc570699ecc791e4ea4a2308b50800000f01a8688a85dde4f2d",
+  "apedp_dyn/discovery_l2/confirmed_stop.py": "ce13a721d801c6db81d9bd2618b1aa252fba30ef5353100aadac145366148e66",
+  "apedp_dyn/discovery_l2/contrast_confirmation.py": "e40a2afc9d4f8710efade373749bb935825fe2afbad11c572000aff7b8a9de5e",
+  "apedp_dyn/discovery_l2/contrast_resolution.py": "6c6001b7285295c8f1121bd48743b69fe6ff96b4f86a8cd37e3a17366562ee2b",
+  "apedp_dyn/discovery_l2/default_route.py": "7a984f9fe659c0857088ef8b7bf9f6f090a755189ae4eb6338153db4c07c5033",
+  "apedp_dyn/discovery_l2/evolved_stage.py": "c3c4d5d3c0a24609083d38ef6d1320bf933588b55954400644675a4ce4954c98",
+  "apedp_dyn/discovery_l2/exhaustive_search.py": "1938d22b1e0acb93fdb8258e5993f8e54d829480dfb672fe4ac3409ab4c41ed0",
+  "apedp_dyn/discovery_l2/guided_search.py": "da6fafc2104aabe51918e0ba6112b87e8655d224acdc9c01c290279ec664f534",
+  "apedp_dyn/discovery_l2/main_search.py": "babdc3d9dfcc47b9cf0d4334609121f04167dbdc78481fb1f6935b33e7f3023a",
+  "apedp_dyn/discovery_l2/measured_range.py": "ca415e8b2b05bda2707024ab2cb6c354a33dc4e3f92ea12ba1eff3adadce8194",
+  "apedp_dyn/discovery_l2/memory_stage.py": "5ee26a49837d73a420645fb59d4d5b2eb68af95466a1164f698bbee6a4be3136",
+  "apedp_dyn/discovery_l2/refined_search.py": "2bf55b19c8c3e76f4cfc879c483fdbb24033e67da138c7ac3c49ca2c255dc059",
+  "apedp_dyn/discovery_l2/report_share.py": "1e053deb5af7502a0663dfe73a84036299a1fabe1a6d9cff51b5f589950a347c",
+  "apedp_dyn/discovery_l2/search_stage.py": "23025137bff9e99fd2199ffe438ad5e3369ff6fa4fb1674450be210e98b23678",
+  "apedp_dyn/discovery_l2/stage_in_force.py": "240b9f5e9f3e4739101014ad4e00c54b62233056e8959a487c53cef8696523b9",
+  "apedp_dyn/discovery_l2/vouched_route.py": "d15d43d868a99681c32d71b8146416c762fb68ef3ade021d49f1267e78c4d22b",
+  "apedp_dyn/discovery_l2/vouched_route_v2.py": "70bcee036f63f229b3442317b97f9fb85d6e19d2b26d57796505b013a61daafb",
+  "apedp_dyn/discovery_l2/vouching.py": "513763de3fa266ff3b18416f644919efaf1342ab98539a9a45e57f42c83e1292",
+  "apedp_dyn/discovery_l2/vouching_v2.py": "faaf76e4358e320a2691a277148f816f2379ea43aebf5d1849aaf16d3024e18b",
+  "apedp_dyn/ode/extended_route.py": "2505d620532e84ee36e8d30e5c3ab96f7badfc24e2f5c3931738497f491bc766",
+  "apedp_dyn/proposers/composed.py": "eca6edc35ea1155039acb4c4745231bc4e84e8d1b9333540828ac89d9751e6e3",
+  "apedp_dyn/proposers/deep_pass.py": "2a7018dd93053ba81354c5ed9fad64467a86104d546e44e49a83c945c1ffa430",
+  "apedp_dyn/proposers/fit_guard.py": "cd110cf48067b588824eda14d138aa010a6c90ae2f9949630dac7793b4ce7f8a",
+  "apedp_dyn/proposers/portfolio.py": "1cd756022a4eaa63f8da9e24341ef52aac5c298ba8961ef35c112cc90543bfc1",
+  "apedp_dyn/proposers/pysr_proposer.py": "d175c3f35ca0966fd6cd83838eb4b9cf0a909fdda08fed59163cbfeb52e410ca",
+  "apedp_dyn/proposers/structure_memory.py": "32390d2e3decf7a917fd3ba2d20284ea44384ba6ae2e09316213263fb58c4c72",
+  "apedp_mmlm/equation_language.py": "b65cf9e8de40190f1bc87671ca9be6e4ee9c99545a0d0a42d2d541dfb119e5a9",
+  "apedp_mmlm/law_corpora.py": "c389632c0d9140f592721c476ef4fec4e40acc7dd7c4f641fb441f78df847e95",
+  "apedp_mmlm/law_language.py": "b453e7d3ac042a57a2dc00409a5386a172e3eaee3dc1e1327f2f5bffcb201875",
+  "benchmarks/invented_laws_fingerprints.json": "9bf5373394ca91dc15d08841eeea374d537b0af7572c09fef1e3a31e9c00f8b1",
+  "benchmarks/memory_blind_laws.json": "4baa24d88a9bd2ea6fcb0af01da75e52bfbe46df9fde0f803832c2f25302bec7",
+  "benchmarks/srbench/manifest.json": "4d7c9f1d829dccb4baa010f51d415c5eac9fdd14e70ae52d5f4d22ea28f398c9",
+  "benchmarks/structure_memory.json": "c7e6d4ca2f10b26ce3001259ce1c229a7b681450020086e61a6007587d0bc47b",
+  "preregistration/PREREG-MMLM-ORDER-2026-11.md": "f98e605d6a52b80e7fa76d851972d2aacd0f7622d4b60e4687f9ea5a6c7ccdd0",
+  "scripts/build_invented_laws.py": "fc803f32cc8c7ccce890841056cb0a6817cf646bb7bb9672fdf667f5c24cab0d",
+  "scripts/fetch_srbench_ground_truth.py": "527b4d980b888bfcac3039b9e9a4da16de641271ce1f479a8323f1ffc3b0ff73",
+  "scripts/run_blind_discovery_benchmark.py": "87638df4242bf82341f7ea724e9ddf1a279d19dca86ce5045e757dd7d0067627",
+  "scripts/run_prereg_mmlm_order.py": "a324b5657f6102a2f2992dc05e266a2f4d6344b83edf38966c04154997d5e76f",
+  "scripts/run_prereg_mmlm_track_s.py": "de1ff23f59739626edb5b3f33b9ec2ecda3558864da79306c8b91d8eaae9c6b6",
+  "scripts/run_search_evolution.py": "30a3e64435722ea5232b63844b110afe1cf35b18132663347a077cac5d6415fa",
+  "scripts/run_srbench_baseline.py": "7af9e4e1226d031cb8bcd3bad0cef625d106190a26ef98adc3e4010383a8b4dd",
+  "scripts/run_srbench_main_search.py": "8e8e08412f7443bd8b49fb3a915e21e47e14d11519dae062b3d2facefc825e36",
+  "specifications/discovery_checks_v1.json": "60eabf58a23c9f2d366d45875e427999bb34c4086cb74107caf9dabd7bb220d0",
+  "tests/test_mmlm_order_prereg.py": "c3700eec3c29b2a4c2ef7d2c7257f10f6b6318146d16cba765f0e3d99402ca77"
+ },
+ "loaded_files": 263,
+ "loaded_files_changed": [],
+ "preregistration": "PREREG-MMLM-ORDER-2026-11",
+ "rehearsal": false,
+ "rows": 380,
+ "summary": {
+  "arm_failures": {
+   "default": 0,
+   "mmlm": 0
+  },
+  "default|all": {
+   "errors": 0,
+   "first_pass_median_evaluated": 29593.0,
+   "first_pass_stopped_early": 62,
+   "median_end_to_end_seconds": 320.04,
+   "median_route_seconds": 5.835,
+   "recovered": 147,
+   "reported": 162,
+   "route_law_recovered": 148,
+   "runs": 190,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|familiar": {
+   "errors": 0,
+   "first_pass_median_evaluated": 26504.0,
+   "first_pass_stopped_early": 57,
+   "median_end_to_end_seconds": 318.025,
+   "median_route_seconds": 4.365,
+   "recovered": 125,
+   "reported": 125,
+   "route_law_recovered": 127,
+   "runs": 130,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|guard": {
+   "errors": 0,
+   "first_pass_median_evaluated": 29593.0,
+   "first_pass_stopped_early": 5,
+   "median_end_to_end_seconds": 325.345,
+   "median_route_seconds": 8.245000000000001,
+   "recovered": 22,
+   "reported": 37,
+   "route_law_recovered": 21,
+   "runs": 60,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|odebench": {
+   "errors": 0,
+   "first_pass_median_evaluated": 9560.0,
+   "first_pass_stopped_early": 14,
+   "median_end_to_end_seconds": 319.575,
+   "median_route_seconds": 2.76,
+   "recovered": 22,
+   "reported": 22,
+   "route_law_recovered": 23,
+   "runs": 24,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|other_fields": {
+   "errors": 0,
+   "first_pass_median_evaluated": 29593.0,
+   "first_pass_stopped_early": 17,
+   "median_end_to_end_seconds": 325.07,
+   "median_route_seconds": 7.695,
+   "recovered": 45,
+   "reported": 45,
+   "route_law_recovered": 45,
+   "runs": 46,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "default|power_laws": {
+   "errors": 0,
+   "first_pass_median_evaluated": 20717.0,
+   "first_pass_stopped_early": 26,
+   "median_end_to_end_seconds": 311.37,
+   "median_route_seconds": 4.1,
+   "recovered": 58,
+   "reported": 58,
+   "route_law_recovered": 59,
+   "runs": 60,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "expectations": {
+   "1 a gain on familiar ground: more laws recovered run for run, one-sided exact sign test p <= 0.05": {
+    "gained": 0,
+    "lost": 0,
+    "p": 1.0
+   },
+   "2 no harm on the guard set: run-for-run losses no more than gains": {
+    "gained": 1,
+    "lost": 0
+   },
+   "3 no more wrong laws reported than the default, over all units": {
+    "default": 0,
+    "mmlm": 0
+   },
+   "4 not slower end to end: median at most 1.1 times the default's, paired units": {
+    "default": 320.04,
+    "mmlm": 321.72,
+    "units": 190
+   },
+   "held": {
+    "1": false,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "read": true,
+   "report_share": {
+    "default": {
+     "reported": 162,
+     "share": 0.0,
+     "share_allowed": 0.05,
+     "upper_bound": 0.018322243346577734,
+     "upper_bound_allowed": 0.1,
+     "upper_bound_confidence": 0.95,
+     "verdict": "held",
+     "wrong": 0
+    },
+    "mmlm": {
+     "reported": 163,
+     "share": 0.0,
+     "share_allowed": 0.05,
+     "upper_bound": 0.018210866744217537,
+     "upper_bound_allowed": 0.1,
+     "upper_bound_confidence": 0.95,
+     "verdict": "held",
+     "wrong": 0
+    }
+   },
+   "why_not_read": null
+  },
+  "first_pass_differs_units": 13,
+  "mmlm|all": {
+   "errors": 0,
+   "first_pass_median_evaluated": 14563.5,
+   "first_pass_stopped_early": 80,
+   "median_end_to_end_seconds": 321.72,
+   "median_route_seconds": 7.3100000000000005,
+   "recovered": 148,
+   "reported": 163,
+   "route_law_recovered": 148,
+   "runs": 190,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "mmlm|familiar": {
+   "errors": 0,
+   "first_pass_median_evaluated": 5847.0,
+   "first_pass_stopped_early": 76,
+   "median_end_to_end_seconds": 318.685,
+   "median_route_seconds": 5.220000000000001,
+   "recovered": 125,
+   "reported": 125,
+   "route_law_recovered": 127,
+   "runs": 130,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "mmlm|guard": {
+   "errors": 0,
+   "first_pass_median_evaluated": 29593.0,
+   "first_pass_stopped_early": 4,
+   "median_end_to_end_seconds": 327.44,
+   "median_route_seconds": 10.875,
+   "recovered": 23,
+   "reported": 38,
+   "route_law_recovered": 21,
+   "runs": 60,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "mmlm|odebench": {
+   "errors": 0,
+   "first_pass_median_evaluated": 430.0,
+   "first_pass_stopped_early": 16,
+   "median_end_to_end_seconds": 320.505,
+   "median_route_seconds": 3.705,
+   "recovered": 22,
+   "reported": 22,
+   "route_law_recovered": 23,
+   "runs": 24,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "mmlm|other_fields": {
+   "errors": 0,
+   "first_pass_median_evaluated": 16770.0,
+   "first_pass_stopped_early": 25,
+   "median_end_to_end_seconds": 328.24,
+   "median_route_seconds": 8.34,
+   "recovered": 45,
+   "reported": 45,
+   "route_law_recovered": 45,
+   "runs": 46,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "mmlm|power_laws": {
+   "errors": 0,
+   "first_pass_median_evaluated": 4575.0,
+   "first_pass_stopped_early": 35,
+   "median_end_to_end_seconds": 313.455,
+   "median_route_seconds": 4.78,
+   "recovered": 58,
+   "reported": 58,
+   "route_law_recovered": 59,
+   "runs": 60,
+   "search_failed": 0,
+   "timeouts": 0,
+   "wrong": 0
+  },
+  "other_fields_by_training_shape": {
+   "False": {
+    "default": 35,
+    "mmlm": 35
+   },
+   "True": {
+    "default": 10,
+    "mmlm": 10
+   }
+  },
+  "other_first_pass_replayed_units": 0,
+  "outcome": "list MMLM as the route's prior as retired (deprecated, kept for replication; nothing in force changes)",
+  "run_for_run": {
+   "guard": {
+    "gained": 1,
+    "lost": 0
+   },
+   "odebench": {
+    "gained": 0,
+    "lost": 0
+   },
+   "other_fields": {
+    "gained": 0,
+    "lost": 0
+   },
+   "power_laws": {
+    "gained": 0,
+    "lost": 0
+   }
+  },
+  "units_expected": 190,
+  "units_match": true,
+  "units_seen": 190
+ }
+}

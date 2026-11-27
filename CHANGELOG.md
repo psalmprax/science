@@ -30,6 +30,13 @@ inferred releases.
 
 ### Deprecated
 
+- **MMLM retired as the table route's prior (2026-11-27, the plan's consequence).** The preregistered test
+  (`preregistration/RESULT-MMLM-ORDER-2026-11.md`, run 45953548428) ran all 190 units. On familiar ground MMLM's
+  first pass did less work, but both arms recovered the same laws, unit for unit (no gain). MMLM never was the
+  route's prior, so nothing in force changes; its other experimental uses are untouched. An independent reviewer
+  checked every number. It also found that the run's count of cross-replayed first-pass laws (0) comes from a string
+  comparison that cannot match; by value it is 4 of 13, and the result says so.
+
 - **MeanFlow on JetFlow's network retired as a video approach (2026-11-27, the owner's standing word of 00:41).**
   The larger preregistered test (`preregistration/RESULT-VIDEO-HYBRID-2026-11.md`, run 45936568502) gave no
   proposal under the plan's rules:
