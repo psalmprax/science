@@ -134,7 +134,9 @@ result is recorded, and whether to try step 2 anyway is the owner's call.
 
 - No fine-tuning with the judge as a reward (step 2, only after gates J and 1).
 - No one- or two-call sampling with MeanFlow (step 3). JetFlow's corrected Jet2 step joins step 3 as a
-  sampler arm only if tonight's head-to-head shows it beats Euler at equal calls.
+  sampler arm only if tonight's head-to-head shows it beats Euler at equal calls. (It did, on JetFlow's own
+  network, on real footage and one toy world, not on the UNet: `RESULT-VIDEO-FLOW-2026-11`. It joins step 3 as
+  an arm, to be tested on the base model's own velocity.)
 - No claim beyond the six scene kinds.
 
 ## Where it runs and how results come back

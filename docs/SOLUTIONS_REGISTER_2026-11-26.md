@@ -26,6 +26,7 @@ Categories:
 
 | Solution | Hybrids tried | Evidence | Use |
 | :--- | :--- | :--- | :--- |
+| **JetFlow's Jet2 step, fixed** (`packages/jetflow-video/jetflow_video/stepper.py`; `RESULT-VIDEO-FLOW-2026-11`) | on MeanFlow's velocity (6c) | As JetFlow's sampler on its own network it beat Euler at four calls on real footage and on the collision world (57.97 against 67.96; 1.218 against 1.392); not on the UNet anywhere; on MeanFlow's velocity only on real footage and only because of one bad seed | the plan's proposal: keep only this part of JetFlow; a sampler arm in the physics plan's step 3 |
 | **Flip walk that keeps a Frobenius symmetry** (`scripts/gf2_orbit_walk.c`) | then the plain walk; then SAT | Reaches the best known 24 for GF(2^8) and 30 for GF(2^9) from the schoolbook; leaves the 42s for GF(2^12) unchanged (209 core-hours). Symmetric then plain is the best or level arm at equal time on GF(2^8) to GF(2^10), a small gain. `orbit_walk.json`, `hybrid_walks_local.json` | the searcher to start with on small fields and new targets, followed by the plain walk |
 | **SAT on neighbourhoods** (`scripts/search_gf2_sat_lns.py`) | after either walk | Around the 42s, none of 290,952 neighbourhoods of 5 to 9 products can be one shorter; from the GF(2^7) schoolbook it shortens 49 to 28. After a walk, nothing in 20 seconds. `sat_lns.json` | a check that a decomposition is locally shortest, not a searcher |
 | **Complete searches of symmetric decompositions** (`scripts/gf2_invariant_search.*`) | mixed subfields | None at 41 or 42 invariant under a Frobenius power over GF(2); over GF(4) 14 products exist, 13 do not among 56 thousand million invariant choices | negative certificates for the record |
@@ -45,17 +46,20 @@ files are never edited or moved). Nothing in force used any of them.
 | **A walk over GF(4) toward 13 products** (`scripts/gf4_flip_walk.c`) | — | GF(4^5) reaches the published 11; GF(4^6) stays at 14 in 178 core-hours. `gf4_flip_walk.json` |
 | **The 719 OpenAI mathematics manuscripts** | — | none applies directly; one lesson on process taken |
 | **A quantum-inspired byte model** (MMLM-QI; `RESULT-MMLM-QI-2026-11`; the plan's proposal, for your word) | mixed byte by byte with Kneser-Ney counting | Preregistered run, 45 minutes per model: the best, `pure-complex-64`, 2.61 bits per byte, against 1.82 for four bytes of counting and 2.40 to 2.42 for a 1,024-state hidden Markov model; it lost to the hidden Markov model of its state's size at both sizes (by 0.27 and 0.35 on three seeds), and mixed with counting it got weight 0 in every run, so the hybrid adds nothing. Complex amplitudes beat real ones by 0.45 and 0.85 at the larger sizes (the real models trained worse as they grew); a mixed state did not help |
+| **JetFlow as the way to train video** (flow matching on JetFlow's network with its own sampler; `RESULT-VIDEO-FLOW-2026-11`) | its sampler on the UNet (6d) | Final run, 20 minutes of training, three seeds: lost to plain flow matching at four calls on real footage (57.97 against 38.72) and on fluid, won only on collision; its network lost to the UNet with the same sampler everywhere; its sampler on the UNet beat Euler nowhere. Retired on your word; its network lives on in the hybrid below |
+| **MeanFlow on the UNet** (`RESULT-VIDEO-FLOW-2026-11`) | the Jet2 step on its velocity (6c) | Beat flow matching at one call on both toy worlds, not on real footage (144.21 against 97.78, no seed lower); one of its three seeds scored far worse there. Retired on your word as a model on its own; the MeanFlow objective lives on in the hybrid |
 
 ## D. Waiting for results
 
 | Solution | Hybrids in the test | Rehearsal so far | Where its result goes |
 | :--- | :--- | :--- | :--- |
-| **JetFlow against plain flow matching and MeanFlow** (`PREREG-VIDEO-FLOW-2026-11`) | MeanFlow on JetFlow's network; JetFlow's sampler on the UNet; the Jet2 step on MeanFlow's velocity | JetFlow's sampler lost to plain flow matching at four calls on all three data sets (2 minutes of training). Its Jet2 step was found to have its curvature reversed since 6 November; fixed on your word, so the run scores the fixed step (no recorded result had used the reversed one) | the plan's consequences: JetFlow kept only if it (or its corrected step) beats flow matching on real footage and a toy world; a hybrid only if it beats what it would replace |
+| *(nothing waiting: both results are recorded, 27 November)* | | | |
 
 ## E. Planned, not built
 
 | Solution | Hybrids in the plan | Where it stands | First gate |
 | :--- | :--- | :--- | :--- |
+| **MeanFlow on JetFlow's network** (the hybrid `meanflow-jetflow`; `RESULT-VIDEO-FLOW-2026-11`, proposal for your word) | — | Best one-call model on real footage (58.25 against 144.21 for MeanFlow on the UNet and 142.41 for JetFlow's Euler 1) and best at every number of calls on collision; on real footage still behind plain flow matching at four calls (38.72) and its clips flicker more (roughness 0.144 against 0.047) | the plan's proposal: its own preregistration at a larger size, in place of both JetFlow and MeanFlow on the UNet |
 | **Physics-first video** (`docs/PLAN_PHYSICS_VIDEO_STEP1_2026-11-26.md`): a physics adapter on an open pretrained model, scored by a judge built on the referee | LoRA and tensor-train adapters at equal size, a tenth-size tensor train, a LoRA/tensor-train hybrid; a LoRA on ordinary footage as the control | plan written on your word (26 Nov); the judge is built first, on CPU | gate J (the judge on a blind set), then gate 1 (a 10-point physics gain without worse pictures); numbers proposed, for your word |
 
 ## Waiting for your word, apart from the above

@@ -52,6 +52,13 @@ inferred releases.
 
 ### Added
 
+- **PREREG-VIDEO-FLOW-2026-11 recorded (2026-11-27).** `preregistration/RESULT-VIDEO-FLOW-2026-11.md`: JetFlow lost to
+  plain flow matching at four calls on real footage and fluid (won on collision); its fixed Jet2 step beat Euler
+  on its own network on real footage and collision; MeanFlow on the UNet won at one call on the toy worlds only;
+  MeanFlow on JetFlow's network beat both parents at one call on real footage and collision. Proposals, for the
+  owner: no video work on JetFlow's approach, keep the Jet2 step, a larger preregistered test of the hybrid.
+  On the owner's standing word, JetFlow as the way to train video and MeanFlow on the UNet alone are listed as
+  retired in the solutions register (no file changes: the package is frozen and the hybrid uses it).
 - **The physics judge's third PhysInOne development run (2026-11-27).** `benchmarks/physics_judge/dev_run_3.json`:
   67 of 150 true clips pass; PhysInOne has no level static camera, its rigid bodies move unevenly in its own
   record, its pendulums are pushed and its collisions are never side-on. Proposal in the plan, for the owner:
