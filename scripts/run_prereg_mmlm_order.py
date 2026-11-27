@@ -35,6 +35,7 @@ import signal
 import sys
 import time
 import traceback
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -71,7 +72,20 @@ FROZEN = (
     "apedp_dyn/discovery_l2/vouched_route_v2.py", "apedp_dyn/discovery_l2/vouching_v2.py",
     "apedp_dyn/ode/extended_route.py", "apedp_dyn/proposers/composed.py", "apedp_dyn/proposers/fit_guard.py",
     "apedp_dyn/proposers/deep_pass.py", "apedp_dyn/proposers/portfolio.py", "apedp_dyn/proposers/pysr_proposer.py",
+    "apedp_dyn/discovery_l2/memory_stage.py", "apedp_dyn/discovery_l2/evolved_stage.py",
+    "apedp_dyn/proposers/structure_memory.py", "benchmarks/structure_memory.json",
+    "apedp_dyn/discovery_l2/measured_range.py", "apedp_dyn/discovery_l2/vouched_route.py",
+    "apedp_dyn/discovery_l2/vouching.py",
 )
+ROUTE_MODULES = (   #: imported before any unit forks, so each shard's record lists what the route loads
+    "apedp_dyn.discovery_l2.refined_search", "apedp_dyn.discovery_l2.main_search", "apedp_dyn.discovery_l2.guided_search",
+    "apedp_dyn.discovery_l2.confirmed_stop", "apedp_dyn.discovery_l2.exhaustive_search",
+    "apedp_dyn.discovery_l2.default_route", "apedp_dyn.discovery_l2.vouched_route_v2", "apedp_dyn.discovery_l2.vouching_v2",
+    "apedp_dyn.discovery_l2.stage_in_force", "apedp_dyn.discovery_l2.memory_stage", "apedp_dyn.discovery_l2.search_stage",
+    "apedp_dyn.discovery_l2.report_share", "apedp_dyn.ode.extended_route", "apedp_dyn.proposers.portfolio",
+    "apedp_dyn.proposers.pysr_proposer",
+)
+SWITCHES = ("APEDP_TABLE_MEMORY", "APEDP_TABLE_VOUCHING")   #: the route as in force: neither may be set
 ARMS = ("default", "mmlm")
 NOISE_LEVELS = (0.0, 0.01)
 FAMILIAR = ("other_fields", "power_laws", "odebench")    #: where MMLM has met the shapes before
@@ -302,7 +316,9 @@ def _rows(split: dict[str, Any], entry: dict[str, Any]) -> tuple[np.ndarray, np.
 
 
 def search_pass(entry: dict[str, Any], split: dict[str, Any], budget: float) -> dict[str, Any]:
-    """Both arms' first-pass laws, then the search stage in force once, seeded with both; its candidates."""
+    """Both arms' first-pass laws, then the search stage in force: once, shared, when the two laws agree; once per
+    arm, each seeded with its own first-pass law and the same random seed, when they differ (as each route would
+    run it in use)."""
     from apedp_dyn.discovery_l2 import exhaustive_search as es
     from apedp_dyn.discovery_l2 import search_stage, stage_in_force
     from apedp_dyn.discovery_l2.confirmed_stop import search_confirmed
@@ -311,19 +327,33 @@ def search_pass(entry: dict[str, Any], split: dict[str, Any], budget: float) -> 
 
     names, X, y = split["names"], split["X_train"], split["y_train"]
     dev, _pool = _rows(split, entry)
-    firsts = {}
+    firsts, work = {}, {}
     for arm in ARMS:
         first = search_confirmed(GuidedSearch(_bits(arm)), X[dev], y[dev], names, 6 if len(names) <= 5 else 5)
         firsts[arm] = str(sp.sympify(es.model_string(first.best), locals={n: sp.Symbol(n) for n in names}))
+        work[arm] = {"evaluated": int(first.evaluated), "candidates": int(first.candidates),
+                     "stopped_early": bool(first.stopped_early)}
+    shared = firsts["default"] == firsts["mmlm"]
+    out: dict[str, Any] = {"first_pass": firsts, "first_pass_work": work, "shared": shared, "formulas": {},
+                           "failures": {}, "last_run": {}, "seconds": {}, "described": None, "cores": None}
     if budget <= 0:
-        return {"formulas": [], "first_pass": firsts, "described": "no search", "failures": [], "cores": None}
-    stage, described = stage_in_force.search_stage(budget, seed=base.SEED)
-    recorded = Recording(stage)
+        return {**out, "formulas": {arm: [] for arm in ARMS}, "seconds": dict.fromkeys(ARMS, 0.0),
+                "failures": {arm: [] for arm in ARMS}, "last_run": {arm: {} for arm in ARMS}, "described": "no search"}
     frame = pd.DataFrame({**{n: X[dev, i] for i, n in enumerate(names)}, "__target__": y[dev]})
-    recorded.fit_and_propose(frame, target_col="__target__", guesses=sorted(set(firsts.values())))
-    failures = [str(f)[:300] for f in (getattr(stage, "failures", None) or [])]
-    return {"formulas": list(recorded.formulas), "first_pass": firsts, "described": described, "failures": failures,
-            "cores": search_stage.available_cores()}
+    for arm in (("default",) if shared else ARMS):
+        started = time.perf_counter()
+        stage, described = stage_in_force.search_stage(budget, seed=base.SEED)
+        recorded = Recording(stage)
+        recorded.fit_and_propose(frame, target_col="__target__", guesses=[firsts[arm]])
+        out["formulas"][arm] = list(recorded.formulas)
+        out["failures"][arm] = [str(f)[:300] for f in (getattr(stage, "failures", None) or [])]
+        out["last_run"][arm] = json.loads(json.dumps(recorded.last_run, default=str))
+        out["seconds"][arm] = round(time.perf_counter() - started, 2)
+        out["described"], out["cores"] = described, search_stage.available_cores()
+    if shared:
+        for key in ("formulas", "failures", "last_run", "seconds"):
+            out[key]["mmlm"] = out[key]["default"]
+    return out
 
 
 def route(entry: dict[str, Any], split: dict[str, Any], formulas: list[str], arm: str) -> dict[str, Any]:
@@ -352,33 +382,58 @@ def route(entry: dict[str, Any], split: dict[str, Any], formulas: list[str], arm
            "formula": law_text}
     path = result.path
     vouching = out.get("vouching") or {}
-    return {"seconds": seconds, "action": result.action, "route_law": result.law, "vouched": vouching.get("reason"),
-            "vouching_applied": vouching.get("applied"), "candidates_fitted": len(path.candidates) if path else None,
+    before = sp.sympify(result.law, locals={n: sp.Symbol(n) for n in names}) if result.law else None
+    route_score = base.score_run("mmlm_order", entry, split, {
+        "model": before, "pred": path_run._predict(before, names, split["X_test"]) if before is not None else None,
+        "formula": result.law})
+    from apedp_dyn.discovery_l2.stage_in_force import memory_in_force
+
+    return {"seconds": seconds, "action": result.action, "route_law": result.law,
+            "route_law_symbolic": route_score.get("symbolic"), "vouched": vouching.get("reason"),
+            "vouching_applied": vouching.get("applied"), "vouching_version": vouching.get("version"),
+            "memory_in_force": memory_in_force(), "candidates_fitted": len(path.candidates) if path else None,
+            "first_pass_found": (path.found_by == "first_pass") if path else None,
             **base.score_run("mmlm_order", entry, split, raw)}
+
+
+def import_route() -> None:
+    """The route's modules, loaded in this process before any unit forks, so the forks inherit them."""
+    import importlib
+
+    for name in ROUTE_MODULES:
+        importlib.import_module(name)
 
 
 def run_unit(entry: dict[str, Any], noise: float, budget: float = SEARCH_BUDGET_S) -> list[dict[str, Any]]:
     mmlm_prior()                                    # fitted once in this process; the forks inherit it
+    import_route()
     head = {"problem": entry["name"], "set": entry["set"], "noise": noise, "inputs": len(entry["features"]),
             "truth": entry["formula"], "training_shape": entry.get("training_shape")}
     split = base.make_split(entry, frame_of(entry), noise)
-    state, searched, search_seconds = _run(search_pass, (entry, split, budget), SEARCH_LIMIT_S + budget)
-    if state != "ok" or (budget > 0 and (not searched["formulas"] or searched["failures"])):
+    state, searched, wall = _run(search_pass, (entry, split, budget), 2 * SEARCH_LIMIT_S + budget)
+    failed = state != "ok" or (budget > 0 and any(not searched["formulas"][a] or searched["failures"][a] for a in ARMS))
+    if failed:
         why = (searched.get("error") if state == "error" else state if state != "ok"
-               else "a member of the search stage failed" if searched["failures"] else "the search proposed nothing")
-        return [{**head, "arm": arm, "status": "search_failed", "search_status": state, "search_seconds": search_seconds,
-                 "error": why, "search_failures": (searched or {}).get("failures") if state == "ok" else None}
+               else "a member of the search stage failed" if any(searched["failures"].values())
+               else "the search proposed nothing")
+        return [{**head, "arm": arm, "status": "search_failed", "search_status": state, "search_wall_seconds": wall,
+                 "error": why, "search_failures": searched.get("failures") if state == "ok" else None}
                 for arm in ARMS]
     rows = []
     for arm in ARMS:
-        status, out, wall = _run(route, (entry, split, searched["formulas"], arm), ARM_LIMIT_S)
-        row = {**head, "arm": arm, "status": status, "search_seconds": search_seconds, "wall_seconds": wall,
-               "searched": len(searched["formulas"]), "first_pass": searched["first_pass"][arm],
-               "first_pass_differs": len(set(searched["first_pass"].values())) > 1,
-               "search_described": searched["described"], "search_failures": searched["failures"],
-               "cores": searched["cores"], **(out if isinstance(out, dict) else {})}
-        if status == "ok":
-            row["end_to_end_seconds"] = round(search_seconds + float(out["seconds"]), 2)
+        status, out, arm_wall = _run(route, (entry, split, searched["formulas"][arm], arm), ARM_LIMIT_S)
+        row = {**head, "arm": arm, "status": status, "search_seconds": searched["seconds"][arm],
+               "search_shared": searched["shared"], "wall_seconds": arm_wall,
+               "searched": len(searched["formulas"][arm]), "replayed": searched["formulas"][arm],
+               "first_pass": searched["first_pass"][arm], "first_pass_work": searched["first_pass_work"][arm],
+               "other_first_pass_replayed": searched["first_pass"][ARMS[1 - ARMS.index(arm)]]
+               in searched["formulas"][arm] if not searched["shared"] else None,
+               "first_pass_differs": not searched["shared"], "search_described": searched["described"],
+               "search_last_run": searched["last_run"][arm], "cores": searched["cores"],
+               **(out if isinstance(out, dict) else {})}
+        # A finished search with a failed arm: the arm recovers and reports nothing, in the time it was given.
+        route_seconds = float(out["seconds"]) if status == "ok" else (ARM_LIMIT_S if status == "timeout" else arm_wall)
+        row["end_to_end_seconds"] = round(float(searched["seconds"][arm]) + route_seconds, 2)
         rows.append(row)
     return rows
 
@@ -386,6 +441,11 @@ def run_unit(entry: dict[str, Any], noise: float, budget: float = SEARCH_BUDGET_
 # ---------------------------------------------------------------- summary
 def _reported(row: dict[str, Any]) -> bool:
     return row["status"] == "ok" and row.get("model") not in (None, "None")
+
+
+def _searched(row: dict[str, Any]) -> bool:
+    """The unit's search finished: the arm is read, a failed arm as recovering and reporting nothing."""
+    return row["status"] != "search_failed"
 
 
 def _recovered(row: dict[str, Any]) -> bool:
@@ -404,27 +464,36 @@ def sign_test(gained: int, lost: int) -> float:
     return 1.0 if n == 0 else float(binom.sf(gained - 1, n, 0.5))
 
 
-def summarise(rows: list[dict[str, Any]], expected: int) -> dict[str, Any]:
+def summarise(rows: list[dict[str, Any]], expected: set[tuple[str, float]]) -> dict[str, Any]:
+    """The expectations over the units whose search finished (a failed arm there recovers nothing)."""
     from apedp_dyn.discovery_l2 import report_share
 
-    out: dict[str, Any] = {"units_expected": expected, "units_seen": len({(r["problem"], r["noise"]) for r in rows})}
+    seen = Counter((r["problem"], r["noise"], r["arm"]) for r in rows)
+    out: dict[str, Any] = {"units_expected": len(expected), "units_seen": len({(p, n) for p, n, _ in seen}),
+                           "units_match": set(seen) == {(p, n, a) for p, n in expected for a in ARMS}
+                           and all(v == 1 for v in seen.values())}
     for arm in ARMS:
         for group in (*SETS, "familiar", "all"):
             members = FAMILIAR if group == "familiar" else SETS if group == "all" else (group,)
             sel = [r for r in rows if r["arm"] == arm and r["set"] in members]
-            ok = [r for r in sel if r["status"] == "ok"]
+            ok = [r for r in sel if _searched(r)]
+            done = [r for r in sel if r["status"] == "ok"]
             out[f"{arm}|{group}"] = {
                 "runs": len(sel), "search_failed": sum(r["status"] == "search_failed" for r in sel),
                 "errors": sum(r["status"] == "error" for r in sel), "timeouts": sum(r["status"] == "timeout" for r in sel),
                 "reported": sum(_reported(r) for r in ok), "recovered": sum(_recovered(r) for r in ok),
                 "wrong": sum(_wrong(r) for r in ok),
-                "median_route_seconds": float(np.median([r["seconds"] for r in ok])) if ok else None,
+                "median_route_seconds": float(np.median([r["seconds"] for r in done])) if done else None,
+                "route_law_recovered": sum(bool(r.get("route_law_symbolic")) for r in done),
+                "first_pass_stopped_early": sum(bool((r.get("first_pass_work") or {}).get("stopped_early")) for r in ok),
+                "first_pass_median_evaluated": float(np.median([r["first_pass_work"]["evaluated"] for r in ok
+                                                                if r.get("first_pass_work")])) if ok else None,
                 "median_end_to_end_seconds": float(np.median([r["end_to_end_seconds"] for r in ok])) if ok else None}
     by = {(r["arm"], r["problem"], r["noise"]): r for r in rows}
     cells = sorted({(r["problem"], r["noise"], r["set"]) for r in rows})
 
     def both_ok(p: str, n: float) -> bool:
-        return all(by.get((a, p, n), {}).get("status") == "ok" for a in ARMS)
+        return all(_searched(by.get((a, p, n), {"status": "search_failed"})) for a in ARMS)
 
     def differ(members: tuple[str, ...]) -> tuple[int, int]:
         gained = lost = 0
@@ -443,16 +512,18 @@ def summarise(rows: list[dict[str, Any]], expected: int) -> dict[str, Any]:
         str(flag): {arm: sum(_recovered(by[(arm, p, n)]) for p, n in fields if shapes[p] is flag and (arm, p, n) in by)
                     for arm in ARMS} for flag in (True, False)}
     out["first_pass_differs_units"] = sum(1 for p, n, _ in cells if by.get(("default", p, n), {}).get("first_pass_differs"))
+    out["other_first_pass_replayed_units"] = sum(1 for r in rows if r.get("other_first_pass_replayed"))
+    out["arm_failures"] = {arm: sum(r["arm"] == arm and r["status"] in ("error", "timeout") for r in rows) for arm in ARMS}
     gained, lost = differ(FAMILIAR)
     g_gained, g_lost = differ(GUARD)
-    wrong = {arm: out[f"{arm}|all"]["wrong"] for arm in ARMS}
+    wrong = {arm: sum(_wrong(by[(arm, p, n)]) for p, n, _ in cells if both_ok(p, n)) for arm in ARMS}
     paired = [(by[("mmlm", p, n)]["end_to_end_seconds"], by[("default", p, n)]["end_to_end_seconds"])
               for p, n, _ in cells if both_ok(p, n)]
     med_m = float(np.median([a for a, _ in paired])) if paired else None
     med_d = float(np.median([b for _, b in paired])) if paired else None
     failed = sum(1 for p, n, _ in cells if by.get(("default", p, n), {}).get("status") == "search_failed")
-    complete = out["units_seen"] == expected
-    read = complete and failed <= SEARCH_FAILED_MAX * expected
+    complete = out["units_match"]
+    read = complete and failed <= SEARCH_FAILED_MAX * len(expected)
     p_value = sign_test(gained, lost)
     held = {
         "1": gained > lost and p_value <= SIGN_TEST_P,
@@ -484,6 +555,13 @@ def summarise(rows: list[dict[str, Any]], expected: int) -> dict[str, Any]:
 # ---------------------------------------------------------------- command line
 def frozen_digests() -> dict[str, str]:
     return {rel: hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() for rel in FROZEN}
+
+
+def freeze_record() -> dict[str, Any]:
+    """What DIGEST-MMLM-ORDER.json holds: the frozen files, and every repository file the route loads."""
+    mmlm_prior()
+    import_route()
+    return {"preregistration": PREREGISTRATION_ID, "sha256": frozen_digests(), "loaded": loaded_digests()}
 
 
 def check_frozen() -> None:
@@ -521,6 +599,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--budget", type=float, default=20.0, help="for smoke: seconds of search")
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
+    if args.command in ("run", "smoke") and any(os.environ.get(name) for name in SWITCHES):
+        raise SystemExit(f"the route in force is tested: unset {', '.join(n for n in SWITCHES if os.environ.get(n))}")
     if args.command == "smoke":
         failed = 0
         for entry in SMOKE_LAWS:
@@ -533,6 +613,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "run":
         if not args.rehearsal:
             check_frozen()
+        mmlm_prior()
+        import_route()
         budget = 60.0 if args.rehearsal else SEARCH_BUDGET_S
         k, n = (int(v) for v in args.shard.split("/"))
         dealt = shards(args.rehearsal, n)
@@ -550,12 +632,14 @@ def main(argv: list[str] | None = None) -> int:
         check_frozen()
     rows = [json.loads(line) for p in sorted(args.out.rglob("runs-shard-*.jsonl")) for line in p.read_text().splitlines()]
     loaded = [json.loads(p.read_text()) for p in sorted(args.out.rglob("loaded-shard-*.json"))]
-    changed = sorted({f for d in loaded for f, h in d.items()
-                      if not (ROOT / f).is_file() or hashlib.sha256((ROOT / f).read_bytes()).hexdigest() != h})
-    expected = len(units(args.rehearsal))
+    # Against the map frozen with the plan (every repository file the route loads, recorded at freezing); in a
+    # rehearsal, the shards against each other.
+    frozen_loaded = json.loads(DIGEST.read_text())["loaded"] if not args.rehearsal else (loaded[0] if loaded else {})
+    changed = sorted({f for d in loaded for f, h in d.items() if frozen_loaded.get(f, h) != h})
+    expected = {(e["name"], noise) for e, noise in units(args.rehearsal)}
     record = {"preregistration": PREREGISTRATION_ID, "rehearsal": args.rehearsal, "rows": len(rows),
-              "loaded_files_changed": changed, "summary": summarise(rows, expected),
-              "frozen": frozen_digests()}
+              "loaded_files_changed": changed, "loaded_files": len(set().union(*loaded)) if loaded else 0,
+              "summary": summarise(rows, expected), "frozen": frozen_digests()}
     if changed:
         record["summary"]["expectations"]["read"] = False
         record["summary"]["expectations"]["why_not_read"] = f"loaded files differ from the checkout: {changed[:5]}"

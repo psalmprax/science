@@ -126,6 +126,14 @@ inferred releases.
   - Part 2, agreement with human labels, needs an object tracker on generated video.
   - Files: `preregistration/PREREG-PHYSICS-J1-2026-11.md`, `scripts/run_prereg_physics_j1.py`,
     `.github/workflows/physics-j1.yml`, `tests/test_physics_j1_prereg.py`.
+- **PREREG-MMLM-ORDER-2026-11, second revision (2026-11-27), after the reviewer's check of the first.**
+  - Where the two arms' first-pass laws differ, the search runs once per arm, each seeded with its own law;
+    seeding one search with both had pushed the arms together.
+  - A failed arm counts as recovering nothing, and all expectations read the same units.
+  - The route is loaded before the forks, and loaded files are checked against a map frozen with the plan.
+  - Seven more files are frozen.
+  - The route's switches are pinned.
+  - The stage's own summary, the first pass's work and the laws before the last checks are recorded.
 - **PREREG-MMLM-ORDER-2026-11, revised after its independent review (2026-11-27).** The review found thirteen
   problems, listed in the plan. Among them:
   - the timed part was a few percent of a discovery;

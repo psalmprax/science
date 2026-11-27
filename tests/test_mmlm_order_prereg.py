@@ -85,8 +85,8 @@ def _rows(gained: int, lost: int, ties: int = 20) -> list[dict]:
     return rows
 
 
-def _units(rows: list[dict]) -> int:
-    return len({(r["problem"], r["noise"]) for r in rows})
+def _units(rows: list[dict]) -> set:
+    return {(r["problem"], r["noise"]) for r in rows}
 
 
 def test_the_summary_reads_each_expectation() -> None:
@@ -108,10 +108,27 @@ def test_the_summary_reads_each_expectation() -> None:
 
 def test_missing_units_or_failed_searches_leave_it_not_read() -> None:
     rows = _rows(8, 1)
-    assert not mo.summarise(rows, _units(rows) + 1)["expectations"]["read"]
+    assert not mo.summarise(rows, _units(rows) | {("absent", 0.0)})["expectations"]["read"]
+    assert not mo.summarise([*rows, rows[0]], _units(rows))["expectations"]["read"]      # a row twice
     failed = rows + [_row(a, f"f{i}", "guard", False, status="search_failed") for i in range(10) for a in mo.ARMS]
     out = mo.summarise(failed, _units(failed))
     assert not out["expectations"]["read"] and "failed search" in out["expectations"]["why_not_read"]
+
+
+def test_a_failed_arm_counts_as_recovering_nothing() -> None:
+    rows = _rows(8, 1)
+    lost = [_row("mmlm", "x", "power_laws", False, status="timeout"), _row("default", "x", "power_laws", True)]
+    lost[0]["end_to_end_seconds"] = 240.0 + mo.ARM_LIMIT_S
+    out = mo.summarise([*rows, *lost], _units([*rows, *lost]))
+    assert out["expectations"]["1 a gain on familiar ground: more laws recovered run for run, one-sided exact sign "
+                                "test p <= 0.05"]["lost"] == 2                  # the timed-out arm loses the law
+    assert out["arm_failures"]["mmlm"] == 1
+
+
+def test_the_switches_of_the_route_must_be_unset(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("APEDP_TABLE_VOUCHING", "off")
+    with pytest.raises(SystemExit, match="unset"):
+        mo.main(["smoke", "--out", str(tmp_path), "--budget", "0"])
 
 
 def test_one_arm_failing_in_its_own_process_leaves_the_other() -> None:

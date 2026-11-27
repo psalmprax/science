@@ -46,14 +46,28 @@ Two parts of the route are left alone:
 **The same candidates, and neither arm favoured.** For each unit (one law at one noise level), these steps run:
 
 1. Both arms' first-pass laws are computed.
-2. The search stage in force runs once, in its own process, seeded with both first-pass laws.
-3. Its candidates are recorded (`extended_route.Recording`) and replayed to each arm (`extended_route.replayed`).
+2. The search stage in force runs in its own process. Where the two first-pass laws agree, it runs once and both
+   arms share it. Where they differ, it runs once per arm, each seeded with its own first-pass law and the same
+   random seed, as each route would run it in use. Seeding one search with both laws would hand each arm the
+   other's first-pass law back as a candidate, which never happens in use.
+3. Its candidates are recorded (`extended_route.Recording`) and replayed to the arm (`extended_route.replayed`).
+   Each row records its replayed formulas, whether the search was shared, and the stage's own summary
+   (`last_run`, which holds the portfolio's failures and counts).
 4. Each arm runs in its own process, forked from the same state, so neither warms the other, and one arm's failure
    or time-out cannot erase the other's row.
 5. Each arm builds its guided search on every call, as the route does, so MMLM's pricing is in its time.
 
-A unit whose search stage fails (a member raises, or nothing is proposed) is marked `search_failed`. That unit is
-left out of every comparison.
+A unit whose search stage fails (a member of the stage raises, or nothing is proposed) is marked `search_failed`
+and left out of every comparison. With the memory on, as in force, the stage's members are the portfolio and the
+memory. The portfolio raises only when all four of its searches fail, so a unit that lost three of four still
+runs, as it would in use; the row's `last_run` shows it. Where the search finished but an arm raised or timed out,
+that arm recovers and reports nothing on that unit. Its time is the arm's limit for a time-out, its wall time for
+an error.
+
+The route's two switches (`APEDP_TABLE_MEMORY`, `APEDP_TABLE_VOUCHING`) must be unset: the runner refuses
+otherwise. Each row records the last checks' version and whether the memory was in force. The route's modules are
+loaded before any unit forks, so each shard's record lists every repository file the route loaded. The collection
+compares them with the map frozen with the plan.
 
 ## Laws
 
@@ -84,7 +98,8 @@ accurate: test R² at least `DISCOVERY_ACCURACY_R2` from `apedp_dyn.conf.discove
 
 ## Expectations, fixed now
 
-All are read over the units where both arms finished.
+All are read over the units whose search finished, with a failed arm counted as recovering and reporting
+nothing.
 
 1. **A gain on familiar ground.** Over `other_fields`, `odebench` and `power_laws`, MMLM's arm recovers a law the
    default's does not in more units than the reverse. A one-sided exact sign test on those discordant units must
@@ -96,11 +111,19 @@ All are read over the units where both arms finished.
    `REPORTED_WRONG_SHARE_BOUND_MAX` 10 % at `REPORTED_WRONG_SHARE_BOUND_CONFIDENCE` 95 %) are reported for both
    arms. They are not read: they measure the route, not the prior.
 4. **Not slower end to end.** Paired by unit, MMLM's median end-to-end time is at most 1.1 times the default's.
-   End-to-end time is the shared search plus the arm's route time, pricing included.
+   End-to-end time is the arm's search plus its route time, pricing included. Against a search of about four
+   minutes, MMLM's extra seconds cannot fail this short of a pathological cost: it is a guard, not a test.
+
+**Power.** A one-sided p ≤ 0.05 needs at least 5 to 0, 7 to 1 or 9 to 2 among the units where the arms differ.
+The first rehearsal had none in 30. If MMLM's prior changes few outcomes, expectation 1 fails for want of a
+gain, and MMLM is retired as the route's prior. That is the outcome the claim's own wording allows: a prior that
+changes nothing recovered does not help the route. Expectation 1 asks whether the route recovers more laws, which
+is stronger than "orders the search better". The first pass's own work (candidates evaluated, an early stop, a law
+the first pass found) is recorded and reported beside.
 
 The test is **not read** in three cases:
 
-- a unit is missing;
+- a unit is missing, or a unit and arm has more than one row;
 - more than a fifth of the units have a failed search;
 - a loaded repository file differs from the checkout.
 
@@ -122,7 +145,10 @@ The following are reported beside, and not read:
 - the `other_fields` results with and without the five training shapes;
 - the units where the two arms' first-pass laws differ;
 - the timeouts, errors and failed searches;
-- each arm's route time.
+- each arm's route time;
+- the laws recovered before the last checks (`route_law`, scored as well);
+- the first pass's work: candidates evaluated and early stops;
+- how often an arm's replayed candidates held the other arm's first-pass law.
 
 ## Limits
 
@@ -136,6 +162,9 @@ The following are reported beside, and not read:
   so and offers `APEDP_TABLE_VOUCHING=off`. This test uses the route as the code has it. If the owner takes the last
   checks out, the reported laws here are the refined path's after checks that are no longer in force; the
   run-for-run comparison before the checks is in the rows (`route_law`).
+- **Time limits.** A shard holds up to ten units. In the worst case, searches at their 1,440-second limit and arms
+  at 900 seconds each exceed the job's 300 minutes. A run of time-outs therefore stops the shard, and the result is
+  then not read.
 - **CPU timings on shared runners.** Each unit runs both arms on one runner, so expectation 4 is read on paired
   times; the runners themselves differ. Each row records the runner's cores and the search stage's description.
 
@@ -164,6 +193,20 @@ The following are reported beside, and not read:
   - Shards split the noise levels, Julia was installed inside a unit, and a time-out left processes running. Laws
     are now dealt by law, Julia starts once per shard, and process groups are killed on a time-out.
   - The wording is corrected.
+- **The same reviewer checked the revision** and found seven more points. Each was addressed:
+  - Seeding one shared search with both first-pass laws pushed the arms together. Units whose first-pass laws
+    differ now get one search per arm.
+  - A failed arm dropped out of every expectation, and expectation 3 used other units. A failed arm now counts as
+    nothing, and all four expectations read the same units.
+  - The loaded-files check could not catch anything. The route is now loaded before the forks, and the collection
+    compares against the map frozen with the plan.
+  - The frozen list missed the memory stage, the side-by-side stage, the memory proposer and its file, the
+    measured range and the first version of the last checks. They are added.
+  - The portfolio's member time-outs are not stage failures with the memory on, so they are recorded, not failed.
+    The switches are pinned.
+  - The route record was right, but `route_law` was not scored. It is now.
+  - The unit check counted units rather than matching them, the limits needed stating, and the first pass's work
+    was not recorded. The check now matches every unit and arm, and the rest is stated or recorded above.
 - **The 24 other-field laws, the twelve ODEBench laws and the generator's shapes have all been read before.** That
   is why they are called familiar here.
 - **First rehearsal** (`mmlm-order-smoke-1`, run 45932078529, the first draft's runner, 15 guard-like laws, 60
