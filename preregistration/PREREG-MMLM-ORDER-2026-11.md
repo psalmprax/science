@@ -65,9 +65,10 @@ that arm recovers and reports nothing on that unit. Its time is the arm's limit 
 an error.
 
 The route's two switches (`APEDP_TABLE_MEMORY`, `APEDP_TABLE_VOUCHING`) must be unset: the runner refuses
-otherwise. Each row records the last checks' version and whether the memory was in force. The route's modules are
-loaded before any unit forks, so each shard's record lists every repository file the route loaded. The collection
-compares them with the map frozen with the plan.
+otherwise. Each row records the last checks' version and whether the memory was in force. Each unit's processes
+report every repository file they loaded, and each shard's record gathers them. The collection compares them with
+the map frozen with the plan and across shards. The route is not loaded in the parent before forking: rehearsal 4
+did that, and both arms of a smoke law then failed in a least-squares fit inside their forks.
 
 ## Laws
 

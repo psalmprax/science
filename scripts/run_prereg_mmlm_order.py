@@ -353,6 +353,7 @@ def search_pass(entry: dict[str, Any], split: dict[str, Any], budget: float) -> 
     if shared:
         for key in ("formulas", "failures", "last_run", "seconds"):
             out[key]["mmlm"] = out[key]["default"]
+    out["loaded"] = loaded_digests()
     return out
 
 
@@ -393,24 +394,29 @@ def route(entry: dict[str, Any], split: dict[str, Any], formulas: list[str], arm
             "vouching_applied": vouching.get("applied"), "vouching_version": vouching.get("version"),
             "memory_in_force": memory_in_force(), "candidates_fitted": len(path.candidates) if path else None,
             "first_pass_found": (path.found_by == "first_pass") if path else None,
-            **base.score_run("mmlm_order", entry, split, raw)}
+            "loaded": loaded_digests(), **base.score_run("mmlm_order", entry, split, raw)}
 
 
 def import_route() -> None:
-    """The route's modules, loaded in this process before any unit forks, so the forks inherit them."""
+    """The route's modules, loaded in this process: used only when freezing, to record what the route loads (the
+    units load them in their own processes, which report what they loaded)."""
     import importlib
 
     for name in ROUTE_MODULES:
         importlib.import_module(name)
 
 
+LOADED: dict[str, str] = {}      #: every repository file the units' processes loaded, gathered in this process
+
+
 def run_unit(entry: dict[str, Any], noise: float, budget: float = SEARCH_BUDGET_S) -> list[dict[str, Any]]:
     mmlm_prior()                                    # fitted once in this process; the forks inherit it
-    import_route()
     head = {"problem": entry["name"], "set": entry["set"], "noise": noise, "inputs": len(entry["features"]),
             "truth": entry["formula"], "training_shape": entry.get("training_shape")}
     split = base.make_split(entry, frame_of(entry), noise)
     state, searched, wall = _run(search_pass, (entry, split, budget), 2 * SEARCH_LIMIT_S + budget)
+    if isinstance(searched, dict):
+        LOADED.update(searched.pop("loaded", {}) or {})
     failed = state != "ok" or (budget > 0 and any(not searched["formulas"][a] or searched["failures"][a] for a in ARMS))
     if failed:
         why = (searched.get("error") if state == "error" else state if state != "ok"
@@ -422,6 +428,8 @@ def run_unit(entry: dict[str, Any], noise: float, budget: float = SEARCH_BUDGET_
     rows = []
     for arm in ARMS:
         status, out, arm_wall = _run(route, (entry, split, searched["formulas"][arm], arm), ARM_LIMIT_S)
+        if isinstance(out, dict):
+            LOADED.update(out.pop("loaded", {}) or {})
         row = {**head, "arm": arm, "status": status, "search_seconds": searched["seconds"][arm],
                "search_shared": searched["shared"], "wall_seconds": arm_wall,
                "searched": len(searched["formulas"][arm]), "replayed": searched["formulas"][arm],
@@ -614,7 +622,6 @@ def main(argv: list[str] | None = None) -> int:
         if not args.rehearsal:
             check_frozen()
         mmlm_prior()
-        import_route()
         budget = 60.0 if args.rehearsal else SEARCH_BUDGET_S
         k, n = (int(v) for v in args.shard.split("/"))
         dealt = shards(args.rehearsal, n)
@@ -626,7 +633,8 @@ def main(argv: list[str] | None = None) -> int:
                     handle.write(json.dumps(row, sort_keys=True, default=str) + "\n")
                     print(_printable(row), flush=True)
                 handle.flush()
-        (args.out / f"loaded-shard-{k:03d}.json").write_text(json.dumps(loaded_digests()) + "\n", encoding="utf-8")
+        (args.out / f"loaded-shard-{k:03d}.json").write_text(json.dumps({**loaded_digests(), **LOADED}) + "\n",
+                                                             encoding="utf-8")
         return 0
     if not args.rehearsal:
         check_frozen()
@@ -635,7 +643,8 @@ def main(argv: list[str] | None = None) -> int:
     # Against the map frozen with the plan (every repository file the route loads, recorded at freezing); in a
     # rehearsal, the shards against each other.
     frozen_loaded = json.loads(DIGEST.read_text())["loaded"] if not args.rehearsal else (loaded[0] if loaded else {})
-    changed = sorted({f for d in loaded for f, h in d.items() if frozen_loaded.get(f, h) != h})
+    changed = sorted({f for d in loaded for f, h in d.items() if frozen_loaded.get(f, h) != h}
+                     | {f for d in loaded for f, h in d.items() for e in loaded if e.get(f, h) != h})
     expected = {(e["name"], noise) for e, noise in units(args.rehearsal)}
     record = {"preregistration": PREREGISTRATION_ID, "rehearsal": args.rehearsal, "rows": len(rows),
               "loaded_files_changed": changed, "loaded_files": len(set().union(*loaded)) if loaded else 0,
