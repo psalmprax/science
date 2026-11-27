@@ -21,44 +21,47 @@ jobs:
     timeout-minutes: 150
     strategy:
       fail-fast: false
+      # Seed by seed, then data set, then arm: the four arms of one data set and seed are a block of four, so at
+      # 20 jobs at a time no block is split between the first jobs to start and the rest.
+      max-parallel: 20
       matrix:
         include:
-          - {data: 'fluid', arm: 'fm-jetflow', seed: 0}
-          - {data: 'fluid', arm: 'fm-jetflow', seed: 1}
-          - {data: 'fluid', arm: 'fm-jetflow', seed: 2}
-          - {data: 'fluid', arm: 'fm-unet', seed: 0}
-          - {data: 'fluid', arm: 'fm-unet', seed: 1}
-          - {data: 'fluid', arm: 'fm-unet', seed: 2}
-          - {data: 'fluid', arm: 'meanflow-unet', seed: 0}
-          - {data: 'fluid', arm: 'meanflow-unet', seed: 1}
-          - {data: 'fluid', arm: 'meanflow-unet', seed: 2}
-          - {data: 'collision', arm: 'fm-jetflow', seed: 0}
-          - {data: 'collision', arm: 'fm-jetflow', seed: 1}
-          - {data: 'collision', arm: 'fm-jetflow', seed: 2}
-          - {data: 'collision', arm: 'fm-unet', seed: 0}
-          - {data: 'collision', arm: 'fm-unet', seed: 1}
-          - {data: 'collision', arm: 'fm-unet', seed: 2}
-          - {data: 'collision', arm: 'meanflow-unet', seed: 0}
-          - {data: 'collision', arm: 'meanflow-unet', seed: 1}
-          - {data: 'collision', arm: 'meanflow-unet', seed: 2}
-          - {data: 'ucf101', arm: 'fm-jetflow', seed: 0}
-          - {data: 'ucf101', arm: 'fm-jetflow', seed: 1}
-          - {data: 'ucf101', arm: 'fm-jetflow', seed: 2}
-          - {data: 'ucf101', arm: 'fm-unet', seed: 0}
-          - {data: 'ucf101', arm: 'fm-unet', seed: 1}
-          - {data: 'ucf101', arm: 'fm-unet', seed: 2}
-          - {data: 'ucf101', arm: 'meanflow-unet', seed: 0}
-          - {data: 'ucf101', arm: 'meanflow-unet', seed: 1}
-          - {data: 'ucf101', arm: 'meanflow-unet', seed: 2}
           - {data: 'fluid', arm: 'meanflow-jetflow', seed: 0}
-          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 1}
-          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'fluid', arm: 'meanflow-unet', seed: 0}
+          - {data: 'fluid', arm: 'fm-jetflow', seed: 0}
+          - {data: 'fluid', arm: 'fm-unet', seed: 0}
           - {data: 'collision', arm: 'meanflow-jetflow', seed: 0}
-          - {data: 'collision', arm: 'meanflow-jetflow', seed: 1}
-          - {data: 'collision', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'collision', arm: 'meanflow-unet', seed: 0}
+          - {data: 'collision', arm: 'fm-jetflow', seed: 0}
+          - {data: 'collision', arm: 'fm-unet', seed: 0}
           - {data: 'ucf101', arm: 'meanflow-jetflow', seed: 0}
+          - {data: 'ucf101', arm: 'meanflow-unet', seed: 0}
+          - {data: 'ucf101', arm: 'fm-jetflow', seed: 0}
+          - {data: 'ucf101', arm: 'fm-unet', seed: 0}
+          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 1}
+          - {data: 'fluid', arm: 'meanflow-unet', seed: 1}
+          - {data: 'fluid', arm: 'fm-jetflow', seed: 1}
+          - {data: 'fluid', arm: 'fm-unet', seed: 1}
+          - {data: 'collision', arm: 'meanflow-jetflow', seed: 1}
+          - {data: 'collision', arm: 'meanflow-unet', seed: 1}
+          - {data: 'collision', arm: 'fm-jetflow', seed: 1}
+          - {data: 'collision', arm: 'fm-unet', seed: 1}
           - {data: 'ucf101', arm: 'meanflow-jetflow', seed: 1}
+          - {data: 'ucf101', arm: 'meanflow-unet', seed: 1}
+          - {data: 'ucf101', arm: 'fm-jetflow', seed: 1}
+          - {data: 'ucf101', arm: 'fm-unet', seed: 1}
+          - {data: 'fluid', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'fluid', arm: 'meanflow-unet', seed: 2}
+          - {data: 'fluid', arm: 'fm-jetflow', seed: 2}
+          - {data: 'fluid', arm: 'fm-unet', seed: 2}
+          - {data: 'collision', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'collision', arm: 'meanflow-unet', seed: 2}
+          - {data: 'collision', arm: 'fm-jetflow', seed: 2}
+          - {data: 'collision', arm: 'fm-unet', seed: 2}
           - {data: 'ucf101', arm: 'meanflow-jetflow', seed: 2}
+          - {data: 'ucf101', arm: 'meanflow-unet', seed: 2}
+          - {data: 'ucf101', arm: 'fm-jetflow', seed: 2}
+          - {data: 'ucf101', arm: 'fm-unet', seed: 2}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -68,7 +71,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test]" opencv-python-headless huggingface_hub
+          python -m pip install -e ".[dev,test]" numpy==2.5.5 opencv-python-headless==5.1.0.95 huggingface_hub==2.5.0
       - name: The comparison's own tests
         run: python -m pytest tests/test_video_hybrid_prereg.py -q
       - name: Train and score ${{ matrix.data }} ${{ matrix.arm }} seed ${{ matrix.seed }}
@@ -110,7 +113,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test]" opencv-python-headless huggingface_hub tqdm
+          python -m pip install -e ".[dev,test]" numpy==2.5.5 opencv-python-headless==5.1.0.95 huggingface_hub==2.5.0 tqdm
       - uses: actions/download-artifact@v8
         with:
           pattern: video-hybrid-*

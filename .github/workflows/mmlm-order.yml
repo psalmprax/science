@@ -1,0 +1,107 @@
+# PREREG-MMLM-ORDER-2026-11: the default route with and without MMLM's order of candidates
+# (scripts/run_prereg_mmlm_order.py), on the owner's word of 27 November ("go ahead to test all").
+#   push to mmlm-order-smoke-*  -> the tests, two laws with a short real search, then a rehearsal: 15 invented laws
+#                                  of the rehearsal's own seed, 60 s of search (no law of the final sets).
+#   push to mmlm-order-run-*    -> smoke, then the preregistered run on 74 laws, once.
+# Every shard prints its rows between markers too, so the record can be rebuilt from the logs.
+# Branch pushes start it because workflow_dispatch only reaches the default branch.
+name: MMLM's order in the default route
+
+on:
+  push:
+    branches: ['mmlm-order-smoke-*', 'mmlm-order-run-*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: The test's own tests
+        run: python -m pytest tests/test_mmlm_order_prereg.py -q
+      - name: Two laws, a short real search, both arms
+        run: python scripts/run_prereg_mmlm_order.py smoke --out order-out
+
+  run:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies and PySR
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]" pysr==2.7.2
+      - name: Shard ${{ matrix.k }} of 20
+        env:
+          SHARD: ${{ matrix.k }}
+          REF: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF" == mmlm-order-run-* ]]; then
+            python scripts/run_prereg_mmlm_order.py run --shard "$SHARD/20" --out order-out
+          else
+            python scripts/run_prereg_mmlm_order.py run --shard "$SHARD/20" --out order-out --rehearsal
+          fi
+      - name: Print the shard's rows
+        if: always()
+        env:
+          SHARD: ${{ matrix.k }}
+        run: |
+          echo "=====BEGIN mmlm order shard====="
+          for f in order-out/runs-shard-*.jsonl; do [ -f "$f" ] && gzip -9c "$f" | base64 -w 60000; echo; done
+          echo "=====END mmlm order shard====="
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mmlm-order-shard-${{ matrix.k }}
+          path: order-out/*.jsonl
+          if-no-files-found: error
+
+  collect:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test]"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: mmlm-order-shard-*
+          path: order-out
+          merge-multiple: true
+      - name: Collect
+        run: python scripts/run_prereg_mmlm_order.py collect --out order-out
+      - name: Print the record
+        if: always()
+        run: |
+          echo "=====BEGIN mmlm order====="
+          if [ -f order-out/results.json ]; then gzip -9c order-out/results.json | base64 -w 60000; echo; fi
+          echo "=====END mmlm order====="

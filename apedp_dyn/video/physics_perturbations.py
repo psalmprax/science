@@ -49,7 +49,9 @@ def _size(track: Track) -> float:
 
 
 def _moving_frame(track: Track, rng: np.random.Generator, lo: float = 0.1, hi: float = 0.8,
-                  vertical: bool = False) -> int | None:
+                  vertical: bool = False, span: int = 0) -> int | None:
+    """A frame where the object moves (vertically, if asked); with ``span``, one from which it keeps moving
+    for at least half of the next ``span`` frames, so a stretch begun there is motion, not a landing."""
     sp = _speed(track)
     if vertical:
         ok = np.all(np.isfinite(track.xy), axis=1)
@@ -59,7 +61,9 @@ def _moving_frame(track: Track, rng: np.random.Generator, lo: float = 0.1, hi: f
     if not top > 0:
         return None
     n = sp.size
-    idx = [k for k in range(int(lo * n), int(hi * n)) if np.isfinite(sp[k]) and sp[k] > 0.3 * top]
+    moving = np.isfinite(sp) & (sp > 0.3 * top)
+    idx = [k for k in range(int(lo * n), int(hi * n)) if moving[k]
+           and (span == 0 or float(np.mean(moving[k:k + span])) >= 0.5)]
     if not idx:
         return None
     return int(rng.choice(idx))
@@ -76,8 +80,14 @@ def loses_energy(tracks: list[Track], kind: str) -> bool:
         centred = xy - xy.mean(axis=0)
         _, _, vt = np.linalg.svd(centred, full_matrices=False)
         s = centred @ vt[0]
-        third = max(3, s.size // 3)
-        return float(np.ptp(s[-third:])) < 0.85 * float(np.ptp(s[:third]))
+        # The swing's amplitude at its extremes (local extremes of the position along the swing), first against last:
+        # a loss shows only where whole swings are compared, not parts of one.
+        mid = 0.5 * (float(s.max()) + float(s.min()))
+        a = np.abs(s - mid)
+        peaks = [k for k in range(1, a.size - 1) if a[k] >= a[k - 1] and a[k] >= a[k + 1] and a[k] > 0.3 * a.max()]
+        if len(peaks) < 3:
+            return False
+        return float(a[peaks[-1]]) < 0.75 * float(a[peaks[0]])
     for tr in tracks:
         sp = _speed(tr)
         if not np.any(np.isfinite(sp)):
@@ -121,19 +131,19 @@ def freeze(track: Track, rng: np.random.Generator) -> Track | None:
 
 
 def vertical_reversal(track: Track, rng: np.random.Generator) -> Track | None:
-    k = _moving_frame(track, rng, 0.05, 0.7, vertical=True)
-    if k is None:
-        return None
     n = track.t.size
     length = max(10, n // 5)
+    k = _moving_frame(track, rng, 0.05, 0.7, vertical=True, span=length)
+    if k is None:
+        return None
     if k + length >= n:
         return None
     xy = track.xy.copy()
     y = track.xy[:, 1]
     xy[k:k + length, 1] = 2.0 * y[k] - y[k:k + length]
     xy[k + length:, 1] = y[k + length:] - 2.0 * (y[k + length - 1] - y[k])
-    if np.nanmax(np.abs(xy[:, 1] - y)) < _size(track):
-        return None  # barely any vertical motion to mirror: not a test of anything
+    if np.nanmax(y[k:k + length]) - np.nanmin(y[k:k + length]) < _size(track):
+        return None  # barely any vertical motion inside the stretch to mirror: not a test of anything
     return _with(track, xy, None if track.size is None else track.size.copy())
 
 

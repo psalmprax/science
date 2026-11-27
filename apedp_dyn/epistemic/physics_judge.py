@@ -489,8 +489,7 @@ def _contact_reasons(events: list[_Event], settings: JudgeSettings,
         launch = max(e.rest_speed, settings.launch_share * e.top_speed)
         if before <= e.rest_speed and after > launch:
             reasons.append(f"starts moving from rest by itself at frame {e.frame} ({after:.1f} px/s)")
-        elif (before > max(e.rest_speed, settings.launch_share * e.top_speed)
-              and after > (1.0 + settings.speed_gain_tol) * before + e.v_noise):
+        elif before > e.rest_speed and after > launch and after > (1.0 + settings.speed_gain_tol) * before + e.v_noise:
             reasons.append(f"speed grows at a contact at frame {e.frame}: {before:.1f} -> {after:.1f} px/s")
         if not gravity:
             continue
@@ -537,6 +536,10 @@ def _judge_gravity(track: Track, kind: str, settings: JudgeSettings) -> Verdict:
              else settings.upward_accel_sizes * (size_med if math.isfinite(size_med) else 10.0))
     for seg, a, se, _, _ in accels:
         if seg.stop - seg.start + 1 < upward_least:
+            continue
+        # A stretch that rises or sinks less than the least motion that shows a law (an object settling or
+        # tumbling where it landed) is not tested as flight.
+        if math.isfinite(size_med) and float(np.ptp(xy[seg.start:seg.stop + 1, 1])) < settings.min_motion_sizes * size_med:
             continue
         if a < -settings.accel_z * se and -a > limit:
             reasons.append(f"accelerates upward ({a:.0f} px/s^2) over frames {seg.start}-{seg.stop}")
@@ -636,17 +639,42 @@ def _judge_pendulum(track: Track, settings: JudgeSettings) -> Verdict:
     sign = np.sign(vel)
     rng = float(s.max() - s.min())
     turns: list[int] = []
-    for k in range(1, s.size):
-        if sign[k] == 0 or sign[k - 1] == 0 or sign[k] == sign[k - 1]:
+    last, last_k = 0.0, 0
+    for k in range(s.size):
+        if sign[k] == 0:            # at rest for a moment (a turning point fitted as rest): look past it
             continue
-        ref = s[turns[-1]] if turns else s[0]
-        if abs(s[k] - ref) >= settings.turning_prominence * rng and (not turns or k - turns[-1] >= 3):
-            turns.append(k)
+        if last != 0 and sign[k] != last:
+            j = last_k + int(np.argmax(last * s[last_k:k + 1]))   # the extreme reached before the reversal
+            ref = s[turns[-1]] if turns else s[0]
+            if abs(s[j] - ref) >= settings.turning_prominence * rng and (not turns or j - turns[-1] >= 3):
+                turns.append(j)
+        last, last_k = float(sign[k]), k
     stats: dict[str, Any] = {"sigma": round(sigma, 3), "conic_px": round(conic, 3), "turns": turns,
                              "events": [_event_summary(e) for e in events]}
     # Extremes of the swing: the turning points, and the ends of the clip where the bob is at rest there.
     speed = np.abs(vel)
     rest = settings.rest_share * float(speed.max()) if speed.size else 0.0
+    # Stretches at rest inside the clip (consecutive rest segments joined). A swing stops only to turn: after
+    # one the bob moves back the way it came, never on.
+    still: list[tuple[int, int]] = []
+    i = 0
+    while i < len(segments):
+        if segments[i].model != "rest":
+            i += 1
+            continue
+        j = i
+        while j + 1 < len(segments) and segments[j + 1].model == "rest":
+            j += 1
+        if i > 0 and j < len(segments) - 1:
+            still.append((i, j))
+        i = j + 1
+    for i, j in still:
+        into, out_of = segments[i - 1], segments[j + 1]
+        before = float(into.vel(np.array([t[into.stop]]))[0] @ vt[0])
+        after = float(out_of.vel(np.array([t[out_of.start]]))[0] @ vt[0])
+        if min(abs(before), abs(after)) > 2 * rest and before * after > 0:
+            reasons.append(f"stops at frame {segments[i].start} and goes on the same way at frame {segments[j].stop}")
+            break
     extremes = list(turns)
     if speed.size and speed[0] <= 2 * rest and (not extremes or extremes[0] > 2):
         extremes.insert(0, 0)
@@ -664,9 +692,25 @@ def _judge_pendulum(track: Track, settings: JudgeSettings) -> Verdict:
         stats["half_periods"] = [round(float(h), 3) for h in halves]
         if halves.max() > (1.0 + settings.period_tol) * halves.min():
             reasons.append(f"half-periods vary from {halves.min():.3f} to {halves.max():.3f} s")
-    for k in range(1, amps.size):
-        if amps[k] > (1.0 + settings.amplitude_growth_tol) * amps[k - 1]:
-            reasons.append(f"the swing grows: {amps[k - 1]:.1f} -> {amps[k]:.1f} px")
+    if len(turns) >= 2 and rng > 0:
+        # How long a swing of this size and period looks still at a turn: within three noise widths of the
+        # extreme for 2 sqrt(6 sigma / (A w^2)). A stretch at rest more than twice that (and two frames) is a hold.
+        omega = math.pi / float(np.median(np.diff(t[turns])))
+        dwell = 2.0 * math.sqrt(6.0 * sigma / (0.5 * rng * omega**2))
+        limit = 2.0 * dwell + 2.0 * dt
+        stats["turn_dwell_s"] = round(dwell, 3)
+        for i, j in still:
+            held = float(t[segments[j].stop] - t[segments[i].start])
+            if held > limit:
+                reasons.append(f"rests {held:.2f} s from frame {segments[i].start}; a swing of this size and period "
+                               f"turns in about {dwell:.2f} s")
+                break
+    # Same side against same side: through a camera that sees the swing at an angle, the near side of the arc
+    # looks larger than the far side, so only extremes two apart are compared (with two, the only pair).
+    step = 2 if amps.size >= 3 else 1
+    for k in range(step, amps.size):
+        if amps[k] > (1.0 + settings.amplitude_growth_tol) * amps[k - step]:
+            reasons.append(f"the swing grows: {amps[k - step]:.1f} -> {amps[k]:.1f} px")
     return Verdict(kind, FAIL if reasons else PASS, reasons, stats)
 
 

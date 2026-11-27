@@ -43,6 +43,43 @@ inferred releases.
 
 ### Changed
 
+- **The physics judge, developed on clips rendered here (2026-11-27).** On 20 to 30 development clips per kind
+  from `apedp_dyn/video/physics_clips_pybullet.py`, these are the misses and what was done about them:
+  - A slow slide that suddenly flew off passed. It fell between "starts from rest" and "speed grows", because
+    the second rule needed a speed above the launch share before the contact; it now needs only a speed above
+    rest (time-reversed throws: 6 of 20 passing, then 0).
+  - A pendulum's turning points were missed where the fit called the turn a moment of rest; they are now found
+    past it.
+  - The swing was compared side against side, which fails true clips seen at an angle; it is now compared same
+    side against same side.
+  - Two new rules for swings. A swing stops only to turn back, and it rests at a turn no longer than twice what
+    a swing of its size and period allows, plus two frames (holds: 6 of 18 passing, then 0 of 20).
+  - Stretches that rise or sink less than an object size, such as a cube settling where it landed, are no
+    longer tested as flight. This fixes one true fall that failed.
+  - In `physics_perturbations.py`, a pendulum loses energy when its last swing is below three quarters of its
+    first; the old test compared parts of one swing. A mirrored stretch now starts only where the object keeps
+    moving vertically for half of it, because a stretch begun at a landing mirrors into a lawful bounce
+    (mirrored stretches: 7 of 61 passing, then 2 of 77).
+  - The pendulum scene's length (0.35 to 0.8 m) and damping (0 to 0.4) were changed so that clips turn at
+    least three times and some visibly lose energy.
+
+  These are development changes on the development pool. Gate J's blind run uses seeds from 1,000,000 and the
+  reviewer's unseen kinds.
+- **PREREG-VIDEO-HYBRID-2026-11, draft revised after two independent reviews (2026-11-27).** Eighteen findings
+  in all. Among them:
+  - a breakdown is now a loss for the arm that broke down and a lost seed for its comparator, never a win;
+  - the outcome is an ordered table computed by `collect`, where a read failure on ucf101 retires the hybrid
+    first;
+  - the flicker guard is read at one and four calls;
+  - H2 is no worse than JetFlow's best sampler at four calls or fewer. This form was chosen after the first
+    rehearsal's expectations had been seen; the plan discloses those numbers;
+  - UCF101's val split is pooled;
+  - the matrix is ordered seed by seed;
+  - NumPy, OpenCV and the Hub client are pinned;
+  - every loaded repository file's digest is recorded and checked;
+  - `collect` checks each job's mode, digests, budget, size, threads, commit and duplicates.
+
+  Not frozen; a second rehearsal runs the revised runner first.
 - **Physics-first video plan: the owner's three choices (2026-11-27, 00:07, "Yes").** Bounces are rigid
   (fall and throw scenes whose simulated path rebounds), not PhysInOne's soft-body ElasticFall; collisions
   are judged from side views only and stay out of gate J until they pass in development; PhysInOne
@@ -52,6 +89,19 @@ inferred releases.
 
 ### Added
 
+- **PREREG-MMLM-ORDER-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The route in force
+  with MMLM's law model as its guided search's prior, against the size prior in force. The same searched
+  candidates are replayed to both arms, on 50 invented laws drawn at run time from a seed no other test uses and
+  the 24 other-field laws, at noise 0 and 1 %.
+  - Expectations: no laws lost; a median route time at most 0.8 of the default's; and the share of wrong laws
+    within `discovery_checks`' limit and bound.
+  - Files: `preregistration/PREREG-MMLM-ORDER-2026-11.md`, `scripts/run_prereg_mmlm_order.py`,
+    `.github/workflows/mmlm-order.yml`, `tests/test_mmlm_order_prereg.py`.
+  - Not frozen: it waits for an independent review and a rehearsal.
+- **Clips simulated and rendered here for the physics judge (2026-11-27, owner's word "go ahead to test all").**
+  `apedp_dyn/video/physics_clips_pybullet.py` renders falls, throws, rolls, rigid bounces, pendulums and
+  collisions with PyBullet. Tracks come from exact segmentation masks, seen from a nearly level side camera.
+  Seeds from 1,000,000 are the blind set. Tests: `tests/test_physics_clips_pybullet.py`.
 - **PREREG-VIDEO-HYBRID-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The larger test of
   MeanFlow on JetFlow's network against its parents and plain flow matching (8 frames of 32 x 32, 45 minutes of
   training, real footage split by group): `preregistration/PREREG-VIDEO-HYBRID-2026-11.md`,

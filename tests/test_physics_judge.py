@@ -144,3 +144,41 @@ def test_the_development_script_refuses_the_blind_pool() -> None:
     spec.loader.exec_module(mod)
     with pytest.raises(SystemExit, match="blind"):
         mod.main(["fetch", "--kind", "throw", "--pool", "blind", "--out", "/dev/null"])
+
+
+def _pendulum_track(hold_at: int | None = None, hold: int = 12, n: int = 90, period: float = 1.4) -> Track:
+    """A swing seen side-on: x along the arc, y the small rise of the bob; optionally held still part way."""
+    t = np.arange(n) / 30.0
+    phase = 2 * np.pi * t / period
+    x = 160 + 40 * np.cos(phase)
+    y = 120 + 6 * (1 - np.cos(2 * phase)) / 2
+    xy = np.stack([x, y], axis=1)
+    if hold_at is not None:
+        xy = np.concatenate([xy[:hold_at], np.repeat(xy[hold_at - 1:hold_at], hold, axis=0), xy[hold_at:n - hold]])
+    rng = np.random.default_rng(3)
+    return Track(t, xy + rng.normal(0, 0.2, xy.shape), np.full(n, 8.0))
+
+
+def test_a_swing_held_still_and_then_carrying_on_fails() -> None:
+    assert judge("pendulum", [_pendulum_track()]).outcome == PASS
+    # Held where the bob moves fast (it then carries on the same way) and held at a turn (it lingers there).
+    for at in (12, 21):
+        v = judge("pendulum", [_pendulum_track(hold_at=at)])
+        assert v.outcome == FAIL, (at, v.stats)
+
+
+def test_a_turn_fitted_as_a_moment_of_rest_still_counts_as_a_turn() -> None:
+    v = judge("pendulum", [_pendulum_track()])
+    assert len(v.stats["turns"]) >= 3, v.stats
+
+
+def test_a_slow_slide_that_suddenly_flies_off_fails() -> None:
+    # Sliding slowly along the floor (above the rest speed, below the launch share of the top speed), then
+    # leaving it fast under gravity: speed from nowhere at the contact.
+    t = np.arange(60) / 30.0
+    slide = np.stack([100 + 30 * t[:30], np.full(30, 200.0)], axis=1)
+    tf = t[30:] - t[30]
+    fly = np.stack([slide[-1, 0] + 30 * (t[30] - t[29]) + 120 * tf, 200 - 300 * tf + 0.5 * 600 * tf**2], axis=1)
+    xy = np.concatenate([slide, fly]) + np.random.default_rng(1).normal(0, 0.2, (60, 2))
+    v = judge("throw", [Track(t, xy, np.full(60, 8.0))])
+    assert v.outcome == FAIL and any("speed grows" in r or "from rest" in r for r in v.reasons), v.reasons
