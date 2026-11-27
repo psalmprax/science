@@ -2404,7 +2404,10 @@ inferred releases.
   nothing shipped imports it, and the wheel workflow now checks the built wheel's modules and not only its
   declared dependencies. Before this a built wheel held the harness; the wheel workflow uploads build
   artifacts only and publishes nowhere.
-  What CI finds in the tests it had not been reaching is reported with its first full run.
+  The first full run after the repair (45986491546, commit 7886edd) passed on all three Python versions
+  (7,817 to 7,820 passed, 192 to 195 skipped, one expected failure), so nothing else had broken behind the
+  hidden test, and the job that reports everything except the trustees' signature is green again. The wheel
+  workflow, started by hand on `stage` (45986592383), passed with its new check.
 
 - **JetFlow's Jet2 step used -dv/dt for its curvature (6 to 26 November 2026; fixed on the owner's word).**
   `packages/jetflow-video/jetflow_video/stepper.py` passed its two velocity samples to

@@ -138,8 +138,8 @@ default configuration; no second look. Outside work shows the same pattern and w
   against 0.922 on 74 Feynman equations, with up to ten rounds and a memory of what helped; the
   variables were named, and no control for recall was found in the part of the paper that was read
   (arXiv:2607.04156).
-* An agent that first infers structure and then writes PySR templates was *behind* PySR in one run
-  (35.1 % against 37.8 %) and ahead only in the best of three (42.3 %): a gain from several
+* An agent that first infers structure and then writes PySR templates was *behind* PySR with one
+  run (35.1 % against 37.8 %) and ahead only when given three (42.3 %): a gain from several
   differently configured runs, as here (arXiv:2602.12259).
 
 Here, on what the model can do: shown 24 rows it had the law's shape among its shapes for 62 of 84
