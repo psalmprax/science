@@ -169,12 +169,30 @@ jobs:
 
           wheel = sorted(glob.glob("dist/*.whl"))[0]
           with zipfile.ZipFile(wheel) as zf:
-              meta_name = next(n for n in zf.namelist() if n.endswith("METADATA"))
+              names = zf.namelist()
+              meta_name = next(n for n in names if n.endswith("METADATA"))
               text = zf.read(meta_name).decode("utf-8")
+              modules = {n: zf.read(n).decode("utf-8") for n in names if n.endswith(".py")}
           assert "Requires-Dist: apedp" not in text, (
               "jetflow-video is standalone by contract: it must not depend on apedp"
           )
-          print(f"OK: {wheel} is standalone as contracted")
+          # The declared dependencies are not the whole contract: no module the wheel
+          # ships may import the core either. The comparison harness of the preregistered
+          # video runs does (inside one function) and is frozen in the source tree, so
+          # setup.py leaves it out of the wheel; check that it did.
+          assert modules, "the wheel ships no Python modules"
+          assert not any(n.endswith("/head_to_head.py") for n in modules), (
+              "the frozen comparison harness must not ship in the wheel (setup.py, NOT_SHIPPED)"
+          )
+          for name, source in modules.items():
+              for line in source.splitlines():
+                  stripped = line.strip()
+                  if stripped.startswith(("import ", "from ")):
+                      module = stripped.split()[1].split(".")[0].split(",")[0]
+                      assert module not in {"apedp", "apedp_dyn"}, (
+                          f"jetflow-video is standalone by contract: {name} imports {module}"
+                      )
+          print(f"OK: {wheel} is standalone as contracted ({len(modules)} modules)")
           PY
 
       - name: Upload wheel artifact

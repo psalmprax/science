@@ -137,23 +137,74 @@ def test_packages_holds_only_the_standalone_video_package():
         assert (pkg / name).is_file(), f"Missing {name} in jetflow-video"
 
 
+#: The one module of the source tree the wheel does not ship (``packages/jetflow-video/setup.py``,
+#: ``NOT_SHIPPED``): the comparison harness of two preregistered video runs. Their digests freeze it,
+#: so it cannot be moved out of the package directory, and one of its functions imports this
+#: repository's toy worlds when it is called. The runs read it from the source tree.
+JETFLOW_NOT_SHIPPED = {"head_to_head.py"}
+
+
+def _jetflow_imports(path: Path) -> list[tuple[str, str]]:
+    """``(line as written, first module token)`` of every import line of a file."""
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith(("import ", "from ")):
+            out.append((line, stripped.split()[1].split(".")[0].split(",")[0]))
+    return out
+
+
 def test_jetflow_video_stays_self_contained():
-    # jetflow-video is intentionally standalone: no apedp_dyn imports allowed,
-    # so its wheel must never grow a hidden core dependency.
+    # jetflow-video is intentionally standalone: no apedp_dyn imports allowed in
+    # anything its wheel ships, so the wheel never grows a hidden core dependency.
     src = REPO_ROOT / "packages" / "jetflow-video" / "jetflow_video"
+    checked = 0
     for path in src.rglob("*.py"):
-        text = path.read_text(encoding="utf-8")
-        for line in text.splitlines():
-            stripped = line.strip()
-            if not stripped.startswith(("import ", "from ")):
-                continue
-            module = stripped.split()[1].split(".")[0].split(",")[0]
+        if path.parent == src and path.name in JETFLOW_NOT_SHIPPED:
+            continue
+        checked += 1
+        for _, module in _jetflow_imports(path):
             # `apedp_kernel` is the native extension, not the core package: comparing
             # the module token (rather than the string prefix) keeps the guard on the
             # dependency it is about, which the stepper's Rust fast path legitimately uses.
             assert module not in {"apedp", "apedp_dyn"}, (
                 f"jetflow-video must stay standalone: {path} imports {module}"
             )
+    assert checked >= 10
+
+
+def test_what_jetflow_video_does_not_ship_is_only_the_frozen_harness():
+    # From 26 to 27 November 2026 the test above failed on every push (the harness had been put
+    # into the package with an import of this repository) and, the suite running with -x, hid
+    # every test after it. The harness is frozen, so the repair is that the wheel leaves it out.
+    import ast
+    import hashlib
+    import json
+
+    pkg = REPO_ROOT / "packages" / "jetflow-video"
+    src = pkg / "jetflow_video"
+    # the build script leaves out exactly the modules named here
+    setup_text = (pkg / "setup.py").read_text(encoding="utf-8")
+    (assigned,) = [line for line in setup_text.splitlines() if line.startswith("NOT_SHIPPED = ")]
+    not_shipped = ast.literal_eval(assigned.split(" = ", 1)[1])
+    assert {package for package, _ in not_shipped} == {"jetflow_video"}
+    assert {f"{module}.py" for _, module in not_shipped} == JETFLOW_NOT_SHIPPED
+    assert 'cmdclass={"build_py": build_py}' in setup_text
+    for name in JETFLOW_NOT_SHIPPED:
+        path = src / name
+        # it is the file the two runs froze, byte for byte: nothing new can be parked behind the exception
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        for record in ("DIGEST-VIDEO-FLOW.json", "DIGEST-VIDEO-HYBRID.json"):
+            frozen = json.loads((REPO_ROOT / "preregistration" / record).read_text())["sha256"]
+            assert frozen[f"packages/jetflow-video/jetflow_video/{name}"] == digest
+        # what it takes from this repository it takes inside a function, so importing it needs no apedp_dyn
+        for line, module in _jetflow_imports(path):
+            if module in {"apedp", "apedp_dyn"}:
+                assert line.startswith("        "), line
+    # and nothing that ships imports it
+    for path in src.rglob("*.py"):
+        if path.name not in JETFLOW_NOT_SHIPPED:
+            assert "head_to_head" not in path.read_text(encoding="utf-8"), path
 
 
 def test_kernel_shim_sentinel_is_probe_safe_and_actionable():

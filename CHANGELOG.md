@@ -2388,6 +2388,24 @@ inferred releases.
 
 ### Fixed
 
+- **Stage's test job stopped at one failing test from 26 to 27 November and ran nothing after it (found
+  27 November; my error).** Commit 595c4a6 (26 November, the video comparison) put
+  `packages/jetflow-video/jetflow_video/head_to_head.py` into the package that is standalone by contract,
+  with an import of this repository's toy worlds inside one function.
+  `tests/test_dyn_all_subpackages.py::test_jetflow_video_stays_self_contained` has failed on every push
+  since, and because the suite runs with `-x`, about 6,500 of its 8,042 tests were not run on `stage` by CI
+  in that time. I did not notice: the workflow is red on every push for the governance manifest (the
+  trustees' signatures), and I was cancelling superseded runs. The harness is frozen by
+  two digests and cannot be edited or moved, so the repair keeps the contract where it applies: the wheel
+  no longer ships the harness (`packages/jetflow-video/setup.py`, `NOT_SHIPPED`; a wheel built here holds
+  14 modules and not `head_to_head.py`), the two preregistered runs read it from the source tree as before,
+  the test checks every module that ships with no exception, a second test pins that the one module left
+  out is the frozen file byte for byte, that it imports this repository only inside a function and that
+  nothing shipped imports it, and the wheel workflow now checks the built wheel's modules and not only its
+  declared dependencies. Before this a built wheel held the harness; the wheel workflow uploads build
+  artifacts only and publishes nowhere.
+  What CI finds in the tests it had not been reaching is reported with its first full run.
+
 - **JetFlow's Jet2 step used -dv/dt for its curvature (6 to 26 November 2026; fixed on the owner's word).**
   `packages/jetflow-video/jetflow_video/stepper.py` passed its two velocity samples to
   `_acceleration_between` the wrong way round in both its one-sided and central forms since commit 99f15f2
