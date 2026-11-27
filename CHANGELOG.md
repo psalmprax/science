@@ -52,6 +52,11 @@ inferred releases.
 
 ### Added
 
+- **PREREG-VIDEO-HYBRID-2026-11, draft (2026-11-27, owner's word "go ahead to test all").** The larger test of
+  MeanFlow on JetFlow's network against its parents and plain flow matching (8 frames of 32 x 32, 45 minutes of
+  training, real footage split by group): `preregistration/PREREG-VIDEO-HYBRID-2026-11.md`,
+  `scripts/run_prereg_video_hybrid.py`, `.github/workflows/video-hybrid.yml`, `tests/test_video_hybrid_prereg.py`.
+  Not frozen: a rehearsal and an independent review come first.
 - **PREREG-VIDEO-FLOW-2026-11 recorded (2026-11-27).** `preregistration/RESULT-VIDEO-FLOW-2026-11.md`: JetFlow lost to
   plain flow matching at four calls on real footage and fluid (won on collision); its fixed Jet2 step beat Euler
   on its own network on real footage and collision; MeanFlow on the UNet won at one call on the toy worlds only;
