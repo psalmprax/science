@@ -407,7 +407,7 @@ three preregistered expectations missed.
   colon or `#`, and any string token or attribute access are refused before
   parsing; the three forms parse; a non-expression is a `ValueError`.
   `apedp/safety.py` re-exports it, so the older API's routes are covered by
-  the same change (`tests/test_formula_and_name_safety.py`, 99; 1,231 tests of
+  the same change (`tests/test_formula_and_name_safety.py`, 100; 1,231 tests of
   the older package unchanged). **Then attacked with what it was not
   developed against (2026-11-28), by the author of the repair and nobody
   else yet:** 4,144 ways to write a call of a function
@@ -418,8 +418,13 @@ three preregistered expectations missed.
   characters, held a worker for more than ten minutes, because sympy builds
   the power of ten exactly. The parser had always done that. A number
   literal's decimal exponent is now bounded at 9999 by the token check. A
-  504-payload form of the sweep is kept as a test. **What this does not
-  repair:** the frozen
+  504-payload form of the sweep is kept as a test. **The repair broke one
+  caller and stage's tests said so:** the bare name of an allowed function
+  (`gamma`) had always come back as that function, and
+  `apedp/mathematical/mathematical_layer.py` reads it; the repair refused it
+  with every other non-expression. It is returned again. I had run only the
+  tests that import the parser themselves, and that caller's test does not.
+  **What this does not repair:** the frozen
   route modules call `sympy.sympify` directly on text they produce
   themselves; see M-40 for why no outside text reaches them now.
 - **M-40 a column's name was run as code — FOUND BY AN OUTSIDE AUDIT

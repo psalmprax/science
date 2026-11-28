@@ -415,6 +415,17 @@ def _assert_bounded_evaluation(s: str, local_dict: dict[str, object]) -> None:
         logger.debug("bounded-evaluation pre-check skipped for %r", s, exc_info=True)
 
 
+def _a_safe_function_by_name(parsed: Any) -> bool:
+    """True if the formula was the bare name of an allowed function, such as ``gamma`` with no argument.
+
+    The parser has always handed back the function itself for that, and one caller reads it:
+    ``apedp/mathematical/mathematical_layer.py`` treats it as a candidate with nothing to check. Nothing was called
+    and the function is one of the allowed ones, so it is returned as before. The first version of the 27 November
+    repair refused it with every other non-expression, and that caller's test failed on the stage branch.
+    """
+    return isinstance(parsed, sp.FunctionClass) and any(parsed is value for value in _SAFE_FUNCS.values())
+
+
 def safe_parse_expr(
     formula_str: str,
     extra_symbols: dict[str, sp.Symbol] | None = None,
@@ -444,6 +455,8 @@ def safe_parse_expr(
         expr = sp.parse_expr(s, local_dict=local_dict, global_dict=_parser_globals(), transformations=_TRANSFORMATIONS)
     except Exception as e:
         raise ValueError(f"Unparseable formula {s!r}: {e}") from e
+    if _a_safe_function_by_name(expr):
+        return expr  # type: ignore[no-any-return]
     if not isinstance(expr, sp.Basic):
         # A tuple, a truth value, a number of Python's own: evaluated, and not a formula. Without this check the
         # caller got an AttributeError from the next line instead of the ValueError it handles.
@@ -493,6 +506,8 @@ def safe_parse_pde(
         expr = sp.parse_expr(s, local_dict=local_dict, global_dict=_parser_globals(), transformations=_TRANSFORMATIONS)
     except Exception as e:
         raise ValueError(f"Unparseable PDE formula {s!r}: {e}") from e
+    if _a_safe_function_by_name(expr):
+        return expr  # type: ignore[no-any-return]
     if not isinstance(expr, sp.Basic):
         raise ValueError(f"Unparseable PDE formula {s!r}: it does not evaluate to an expression")
     for atom in expr.atoms(sp.Function):

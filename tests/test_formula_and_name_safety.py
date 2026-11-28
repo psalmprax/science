@@ -245,3 +245,17 @@ def test_a_formula_built_to_take_long_is_refused_at_once(text: str) -> None:
 def test_more_things_that_are_not_names(name: Any) -> None:
     with pytest.raises(ValueError):
         safety.plain_names(["a", name])
+
+
+def test_the_bare_name_of_an_allowed_function_comes_back_as_that_function_as_it_always_did() -> None:
+    """``apedp/mathematical/mathematical_layer.py`` is handed ``"gamma"`` as a candidate and reads the function the
+    parser returns for it. The first version of the repair refused it with every other non-expression, and
+    ``tests/test_rh_benchmark.py`` failed on the stage branch; I had run only the tests that import the parser
+    themselves."""
+    assert safety.safe_parse_expr("gamma") is sp.gamma and safety.safe_parse_expr("sin") is sp.sin
+    assert safety.safe_parse_expr("gamma", {"gamma": sp.Symbol("gamma")}) == sp.Symbol("gamma")      # a symbol if the caller says so
+    assert safety.safe_parse_expr("gamma(x) + 1", {"x": X}) == sp.gamma(X) + 1
+    for not_a_formula in ("(x, 2)", "True", "Symbol", "Integer"):      # the parser's own helpers are not handed out
+        with pytest.raises(ValueError):
+            safety.safe_parse_expr(not_a_formula, {"x": X})
+    assert safety.safe_parse_expr("Function") == sp.Symbol("Function")  # a name the parser does not know is a symbol

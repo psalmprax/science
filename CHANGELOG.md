@@ -52,7 +52,7 @@ inferred releases.
   of Lean sources and signed receipts, a non-linear novelty check, hash chains on the trial ledger
   and the promotion journal, `sympify` inside the frozen route modules, `vouching_v2.gradient()`,
   the `license` field and command-line entry points, which branch is built and deployed, and the
-  split of the repository. New tests: `tests/test_formula_and_name_safety.py` (99),
+  split of the repository. New tests: `tests/test_formula_and_name_safety.py` (100),
   `tests/test_physics_endpoint_evidence.py` (12), `tests/test_ui_request_limits.py` (53), and
   additions to `tests/test_system_flaws_audit.py` and `tests/test_security_scan_baseline.py`.
   `tests/test_dyn_ui_studio.py` pinned the asserted C4 and now pins what is measured.
