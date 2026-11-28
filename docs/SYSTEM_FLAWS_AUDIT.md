@@ -307,6 +307,58 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-45 three of the referee's rules read their evidence wrongly — FOUND BY
+  AN OUTSIDE AUDIT 2026-11-27, REPAIRED 2026-11-28 ON THE OWNER'S WORD.**
+  These change what the promotion referee decides, which is why they waited
+  for that word ("try all of these", 28 November, 01:56).
+  (a) *Stage 5 refused a strategy that never trades.* The break-even fee is
+  the gross return divided by the turnover. With no turnover it is infinite,
+  and the stage demanded a finite fee at or above the floor, so a position
+  held through the whole window could not pass, for a reason that has nothing
+  to do with fees. **Repair:** `verify_stage_5_from_returns`, which computes
+  the turnover itself, marks the fee test moot when the total turnover is
+  exactly zero and the gross return is positive (`fee_test_moot_no_turnover`
+  in the derived record), and `_decide_stage_5` honours that for derived
+  evidence only. A reported infinite fee is refused as before; no turnover
+  with no profit fails as before; the Sharpe and DSR hurdles and the universe
+  audit are untouched.
+  (b) *A trial's Sharpe ratio carried no units.* `in_sample_sharpe` is
+  whatever its caller passes, and `dsr_with_selection_adjustment` takes the
+  spread of the recorded ratios to deflate an observed ratio stated in
+  `annualization_factor` units. Per-period ratios set beside an annualised
+  observed ratio give a spread too small by that factor (252 for daily
+  returns) and deflate far too little. **Repair:** a record may state
+  `annualization_factor`; `get_sharpe_distribution(A)` converts a record that
+  states other units by `sqrt(A / stated)`; a record that states none is used
+  as it is, as every record was; and the result carries `trial_sharpe_units`
+  (stated and the same, stated and converted, unstated), so a spread taken
+  from unstated units is disclosed beside the number. Ledger files written
+  before load unchanged. **Not repaired:** no caller states its units yet.
+  The market sandbox that records the most trials is pinned by the v1.18
+  record (read on 28 November: it records and compares in the same units).
+  And the floor on the trials' variance in `compute_expected_max_sharpe` is
+  one number (1e-4) whatever the units, so it is 252 times as large beside a
+  daily per-period ratio as beside an annualised one; making it mean the same
+  in both would tighten the one or loosen the other, and is the owner's to
+  decide.
+  (c) *Stage 1 searched a Lean source for one word.* It looked for `sorry`
+  anywhere in the raw text. A comment that mentions the word refused a
+  finished proof; `admit`, `sorryAx`, `native_decide` (and
+  `Lean.ofReduceBool`, which it stands for) and a source with nothing in it
+  but comments passed. **Repair:** `proof_evidence.lean_code_only` removes
+  line comments, nested block comments, strings and character literals, and
+  `lean_source_objections` then names an empty source, a goal left unproven
+  (`sorry`, `admit`, `sorryAx`) and a proof that trusts compiled code in
+  place of the kernel. Stage 1 counts a source as independently checked only
+  with no objection, and writes the objections into its record. A declared
+  `axiom` is not an objection here: the bridge's own modules declare the real
+  field as axioms, and dependence on an axiom is counted for each theorem
+  (`axiom_dependent`), as before. **Not repaired:** the text is still what
+  the caller hands over. A signed receipt from the build that ran the kernel,
+  the audit's larger proposal, is not built.
+  Pinned by five tests added to `apedp_referee/tests/test_apedp_referee.py`.
+  Reviewed by nobody but the author: an independent reviewer could not be
+  started in this session.
 - **M-44 the image could not be built and no job built it; a tag published
   without waiting for the tests; the wheel carried no data file — FOUND BY AN
   OUTSIDE AUDIT 2026-11-27, PARTLY REPAIRED.** (a) The Dockerfile's builder
@@ -328,8 +380,16 @@ three preregistered expectations missed.
   `all-but-signature`; `MANIFEST.in` names the page and the v1.18 freeze
   record, which reaches the wheel because include-package-data is on by
   default (`pyproject.toml` is frozen by a preregistration and is unchanged).
-  **Not repaired, the owner's to decide:** which branch the image is built and
-  deployed from, and whether to deploy at all; whether the image starts the
+  **Tried on the owner's word, 2026-11-28 ("try all of these"):** the `build`
+  job now runs on `master`, the branch that receives merged work, and
+  `deploy` runs there only when the repository variable `DEPLOY_TO_FLY` is
+  `true`. It is not set, so nothing is deployed, and one setting turns
+  deploying on. `build` still needs the job that checks the trustees'
+  signature (`governance-manifest`), and `deploy` needs `build`, so neither
+  has run yet. Whether a Fly.io token exists could not be checked from here. `tests/test_system_flaws_audit.py` pins the branch
+  and the switch.
+  **Not repaired, the owner's to decide:** whether to deploy at all (the
+  switch above); whether the image starts the
   older API (as now, pinned by a test) or the page's server; whether a release
   should also wait for the trustees' signature; the missing `license` field
   and command-line entry points (both in the frozen `pyproject.toml`); a wheel

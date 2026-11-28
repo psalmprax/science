@@ -469,7 +469,10 @@ jobs:
     # mutation battery were red.
     needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked, referee-core]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # `master` since 28 November 2026 (owner's word "try all of these", decision 4). It said `main`, a branch this
+    # repository has never had, so the image was never built by this job and its Dockerfile broke unseen (M-44).
+    # The job still waits for every gate above, the trustees' signature included.
+    if: github.ref == 'refs/heads/master'
     permissions:
       contents: read
       packages: write
@@ -510,7 +513,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # Deploying is switched off until the owner turns it on: it runs on `master` only when the repository variable
+    # DEPLOY_TO_FLY is the word true (Settings, Secrets and variables, Actions, Variables). Whether to deploy at all
+    # is the owner's decision and was not made on 28 November 2026; the branch name alone must not make it.
+    if: github.ref == 'refs/heads/master' && vars.DEPLOY_TO_FLY == 'true'
     environment: production
     steps:
       - name: Deploy to Fly.io

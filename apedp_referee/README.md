@@ -21,7 +21,7 @@ pip install ./apedp_referee            # from a checkout of the repository
 | `trial_ledger` | `CandidateTrialLedger`: every variant tried is journaled, and the deflated Sharpe ratio uses that count. |
 | `novelty_adjudication` | Stage 3's tests. |
 | `universe` | `audit_universe`: whether the asset list was chosen with hindsight, and stale or unadjusted bars in the panel. |
-| `proof_claim`, `proof_evidence` | The types a formal-verification run reports to stage 1. |
+| `proof_claim`, `proof_evidence` | The types a formal-verification run reports to stage 1, and the reading of a Lean source that stage 1 applies: outside comments and strings, for a goal left unproven or a proof that trusts compiled code (`lean_source_objections`). |
 
 ## Example
 

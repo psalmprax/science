@@ -42,6 +42,11 @@ class CandidateTrialRecord:
     # searches it is the in-sample loss (lower is better) and DSR does NOT
     # apply -- the field exists so the selection metric is never ambiguous.
     selection_statistic: float | None = None
+    # Periods a year behind ``in_sample_sharpe``: 1 for a Sharpe ratio per period, 252 for one annualised from daily
+    # returns. ``None`` on records written before 28 November 2026 and by callers that do not say: such a record is
+    # taken to be in the units of the Sharpe ratio it is later compared with, as every record was until then, and
+    # is counted as unstated in the result. Stated so that a ratio per period is never set beside an annualised one.
+    annualization_factor: float | None = None
 
 
 class CandidateTrialLedger:
@@ -73,8 +78,14 @@ class CandidateTrialLedger:
         status: str = "EVALUATED",
         metadata: dict[str, Any] | None = None,
         selection_statistic: float | None = None,
+        annualization_factor: float | None = None,
     ) -> CandidateTrialRecord:
-        """Record an attempted hypothesis evaluation in the ledger."""
+        """Record an attempted hypothesis evaluation in the ledger.
+
+        ``annualization_factor`` states the units of ``in_sample_sharpe`` (periods a year; 1 for per period).
+        """
+        if annualization_factor is not None and not (np.isfinite(annualization_factor) and annualization_factor > 0):
+            raise ValueError(f"annualization_factor must be a positive number of periods a year, not {annualization_factor!r}")
         if returns is not None and len(returns) > 3:
             r = np.asarray(returns, dtype=float)
             r = r[np.isfinite(r)]
@@ -96,6 +107,7 @@ class CandidateTrialLedger:
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             metadata=metadata or {},
             selection_statistic=selection_statistic,
+            annualization_factor=None if annualization_factor is None else float(annualization_factor),
         )
         self._records.append(record)
 
@@ -195,7 +207,11 @@ class CandidateTrialLedger:
         """
         if not self._records:
             raise ValueError("cannot compute selection-adjusted DSR with an empty trial ledger")
-        _mean_sr, var_trials = self.get_sharpe_distribution()
+        # The trials' Sharpe ratios are brought to the units of the observed one before their spread is taken
+        # (a ratio scales with the square root of the periods a year). Until 28 November 2026 a record carried no
+        # units, and a ledger of per-period ratios set beside an annualised observed ratio deflated it by far too
+        # little (outside audit of 27 November). Records that state no units are used as they are, as before.
+        _mean_sr, var_trials = self.get_sharpe_distribution(annualization_factor)
         effective = self.effective_trial_count
         result = compute_deflated_sharpe_ratio(
             observed_sharpe=observed_sharpe,
@@ -212,17 +228,12 @@ class CandidateTrialLedger:
         # Disclosed with the number rather than left to the caller to know: an
         # in-memory ledger has no memory of earlier runs' searches.
         result["ledger_persistent"] = self.is_persistent
+        result["trial_sharpe_units"] = self.sharpe_units(annualization_factor)
         return result
 
-    def get_records(self) -> list[CandidateTrialRecord]:
-        return list(self._records)
-
-    def get_sharpe_distribution(self) -> tuple[float, float]:
-        """Compute (mean, variance) of Sharpe ratios across strategy candidates."""
-        if not self._records:
-            return 0.0, 0.0
-        vals = [
-            float(r.in_sample_sharpe)
+    def _in_the_sharpe_distribution(self) -> list[CandidateTrialRecord]:
+        return [
+            r
             for r in self._records
             if np.isfinite(r.in_sample_sharpe)
             and not (
@@ -231,6 +242,34 @@ class CandidateTrialLedger:
                 and ("selection_metric" in r.metadata or r.strategy_archetype == "equation_discovery")
             )
         ]
+
+    def sharpe_units(self, annualization_factor: float) -> dict[str, int]:
+        """How many of the trials behind the Sharpe spread state the observed ratio's units, state others (and were
+        converted), or state none."""
+        used = self._in_the_sharpe_distribution()
+        same = sum(r.annualization_factor is not None and np.isclose(r.annualization_factor, annualization_factor) for r in used)
+        unstated = sum(r.annualization_factor is None for r in used)
+        return {"stated_and_the_same": int(same), "stated_and_converted": len(used) - int(same) - int(unstated), "unstated": int(unstated)}
+
+    def get_records(self) -> list[CandidateTrialRecord]:
+        return list(self._records)
+
+    def get_sharpe_distribution(self, annualization_factor: float | None = None) -> tuple[float, float]:
+        """Compute (mean, variance) of Sharpe ratios across strategy candidates.
+
+        With ``annualization_factor``, a record that states other units is converted to it first; without it, and
+        for a record that states none, the recorded ratio is used as it is.
+        """
+        if not self._records:
+            return 0.0, 0.0
+
+        def in_units(record: CandidateTrialRecord) -> float:
+            stated = record.annualization_factor
+            if annualization_factor is None or stated is None or not annualization_factor > 0:
+                return float(record.in_sample_sharpe)
+            return float(record.in_sample_sharpe) * float(np.sqrt(annualization_factor / stated))
+
+        vals = [in_units(r) for r in self._in_the_sharpe_distribution()]
         if not vals:
             return 0.0, 0.0
         srs = np.array(vals, dtype=float)

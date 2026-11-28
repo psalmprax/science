@@ -654,3 +654,16 @@ def test_the_wheel_is_given_the_page_the_ui_server_sends():
     from apedp_dyn.ui import helpers
 
     assert helpers.STATIC_HTML_PATH == REPO_ROOT / "apedp_dyn" / "ui" / "dashboard.html"
+
+
+def test_the_image_is_built_from_a_branch_that_exists_and_deploying_is_off_until_switched_on():
+    """The build and deploy jobs waited for ``main``, which this repository has never had (M-44). The build runs on
+    ``master``. Deploying is the owner's decision and stays off behind a repository variable."""
+    import yaml
+
+    jobs = yaml.load((REPO_ROOT / ".github" / "workflows" / "test.yml").read_text(), Loader=yaml.BaseLoader)["jobs"]  # noqa: S506
+    assert jobs["build"]["if"] == "github.ref == 'refs/heads/master'"
+    assert "governance-manifest" in jobs["build"]["needs"] and "test" in jobs["build"]["needs"]
+    assert jobs["deploy"]["if"] == "github.ref == 'refs/heads/master' && vars.DEPLOY_TO_FLY == 'true'"
+    assert jobs["deploy"]["needs"] == "build"
+    assert "refs/heads/main'" not in (REPO_ROOT / ".github" / "workflows" / "test.yml").read_text()

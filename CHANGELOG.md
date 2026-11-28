@@ -101,6 +101,25 @@ inferred releases.
 
 ### Changed
 
+- **Three of the referee's rules, repaired on the owner's word (2026-11-28, "try all of these", decision 3;
+  audit M-45).** An outside audit found them on 27 November; they waited because they change what the
+  promotion referee decides. **Zero turnover:** Stage 5 demanded a finite break-even fee, and a strategy that
+  never trades has an infinite one, so a position held through the whole window could not pass. Where the
+  stage computes the turnover itself and finds none with positive returns, the fee test is now moot
+  (`fee_test_moot_no_turnover`); a reported infinite fee is refused as before. **A trial's units:** a trial
+  record may state `annualization_factor` for its Sharpe ratio, and the selection-adjusted DSR converts a
+  record that states other units than the observed ratio before taking the spread; `trial_sharpe_units` in
+  the result says how many records stated the same units, others, or none. No caller states units yet, so no
+  verdict changes today, and the floor on the trials' variance is unchanged. **The Lean reading:** Stage 1
+  searched the raw text for the word `sorry`, so a comment refused a finished proof while `admit`, `sorryAx`,
+  `native_decide` and an empty source passed; `proof_evidence.lean_source_objections` now reads the source
+  outside comments and strings and names each. Five tests added to
+  `apedp_referee/tests/test_apedp_referee.py`. Reviewed by nobody but the author.
+- **The image is built from `master`, and deploying waits for a switch (2026-11-28, decision 4; audit
+  M-44).** `build` and `deploy` in `test.yml` ran only on a branch named `main`, which this repository has
+  never had. `build` now runs on `master`; `deploy` runs there only when the repository variable
+  `DEPLOY_TO_FLY` is `true`, which it is not. Whether to deploy at all stays the owner's decision.
+  `tests/test_system_flaws_audit.py` pins both.
 - **PREREG-PHYSICS-J1-2026-11, stage 1 frozen (2026-11-27).** `preregistration/DIGEST-PHYSICS-J1-JUDGE.json`
   freezes the judge, its breakages, the generator, the plan, the runner, the workflow and the tests. It follows
   the reviewer's check of the revision, which found three blocking points and five more:
@@ -190,6 +209,32 @@ inferred releases.
 
 ### Added
 
+- **The next law of a class, and the implicit form as a proposer: built, measured in development, not in
+  force (2026-11-28, the owner's "try all of these", decisions 1 and 2).** Two modules that nothing calls
+  but their studies and tests, each with a plan that is drafted and not frozen
+  (`docs/OWNER_DECISIONS_2026-11-28.md`).
+  **`discovery_l2/next_member_route.py`.** When the shortest of several laws that cannot be told apart
+  fails the residual check, the frozen search ends the reading; this step tries the class's other laws by
+  the same check and then by the last checks in force. On the 122 tables the second family run left without
+  a law, with lists handed in (`scripts/study_next_member.py`,
+  `benchmarks/family_stream/dev_next_member.json`): of the 13 readings lost that way with the true form in
+  the class, 7 are reported, 4 as the law itself; no added law was inaccurate. On lists with no true form
+  it added 8 reports, each accurate on the test rows and none the law, where the route itself made 10.
+  Seventeen added laws with none wrong does not show a share within the limit (29 are needed).
+  **`proposers/implicit_form.py`.** Fits small sets of monomials in the inputs and the target as
+  `P(x, y) = 0` and proposes them solved for the target. As the route's only search stage
+  (`scripts/study_implicit_proposer.py`, `benchmarks/outside_proposals/dev_implicit_proposer.json`) it got
+  the law itself reported for Kepler with two masses, time dilation and Langmuir on 4, 3 and 2 tables of 6,
+  where the first pass alone never had it; on the 122 tables, 16 reported, 2 the law itself, none
+  inaccurate, 7 from its own formulas. It got an exponential reported as an algebraic law on 1 table of 6,
+  accurate inside the range of the rows and wrong beyond it, and changed no reading of the three real
+  development tables. Building it showed why the earlier probe lost a noisy straight line in every draw (a
+  perfect square halves the distance the probe ranked by), and two more weaknesses of that ranking; the
+  account's section 5 has them. Behind the product's search stage neither module has been measured.
+  Plans: `preregistration/PREREG-NEXT-MEMBER-2026-11.md`, `preregistration/PREREG-IMPLICIT-STAGE-2026-11.md`.
+  Tests: `tests/test_next_member_route.py` (10), `tests/test_study_next_member.py` (4),
+  `tests/test_implicit_form_proposer.py` (29), `tests/test_study_implicit_proposer.py` (5). Development,
+  not a result; reviewed by nobody but the author.
 - **Four outside notes on the search, checked and tested (2026-11-28, development; owner's words
   "can you check this also" and "look at these as you continue to test").** An outside assistant read
   the second family run's count (an accurate candidate before the referee on 91 of 122 unreported

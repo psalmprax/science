@@ -16,7 +16,6 @@ import datetime
 import json
 import math
 import os
-import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import IntEnum
@@ -38,10 +37,10 @@ from apedp_referee.canonical_spec import (
     STAGE6_MAX_DRAWDOWN_CEILING,
     STAGE6_PROSPECTIVE_SHARPE_HURDLE,
 )
+from apedp_referee.proof_evidence import LeanVerificationResult, lean_source_objections
 
 if TYPE_CHECKING:
     from apedp_referee.experiment_ledger import FullLineageExperimentLedger
-    from apedp_referee.proof_evidence import LeanVerificationResult
     from apedp_referee.trial_ledger import CandidateTrialLedger
     from apedp_referee.universe import UniverseAudit
 
@@ -267,7 +266,7 @@ class PromotionTracker:
             )
         theorems = list(lean_result.theorems)
         axiom_dependent = sum(1 for t in theorems if t.axiom_dependent)
-        uses_sorry = bool(re.search(r"\bsorry\b", lean_result.lean_source_code or ""))
+        source_objections = lean_source_objections(lean_result.lean_source_code or "")  # read outside comments: audit M-45
         claimed = lean_result.proof_claim_status.name
         independently_checked = (
             claimed == "P2_VERIFIED"
@@ -275,7 +274,7 @@ class PromotionTracker:
             and lean_result.kernel_exit_code == 0
             and bool(theorems)
             and axiom_dependent == 0
-            and not uses_sorry
+            and not source_objections
         )
 
         def _proven(kind: str) -> bool:
@@ -297,7 +296,7 @@ class PromotionTracker:
                 "lean_kernel_exit_code": lean_result.kernel_exit_code,
                 "lean_theorem_count": len(theorems),
                 "lean_axiom_dependent_theorems": axiom_dependent,
-                "lean_uses_sorry": uses_sorry,
+                "lean_uses_sorry": any("unproven" in o for o in source_objections), "lean_source_objections": source_objections,
             },
         )
 
@@ -538,6 +537,7 @@ class PromotionTracker:
             "periods_per_year": periods_per_year,
             "fee_bps_charged": fee_bps,
             "total_turnover": total_turnover,
+            "fee_test_moot_no_turnover": total_turnover == 0.0 and float(gross.sum()) > 0.0,  # no fee to break even on: M-45
             "dsr_source": "trial_ledger",
             "universe_selection_basis": universe.selection_basis,
             "universe_fit_for_economic_claims": not universe_reasons,
@@ -546,7 +546,7 @@ class PromotionTracker:
         if spread <= 0.0:
             return self._decide_stage_5(
                 float("nan"), float("nan"), breakeven_fee_bps,
-                source=EVIDENCE_DERIVED, derived=derived, refuse_reason=refuse_reason,
+                source=EVIDENCE_DERIVED, derived=derived, refuse_reason=refuse_reason, fee_is_moot=derived["fee_test_moot_no_turnover"],
             )
         from scipy import stats
 
@@ -567,7 +567,7 @@ class PromotionTracker:
         )
         return self._decide_stage_5(
             net_sharpe, float(dsr["dsr"]), breakeven_fee_bps,
-            source=EVIDENCE_DERIVED, derived=derived, refuse_reason=refuse_reason,
+            source=EVIDENCE_DERIVED, derived=derived, refuse_reason=refuse_reason, fee_is_moot=derived["fee_test_moot_no_turnover"],
         )
 
     def verify_stage_6_from_returns(self, prospective_returns: Any, index: Any) -> StageVerificationRecord:
@@ -870,20 +870,20 @@ class PromotionTracker:
         *,
         source: str = EVIDENCE_REPORTED,
         derived: Mapping[str, Any] | None = None,
-        refuse_reason: str | None = None,
+        refuse_reason: str | None = None, fee_is_moot: bool = False,
     ) -> StageVerificationRecord:
-        """Stage 5: Economic validity after friction and multiple-testing deflation."""
+        """Stage 5: Economic validity after friction and multiple-testing deflation (``fee_is_moot``: derived evidence only)."""
         self._assert_stage_reachable(PromotionStage.STAGE_5_ECONOMIC_VALIDITY)
         min_sharpe_hurdle = _no_looser_floor("min_sharpe_hurdle", min_sharpe_hurdle, MIN_NET_SHARPE)
         min_dsr_hurdle = _no_looser_floor("min_dsr_hurdle", min_dsr_hurdle, DSR_THRESHOLD)
         min_fee_bps = _no_looser_floor("min_fee_bps", min_fee_bps, STAGE5_MIN_FEE_BPS)
+        fee_survives = math.isfinite(breakeven_fee_bps) and breakeven_fee_bps >= min_fee_bps
         passed = (
             math.isfinite(net_sharpe)
             and math.isfinite(dsr_metric)
-            and math.isfinite(breakeven_fee_bps)
+            and (fee_survives or (fee_is_moot and source == EVIDENCE_DERIVED))
             and net_sharpe >= min_sharpe_hurdle
             and dsr_metric >= min_dsr_hurdle
-            and breakeven_fee_bps >= min_fee_bps
             and refuse_reason is None
         )
         reason = (

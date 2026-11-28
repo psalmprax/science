@@ -24,6 +24,7 @@ the claim is worth.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -61,6 +62,72 @@ class LeanTheoremVerification:
     # Such a record is a schema check, never an independent derivation, and the
     # verifier caps the candidate at P1 whenever one is present.
     axiom_dependent: bool = False
+
+
+_UNPROVEN = re.compile(r"(?<![\w.'])(?:sorry|admit|sorryAx)(?![\w'])")
+_TRUSTS_COMPILED_CODE = re.compile(r"(?<![\w'])(?:native_decide|ofReduceBool|reduceBool)(?![\w'])")   # also as Lean.ofReduceBool
+
+
+def lean_code_only(source: str) -> str:
+    """A Lean source with its comments and text literals removed.
+
+    ``--`` to the end of a line, ``/- ... -/`` (nested, doc comments included) and ``"..."`` are dropped, so that a
+    word inside a comment or a string is not read as code, and code is not hidden from the reading by one.
+    """
+    out: list[str] = []
+    i, n, depth = 0, len(source), 0
+    while i < n:
+        ch = source[i]
+        nxt = source[i + 1] if i + 1 < n else ""
+        if depth:
+            if ch == "/" and nxt == "-":
+                depth, i = depth + 1, i + 2
+            elif ch == "-" and nxt == "/":
+                depth, i = depth - 1, i + 2
+            else:
+                if ch == "\n":
+                    out.append("\n")
+                i += 1
+        elif ch == "/" and nxt == "-":
+            depth, i = 1, i + 2
+        elif ch == "-" and nxt == "-":
+            while i < n and source[i] != "\n":
+                i += 1
+        elif ch == '"':
+            i += 1
+            while i < n and source[i] != '"':
+                i += 2 if source[i] == "\\" else 1
+            i += 1
+            out.append(" ")
+        elif ch == "'" and re.match(r"'(?:\\.|[^\\'])'", source[i:i + 4]):
+            i += len(re.match(r"'(?:\\.|[^\\'])'", source[i:i + 4]).group(0))  # type: ignore[union-attr]
+            out.append(" ")                                  # a character literal such as '"' is not the start of a string
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out)
+
+
+def lean_source_objections(source: str) -> list[str]:
+    """Why this Lean source cannot stand behind a verified (P2) claim; empty if nothing in its text says so.
+
+    Read outside comments and text literals. An empty source is an objection: there is nothing to have checked.
+    ``sorry``, ``admit`` and ``sorryAx`` leave a goal unproven. ``native_decide`` and the axioms under it
+    (``ofReduceBool``, ``reduceBool``) trust compiled code in place of the kernel. Until 28 November 2026 Stage 1
+    looked for the word ``sorry`` anywhere in the text and for nothing else, and accepted an empty source.
+
+    A declared ``axiom`` is not an objection here: the bridge's modules declare the real field that way, and a
+    theorem that rests on one is marked ``axiom_dependent``, which Stage 1 already refuses theorem by theorem.
+    """
+    code = lean_code_only(source or "")
+    if not code.strip():
+        return ["no Lean source outside comments: nothing was there to check"]
+    out = []
+    if _UNPROVEN.search(code):
+        out.append("a goal is left unproven (sorry, admit or sorryAx)")
+    if _TRUSTS_COMPILED_CODE.search(code):
+        out.append("a proof trusts compiled code in place of the kernel (native_decide)")
+    return out
 
 
 @dataclass

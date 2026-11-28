@@ -252,3 +252,125 @@ def test_stage_five_refuses_a_universe_chosen_with_hindsight(
     assert record.passed is False
     assert record.metrics["universe_fit_for_economic_claims"] is False
     assert int(tracker.highest_stage_passed) == 4
+
+
+# ---------------------------------------------------------------------------
+# Three faults an outside audit found on 27 November 2026, fixed on the owner's
+# word of the 28th: a strategy that never trades could not pass Stage 5, a
+# trial's Sharpe ratio carried no units, and Stage 1 read a Lean source by
+# searching it for one word.
+# ---------------------------------------------------------------------------
+
+
+def _fit_universe() -> UniverseAudit:
+    """A universe chosen before its evidence starts: fit for an economic claim."""
+    rng = np.random.default_rng(1)
+    panel = pd.DataFrame({"observation_date": pd.date_range("2024-01-02", periods=60, freq="B")})
+    for asset in ("AAA", "BBB"):
+        panel[f"{asset}_CLOSE"] = 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, size=60)))
+        panel[f"{asset}_VOL"] = rng.lognormal(size=60)
+    got = audit_universe(panel, selected_as_of="2023-12-29")
+    assert got.fit_for_economic_claims, got.reasons
+    return got
+
+
+def test_a_strategy_that_never_trades_is_not_refused_for_its_infinite_break_even_fee(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _freeze_clock(monkeypatch, datetime.datetime(2026, 1, 5, tzinfo=UTC))
+    gross, turnover, index = strategy_returns()
+    still = np.zeros_like(turnover)
+    record = evidence_backed_tracker("cand", tmp_path, through=4).verify_stage_5_from_returns(
+        gross, still, index, trial_ledger=persistent_trial_ledger(tmp_path / "t.jsonl"), universe=_fit_universe())
+    assert record.metrics["total_turnover"] == 0.0 and record.metrics["fee_test_moot_no_turnover"] is True
+    assert record.metrics["breakeven_fee_bps"] == float("inf")
+    # with nothing traded the net return is the gross one, and the other two tests decide
+    traded = evidence_backed_tracker("cand2", tmp_path / "b", through=4).verify_stage_5_from_returns(
+        gross, turnover, index, trial_ledger=persistent_trial_ledger(tmp_path / "t2.jsonl"), universe=_fit_universe())
+    assert traded.passed, traded.reason
+    assert record.passed, record.reason
+    assert record.metrics["net_sharpe"] > traded.metrics["net_sharpe"]
+
+
+def test_no_turnover_and_no_profit_still_fails_and_a_reported_infinite_fee_is_still_refused(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _freeze_clock(monkeypatch, datetime.datetime(2026, 1, 5, tzinfo=UTC))
+    gross, turnover, index = strategy_returns()
+    losing = evidence_backed_tracker("cand", tmp_path, through=4).verify_stage_5_from_returns(
+        -np.abs(gross), np.zeros_like(turnover), index, trial_ledger=persistent_trial_ledger(tmp_path / "t.jsonl"), universe=_fit_universe())
+    assert not losing.passed and losing.metrics["fee_test_moot_no_turnover"] is False
+    reported = evidence_backed_tracker("cand3", tmp_path / "c", through=4)
+    refused = reported._decide_stage_5(2.0, 0.99, float("inf"), fee_is_moot=True)      # reported evidence may not say so
+    assert not refused.passed
+    assert not evidence_backed_tracker("cand4", tmp_path / "d", through=4)._decide_stage_5(2.0, 0.99, float("inf")).passed
+
+
+def test_a_trial_s_sharpe_ratio_states_its_units_and_mixed_units_are_brought_together(tmp_path: Path) -> None:
+    daily = [0.09, 0.10, 0.11, 0.12]                              # Sharpe ratios per period
+    annual = [value * np.sqrt(252.0) for value in daily]
+    stated_daily, stated_annual, unstated = (CandidateTrialLedger(persistence_path=tmp_path / f"{name}.jsonl") for name in "abc")
+    for i, value in enumerate(daily):
+        stated_daily.record_trial(f"t{i}", "p", "f", "TACTICAL", value, n_bars=504, annualization_factor=1.0)
+        stated_annual.record_trial(f"t{i}", "p", "f", "TACTICAL", annual[i], n_bars=504, annualization_factor=252.0)
+        unstated.record_trial(f"t{i}", "p", "f", "TACTICAL", value, n_bars=504)
+    from_daily, from_annual, from_unstated = (
+        ledger.dsr_with_selection_adjustment(observed_sharpe=2.0, n_bars=504, annualization_factor=252.0)
+        for ledger in (stated_daily, stated_annual, unstated))
+    # the same search, written down in two units, deflates the same observed ratio by the same amount
+    assert from_daily["expected_max_sr"] == pytest.approx(from_annual["expected_max_sr"]) and from_daily["dsr"] == pytest.approx(from_annual["dsr"])
+    assert from_daily["trial_sharpe_units"] == {"stated_and_the_same": 0, "stated_and_converted": 4, "unstated": 0}
+    assert from_annual["trial_sharpe_units"] == {"stated_and_the_same": 4, "stated_and_converted": 0, "unstated": 0}
+    # a record that states nothing is used as it is, as every record was before, and is counted
+    assert from_unstated["trial_sharpe_units"] == {"stated_and_the_same": 0, "stated_and_converted": 0, "unstated": 4}
+    assert from_unstated["expected_max_sr"] < from_daily["expected_max_sr"]
+    assert stated_daily.get_sharpe_distribution() == unstated.get_sharpe_distribution()          # asked for no units: as recorded
+    reopened = CandidateTrialLedger(persistence_path=tmp_path / "a.jsonl")
+    assert [r.annualization_factor for r in reopened.get_records()] == [1.0] * 4
+    old = tmp_path / "old.jsonl"
+    old.write_text("\n".join(json.dumps({k: v for k, v in json.loads(line).items() if k != "annualization_factor"})
+                             for line in (tmp_path / "a.jsonl").read_text().splitlines()) + "\n")
+    assert [r.annualization_factor for r in CandidateTrialLedger(persistence_path=old).get_records()] == [None] * 4
+    for bad in (0.0, -252.0, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="annualization_factor"):
+            unstated.record_trial("x", "p", "f", "TACTICAL", 1.0, annualization_factor=bad)
+
+
+_REFUSED_SOURCES = [
+    ("", "no Lean source"),
+    ("   \n", "no Lean source"),
+    ("-- theorem t : x = x := rfl", "no Lean source"),
+    ("/- theorem t : x = x := rfl -/", "no Lean source"),
+    ("theorem t (x : Nat) : x = x := by sorry", "unproven"),
+    ("theorem t (x : Nat) : x = x := by admit", "unproven"),
+    ("theorem t (x : Nat) : x = x := sorryAx _", "unproven"),
+    ("theorem t : 2 + 2 = 4 := by native_decide", "compiled code"),
+    ("theorem t : 2 + 2 = 4 := Lean.ofReduceBool _ _ rfl", "compiled code"),
+    ("theorem t (x : Nat) : x = x := by\n  /- nested /- comment -/ still a comment -/\n  sorry", "unproven"),
+]
+
+
+def test_stage_1_reads_a_lean_source_outside_its_comments_and_for_more_than_one_word() -> None:
+    from apedp_referee.proof_evidence import lean_source_objections
+
+    for source, objection in _REFUSED_SOURCES:
+        assert any(objection in found for found in lean_source_objections(source)), (source, lean_source_objections(source))
+        record = PromotionTracker("cand").verify_stage_1_from_lean(lean_result("cand", source=source))
+        assert not record.passed and record.metrics["lean_source_objections"], source
+
+
+_ACCEPTED_SOURCES = [
+    "theorem scale (x : Nat) : x = x := rfl",
+    "-- no sorry here, and no admit\ntheorem t (x : Nat) : x = x := rfl",
+    "/- an earlier draft ended in sorry -/\ntheorem t (x : Nat) : x = x := rfl",
+    'def note : String := "sorry -- not a comment, not a proof"\ntheorem t (x : Nat) : x = x := rfl',
+    "theorem sorry_free (x : Nat) : x = x := rfl\ntheorem admitted' (x : Nat) : x = x := rfl",
+    "def quote : Char := '\"'\ntheorem t (x : Nat) : x = x := rfl -- sorry",
+    "axiom R : Type\ntheorem t (x : Nat) : x = x := rfl",
+]
+
+
+def test_a_word_in_a_comment_a_string_or_a_longer_name_is_not_an_objection() -> None:
+    from apedp_referee.proof_evidence import lean_source_objections
+
+    for source in _ACCEPTED_SOURCES:
+        assert lean_source_objections(source) == [], source
+        assert PromotionTracker("cand").verify_stage_1_from_lean(lean_result("cand", source=source)).passed, source

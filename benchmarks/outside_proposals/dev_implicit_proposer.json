@@ -1,0 +1,6093 @@
+{
+ "development_not_a_result": true,
+ "laws": {
+  "rows": [
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.83,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 10.77,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "time dilation",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.59,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 10.96,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "time dilation",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.77,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.09,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "time dilation",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.77,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.13,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "time dilation",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.73,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.99,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "time dilation",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.72,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.12,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "time dilation",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.41,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 10.96,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "saturation (Langmuir)",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.53,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 10.6,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "saturation (Langmuir)",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.78,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.3,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "saturation (Langmuir)",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.82,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.01,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "saturation (Langmuir)",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.77,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.6,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "saturation (Langmuir)",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.79,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.79,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "saturation (Langmuir)",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 41.16,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 45.17,
+     "the_law_itself": true
+    },
+    "inputs": 3,
+    "law": "Kepler with two masses",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 41.52,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 44.9,
+     "the_law_itself": true
+    },
+    "inputs": 3,
+    "law": "Kepler with two masses",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 43.01,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 44.02,
+     "the_law_itself": true
+    },
+    "inputs": 3,
+    "law": "Kepler with two masses",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 41.09,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 43.8,
+     "the_law_itself": true
+    },
+    "inputs": 3,
+    "law": "Kepler with two masses",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 41.06,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 45.58,
+     "the_law_itself": false
+    },
+    "inputs": 3,
+    "law": "Kepler with two masses",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 41.47,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 47.12,
+     "the_law_itself": false
+    },
+    "inputs": 3,
+    "law": "Kepler with two masses",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.65,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.66,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "line (Hubble)",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.65,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.37,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "line (Hubble)",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.74,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.12,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "line (Hubble)",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.65,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.83,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "line (Hubble)",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.68,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.38,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "line (Hubble)",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.71,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.83,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "line (Hubble)",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 8.88,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 15.42,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "lens",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 9.61,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 14.12,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "lens",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.38,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 13.08,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "lens",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 7.06,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 11.52,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "lens",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 8.8,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 15.37,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "law": "lens",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 8.9,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 16.28,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "law": "lens",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.5,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 12.09,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "energy",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.58,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 12.49,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "energy",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.53,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 13.34,
+     "the_law_itself": true
+    },
+    "inputs": 2,
+    "law": "energy",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.93,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 13.66,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "law": "energy",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.33,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 12.03,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "law": "energy",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.44,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 12.58,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "law": "energy",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": true
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.71,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 6.89,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: exponential",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.8,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 7.31,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: exponential",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.86,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.46,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: exponential",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.87,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.56,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: exponential",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.83,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.48,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: exponential",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.88,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.03,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: exponential",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.68,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 3.04,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "trap: logarithm",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.66,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 3.34,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "trap: logarithm",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.71,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.06,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: logarithm",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.67,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.65,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "law": "trap: logarithm",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.27,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.95,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: logarithm",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.3,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.04,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: logarithm",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.56,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 6.96,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: sine",
+    "noise": 0.01,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.76,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 7.32,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: sine",
+    "noise": 0.01,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.22,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 7.45,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: sine",
+    "noise": 0.05,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.59,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 7.84,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: sine",
+    "noise": 0.05,
+    "seed": 1,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.56,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.25,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: sine",
+    "noise": 0.1,
+    "seed": 0,
+    "within_reach": false
+   },
+   {
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.75,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.06,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "law": "trap: sine",
+    "noise": 0.1,
+    "seed": 1,
+    "within_reach": false
+   }
+  ],
+  "summary": {
+   "all": {
+    "first_pass_alone": {
+     "accurate": 0,
+     "accurate_on_wider_rows": 0,
+     "found_by_the_stage": 0,
+     "held_back": 48,
+     "held_back_was_the_law": 24,
+     "not_run": 0,
+     "reported": 0,
+     "reported_and_not_accurate": 0,
+     "the_law_itself": 0
+    },
+    "implicit_stage": {
+     "accurate": 28,
+     "accurate_on_wider_rows": 23,
+     "found_by_the_stage": 18,
+     "held_back": 16,
+     "held_back_was_the_law": 13,
+     "not_run": 0,
+     "reported": 28,
+     "reported_and_not_accurate": 0,
+     "the_law_itself": 24
+    },
+    "tables": 54
+   },
+   "by_law": {
+    "Kepler with two masses": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 4,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 4,
+      "accurate_on_wider_rows": 4,
+      "found_by_the_stage": 4,
+      "held_back": 2,
+      "held_back_was_the_law": 1,
+      "not_run": 0,
+      "reported": 4,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 4
+     },
+     "tables": 6
+    },
+    "energy": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 6,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 3,
+      "accurate_on_wider_rows": 3,
+      "found_by_the_stage": 0,
+      "held_back": 3,
+      "held_back_was_the_law": 3,
+      "not_run": 0,
+      "reported": 3,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 3
+     },
+     "tables": 6
+    },
+    "lens": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 6,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 4,
+      "accurate_on_wider_rows": 4,
+      "found_by_the_stage": 4,
+      "held_back": 2,
+      "held_back_was_the_law": 2,
+      "not_run": 0,
+      "reported": 4,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 4
+     },
+     "tables": 6
+    },
+    "line (Hubble)": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 6,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 5,
+      "accurate_on_wider_rows": 5,
+      "found_by_the_stage": 5,
+      "held_back": 1,
+      "held_back_was_the_law": 1,
+      "not_run": 0,
+      "reported": 5,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 5
+     },
+     "tables": 6
+    },
+    "saturation (Langmuir)": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 2,
+      "accurate_on_wider_rows": 2,
+      "found_by_the_stage": 2,
+      "held_back": 3,
+      "held_back_was_the_law": 3,
+      "not_run": 0,
+      "reported": 2,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 2
+     },
+     "tables": 6
+    },
+    "time dilation": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 6,
+      "accurate_on_wider_rows": 2,
+      "found_by_the_stage": 2,
+      "held_back": 0,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 6,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 3
+     },
+     "tables": 6
+    },
+    "trap: exponential": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 1,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 1,
+      "held_back": 0,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 1,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "tables": 6
+    },
+    "trap: logarithm": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 6,
+      "held_back_was_the_law": 6,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 3,
+      "accurate_on_wider_rows": 3,
+      "found_by_the_stage": 0,
+      "held_back": 3,
+      "held_back_was_the_law": 3,
+      "not_run": 0,
+      "reported": 3,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 3
+     },
+     "tables": 6
+    },
+    "trap: sine": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 2,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 2,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "tables": 6
+    }
+   },
+   "by_noise": {
+    "0.01": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 14,
+      "held_back_was_the_law": 8,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 14,
+      "accurate_on_wider_rows": 14,
+      "found_by_the_stage": 10,
+      "held_back": 0,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 14,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 14
+     },
+     "tables": 18
+    },
+    "0.05": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 16,
+      "held_back_was_the_law": 8,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 10,
+      "accurate_on_wider_rows": 8,
+      "found_by_the_stage": 6,
+      "held_back": 3,
+      "held_back_was_the_law": 3,
+      "not_run": 0,
+      "reported": 10,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 9
+     },
+     "tables": 18
+    },
+    "0.1": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 18,
+      "held_back_was_the_law": 8,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 4,
+      "accurate_on_wider_rows": 1,
+      "found_by_the_stage": 2,
+      "held_back": 13,
+      "held_back_was_the_law": 10,
+      "not_run": 0,
+      "reported": 4,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 1
+     },
+     "tables": 18
+    }
+   }
+  }
+ },
+ "real": [
+  {
+   "first_proposal": "0.363155034990567*sqrt(d**3)",
+   "key": "kepler_solar_system",
+   "known_form_place_among_the_proposals": 1,
+   "known_law": "a*d**1.5",
+   "own_relation_place_among_the_proposals": 1,
+   "own_relation_rank": 1,
+   "own_relation_rank_among_its_size": 1,
+   "proposed": 10,
+   "readings": {
+    "first_pass_alone": {
+     "action": "read",
+     "class_size": 1,
+     "law": "0.36437899*d**(3/2)",
+     "r2_all_rows": 0.999983,
+     "reported": true,
+     "same_form_as_the_known_law": true,
+     "seconds": 11.1,
+     "tentative": false
+    },
+    "implicit_stage": {
+     "action": "read",
+     "class_size": 2,
+     "law": "0.36437899*d**(3/2)",
+     "r2_all_rows": 0.999983,
+     "reported": true,
+     "same_form_as_the_known_law": true,
+     "seconds": 11.3,
+     "tentative": false
+    }
+   },
+   "relations_fitted": 130,
+   "relations_of_its_size": 8,
+   "rows": 8,
+   "setting": [
+    3,
+    4
+   ]
+  },
+  {
+   "first_proposal": "(9.06034213249*p + 13.3318605132)/(0.0806790362711*p + 1)",
+   "key": "langmuir_table_ix",
+   "known_form_place_among_the_proposals": 1,
+   "known_law": "a*p/(1 + b*p)",
+   "own_relation_place_among_the_proposals": null,
+   "own_relation_rank": 33,
+   "own_relation_rank_among_its_size": 3,
+   "proposed": 10,
+   "readings": {
+    "first_pass_alone": {
+     "action": "read",
+     "class_size": 4,
+     "law": "303.85238*p/(p + log(p)) - 189.34785",
+     "r2_all_rows": 0.995351,
+     "reported": false,
+     "same_form_as_the_known_law": false,
+     "seconds": 13.3,
+     "tentative": true
+    },
+    "implicit_stage": {
+     "action": "read",
+     "class_size": 11,
+     "law": "748.75233*sin(p**(1/16)) - 625.8497",
+     "r2_all_rows": 0.994359,
+     "reported": false,
+     "same_form_as_the_known_law": false,
+     "seconds": 13.7,
+     "tentative": true
+    }
+   },
+   "relations_fitted": 134,
+   "relations_of_its_size": 44,
+   "rows": 10,
+   "setting": [
+    3,
+    4
+   ]
+  },
+  {
+   "first_proposal": "sqrt(30.96390133112*logP**3 - 104.2139401488*logP**2 + 224.946938072778)/2 + 7.4991155824",
+   "key": "leavitt",
+   "known_form_place_among_the_proposals": null,
+   "known_law": "a*logP + b",
+   "own_relation_place_among_the_proposals": null,
+   "own_relation_rank": 69,
+   "own_relation_rank_among_its_size": 6,
+   "proposed": 10,
+   "readings": {
+    "first_pass_alone": {
+     "action": "read",
+     "class_size": 2,
+     "law": "-0.5920473*exp(logP)*sin(logP)**2 + 14.852946",
+     "r2_all_rows": 0.979641,
+     "reported": false,
+     "same_form_as_the_known_law": false,
+     "seconds": 15.4,
+     "tentative": true
+    },
+    "implicit_stage": {
+     "action": "read",
+     "class_size": 3,
+     "law": "-0.5920473*exp(logP)*sin(logP)**2 + 14.852946",
+     "r2_all_rows": 0.979641,
+     "reported": false,
+     "same_form_as_the_known_law": false,
+     "seconds": 14.7,
+     "tentative": true
+    }
+   },
+   "relations_fitted": 139,
+   "relations_of_its_size": 41,
+   "rows": 26,
+   "setting": [
+    3,
+    4
+   ]
+  }
+ ],
+ "settings": {
+  "noises": [
+   0.01,
+   0.05,
+   0.1
+  ],
+  "seconds": {
+   "laws": 561,
+   "real": 61,
+   "stream": 1189
+  },
+  "seeds": [
+   0,
+   1
+  ],
+  "wider": 1.5,
+  "within_reach": 1e-05
+ },
+ "stream": {
+  "rows": [
+   {
+    "family": 16,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.41,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.2,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.37,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.65,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.29,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.79,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.47,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 13.26,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 14.17,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 18.09,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 11.33,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 12.74,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.69,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.3,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 11.41,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.49,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 16.15,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 17.72,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 8.48,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.39,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.51,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.17,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.53,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.19,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.87,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 15.57,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 17.94,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.3,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.91,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 15.91,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 17,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.89,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.88,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 4.07,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.25,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 4.0,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.98,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.43,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 2.97,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.64,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.51,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.77,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.57,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.73,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.08,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.79,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.01,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.67,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.29,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.81,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.93,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.87,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.34,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.5,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.2,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 18,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.49,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 2.92,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.4,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 3.41,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.62,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.12,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.52,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.05,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.45,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.86,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.46,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.13,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.35,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.02,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.46,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.77,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.47,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.76,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.49,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.17,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.31,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 2.56,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 19,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.45,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 2.9,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 20,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": true,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 11.63,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 16.82,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 20,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.03,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 10.16,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 20,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.53,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 10.48,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 20,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.32,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.4,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 20,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.23,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.03,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 10.88,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.65,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.52,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 15.17,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.58,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 15.88,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.35,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 6.93,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.19,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.39,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.39,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 6.65,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.23,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 7.94,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 21,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.84,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 10.11,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.79,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.77,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.72,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.55,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.38,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.43,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.41,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.34,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.74,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.1,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 3.21,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.35,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 22,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.42,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.29,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 23,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.61,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 13.34,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 23,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 22.2,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 15.35,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 23,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 11.91,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 16.14,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 23,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 12.25,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 13.94,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 23,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 13.61,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.73,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 24,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.46,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.03,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 24,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.45,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.03,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 24,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.45,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.95,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 24,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.7,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.61,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 24,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.73,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 6.7,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 25,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.8,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 2.8,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 25,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 4.08,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.29,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 25,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.58,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.56,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 25,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.43,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.68,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 25,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.44,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 3.35,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 25,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.44,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 0.77,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 13.98,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 15.14,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.07,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 6.98,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.34,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 6.0,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.38,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.39,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.21,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.42,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.29,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.76,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.23,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.71,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.27,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.63,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 26,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.32,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.38,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 27,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 20.01,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.47,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 27,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 18.8,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 23.56,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 27,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 20.08,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.58,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 27,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.86,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 20.77,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 27,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.4,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.51,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 27,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 17.75,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.81,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.68,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 23.32,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.89,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 23.39,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 10.13,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 14.53,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 4.13,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 10.78,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 4.55,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 8.99,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.39,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 23.34,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 28,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.56,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 26.45,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 19.37,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 22.38,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 20.38,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 24.44,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 20.66,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 23.71,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 4.63,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 13.95,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "confirmed",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.37,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.74,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.8,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 13.1,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.25,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 9.91,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.05,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 5.53,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 12.8,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.14,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.6,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.78,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.44,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.48,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.52,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 29,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 2.08,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.48,
+     "the_law_itself": false
+    },
+    "inputs": 2,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": false
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.74,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 5.08,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.01,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.26,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.83,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.01,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 1.0,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": true,
+     "accurate_on_wider_rows": true,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": true,
+     "seconds": 4.86,
+     "the_law_itself": true
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.73,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.19,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.05,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.74,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.2,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.05,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.84,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.54,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.05,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.88,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.7,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.05,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.68,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.64,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 0,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.7,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 4.84,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 1,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.74,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "search",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 5.15,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 2,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.69,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 1.21,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 3,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 30,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 0.69,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "equivalent_class",
+     "found_by": "first_pass",
+     "held_back": true,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 2.54,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.1,
+    "within_reach": true
+   },
+   {
+    "family": 31,
+    "first_pass_alone": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 0,
+     "reported": false,
+     "seconds": 6.86,
+     "the_law_itself": false
+    },
+    "implicit_stage": {
+     "accurate": false,
+     "accurate_on_wider_rows": false,
+     "action": "widen_search",
+     "found_by": null,
+     "held_back": false,
+     "held_back_was_the_law": false,
+     "proposed": 10,
+     "reported": false,
+     "seconds": 7.11,
+     "the_law_itself": false
+    },
+    "inputs": 1,
+    "member": 4,
+    "noise": 0.01,
+    "within_reach": false
+   }
+  ],
+  "summary": {
+   "all": {
+    "first_pass_alone": {
+     "accurate": 0,
+     "accurate_on_wider_rows": 0,
+     "found_by_the_stage": 0,
+     "held_back": 82,
+     "held_back_was_the_law": 1,
+     "not_run": 0,
+     "reported": 0,
+     "reported_and_not_accurate": 0,
+     "the_law_itself": 0
+    },
+    "implicit_stage": {
+     "accurate": 16,
+     "accurate_on_wider_rows": 14,
+     "found_by_the_stage": 7,
+     "held_back": 40,
+     "held_back_was_the_law": 0,
+     "not_run": 0,
+     "reported": 16,
+     "reported_and_not_accurate": 0,
+     "the_law_itself": 2
+    },
+    "tables": 122
+   },
+   "by_noise": {
+    "0.01": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 11,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 8,
+      "accurate_on_wider_rows": 8,
+      "found_by_the_stage": 3,
+      "held_back": 2,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 8,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 2
+     },
+     "tables": 27
+    },
+    "0.05": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 23,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 5,
+      "accurate_on_wider_rows": 4,
+      "found_by_the_stage": 2,
+      "held_back": 11,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 5,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "tables": 33
+    },
+    "0.1": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 48,
+      "held_back_was_the_law": 1,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 3,
+      "accurate_on_wider_rows": 2,
+      "found_by_the_stage": 2,
+      "held_back": 27,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 3,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "tables": 62
+    }
+   },
+   "by_within_reach": {
+    "False": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 65,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 11,
+      "accurate_on_wider_rows": 10,
+      "found_by_the_stage": 4,
+      "held_back": 34,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 11,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "tables": 105
+    },
+    "True": {
+     "first_pass_alone": {
+      "accurate": 0,
+      "accurate_on_wider_rows": 0,
+      "found_by_the_stage": 0,
+      "held_back": 17,
+      "held_back_was_the_law": 1,
+      "not_run": 0,
+      "reported": 0,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 0
+     },
+     "implicit_stage": {
+      "accurate": 5,
+      "accurate_on_wider_rows": 4,
+      "found_by_the_stage": 3,
+      "held_back": 6,
+      "held_back_was_the_law": 0,
+      "not_run": 0,
+      "reported": 5,
+      "reported_and_not_accurate": 0,
+      "the_law_itself": 2
+     },
+     "tables": 17
+    }
+   }
+  }
+ },
+ "tag": "DEV-IMPLICIT-PROPOSER-2026-11",
+ "what": "the proposer of polynomial relations as the search stage of the route in force, beside the route's first pass alone; no law of the stream is written here"
+}

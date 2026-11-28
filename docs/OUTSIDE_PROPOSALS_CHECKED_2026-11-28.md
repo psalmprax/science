@@ -76,7 +76,12 @@ ranked first:
 At 200 rows every law but the line is right in 7 of 7 draws at 1 % and 5 % (Kepler 5 of 7 at 5 %).
 
 Three things qualify this. **The line:** with any noise the ranking prefers three or four terms to the two-term
-line, in every draw. Choosing between nested relations is its weak point. **The controls:** given an exponential
+line, in every draw. ~~Choosing between nested relations is its weak point.~~ *Corrected later the same day,
+while the proposer was being built: the cause is one relation, not nesting in general. `(y - a*x)**2 = 0` is a
+perfect square, its derivative in y vanishes on the line together with it, and the first-order distance this
+probe ranks by comes out at half the true one (2.01 times smaller on the first draw). A relation holding `y**2`,
+`x*y` and `x**2` led all 30 draws at 1 % noise. The proposer ranks by the error of the solved formula and leaves
+perfect squares out; section 5.* **The controls:** given an exponential
 it returns a four-term relation that is accurate inside the measured range in 30 of 30 draws at 1 % and outside
 it in none; for a logarithm 30 and 10. For a law that is not algebraic it makes a counterfeit that only fails
 outside the range. **The real tables open for development:** Kepler's form is first of 145 on the solar system's
@@ -160,3 +165,36 @@ to 85 % for beating PySR has no measurement behind it.
 3. **For 5 % noise and above, more rows or chosen rows.** The checks say what they lack: power. That is a design
    question about measurement, and the power rule itself is the trustees'.
 4. Nothing else in the four notes is recommended for building now.
+
+## 5. Items 1 and 2, tried on the owner's word (28 November, "try all of these")
+
+Both were built as modules that nothing calls, measured in development and given a plan that is drafted and not
+frozen. The owner's word, how it was read and the numbers are in `docs/OWNER_DECISIONS_2026-11-28.md`.
+
+**The next law of a class** (`discovery_l2/next_member_route.py`, `scripts/study_next_member.py`). Of the 13
+readings lost at the residual check with the true form in the class, 7 are reported with the step, 4 as the law
+itself, and none of the laws it added anywhere was inaccurate. On lists with no true form it added 8 reports,
+each accurate on the test rows and none the law; the route made 10 of that kind without it.
+
+**The implicit form as a proposer** (`proposers/implicit_form.py`, `scripts/study_implicit_proposer.py`). As the
+route's only stage it got the law itself reported for Kepler with two masses, time dilation and Langmuir on 4, 3
+and 2 tables of 6, where the first pass alone never had it. It got an exponential reported as an algebraic law
+on 1 table of 6. No reading of the three real development tables changed.
+
+Building the proposer showed three weaknesses in the ranking the probe of section 2 used, and each is repaired
+in the proposer (the probe and its record are as they were):
+
+1. **A perfect square leads a noisy line.** `(y - a*x)**2 = 0` has a first-order distance half the true one.
+   It is why the probe lost the plain line at 1 % noise in 30 draws of 30. The proposer ranks by the error of
+   the solved formula and leaves perfect squares out.
+2. **Many longer relations can stand above the law together.** On one line at 1 % noise, seventeen relations of
+   three and four terms each fitted a chance bend slightly better than their price in terms, and the line was
+   18th: it would not have been among ten. The proposer puts the best relation of two terms, of three and of
+   four first.
+3. **The law times a factor can fit better than the law.** Langmuir's relation multiplied through by
+   `(1 - 0.8*p)` fitted a noisy table better than the relation itself, with a pole inside the range of the
+   rows. A formula whose divisor changes sign among the rows is not proposed.
+
+With these repairs Langmuir's three terms are still 33rd of 134 relations on his 10 real rows (3rd of 44 among
+three-term relations), and Leavitt's line is 69th of 139. The first formula proposed for Langmuir's table is his
+form with a constant added, which the benchmark's test of form counts as his.

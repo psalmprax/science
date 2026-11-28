@@ -198,7 +198,9 @@ For pull requests, configure branch protection to require `Python quality`,
 `Rust quality`, every Python-version leg of `test`, and `mutation-battery` from
 the **APEDP CI/CD** workflow, plus `Analyze` from **CodeQL** after its first
 successful run. The `test` matrix depends on both quality jobs.
-`build` and `deploy` are main-branch jobs, not pull-request checks. The
+`build` and `deploy` run on `master` only and are not pull-request checks;
+`deploy` also needs the repository variable `DEPLOY_TO_FLY` set to `true`
+(it is not set: deploying is off until the owner turns it on). The
 **Cross-Platform Native Wheels** workflow has PR path filters (Rust, Cargo
 manifests/lockfile, packages, or its own workflow), so it is not expected on a
 documentation-only PR; it also runs on master/main pushes, version tags, or
