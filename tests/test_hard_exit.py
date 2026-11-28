@@ -16,6 +16,12 @@ from apedp_dyn.proposers import hard_exit
 from apedp_dyn.proposers.portfolio import FixedFormulasProposer, PortfolioProposer
 
 FRAME = pd.DataFrame({"x0": [1.0, 2.0, 3.0, 4.0], "target": [2.0, 4.0, 6.0, 8.0]})
+#: How long the two tests below give their members. A member that "will not go" ignores the stop only once its
+#: process has started and reached its search; told to stop before that, it simply goes, nothing is left to kill
+#: and the test fails for no fault of the code. With 5 seconds that happened on a loaded machine (stage's Python
+#: 3.12 leg, 28 November 2026: the wait ended after 5.7 s where 7 were expected). The limit is on the test's patience
+#: with a slow start, not on the code.
+MEMBER_SECONDS = 20.0
 
 
 class _WillNotGo(FixedFormulasProposer):
@@ -87,12 +93,12 @@ def test_a_search_process_that_will_not_go_is_killed_and_the_other_answers_are_k
     """The frozen portfolio would wait for this process for ever; the bounded one ends the wait from outside."""
     monkeypatch.setattr(hard_exit, "STOP_GRACE_S", 2.0)
     members = [partial(FixedFormulasProposer, ["2*x0"]), partial(_WillNotGo, ["x0**2"])]
-    portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=6.0)
+    portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=MEMBER_SECONDS)
     started = time.monotonic()
     assert _formulas(portfolio) == ["2*x0"]                      # the member that answered is kept
     # the wait ended because it was seen to be a wait (2 s into it), not by the fallback a minute after the deadline
-    assert time.monotonic() - started < 6.0 + 2.0 + 40.0
-    assert portfolio.failures == ["member 1: no answer within 6 s"]
+    assert time.monotonic() - started < MEMBER_SECONDS + 2.0 + 40.0
+    assert portfolio.failures == [f"member 1: no answer within {MEMBER_SECONDS:g} s"]
     assert len(portfolio.killed_processes) == 1                  # only the process that was still there
     assert "was still there 2 s after it was told to stop and was killed" in capfd.readouterr().err
     assert not [thread for thread in threading.enumerate() if thread.name == "search-process-reaper"]
@@ -104,10 +110,10 @@ def test_the_wait_also_ends_when_it_cannot_be_seen(monkeypatch) -> None:  # type
     monkeypatch.setattr(hard_exit, "_is_stopping", lambda thread_id: False)
     monkeypatch.setattr(hard_exit, "STOP_FALLBACK_S", 2.0)
     members = [partial(FixedFormulasProposer, ["2*x0"]), partial(_WillNotGo, ["x0**2"])]
-    portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=5.0)
+    portfolio = hard_exit.BoundedPortfolio(members, parallel=True, timeout=MEMBER_SECONDS)
     started = time.monotonic()
     assert _formulas(portfolio) == ["2*x0"]
-    assert 5.0 + 2.0 <= time.monotonic() - started < 90.0
+    assert MEMBER_SECONDS + 2.0 <= time.monotonic() - started < MEMBER_SECONDS + 90.0
     assert len(portfolio.killed_processes) == 1 and not multiprocessing.active_children()
 
 

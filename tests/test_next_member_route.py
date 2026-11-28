@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+import sympy as sp
 
 from apedp_dyn.discovery_l2 import next_member_route as nm
 from apedp_dyn.discovery_l2 import vouching_v2
@@ -15,6 +16,16 @@ X = {"x": RNG.uniform(1.0, 5.0, 400)}
 Y = 2.0 * X["x"] + 1.0 + 0.01 * RNG.standard_normal(400)
 POOL = RNG.uniform(1.0, 5.0, (60, 1))
 WRONG, CURVED, RIGHT, LONGER = "0.55*x**2", "1.9*x**1.1", "2.0*x + 1.0", "2.0*x + 1.0 + 1.0e-9*x**3"
+TIED = "7.0*x + 7.0"            # a search's text with one constant in both places: far from the rows as it stands
+
+
+def _is_the_line(text: str | None) -> bool:
+    """A law of the form a*x + b with a near 2 and b near 1: the line as fitted, whatever its digits."""
+    if not text:
+        return False
+    x = sp.Symbol("x")
+    poly = sp.Poly(sp.sympify(text), x)
+    return poly.degree() == 1 and abs(float(poly.coeff_monomial(x)) - 2.0) < 0.01 and abs(float(poly.coeff_monomial(1)) - 1.0) < 0.01
 
 
 def _record(*, action: str = "widen_search", rejected: str | None = WRONG, verdict: str = "equivalent_class", route: str = "refined",
@@ -65,15 +76,26 @@ def test_the_class_s_other_laws_are_tried_shortest_first_and_the_first_with_clea
     assert state["applied"] and state["class"] == 4 and state["rejected_first"] == WRONG
     # the power law is the shortest and fails the residual check; the line is next and passes; the longer line is not reached
     assert [t["residual_check"] for t in state["tried"]] == [False, True] and state["took"] == 2
-    assert out["reported"] is True and out["law"] == RIGHT and out["action"] == "equivalent_class" and out["tentative_law"] is None
+    assert out["reported"] is True and _is_the_line(out["law"]) and out["action"] == "equivalent_class" and out["tentative_law"] is None
     law, rivals = vouched[0]
-    assert law == RIGHT and set(rivals) == {WRONG, LONGER, CURVED}        # every other member is its rival, the failed one too
+    assert _is_the_line(law) and law != RIGHT                             # the law goes to the checks as fitted, not as the search wrote it
+    assert set(rivals) == {WRONG, LONGER, CURVED}                         # every other member is its rival, the failed one too
+
+
+def test_a_member_is_fitted_before_it_is_checked_and_written_as_the_refined_path_writes_a_law(vouched: list[Any]) -> None:
+    # as it stands the text is 7*x + 7, nowhere near the rows; the route never checks a text, it fits one coefficient a term
+    out = nm.next_member(_record(equivalent=(TIED,)), X, Y, POOL, searched=True)
+    assert [t["residual_check"] for t in out["next_member"]["tried"]] == [True]
+    assert out["reported"] is True and _is_the_line(out["law"]) and out["dropped_terms"] == []
+    longer = nm.next_member(_record(equivalent=(LONGER,)), X, Y, POOL, searched=True)
+    assert _is_the_line(longer["law"]) and longer["dropped_terms"] == ["x**3"]       # a term the rows do not notice is dropped
+    assert vouched[0][1] == [WRONG] and vouched[1][1] == [WRONG]                    # the member that failed first is a rival still
 
 
 def test_a_law_the_last_checks_do_not_vouch_for_is_held_back_and_nothing_further_is_tried(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(nm.vouching_v2, "vouch", lambda *a, **k: vouching_v2.Vouched(None, "2 candidates passed every test"))
     out = nm.next_member(_record(), X, Y, POOL, searched=True)
-    assert out["reported"] is False and out["law"] is None and out["tentative_law"] == RIGHT
+    assert out["reported"] is False and out["law"] is None and _is_the_line(out["tentative_law"])
     assert out["tentative_reason"].startswith(nm.vouched_route_v2.NOT_VOUCHED) and len(out["next_member"]["tried"]) == 2
 
     def crash(*_: Any, **__: Any) -> Any:
@@ -90,8 +112,8 @@ def test_a_member_the_last_checks_choose_in_its_place_has_to_pass_the_residual_c
 
     monkeypatch.setattr(nm.vouching_v2, "vouch", to(WRONG))                     # the member the main search had rejected
     held = nm.next_member(_record(), X, Y, POOL, searched=True)
-    assert held["reported"] is False and held["tentative_law"] == RIGHT and "fails the residual check" in held["tentative_reason"]
-    assert held["next_member"]["tried"][-1] == {"residual_check": True, "vouched": False, "switched": True,
+    assert held["reported"] is False and _is_the_line(held["tentative_law"]) and "fails the residual check" in held["tentative_reason"]
+    assert held["next_member"]["tried"][-1] == {"residual_check": True, "vouched": False, "switched": True, "dropped_terms": [],
                                                 "reason": "the member the checks chose in its place fails the residual check"}
     monkeypatch.setattr(nm.vouching_v2, "vouch", to(LONGER))                    # a member whose residuals are clean
     moved = nm.next_member(_record(), X, Y, POOL, searched=True)
@@ -122,6 +144,6 @@ def test_the_route_is_called_once_and_then_the_step(monkeypatch: pytest.MonkeyPa
 
     monkeypatch.setattr(nm.vouched_route_v2, "discover_law", route)
     out = nm.discover_law(X, Y, POOL, lambda rows: Y[:len(rows)], proposer=object(), noise="absolute", seed=3)  # type: ignore[arg-type]
-    assert len(calls) == 1 and calls[0]["noise"] == "absolute" and calls[0]["seed"] == 3 and out["law"] == RIGHT
+    assert len(calls) == 1 and calls[0]["noise"] == "absolute" and calls[0]["seed"] == 3 and _is_the_line(out["law"])
     assert nm.discover_law(X, Y, POOL, lambda rows: Y[:len(rows)])["next_member"]["why_not"].startswith("no search stage")
     assert nm.NEIGHBOURS == 8

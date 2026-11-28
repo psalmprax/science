@@ -15,6 +15,22 @@ inferred releases.
 
 ### Security
 
+- **Four faults an outside cold review found in the repaired parser and the request limits (2026-11-28, audit
+  M-46).** The owner passed on a review of commit `aabbeea`. It confirmed that the way to code is closed, and found
+  three ways still to hold a worker, each reproduced here under a time limit before it was repaired. A call of
+  something that is no function (`foo(9**9**9)`) failed only after its arguments had been worked out.
+  `evaluate=False` does not stop SymPy's functions, so `gamma(1001)` and `1001!` were worked out past the stated
+  limit and `zeta(100000)` and `Min(x, 9**9**9)` ran without end. And SymPy's constructors could be called:
+  `Float(1, 5000000)` made a number of five million digits. Now a formula may call only a named function of the
+  allowlist, or a number constructor on plain numbers; the first parse works nothing out (every function is a
+  stand-in that does nothing until its arguments are known to be in bounds); and a formula that parse cannot read
+  is refused there. The fourth fault: a request was counted in flight only after its body had been read, so slow
+  requests passed the limit together; it is counted before. `Float` takes one plain number and no precision,
+  `Integer` one whole number and `Rational` one or two (`x**Rational(1, 2)` parses as before; `Float(2, 3)`,
+  `Float(pi)` and `Rational(1.5)` parsed and no longer do, nor, in an equation, `Function(T)(x)` and a derivative
+  of an order above 1000; nothing here writes them), and `Symbol` may not be called. Also: two tests of the search processes' bound depended on how fast a worker starts and failed the Python
+  3.12 leg on `2cb2fd7`; they now give their members 20 seconds (audit M-47).
+  `tests/test_formula_and_name_safety.py` (106), `tests/test_ui_request_limits.py` (54).
 - **An outside audit's findings, checked and repaired where no frozen file or referee rule is
   involved (2026-11-27, audit M-39 to M-44).** Each finding was first reproduced here.
   **A column's name was run as code.** `POST /api/discover/route` took column names as sent, and the
@@ -209,6 +225,17 @@ inferred releases.
 
 ### Added
 
+- **An outside review of the search, checked (2026-11-28; the owner passed two files on).** Its nine claims about
+  why the search in force is "average" were each checked against the code and the committed records
+  (`docs/OUTSIDE_REVIEW_OF_THE_SEARCH_2026-11-28.md`). All nine hold in substance: among them, the deeper
+  exhaustive pass has no time budget (108 seconds alone on three inputs where the search was asked for 30); PySR's
+  candidates are handed over by falling loss, with two of one shape in 85 of 266 recorded runs; `polish` ties
+  equal constants together (`1.0*x0 + 1.0*x1` comes back as `2.487*x0 + 2.487*x1` on rows of `2*x0 + 3*x1`); and
+  the last checks are handed a class's members as the searches wrote them, without the contrast's survivor when a
+  shorter member was taken. Three are stated more strongly than they checked out. The last claim was also true
+  of `discovery_l2/next_member_route.py`, built that morning: it now fits each member as the route does, which
+  changed 7 of its study's 366 readings and no count of laws added. The route in force is frozen and unchanged;
+  the note's repairs and its new engine are listed with what each would take, and none is built.
 - **The next law of a class, and the implicit form as a proposer: built, measured in development, not in
   force (2026-11-28, the owner's "try all of these", decisions 1 and 2).** Two modules that nothing calls
   but their studies and tests, each with a plan that is drafted and not frozen
@@ -232,7 +259,7 @@ inferred releases.
   perfect square halves the distance the probe ranked by), and two more weaknesses of that ranking; the
   account's section 5 has them. Behind the product's search stage neither module has been measured.
   Plans: `preregistration/PREREG-NEXT-MEMBER-2026-11.md`, `preregistration/PREREG-IMPLICIT-STAGE-2026-11.md`.
-  Tests: `tests/test_next_member_route.py` (10), `tests/test_study_next_member.py` (4),
+  Tests: `tests/test_next_member_route.py` (11), `tests/test_study_next_member.py` (4),
   `tests/test_implicit_form_proposer.py` (29), `tests/test_study_implicit_proposer.py` (5). Development,
   not a result; reviewed by nobody but the author.
 - **Four outside notes on the search, checked and tested (2026-11-28, development; owner's words

@@ -16,10 +16,12 @@ contrast confirmation. When several of them cannot be told apart on the rows rea
 fails, the reading ends with "widen the search" and the class's other laws are not looked at.
 
 `discovery_l2/next_member_route.py` takes the record of such a reading and tries the class's
-other laws, shortest first and six at most. Each gets the same residual check
-(`main_search.adequacy`, same neighbour count). The first that passes goes to the last checks in
-force (`vouching_v2.vouch`) with every other member of the class as its rivals. If they vouch for
-it, it is reported; if not, it is held back as tentative. Either way nothing further is tried. A
+other laws, shortest first and six at most. Each is treated as the route treats the member it
+takes: fitted with one coefficient for each additive term, its residuals checked
+(`main_search.adequacy`, same neighbour count), and written in the fitted form with unnoticed
+terms dropped. The first that passes goes to the last checks in force (`vouching_v2.vouch`) with
+every other member of the class as its rivals. If they vouch for it, it is reported; if not, it
+is held back as tentative. Either way nothing further is tried. A
 reading that ended any other way is returned as it was, so the step can add a report and can
 never take one away.
 
@@ -32,7 +34,7 @@ tables the second family run left without a law were read with no search and a l
 |---|---|---|---|---|---|---|---|---|
 | nine ordinary laws, then the true form | 60 | 56 | 13 | 7 | 4 | 7 | 0 | 6 |
 | the true form alone | 64 | 54 | 2 | 2 | 2 | 2 | 0 | 0 |
-| ten ordinary laws, no true form | 10 | 1 | 24 | 8 | 0 | 8 | 0 | 9 |
+| ten ordinary laws, no true form | 10 | 1 | 24 | 8 | 0 | 8 | 0 | 10 |
 
 Three things these numbers do not show.
 

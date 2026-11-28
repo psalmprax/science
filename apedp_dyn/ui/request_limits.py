@@ -149,26 +149,29 @@ class RequestLimits:
             await JSONResponse({"detail": "The server is busy with other requests; try again shortly."}, status_code=429,
                                headers={"Retry-After": "5"})(scope, receive, send)
             return
-        body, refusal = await self._body(receive) if works else (b"", None)
-        if refusal is None and works:
-            objection = field_objection(path, body)
-            if objection is not None:
-                refusal = JSONResponse({"detail": objection}, status_code=422)
-        if refusal is not None:
-            await refusal(scope, receive, send)
-            return
-        replayed = not works
-
-        async def replay() -> Message:
-            nonlocal replayed
-            if not replayed:
-                replayed = True
-                return {"type": "http.request", "body": body, "more_body": False}
-            return await receive()
-
-        self._sweep_scratch()
+        # Counted from here, before the body is read. It used to be counted after: a request's body arrives over time,
+        # so any number of slow requests could pass the check above together and all go on to do work (an outside
+        # review of 28 November 2026 found the order).
         self.in_flight += 1 if works else 0
         try:
+            body, refusal = await self._body(receive) if works else (b"", None)
+            if refusal is None and works:
+                objection = field_objection(path, body)
+                if objection is not None:
+                    refusal = JSONResponse({"detail": objection}, status_code=422)
+            if refusal is not None:
+                await refusal(scope, receive, send)
+                return
+            replayed = not works
+
+            async def replay() -> Message:
+                nonlocal replayed
+                if not replayed:
+                    replayed = True
+                    return {"type": "http.request", "body": body, "more_body": False}
+                return await receive()
+
+            self._sweep_scratch()
             await self.app(scope, replay, send)
         finally:
             self.in_flight -= 1 if works else 0

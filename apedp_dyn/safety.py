@@ -24,7 +24,7 @@ import threading
 import tokenize
 import unicodedata
 import warnings
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from typing import Any
 
 import sympy as sp
@@ -208,18 +208,76 @@ _MAX_EXPONENT_DIGITS = len(str(_LITERAL_EXPONENT_LIMIT))
 _DECIMAL_EXPONENT = re.compile(r"[eE]([+-]?[0-9_]+)[jJ]?\Z")
 
 
-def _token_objection(s: str) -> str | None:
+_NOT_PART_OF_THE_FORMULA = frozenset({tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.COMMENT,
+                                      tokenize.ENDMARKER})
+
+#: SymPy's number constructors, which a formula may spell out: ``x**Rational(1, 2)`` is one of the ways a square
+#: root is written here. Each with the most arguments it takes, whether they must be whole numbers, and the words
+#: for a refusal. They are allowed on plain numbers only, which makes them another way of writing a literal and
+#: nothing more: ``Float(1, 5000000)`` asks for five million digits, ``Rational(9**9**9, 1)`` for the power, and
+#: ``Integer(1e9999)`` for a whole number far longer than the formula.
+_NUMBER_CONSTRUCTORS: dict[str, tuple[int, bool, str]] = {
+    "Rational": (2, True, "one or two whole numbers"),
+    "Integer": (1, True, "one whole number"),
+    "Float": (1, False, "one plain number"),
+}
+_WHOLE_NUMBER = re.compile(r"[0-9]+\Z")
+
+
+def _written_as_plain_numbers(tokens: Sequence[tokenize.TokenInfo], opening: int, most: int, whole: bool) -> bool:
+    """Whether the call whose bracket opens at ``opening`` holds one to ``most`` numbers, each with at most a sign."""
+    count, position = 0, opening + 1
+    while position < len(tokens):
+        if tokens[position].type == tokenize.OP and tokens[position].string in ("+", "-"):
+            position += 1
+        if position >= len(tokens) or tokens[position].type != tokenize.NUMBER:
+            return False
+        text = tokens[position].string
+        if text[-1] in "jJ" or (whole and not _WHOLE_NUMBER.match(text)):
+            return False
+        count, position = count + 1, position + 1
+        if position >= len(tokens) or tokens[position].type != tokenize.OP:
+            return False
+        if tokens[position].string == ")":
+            return 1 <= count <= most
+        if tokens[position].string != ",":
+            return False
+        position += 1
+    return False
+
+
+def _token_objection(s: str, may_call: Callable[[str], bool] | None = None) -> str | None:
     """Why the tokens of ``s`` are not a formula's, or ``None``.
 
     Read with Python's own tokenizer, so ``.5`` and ``1.e-5`` are numbers and ``x.real`` is attribute access; a check
     on the text cannot tell these apart, and the earlier one refused the two numbers. Text literals of every kind are
     refused here as well as by character, whatever their prefix.
+
+    With ``may_call``, every call in the formula is checked as well: only a name may be called, and only one that
+    ``may_call`` passes, or one of SymPy's number constructors on plain numbers. Without this, ``Float(1, 5000000)``
+    reached SymPy's own constructor and made a number of five million digits, and a call of a name that is no
+    function failed only after its arguments had been worked out, however large (an outside review of 28 November
+    2026 reproduced both).
     """
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(s).readline))
     except (tokenize.TokenError, SyntaxError, IndentationError) as exc:
         return f"Unparseable formula {s!r}: {exc}"
-    for token in tokens:
+    tokens = [token for token in tokens if token.type not in _NOT_PART_OF_THE_FORMULA]
+    before: tokenize.TokenInfo | None = None
+    for index, token in enumerate(tokens):
+        if may_call is not None and token.type == tokenize.OP and token.string == "(" and before is not None:
+            if before.type == tokenize.NAME and not keyword.iskeyword(before.string):
+                # worded as the ordinary parse worded a call it could not make: callers match on the first words
+                if before.string in _NUMBER_CONSTRUCTORS:
+                    most, whole, takes = _NUMBER_CONSTRUCTORS[before.string]
+                    if not _written_as_plain_numbers(tokens, index, most, whole):
+                        return f"Unparseable formula {s!r}: {before.string!r} may be given {takes} only"
+                elif not may_call(before.string):
+                    return f"Unparseable formula {s!r}: {before.string!r} is not a function a formula may call"
+            elif before.type == tokenize.NUMBER or before.string in (")", "!", "!!"):
+                return f"Unparseable formula {s!r}: a formula may call a named function only"
+        before = token
         kind = tokenize.tok_name.get(token.type, "")
         if token.type == tokenize.OP and token.string in (".", "..."):
             return "Attribute access ('.') is not allowed in formulas"
@@ -282,8 +340,20 @@ _ALLOWED_FUNCTION_NAMES = frozenset({
 #: Names the parser itself needs to resolve; never shadowed with Symbols.
 _PARSER_INTERNALS = frozenset({"Integer", "Float", "Rational", "Symbol", "I", "oo", "nan", "zoo"})
 
+#: The names a formula may call: the functions of the allowlist, and nothing the parser's own rewriting uses.
+_CALLABLE_NAMES = frozenset(name for name, value in _SAFE_FUNCS.items() if callable(value))
 
-def _validate_formula_string(formula_str: str, max_length: int) -> str:
+
+def _may_call_in_a_formula(name: str) -> bool:
+    return name in _CALLABLE_NAMES
+
+
+def _may_call_in_a_pde(name: str) -> bool:
+    """Any name but the parser's own: an unknown one is the equation's own function, such as ``T(x, t)``."""
+    return name == "I" or name not in _PARSER_INTERNALS
+
+
+def _validate_formula_string(formula_str: str, max_length: int, may_call: Callable[[str], bool]) -> str:
     """Apply the shared string-in policy and return the stripped formula.
 
     Single source of truth for the pre-parse checks: type, non-emptiness,
@@ -293,8 +363,8 @@ def _validate_formula_string(formula_str: str, max_length: int) -> str:
     policy, which is deliberately identical for both entry points.
 
     Raises:
-        ValueError: on empty input, over-length input, forbidden tokens, or
-            attribute access.
+        ValueError: on empty input, over-length input, forbidden tokens,
+            attribute access, or a call of anything ``may_call`` does not pass.
         TypeError: if ``formula_str`` is not a string.
     """
     if not isinstance(formula_str, str):
@@ -319,7 +389,7 @@ def _validate_formula_string(formula_str: str, max_length: int) -> str:
     for identifier in _FORBIDDEN_IDENTIFIERS:
         if re.search(rf"\b{identifier}\b", lowered):
             raise ValueError(f"Forbidden identifier in formula: {identifier!r}")
-    objection = _token_objection(s)
+    objection = _token_objection(s, may_call)
     if objection is not None:
         raise ValueError(objection)
     return s
@@ -349,16 +419,28 @@ class FormulaResourceError(ValueError):
     """A formula whose evaluation would exceed the parser's resource bounds."""
 
 
-def _guarded_rebuild(node: sp.Basic) -> sp.Basic:
+#: Function heads that are not held to that limit though they are not in the set above: ``sqrt`` is a power, which
+#: the rule for powers bounds, and the others compare or choose among their arguments.
+_NOT_HELD_TO_THE_LIMIT = _CHEAP_AT_LARGE_ARGUMENT | {"sqrt", "Min", "Max", "Piecewise"}
+
+#: Functions the parser's own rewriting calls (``n!``), by the name it calls them.
+_REWRITING_CALLS: dict[str, Any] = {"factorial": sp.factorial, "factorial2": sp.factorial2}
+
+
+def _guarded_rebuild(node: sp.Basic, real: Mapping[str, Any] | None = None) -> sp.Basic:
     """Evaluate an unevaluated parse tree bottom-up, refusing unbounded steps.
 
     Children are evaluated first, so the check sees what SymPy would actually
     compute: ``9**(9**(9 + x - x))`` reaches the outer power with the exponent
     already folded to an integer, which a check on the source text would miss.
+
+    ``real`` maps the name of a stand-in function (see :func:`_assert_bounded_evaluation`) to the function it stands
+    for. A stand-in whose arguments have all come out as numbers within the bounds is then worked out with the real
+    function, so that ``gamma(gamma(8))`` reaches the outer call as ``gamma(5040)`` and is refused there.
     """
     if not node.args:
         return node
-    args = [_guarded_rebuild(arg) for arg in node.args]
+    args = [_guarded_rebuild(arg, real) for arg in node.args]
     if isinstance(node, sp.Pow) and len(args) == 2:
         base, exponent = args
         if exponent.is_Number:
@@ -375,7 +457,9 @@ def _guarded_rebuild(node: sp.Basic) -> sp.Basic:
                     )
     elif isinstance(node, sp.Function):
         name = type(node).__name__
-        if name not in _CHEAP_AT_LARGE_ARGUMENT:
+        stands_for = (real or {}).get(name)
+        known_as = getattr(stands_for, "__name__", name) if stands_for is not None else name
+        if known_as not in _NOT_HELD_TO_THE_LIMIT:
             for arg in args:
                 if arg.is_Number and (
                     arg.is_finite is not True or abs(arg) > MAX_SPECIAL_FUNCTION_ARGUMENT
@@ -384,35 +468,44 @@ def _guarded_rebuild(node: sp.Basic) -> sp.Basic:
                         f"Numeric argument to {name!r} exceeds the limit of "
                         f"{MAX_SPECIAL_FUNCTION_ARGUMENT}"
                     )
+        if stands_for is not None and all(arg.is_Number for arg in args):
+            value = stands_for(*args)
+            return value if isinstance(value, sp.Basic) else node.func(*args)
     return node.func(*args)
 
 
-def _assert_bounded_evaluation(s: str, local_dict: dict[str, object]) -> None:
-    """Raise :class:`FormulaResourceError` if parsing ``s`` would run unbounded.
+def _assert_bounded_evaluation(s: str, local_dict: dict[str, object], what: str = "formula") -> None:
+    """Raise :class:`FormulaResourceError` if parsing ``s`` would run unbounded, ``ValueError`` if it cannot be parsed.
 
-    Parses once with ``evaluate=False`` (no arithmetic happens) and replays the
-    evaluation under :func:`_guarded_rebuild`. The caller then performs its
-    ordinary evaluated parse, so accepted formulas produce exactly the
-    expression they did before this guard existed.
+    Parses once with ``evaluate=False`` and replays the evaluation under :func:`_guarded_rebuild`. The caller then
+    performs its ordinary evaluated parse, so accepted formulas produce exactly the expression they did before this
+    guard existed.
 
-    A string the unevaluated parser cannot handle is left to the ordinary parse,
-    which reports it as unparseable; this guard only ever adds a refusal.
+    **Nothing is worked out during that first parse.** ``evaluate=False`` stops SymPy's arithmetic and not its
+    functions: ``gamma(1001)``, ``1001!``, ``zeta(100000)`` and ``Min(x, 9**9**9)`` were all worked out while the
+    tree was being built, before the bounds were looked at, and the last two held a worker (an outside review of 28
+    November 2026 reproduced each). Every function is therefore replaced for this parse by a stand-in of the same
+    name that does nothing, and the rebuild works a stand-in out only once its arguments are known to be in bounds.
+
+    **A formula this parse cannot read is refused here.** It used to be left to the ordinary parse to report. That
+    parse works the arguments of a call out before it finds that the call itself cannot be made, so ``foo(9**9**9)``
+    failed only after the power had been attempted.
     """
+    functions = {name: value for name, value in local_dict.items() if callable(value)}
+    inert: dict[str, Any] = {**local_dict, **{name: sp.Function(name) for name in functions}}
     try:
         unevaluated = sp.parse_expr(
-            s, local_dict=dict(local_dict), global_dict=_parser_globals(), transformations=_TRANSFORMATIONS,
-            evaluate=False,
+            s, local_dict=inert, transformations=_TRANSFORMATIONS, evaluate=False,
+            global_dict={**_parser_globals(), **{name: sp.Function(name) for name in _REWRITING_CALLS}},
         )
-        _guarded_rebuild(unevaluated)
+        if isinstance(unevaluated, sp.Basic):
+            _guarded_rebuild(unevaluated, {**functions, **_REWRITING_CALLS})
     except FormulaResourceError:
         raise
     except RecursionError as exc:
         raise FormulaResourceError("Formula is nested too deeply to evaluate safely") from exc
-    except Exception:  # noqa: BLE001 - a pre-check that cannot run defers to the ordinary parse below, which reports "unparseable" itself
-        # Anything else (a tokenizer error, a SymPy quirk under evaluate=False)
-        # is not this guard's to report: the ordinary parse that follows gives
-        # the caller the same "unparseable" answer it always did.
-        logger.debug("bounded-evaluation pre-check skipped for %r", s, exc_info=True)
+    except Exception as exc:
+        raise ValueError(f"Unparseable {what} {s!r}: {exc}") from exc
 
 
 def _a_safe_function_by_name(parsed: Any) -> bool:
@@ -438,7 +531,7 @@ def safe_parse_expr(
             attribute access, or unparseable content.
         TypeError: if ``formula_str`` is not a string.
     """
-    s = _validate_formula_string(formula_str, max_length)
+    s = _validate_formula_string(formula_str, max_length, _may_call_in_a_formula)
     # Power operator normalization: allow ^ as alias for **
     # (convert_xor transformation handles this too, kept explicit for clarity)
     # Shadow sympy globals (e.g. beta/gamma/zeta functions) with plain
@@ -488,7 +581,7 @@ def safe_parse_pde(
     as a function application must be in the scalar allowlist or be an
     undefined function / Derivative / Integral, else ``ValueError``.
     """
-    s = _validate_formula_string(formula_str, max_length)
+    s = _validate_formula_string(formula_str, max_length, _may_call_in_a_pde)
     local_dict: dict[str, Any] = dict(_SAFE_FUNCS)
     local_dict.update({"Derivative": sp.Derivative, "Integral": sp.Integral, "Function": sp.Function})
     called = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", s))
@@ -501,7 +594,7 @@ def safe_parse_pde(
     for ident in set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", s)):
         if ident not in local_dict and ident not in _PARSER_INTERNALS:
             local_dict[ident] = sp.Symbol(ident)
-    _assert_bounded_evaluation(s, local_dict)
+    _assert_bounded_evaluation(s, local_dict, "PDE formula")
     try:
         expr = sp.parse_expr(s, local_dict=local_dict, global_dict=_parser_globals(), transformations=_TRANSFORMATIONS)
     except Exception as e:

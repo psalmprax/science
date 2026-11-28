@@ -58,6 +58,7 @@ def test_what_the_record_is_cited_for() -> None:
     added = {way: told[way]["added"] for way in study.WAYS}
     assert applied == {"last_of_ten": 13, "alone": 2, "none": 24} and added == {"last_of_ten": 7, "alone": 2, "none": 8}
     assert [told[way]["added_the_law_itself"] for way in study.WAYS] == [4, 2, 0]
+    assert [told[way]["found_and_not_vouched"] for way in study.WAYS] == [6, 0, 10]
     assert all(told[way]["added_and_not_accurate"] == 0 and told[way]["route_reported_and_not_accurate"] == 0 for way in study.WAYS)
     # on lists with no true form the route itself reports accurate laws that are not the law, and the step adds more of them
     assert told["none"]["route_reported"] == 10 and told["none"]["route_reported_the_law_itself"] == 1 and told["none"]["added_accurate"] == 8

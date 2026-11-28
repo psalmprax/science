@@ -307,6 +307,87 @@ three preregistered expectations missed.
   **Still open:** for every caller in that list, the template engine still
   promotes a sole survivor that does not fit; and the guard on trajectory and
   time-ordered rows has not been measured.
+- **M-47 two tests of the search processes' bound depended on how fast a
+  worker starts — FOUND BY CI 2026-11-28, FIXED.** The run on `2cb2fd7`
+  failed on Python 3.12 at
+  `tests/test_hard_exit.py::test_the_wait_also_ends_when_it_cannot_be_seen`:
+  the wait ended after 5.7 seconds where at least 7 were expected. The test
+  gives its members 5 seconds. Its member that "will not go" ignores the stop
+  only once its process has started and reached its search; on a loaded
+  runner it had not, so it went when told, nothing was left to kill and the
+  test failed with nothing wrong in the code. The suite stops at its first
+  failure, so the other two versions were cancelled and about 40 % of the
+  tests did not run on that commit. The same test and its neighbour (6
+  seconds) had passed on every earlier run. **Fix:** both give their members
+  20 seconds. `proposers/hard_exit.py` is unchanged. The commit under test
+  touched neither file. Same kind as M-25.
+- **M-46 the repaired parser could still be made to hold a worker, and the
+  in-flight limit counted too late — FOUND BY AN OUTSIDE COLD REVIEW OF
+  `aabbeea` 2026-11-28, REPAIRED THE SAME DAY.** The owner passed the review
+  on. It confirmed that the repair of M-41 closed the way to code, and found
+  four faults the repair's own sweep of 4,144 formulas had missed. Each was
+  reproduced here first, in a separate process under a time limit.
+  (a) *A call of something that is no function.* `Eq(x, 9**9**9)` and
+  `foo(9**9**9)` ran past eight seconds. The first, unevaluated parse failed
+  ("'Symbol' object is not callable"), the guard treated that as not its
+  business and handed the formula on, and the ordinary parse worked the
+  arguments out before it found that the call could not be made.
+  (b) *Functions worked out while the tree was built.* `evaluate=False` stops
+  SymPy's arithmetic and not its functions. `gamma(1001)` and `1001!` came
+  back as integers of 2,568 and 2,571 digits, past the stated limit of 1000;
+  `zeta(100000)` and `Min(x, 9**9**9)` ran past eight seconds.
+  (c) *SymPy's own constructors could be called.* `Float(1, 5000000)` was
+  accepted after 6.6 seconds as a number of five million digits, and
+  `sin(Float(1, 5000000))` did not come back.
+  (d) *The limit on requests in flight.* The count rose only after a
+  request's body had been read, so any number of slow requests passed the
+  check together.
+  **Repair** (`apedp_dyn/safety.py`, `apedp_dyn/ui/request_limits.py`): the
+  token check now looks at every call, and a formula may call only a named
+  function of the allowlist, or one of SymPy's three number constructors on
+  plain numbers (for an equation, any name but the parser's own, since an
+  unknown one is the equation's own function); the first parse is made with
+  every function replaced by a stand-in of the same name that does nothing,
+  and the rebuild works a stand-in out only once its arguments are numbers
+  within the bounds, so `gamma(gamma(8))` reaches the outer call as
+  `gamma(5040)` and is refused; a formula the first parse cannot read is
+  refused there and not handed on; and a request is counted in flight before
+  its body is read, and uncounted however it ends. The 30 hostile formulas
+  of the new test are each refused within 20 milliseconds (on a busy
+  machine); the sweep of 4,144 now refuses 4,087 where it refused 3,940, on
+  Python 3.13 and 3.11, with no call reaching a builtin.
+  **What changes for a caller:** `Float` takes one plain number and no
+  precision, `Integer` one whole number and `Rational` one or two; `Symbol`
+  may not be called; and `gamma`, `zeta`, a Bessel function or `n!` of a
+  number above 1000 is refused, as the limit always said. `x**Rational(1, 2)`
+  parses as before. Of 88 spellings of those four names tried against the
+  parser of `2cb2fd7`, 22 parsed then and do not now: a precision for
+  `Float`, an expression inside a constructor (`Float(pi)`,
+  `Rational(1/2)`), and a decimal, a hexadecimal or an underscored number in
+  `Integer` or `Rational`. None refused then parses now, and none changed
+  its value. In an equation two more spellings stop parsing: a function
+  declared in place, `Function(T)(x)`, where `T(x)` says the same, and a
+  derivative of an order above 1000. Outside the parser's own tests, no
+  Python file and no committed record of this repository writes any of
+  these. The first form of this repair refused the three constructors
+  outright. The run of every test within two removes of the parser showed
+  `x**Rational(1, 2)` in use: a test relies on it and
+  `discovery_l2/small_table.py` writes it. A refusal of a call is worded as
+  the ordinary parse worded it ("Unparseable formula ..."), since one test,
+  and so perhaps a caller, matches on those words.
+  **Checked against what the repository itself writes:** every string that
+  looks like a formula in the committed records and in the Python sources,
+  53,659 of them, was given to the parser of `2cb2fd7` and to the repaired
+  one. 46,087 come out as the same expression, 7,572 are refused by both,
+  and none differs. The repaired parser takes the same time: 6.8 seconds for
+  3,008 of them, before and after.
+  **Why the sweep missed them:** it was written by the author of the repair
+  and aimed at reaching code; of resource use it tried towers of powers and
+  long inputs, and no call of an unknown name or of a constructor. Tests:
+  six added to `tests/test_formula_and_name_safety.py` (the hostile formulas
+  run in one separate process under a time limit, so a repair undone fails
+  and does not hang; one pins the rule for the number constructors) and one
+  to `tests/test_ui_request_limits.py`.
 - **M-45 three of the referee's rules read their evidence wrongly — FOUND BY
   AN OUTSIDE AUDIT 2026-11-27, REPAIRED 2026-11-28 ON THE OWNER'S WORD.**
   These change what the promotion referee decides, which is why they waited

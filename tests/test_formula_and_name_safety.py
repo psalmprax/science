@@ -259,3 +259,131 @@ def test_the_bare_name_of_an_allowed_function_comes_back_as_that_function_as_it_
         with pytest.raises(ValueError):
             safety.safe_parse_expr(not_a_formula, {"x": X})
     assert safety.safe_parse_expr("Function") == sp.Symbol("Function")  # a name the parser does not know is a symbol
+
+
+# ---------------------------------------------------------------------------
+# A cold review of the repaired parser by an outside reviewer (28 November 2026)
+#
+# Three ways were left to hold a worker. Each formula here once ran for seconds, minutes or without end, so they are
+# parsed in one separate process under a time limit: if a repair is undone the test fails, and does not hang.
+
+#: formula: the kind of refusal expected
+HELD_A_WORKER = {
+    "Eq(x, 9**9**9)": "call", "foo(9**9**9)": "call", "f(x)": "call", "factorial(10**8)": "call",       # a call of no function
+    "Float(1, 5000000)": "plain", "sin(Float(1, 5000))": "plain", "sin(Float(1, 5000000))": "plain",     # SymPy's own constructors
+    "Rational(9**9**9, 1)": "plain", "Integer(x)": "plain", "Rational(x, 2)": "plain", "Symbol(x)": "call",
+    "(sin)(x)": "named", "2(3)": "named", "(x + 1)(x - 1)": "named", "3!(2)": "named",                   # a call of no name
+    "gamma(1001)": "bound", "1001!": "bound", "100000!": "bound", "zeta(100000)": "bound",               # worked out while the tree was built
+    "Min(x, 9**9**9)": "bound", "max(9**9**9, x)": "bound", "gamma(gamma(8))": "bound", "(7!)!": "bound",
+    "gamma(2001/2)": "bound", "besselj(0, 1001)": "bound", "zeta(-100001)": "bound", "9**(9**(9 + x - x))": "bound",
+    "Piecewise((x, x > 9**9**9), (0, True))": "bound", "sqrt(9**9**9)": "bound", "abs(1001!)": "bound",
+}
+
+_IN_ANOTHER_PROCESS = """
+import json, sys
+from apedp_dyn import safety
+out = {}
+for text in json.loads(sys.argv[1]):
+    try:
+        safety.safe_parse_expr(text)
+        out[text] = "accepted"
+    except safety.FormulaResourceError:
+        out[text] = "bound"
+    except ValueError as exc:
+        words = {"is not a function a formula may call": "call", "named function only": "named", " may be given ": "plain"}
+        out[text] = next((kind for said, kind in words.items() if said in str(exc)), "other")
+print(json.dumps(out))
+"""
+
+
+def test_what_a_cold_review_found_to_hold_a_worker_is_refused_at_once() -> None:
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    done = subprocess.run([sys.executable, "-c", _IN_ANOTHER_PROCESS, json.dumps(sorted(HELD_A_WORKER))], capture_output=True,
+                          text=True, timeout=120, cwd=Path(__file__).resolve().parents[1], check=False)
+    assert done.returncode == 0, done.stderr[-2000:]
+    assert json.loads(done.stdout.strip().splitlines()[-1]) == HELD_A_WORKER
+
+
+def test_a_function_is_worked_out_only_once_its_arguments_are_known_to_be_in_bounds() -> None:
+    a, b, y = sp.symbols("a b y")
+    parse = safety.safe_parse_expr
+    assert parse("gamma(7)") == 720 and parse("5!") == 120 and parse("3!!") == 3 and parse("gamma(gamma(4))") == 120
+    assert parse("x**3/3! - x**5/5!", {"x": X}) == X ** 3 / 6 - X ** 5 / 120
+    assert parse("gamma(999)") == sp.factorial(998) and parse("gamma(1999/2)") == sp.gamma(sp.Rational(1999, 2))
+    assert parse("zeta(2)") == sp.pi ** 2 / 6 and parse("zeta(1000)") == sp.zeta(1000)
+    assert parse("sqrt(2000)") == 20 * sp.sqrt(5) and parse("sqrt(10**900)") == sp.Integer(10) ** 450       # a power, not held to 1000
+    assert parse("min(a, b)") == sp.Min(a, b) and parse("Min(3, 5) + max(a, 2)") == sp.Max(2, a) + 3
+    assert parse("abs(x) + ln(y)", {"x": X}) == sp.Abs(X) + sp.log(y) and parse("exp(10**900)") == sp.exp(sp.Integer(10) ** 900)
+    assert parse("Piecewise((x, x > 0), (0, True))", {"x": X}) == sp.Piecewise((X, X > 0), (0, True))
+    assert parse("besselj(0, x) + erf(2000)", {"x": X}) == sp.besselj(0, X) + sp.erf(2000)
+    assert parse("gamma(x)*zeta(y)", {"x": X}) == sp.gamma(X) * sp.zeta(y)
+    assert parse("gamma") is sp.gamma                                           # the bare name, as before
+
+
+def test_the_parser_for_equations_keeps_its_own_functions_and_the_same_bounds() -> None:
+    t, T, u = sp.Symbol("t"), sp.Function("T"), sp.Function("u")
+    parsed = safety.safe_parse_pde("Derivative(T(x, t), t) - 0.5*Derivative(T(x, t), x, 2)")
+    assert parsed == sp.Derivative(T(X, t), t) - 0.5 * sp.Derivative(T(X, t), X, 2)
+    assert safety.safe_parse_pde("u(x) + E(x)*I(t)") == u(X) + sp.Function("E")(X) * sp.Function("I")(t)   # field call forms
+    assert safety.safe_parse_pde("Derivative(Rational(1, 3)*T(x), x)") == sp.Derivative(T(X) / 3, X)
+    assert safety.safe_parse_pde("Integral(T(x), (x, 0, 2000))") == sp.Integral(T(X), (X, 0, 2000))
+    # Function(T)(x) parsed before the repair of 28 November 2026 and is refused since: an equation writes T(x)
+    for text in ("Float(1, 5000000)", "Derivative(Rational(x, 3)*T(x), x)", "Symbol(x) + T(x)", "(T)(x)", "2(x)", "Function(T)(x)"):
+        with pytest.raises(ValueError, match=r"may call|named function only|may be given"):
+            safety.safe_parse_pde(text)
+    # the last parsed before that repair as well: an order of differentiation is held to the limit like any argument
+    for text in ("Derivative(T(x, t), t) - gamma(1001)", "u(9**9**9)", "T(x) + 1001!", "Min(u(x), 9**9**9)", "Derivative(T(x), x, 2000)"):
+        with pytest.raises(safety.FormulaResourceError):
+            safety.safe_parse_pde(text)
+
+
+def test_a_formula_the_first_parse_cannot_read_is_refused_and_not_handed_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    # it used to be handed to the ordinary parse, which works a call's arguments out before it finds the call cannot be made
+    real, seen = sp.parse_expr, []
+
+    def parse_expr(text: str, **options: Any) -> Any:
+        seen.append(options.get("evaluate", True))
+        if options.get("evaluate", True) is False:
+            raise TypeError("a quirk of the unevaluated parse")
+        return real(text, **options)
+
+    monkeypatch.setattr(safety.sp, "parse_expr", parse_expr)
+    for parse, what in ((safety.safe_parse_expr, "formula"), (safety.safe_parse_pde, "PDE formula")):
+        seen.clear()
+        with pytest.raises(ValueError, match=rf"Unparseable {what} 'x \+ 1': a quirk"):
+            parse("x + 1")
+        assert seen == [False]                                                  # the ordinary parse was never reached
+
+
+def test_only_the_functions_of_the_allowlist_may_be_called() -> None:
+    assert safety._CALLABLE_NAMES == {name for name, value in safety._SAFE_FUNCS.items() if callable(value)}
+    assert {"sin", "ln", "min", "Piecewise", "gamma"} <= safety._CALLABLE_NAMES
+    assert not {"pi", "E", "EulerGamma", "Float", "Integer", "Rational", "Symbol", "factorial"} & safety._CALLABLE_NAMES
+    assert safety._token_objection("not (x > 0)", safety._may_call_in_a_formula) is None       # a keyword is not a call
+    assert safety._token_objection("x*(y + 1) - (z)", safety._may_call_in_a_formula) is None   # nor is a bracket
+    assert safety._token_objection("foo(1)") is None                            # without a rule for calls, only the old checks
+    assert "may call" in (safety._token_objection("pi(2)", safety._may_call_in_a_formula) or "")
+    # every refusal of a call begins as the ordinary parse's did: callers match on those words
+    for text in ("totally_unknown_function(a)", "(a)(b)", "Float(1, 2)"):
+        assert (safety._token_objection(text, safety._may_call_in_a_formula) or "").startswith(f"Unparseable formula {text!r}: ")
+
+
+def test_a_number_may_be_spelt_with_sympy_s_constructors_on_plain_numbers_only() -> None:
+    # x**Rational(1, 2) is one of the spellings of a square root this repository uses and writes itself
+    parse = safety.safe_parse_expr
+    assert parse("x**Rational(1, 2)", {"x": X}) == sp.sqrt(X) and parse("Rational(1, 3)*x", {"x": X}) == X / 3
+    assert parse("Integer(10)**3") == 1000 and parse("Rational(-1, 2)") == sp.Rational(-1, 2) and parse("Rational(3)") == 3
+    assert parse("Float(2.5)*x", {"x": X}) == 2.5 * X and parse("Float(-2.5e3)") == -2500.0
+    assert parse("x**Rational(-1, 2)", {"x": X}) == 1 / sp.sqrt(X) and parse("Float(.5) + Float(1.)") == 1.5
+    refused = {"one plain number": ("Float(1, 30)", "Float()", "Float(1j)", "Float(x)", "Float(--1)", "Float(1,)"),
+               "one whole number": ("Integer(2.5)", "Integer((5))", "Integer(-x)", "Integer(1e9999)", "Integer(1, 2)", "Integer(0x10)"),
+               "one or two whole numbers": ("Rational(1, 2, 3)", "Rational(1/2)", "Rational(2**3, 5)", "Rational(1,)", "Rational(1.5)",
+                                            "Rational(p=1, q=2)", "Rational()")}
+    for takes, texts in refused.items():
+        for text in texts:
+            with pytest.raises(ValueError, match=f"may be given {takes} only"):
+                parse(text)

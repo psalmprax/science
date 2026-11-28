@@ -37,6 +37,14 @@ true form in the class, 7 are now reported. It also reports on lists that hold n
 laws, each accurate on the test rows and none the law. The route in force made 10 reports of
 that kind on the same lists.
 
+*Corrected the same morning.* As first built, the step checked each member's text as the search
+had written it. The route never does that: it fits one coefficient for each additive term first.
+An outside review the owner passed on at 04:39 pointed at the route's handing on of unfitted
+texts, and the step had the same habit. It now fits each member as the route does and writes the
+law as the refined path writes one. On the study's 366 readings that changed 7: fewer members
+had to be tried, and in one reading a law was found, and not vouched for, where none had been.
+No count in the table changed.
+
 *Does not cover:* putting the step in force, or freezing the plan. Seventeen added laws with
 none wrong does not show a share within the limit (the bound is 16 %, and 10 % is allowed; 29
 are needed). Behind the product's search stage the step's rate is not known.

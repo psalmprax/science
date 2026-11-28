@@ -61,7 +61,7 @@ def one(job: tuple[int, float, tuple[int, ...]]) -> list[dict[str, Any]]:
                                     "route_accurate": scored["accurate"], "route_the_law_itself": scored["recovered"]}
             if reading["action"] != "not_run":
                 after = next_member_route.next_member(reading["record"], table.columns(), table.y, table.pool_X, searched=True,
-                                                      seed=spec["family"])
+                                                      noise="absolute", seed=spec["family"])
                 state = after["next_member"]
                 law = after.get("law") if after.get("reported") else None
                 held = after.get("tentative_law") if state["applied"] and not after.get("reported") else None

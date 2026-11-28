@@ -2494,7 +2494,7 @@
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 2
+    "tried": 1
    }
   },
   {
@@ -4926,7 +4926,7 @@
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 2
+    "tried": 1
    },
    "member": 3,
    "noise": 0.05,
@@ -4942,7 +4942,7 @@
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 3
+    "tried": 2
    }
   },
   {
@@ -4974,7 +4974,7 @@
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 3
+    "tried": 2
    },
    "member": 4,
    "noise": 0.05,
@@ -4990,7 +4990,7 @@
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 4
+    "tried": 2
    }
   },
   {
@@ -5550,7 +5550,7 @@
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 6
+    "tried": 2
    },
    "member": 3,
    "noise": 0.05,
@@ -5560,13 +5560,13 @@
     "added_recovered": false,
     "applied": true,
     "class": 10,
-    "found_and_not_vouched": false,
+    "found_and_not_vouched": true,
     "not_vouched_is_the_law": false,
     "route_accurate": false,
     "route_action": "widen_search",
     "route_reported": false,
     "route_the_law_itself": false,
-    "tried": 6
+    "tried": 2
    }
   },
   {
@@ -5860,7 +5860,7 @@
  ],
  "settings": {
   "max_members": 6,
-  "seconds": 1631
+  "seconds": 1305
  },
  "summary": {
   "alone": {
@@ -5909,7 +5909,7 @@
     "0.1": 3
    },
    "added_the_law_itself": 0,
-   "found_and_not_vouched": 9,
+   "found_and_not_vouched": 10,
    "not_vouched_was_the_law": 0,
    "route_reported": 10,
    "route_reported_accurate": 10,

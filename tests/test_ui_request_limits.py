@@ -249,6 +249,66 @@ def test_no_more_than_the_allowed_number_of_working_requests_run_at_once(monkeyp
     assert sent[0]["status"] == 200                        # reading is not held up by the work in progress
 
 
+def test_a_request_counts_as_in_flight_while_its_body_is_still_arriving(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The count used to rise only after the body had been read, so any number of slow requests passed the check
+    # together and all went on to do work (found by an outside review of 28 November 2026).
+    import asyncio
+
+    monkeypatch.setenv("APEDP_UI_MAX_IN_FLIGHT", "2")
+    app, received = _small_app()
+    layer = request_limits.RequestLimits(app)
+    scope = {"type": "http", "path": "/api/stability/audit", "raw_path": b"/api/stability/audit", "method": "POST",
+             "headers": [(b"content-type", b"application/json")], "client": ("127.0.0.1", 1), "query_string": b"",
+             "http_version": "1.1", "scheme": "http", "server": ("testserver", 80), "root_path": "", "asgi": {"version": "3.0"}}
+
+    async def three_slow_requests() -> tuple[list[int], int, int]:
+        body_may_arrive = asyncio.Event()
+        statuses: list[int] = []
+
+        async def receive() -> Any:
+            await body_may_arrive.wait()
+            return {"type": "http.request", "body": b'{"n_seeds": 3}', "more_body": False}
+
+        async def send(message: Any) -> None:
+            if message["type"] == "http.response.start":
+                statuses.append(message["status"])
+
+        tasks = [asyncio.ensure_future(layer(dict(scope), receive, send)) for _ in range(3)]
+        await asyncio.sleep(0.05)                          # every request has passed the check; no body has arrived
+        while_waiting, counted = list(statuses), layer.in_flight
+        body_may_arrive.set()
+        await asyncio.gather(*tasks)
+        return while_waiting, counted, layer.in_flight
+
+    while_waiting, counted, afterwards = asyncio.run(three_slow_requests())
+    assert while_waiting == [429] and counted == 2          # the third was turned away before any body was read
+    assert afterwards == 0 and len(received) == 2
+
+    async def one(body: bytes) -> int:
+        seen: list[int] = []
+
+        async def receive() -> Any:
+            return {"type": "http.request", "body": body, "more_body": False}
+
+        async def send(message: Any) -> None:
+            if message["type"] == "http.response.start":
+                seen.append(message["status"])
+
+        await layer(dict(scope), receive, send)
+        return seen[0]
+
+    assert asyncio.run(one(b'{"n_seeds": 1000000000}')) == 422 and layer.in_flight == 0      # refused by the layer: not left counted
+
+    async def broken(scope_: Any, receive_: Any, send_: Any) -> None:
+        raise RuntimeError("the route failed")
+
+    failing = request_limits.RequestLimits(broken)
+    with pytest.raises(RuntimeError):
+        asyncio.run(failing(dict(scope), lambda: asyncio.sleep(0, {"type": "http.request", "body": b"{}", "more_body": False}),
+                            lambda message: asyncio.sleep(0)))
+    assert failing.in_flight == 0                           # nor when the route itself fails
+
+
 def test_a_caller_from_elsewhere_is_limited_per_minute_and_a_local_one_is_not(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APEDP_UI_RATE_LIMIT_PER_MINUTE", "3")
     layer = request_limits.RequestLimits(_small_app()[0])
