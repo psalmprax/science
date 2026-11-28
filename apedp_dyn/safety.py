@@ -456,7 +456,7 @@ def safe_parse_expr(
     except Exception as e:
         raise ValueError(f"Unparseable formula {s!r}: {e}") from e
     if _a_safe_function_by_name(expr):
-        return expr  # type: ignore[no-any-return]
+        return expr
     if not isinstance(expr, sp.Basic):
         # A tuple, a truth value, a number of Python's own: evaluated, and not a formula. Without this check the
         # caller got an AttributeError from the next line instead of the ValueError it handles.
@@ -507,7 +507,7 @@ def safe_parse_pde(
     except Exception as e:
         raise ValueError(f"Unparseable PDE formula {s!r}: {e}") from e
     if _a_safe_function_by_name(expr):
-        return expr  # type: ignore[no-any-return]
+        return expr
     if not isinstance(expr, sp.Basic):
         raise ValueError(f"Unparseable PDE formula {s!r}: it does not evaluate to an expression")
     for atom in expr.atoms(sp.Function):
